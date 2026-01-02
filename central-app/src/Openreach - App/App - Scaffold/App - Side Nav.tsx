@@ -32,6 +32,7 @@ import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
+import openreachLogo from '@central-logos/Openreach-Logo-White.png'
 
 const palette = {
   coreBlock: '#073B4C',
@@ -244,13 +245,21 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   const noMatches = showTreeResults && filteredGroups.length === 0
 
   const footerContent = footerSlot ?? (
-    <Stack gap={0.5}>
-      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), letterSpacing: 1 }}>
-        {CLIENT_BUILD.toUpperCase()}
-      </Typography>
-      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
-        Last sync · 06:00 UTC
-      </Typography>
+    <Stack gap={1.25} alignItems="flex-start">
+      <Box
+        component="img"
+        src={openreachLogo}
+        alt="Openreach brand mark"
+        sx={{ width: 120, height: 'auto', filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.35))' }}
+      />
+      <Stack gap={0.5}>
+        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), letterSpacing: 1 }}>
+          {CLIENT_BUILD.toUpperCase()}
+        </Typography>
+        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
+          Last sync · 06:00 UTC
+        </Typography>
+      </Stack>
     </Stack>
   )
 

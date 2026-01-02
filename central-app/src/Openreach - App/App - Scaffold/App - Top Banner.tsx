@@ -8,13 +8,10 @@ import {
   IconButton,
   Stack,
   Toolbar,
-  Tooltip,
   Typography,
 } from '@mui/material'
-import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
-import openreachLogo from '@central-logos/Openreach-Logo-White.png'
 
 const palette = {
   coreBlock: '#073B4C',
@@ -58,7 +55,6 @@ export interface OpenreachTopBannerProps {
   userInitials?: string
   userName?: string
   userRole?: string
-  showSupportShortcut?: boolean
 }
 
 export const OpenreachTopBanner = ({
@@ -70,7 +66,6 @@ export const OpenreachTopBanner = ({
   userInitials = 'OR',
   userName,
   userRole = 'Fibre Operations',
-  showSupportShortcut = true,
 }: OpenreachTopBannerProps) => {
   const chipTone = statusChip?.tone ?? 'default'
 
@@ -104,14 +99,16 @@ export const OpenreachTopBanner = ({
       <Toolbar
         disableGutters
         sx={{
-          gap: { xs: 2, md: 3 },
-          flexDirection: { xs: 'column', xl: 'row' },
-          alignItems: { xs: 'stretch', xl: 'center' },
+          gap: 3,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'nowrap',
           position: 'relative',
           zIndex: 1,
         }}
       >
-        <Stack direction="row" gap={2} alignItems="center" sx={{ width: '100%' }}>
+        <Stack direction="row" gap={2} alignItems="center" sx={{ width: '100%', flex: 1, minWidth: 0 }}>
           <IconButton
             aria-label="Open navigation"
             onClick={onMenuClick}
@@ -153,21 +150,10 @@ export const OpenreachTopBanner = ({
 
         <Stack
           direction="row"
-          gap={1}
+          gap={1.5}
           alignItems="center"
-          sx={{ width: { xs: '100%', xl: 'auto' }, justifyContent: { xs: 'flex-end', xl: 'flex-start' }, flexWrap: 'wrap' }}
+          sx={{ flexShrink: 0, justifyContent: 'flex-end', flexWrap: 'nowrap' }}
         >
-          {showSupportShortcut && (
-            <Tooltip title="Help & Support">
-              <IconButton
-                aria-label="Help"
-                sx={{ color: palette.fibreThreads, '&:hover': { color: palette.energyAccent } }}
-              >
-                <HelpOutlineRoundedIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-
           {actions}
 
           <Stack direction="row" gap={1} alignItems="center" flexWrap="nowrap">
@@ -183,18 +169,6 @@ export const OpenreachTopBanner = ({
               </Typography>
             </Box>
           </Stack>
-
-          <Box
-            component="img"
-            src={openreachLogo}
-            alt="Openreach brand mark"
-            sx={{
-              width: { xs: 88, sm: 120 },
-              height: 'auto',
-              ml: { xs: 'auto', xl: 2 },
-              filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.35))',
-            }}
-          />
         </Stack>
       </Toolbar>
     </AppBar>

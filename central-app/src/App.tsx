@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react'
-import type { ElementType } from 'react'
+import type { ElementType, JSX } from 'react'
 import './App.css'
 import {
   Box,
-  Chip,
+  Button,
   Card,
   CardActionArea,
   CardContent,
   CssBaseline,
-  Paper,
   Stack,
   Typography,
 } from '@mui/material'
@@ -23,8 +22,10 @@ import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSetting
 import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded'
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
 import { OpenreachSideNav } from './Openreach - App/App - Scaffold/App - Side Nav'
 import { OpenreachTopBanner } from './Openreach - App/App - Scaffold/App - Top Banner'
+import { LandingOverview } from './Openreach - App/App - Scaffold/App - Landing Overview'
 
 interface MenuCardTile {
   name: string
@@ -198,10 +199,37 @@ const MENU_GROUPS: MenuGroup[] = [
 
 const TOTAL_TOOL_COUNT = MENU_GROUPS.reduce((total, group) => total + group.cards.length, 0)
 
+type PageComponent = () => JSX.Element
+
+const pageModules = import.meta.glob('./Openreach - App/App - Scaffold/App - Pages/**/*.tsx', {
+  eager: true,
+  import: 'default',
+}) as Record<string, PageComponent>
+
+const PAGE_COMPONENTS = Object.entries(pageModules).reduce<Record<string, Record<string, PageComponent>>>(
+  (acc, [path, component]) => {
+    const segments = path.split('/')
+    const folderName = segments[segments.length - 2]
+    const fileName = segments[segments.length - 1].replace('.tsx', '')
+    if (!acc[folderName]) {
+      acc[folderName] = {}
+    }
+    acc[folderName][fileName] = component
+    return acc
+  },
+  {}
+)
+
 function App() {
   const [navOpen, setNavOpen] = useState(false)
   const [selectedMenuId, setSelectedMenuId] = useState(MENU_GROUPS[0].id)
   const [showWelcome, setShowWelcome] = useState(true)
+  const [activePage, setActivePage] = useState<{ menuLabel: string; cardName: string } | null>(null)
+  const activeCardDetails = activePage
+    ? MENU_GROUPS.find((group) => group.label === activePage.menuLabel)?.cards.find(
+        (card) => card.name === activePage.cardName
+      )
+    : null
 
   const openNav = () => setNavOpen(true)
   const closeNav = () => setNavOpen(false)
@@ -229,6 +257,8 @@ function App() {
   const handleNavSelection = (itemId: string) => {
     setSelectedMenuId(itemId)
     setShowWelcome(false)
+    const nextGroup = MENU_GROUPS.find((group) => group.id === itemId)
+    setActivePage((current) => (current && current.menuLabel === nextGroup?.label ? current : null))
   }
 
   return (
@@ -267,107 +297,7 @@ function App() {
             }
           >
             {showWelcome ? (
-              <Stack gap={3}>
-                <Stack gap={1}>
-                  <Typography variant='overline' sx={{ letterSpacing: 4, color: 'rgba(0,204,173,0.9)' }}>
-                    OPENREACH TASK FORCE
-                  </Typography>
-                  <Typography variant='h4' fontWeight={700}>
-                    Access overview
-                  </Typography>
-                  <Typography variant='body1' sx={{ color: 'rgba(245,244,245,0.85)' }}>
-                    Hi Jordan, you have access to {MENU_GROUPS.length} programmes and {TOTAL_TOOL_COUNT} tools. Use the
-                    left navigation to jump straight into a workspace.
-                  </Typography>
-                </Stack>
-
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: 2,
-                    gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
-                  }}
-                >
-                  {MENU_GROUPS.map((group) => {
-                    const Icon = group.icon
-                    return (
-                      <Paper
-                        key={group.id}
-                        component='section'
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          borderRadius: 3,
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          backgroundColor: 'rgba(4, 11, 18, 0.35)',
-                          backdropFilter: 'blur(6px)',
-                        }}
-                      >
-                        <Stack direction='row' gap={1.5} alignItems='flex-start'>
-                          <Box
-                            sx={{
-                              width: 44,
-                              height: 44,
-                              borderRadius: '50%',
-                              display: 'grid',
-                              placeItems: 'center',
-                              backgroundColor: 'rgba(0,204,173,0.12)',
-                              color: '#00CCAD',
-                            }}
-                          >
-                            <Icon fontSize='small' />
-                          </Box>
-                          <Box flexGrow={1} minWidth={0}>
-                            <Typography variant='subtitle1' fontWeight={600} sx={{ color: '#F5F4F5' }}>
-                              {group.label}
-                            </Typography>
-                            <Typography variant='body2' sx={{ color: 'rgba(245,244,245,0.75)' }}>
-                              {group.description}
-                            </Typography>
-                          </Box>
-                          <Chip
-                            label={group.accessLabel}
-                            size='small'
-                            sx={{
-                              bgcolor: 'rgba(0,204,173,0.16)',
-                              color: '#00CCAD',
-                              border: '1px solid rgba(0,204,173,0.45)',
-                              fontWeight: 600,
-                            }}
-                          />
-                        </Stack>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: 1,
-                            mt: 1.5,
-                          }}
-                        >
-                          {group.cards.map((card) => (
-                            <Chip
-                              key={card.name}
-                              label={card.name}
-                              size='small'
-                              variant='outlined'
-                              sx={{
-                                borderColor: 'rgba(245,244,245,0.35)',
-                                color: '#F5F4F5',
-                                bgcolor: 'transparent',
-                                fontWeight: 500,
-                              }}
-                            />
-                          ))}
-                        </Box>
-                      </Paper>
-                    )
-                  })}
-                </Box>
-
-                <Typography variant='body2' sx={{ color: 'rgba(245,244,245,0.75)' }}>
-                  Tip: tap the Task Force menu icon to open navigation and move between programmes.
-                </Typography>
-              </Stack>
+              <LandingOverview groups={MENU_GROUPS} totalTools={TOTAL_TOOL_COUNT} />
             ) : (
               <>
                 <Stack gap={1} mb={2}>
@@ -375,39 +305,75 @@ function App() {
                     MENU • {selectedMenu.label}
                   </Typography>
                   <Typography variant='h5' fontWeight={700} gutterBottom>
-                    {selectedMenu.label}
+                    {activePage ? activePage.cardName : selectedMenu.label}
                   </Typography>
                   <Typography variant='body1' color='text.secondary'>
-                    {selectedMenu.description}
+                    {activeCardDetails?.description ?? selectedMenu.description}
                   </Typography>
                 </Stack>
 
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: 2,
-                    gridTemplateColumns: {
-                      xs: 'repeat(1, minmax(0, 1fr))',
-                      sm: 'repeat(2, minmax(0, 1fr))',
-                      md: 'repeat(3, minmax(0, 1fr))',
-                    },
-                  }}
-                >
-                  {selectedMenu.cards.map((card) => (
-                    <Card className='menu-card' key={card.name}>
-                      <CardActionArea>
-                        <CardContent>
-                          <Typography variant='subtitle1' fontWeight={600} gutterBottom>
-                            {card.name}
-                          </Typography>
-                          <Typography variant='body2' color='text.secondary'>
-                            {card.description}
-                          </Typography>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  ))}
-                </Box>
+                {activePage ? (
+                  <Stack gap={3}>
+                    <Button
+                      variant='text'
+                      color='inherit'
+                      onClick={() => setActivePage(null)}
+                      startIcon={<ArrowBackRoundedIcon fontSize='small' />}
+                      sx={{ alignSelf: 'flex-start' }}
+                    >
+                      Back to menu
+                    </Button>
+                    <Box p={2.5} borderRadius={3} border='1px solid rgba(7,59,76,0.12)' bgcolor='#fff'>
+                      {(() => {
+                        const ActivePageComponent = PAGE_COMPONENTS[activePage.menuLabel]?.[activePage.cardName]
+                        if (!ActivePageComponent) {
+                          return (
+                            <Typography color='text.secondary'>
+                              No page scaffold wired for {activePage.cardName} yet.
+                            </Typography>
+                          )
+                        }
+                        return <ActivePageComponent />
+                      })()}
+                    </Box>
+                  </Stack>
+                ) : (
+                  <>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gap: 2,
+                        gridTemplateColumns: {
+                          xs: 'repeat(1, minmax(0, 1fr))',
+                          sm: 'repeat(2, minmax(0, 1fr))',
+                          md: 'repeat(3, minmax(0, 1fr))',
+                        },
+                      }}
+                    >
+                      {selectedMenu.cards.map((card) => (
+                        <Card className='menu-card' key={card.name}>
+                          <CardActionArea
+                            onClick={() => setActivePage({ menuLabel: selectedMenu.label, cardName: card.name })}
+                          >
+                            <CardContent>
+                              <Typography variant='subtitle1' fontWeight={600} gutterBottom>
+                                {card.name}
+                              </Typography>
+                              <Typography variant='body2' color='text.secondary'>
+                                {card.description}
+                              </Typography>
+                            </CardContent>
+                          </CardActionArea>
+                        </Card>
+                      ))}
+                    </Box>
+                    <Box mt={4} p={2.5} borderRadius={3} border='1px solid rgba(7,59,76,0.12)' bgcolor='#fff'>
+                      <Typography color='text.secondary'>
+                        Select a tool card to load its scaffolded page.
+                      </Typography>
+                    </Box>
+                  </>
+                )}
               </>
             )}
           </Box>
