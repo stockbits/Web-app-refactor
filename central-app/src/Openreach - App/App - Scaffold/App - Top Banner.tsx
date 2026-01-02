@@ -14,7 +14,7 @@ import {
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
-import openreachLogo from '@central-logos/Openreach-Logo.jpeg'
+import openreachLogo from '@central-logos/Openreach-Logo-White.png'
 
 const palette = {
   coreBlock: '#073B4C',
