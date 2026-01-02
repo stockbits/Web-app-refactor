@@ -10,5 +10,8 @@ Supporting Logos (Jan 2026):
 - Openreach Knockout Logo (white) — Logos/Openreach-Logo-White.png
 	- Source: https://www.openreach.com footer fragment (retrieved 2026-01-02).
 	- Usage: Dark green/blue hero blocks per new brand; maintain 24px min padding around the mark.
+	- Consumption: Imported directly by central-app via the `@central-logos` alias; keep filename stable.
+
+Note: The Vite app references these logo files via an alias, so renaming or moving them requires updating `central-app/app/vite.config.ts` and `tsconfig.app.json`.
 
 Future work: replace with official SVG set once the refreshed asset kit is published; track licensing in this file when updating.

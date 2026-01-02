@@ -1,5 +1,5 @@
 import './App.css'
-import openreachLogo from './assets/openreach-logo.jpeg'
+import openreachLogo from '@central-logos/Openreach-Logo.jpeg'
 
 function App() {
   return (
