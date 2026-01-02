@@ -1,14 +1,11 @@
-import { useState } from 'react'
-import type { FormEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { alpha } from '@mui/material/styles'
 import {
   AppBar,
   Avatar,
   Box,
   Chip,
-  Divider,
   IconButton,
-  InputBase,
   Stack,
   Toolbar,
   Tooltip,
@@ -16,8 +13,7 @@ import {
 } from '@mui/material'
 import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
-import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
 import openreachLogo from '@central-logos/Openreach-Logo.jpeg'
 
 const palette = {
@@ -58,9 +54,9 @@ export interface OpenreachTopBannerProps {
     tone?: StatusTone
   }
   onMenuClick: () => void
-  onSearch?: (value: string) => void
   actions?: ReactNode
   userInitials?: string
+  userName?: string
   userRole?: string
   showSupportShortcut?: boolean
 }
@@ -70,20 +66,12 @@ export const OpenreachTopBanner = ({
   subtitle,
   statusChip,
   onMenuClick,
-  onSearch,
   actions,
   userInitials = 'OR',
+  userName,
   userRole = 'Fibre Operations',
   showSupportShortcut = true,
 }: OpenreachTopBannerProps) => {
-  const [query, setQuery] = useState('')
-
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!query.trim()) return
-    onSearch?.(query.trim())
-  }
-
   const chipTone = statusChip?.tone ?? 'default'
 
   return (
@@ -164,43 +152,11 @@ export const OpenreachTopBanner = ({
         </Stack>
 
         <Stack
-          component="form"
-          direction="row"
-          onSubmit={submitSearch}
-          alignItems="center"
-          sx={{
-            bgcolor: alpha('#FFFFFF', 0.12),
-            borderRadius: 999,
-            px: 2,
-            py: 0.5,
-            width: { xs: '100%', md: 360 },
-          }}
-        >
-          <SearchRoundedIcon fontSize="small" sx={{ color: alpha('#FFFFFF', 0.8) }} />
-          <InputBase
-            placeholder="Search programmes, exchanges, jobs"
-            value={query}
-            sx={{ ml: 1, color: palette.surface, width: '100%' }}
-            onChange={(event) => setQuery(event.target.value)}
-            inputProps={{ 'aria-label': 'Search Openreach workspace' }}
-          />
-        </Stack>
-
-        <Stack
           direction="row"
           gap={1}
           alignItems="center"
           sx={{ width: { xs: '100%', xl: 'auto' }, justifyContent: { xs: 'flex-end', xl: 'flex-start' }, flexWrap: 'wrap' }}
         >
-          <Tooltip title="Notifications">
-            <IconButton
-              aria-label="Notifications"
-              sx={{ color: palette.fibreThreads, '&:hover': { color: palette.energyAccent } }}
-            >
-              <NotificationsNoneRoundedIcon />
-            </IconButton>
-          </Tooltip>
-
           {showSupportShortcut && (
             <Tooltip title="Help & Support">
               <IconButton
@@ -214,15 +170,13 @@ export const OpenreachTopBanner = ({
 
           {actions}
 
-          <Divider flexItem orientation="vertical" light sx={{ borderColor: alpha('#FFFFFF', 0.24) }} />
-
           <Stack direction="row" gap={1} alignItems="center" flexWrap="nowrap">
-            <Avatar sx={{ bgcolor: palette.energyAccent, color: palette.coreBlock, fontWeight: 700 }}>
-              {userInitials}
+            <Avatar sx={{ bgcolor: palette.energyAccent, color: palette.coreBlock }}>
+              <EngineeringRoundedIcon fontSize="small" />
             </Avatar>
             <Box>
               <Typography variant="body2" fontWeight={600}>
-                {userInitials}
+                {userName ?? userInitials}
               </Typography>
               <Typography variant="caption" sx={{ color: alpha('#FFFFFF', 0.8) }}>
                 {userRole}
