@@ -292,28 +292,35 @@ function App() {
             ) : (
               <>
                 <Stack gap={1} mb={2}>
-                  <Typography variant='overline' className='canvas-label'>
-                    MENU • {selectedMenu.label}
-                  </Typography>
-                  <Typography variant='h5' fontWeight={700} gutterBottom>
-                    {activePage ? activePage.cardName : selectedMenu.label}
-                  </Typography>
-                  <Typography variant='body1' color='text.secondary'>
-                    {activeCardDetails?.description ?? selectedMenu.description}
-                  </Typography>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    gap={0.75}
+                  >
+                    {activePage && (
+                      <Button
+                        variant='text'
+                        color='inherit'
+                        onClick={() => setActivePage(null)}
+                        startIcon={<ArrowBackRoundedIcon fontSize='small' />}
+                        sx={{ px: 0, minWidth: 0, fontWeight: 600 }}
+                      >
+                        Back
+                      </Button>
+                    )}
+                    <Typography variant='overline' className='canvas-label'>
+                      MENU • {selectedMenu.label}
+                    </Typography>
+                  </Stack>
+                  {!activePage && (
+                    <Typography variant='h5' fontWeight={700}>
+                      {selectedMenu.label}
+                    </Typography>
+                  )}
                 </Stack>
 
                 {activePage ? (
                   <Stack gap={3}>
-                    <Button
-                      variant='text'
-                      color='inherit'
-                      onClick={() => setActivePage(null)}
-                      startIcon={<ArrowBackRoundedIcon fontSize='small' />}
-                      sx={{ alignSelf: 'flex-start' }}
-                    >
-                      Back to menu
-                    </Button>
                     <Box p={2.5} borderRadius={3} border='1px solid rgba(7,59,76,0.12)' bgcolor='#fff'>
                       {(() => {
                         const ActivePageComponent = PAGE_COMPONENTS[activePage.menuLabel]?.[activePage.cardName]

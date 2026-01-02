@@ -89,7 +89,7 @@ export const OpenreachTopBanner = ({
         borderRadius: 0,
         px: 0,
         py: 0,
-        minHeight: { xs: 84, md: 104 },
+        minHeight: { xs: 72, md: 92 },
         backgroundImage: `linear-gradient(120deg, ${palette.coreBlock}, ${palette.supportingBlock})`,
         color: palette.fibreThreads,
         boxShadow: '0 12px 32px rgba(3, 7, 12, 0.45)',
@@ -111,8 +111,8 @@ export const OpenreachTopBanner = ({
         disableGutters
         sx={{
           px: 'var(--page-gutter)',
-          py: { xs: 1.25, md: 1.75 },
-          gap: 3,
+          py: { xs: 0.85, md: 1.2 },
+          gap: 2,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
