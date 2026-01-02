@@ -273,29 +273,20 @@ function App() {
       />
 
       <Box className='app-stage'>
-        <Stack gap={3} width='100%'>
-          <OpenreachTopBanner
-            title='Task Force'
-            subtitle='Day-to-day operational tool for Openreach operations.'
-            statusChip={{ label: 'LIVE STATUS', tone: 'success' }}
-            userInitials='JD'
-            userName='Jordan Davies'
-            userRole='Delivery Lead'
-            onMenuClick={openNav}
-          />
+        <Stack className='app-stack' gap={0} width='100%'>
+          <Box className='app-hero'>
+            <OpenreachTopBanner
+              title='Task Force'
+              subtitle='Day-to-day operational tool for Openreach operations.'
+              statusChip={{ label: 'LIVE STATUS', tone: 'success' }}
+              userInitials='JD'
+              userName='Jordan Davies'
+              userRole='Delivery Lead'
+              onMenuClick={openNav}
+            />
+          </Box>
 
-          <Box
-            className='app-canvas'
-            sx={
-              showWelcome
-                ? {
-                    background: 'linear-gradient(135deg, #052432, #0f1f33)',
-                    color: '#F5F4F5',
-                    borderColor: 'rgba(245,244,245,0.15)',
-                  }
-                : undefined
-            }
-          >
+          <Box className='app-canvas'>
             {showWelcome ? (
               <LandingOverview groups={MENU_GROUPS} totalTools={TOTAL_TOOL_COUNT} />
             ) : (

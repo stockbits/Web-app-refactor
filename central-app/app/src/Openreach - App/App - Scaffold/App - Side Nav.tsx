@@ -281,11 +281,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
-          backgroundColor: 'transparent',
+          backgroundColor: palette.supportingBlock,
           boxShadow: 'none',
           display: 'flex',
-          alignItems: 'flex-start',
-          p: { xs: 1.5, sm: 2 },
+          alignItems: 'stretch',
+          p: 0,
           height: '100vh',
           maxHeight: '100vh',
           overflowY: 'auto',
@@ -301,9 +301,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             width: '100%',
             bgcolor: palette.supportingBlock,
             color: palette.fibreThreads,
-            borderRadius: 3,
-            border: `1px solid ${alpha(palette.outline, 0.5)}`,
-            boxShadow: '0 20px 40px rgba(2, 9, 20, 0.45)',
+            borderRadius: 0,
+            border: 'none',
+            boxShadow: 'none',
             position: 'relative',
             overflow: 'hidden',
             isolation: 'isolate',
@@ -515,8 +515,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             {footerContent && (
               <Box
                 mt="auto"
-                pt={2}
-                pb="calc(0.5rem + env(safe-area-inset-bottom, 12px))"
+                pt={2.5}
+                pb="calc(1.25rem + env(safe-area-inset-bottom, 16px))"
               >
                 <Divider sx={{ mb: 1.5, borderColor: alpha('#FFFFFF', 0.08) }} />
                 {footerContent}

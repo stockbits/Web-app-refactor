@@ -18,13 +18,16 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
   return (
     <Stack gap={3}>
       <Stack gap={1}>
-        <Typography variant="overline" sx={{ letterSpacing: 4, color: 'rgba(0,204,173,0.9)' }}>
+        <Typography
+          variant="overline"
+          sx={{ letterSpacing: 4, color: '#008f92', fontWeight: 700, display: 'inline-block' }}
+        >
           OPENREACH TASK FORCE
         </Typography>
-        <Typography variant="h4" fontWeight={700}>
+        <Typography variant="h4" fontWeight={700} sx={{ color: '#042432' }}>
           Access overview
         </Typography>
-        <Typography variant="body1" sx={{ color: 'rgba(245,244,245,0.85)' }}>
+        <Typography variant="body1" sx={{ color: 'rgba(4, 26, 40, 0.72)' }}>
           Hi Jordan, you have access to {groups.length} programmes and {totalTools} tools. Use the left navigation to
           jump straight into a workspace.
         </Typography>
@@ -47,9 +50,9 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
               sx={{
                 p: 2,
                 borderRadius: 3,
-                border: '1px solid rgba(255,255,255,0.12)',
-                backgroundColor: 'rgba(4, 11, 18, 0.35)',
-                backdropFilter: 'blur(6px)',
+                border: '1px solid rgba(7,59,76,0.12)',
+                backgroundColor: '#ffffff',
+                boxShadow: '0 12px 32px rgba(4, 26, 40, 0.08)',
               }}
             >
               <Stack direction="row" gap={1.5} alignItems="flex-start">
@@ -61,16 +64,16 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
                     display: 'grid',
                     placeItems: 'center',
                     backgroundColor: 'rgba(0,204,173,0.12)',
-                    color: '#00CCAD',
+                    color: '#037971',
                   }}
                 >
                   <Icon fontSize="small" />
                 </Box>
                 <Box flexGrow={1} minWidth={0}>
-                  <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#F5F4F5' }}>
+                  <Typography variant="subtitle1" fontWeight={600} sx={{ color: '#042432' }}>
                     {group.label}
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(245,244,245,0.75)' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(4, 26, 40, 0.65)' }}>
                     {group.description}
                   </Typography>
                 </Box>
@@ -90,9 +93,9 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
                     size="small"
                     variant="outlined"
                     sx={{
-                      borderColor: 'rgba(245,244,245,0.35)',
-                      color: '#F5F4F5',
-                      bgcolor: 'transparent',
+                      borderColor: 'rgba(7,59,76,0.18)',
+                      color: '#073B4C',
+                      bgcolor: 'rgba(7,59,76,0.04)',
                       fontWeight: 500,
                     }}
                   />
@@ -103,7 +106,7 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
         })}
       </Box>
 
-      <Typography variant="body2" sx={{ color: 'rgba(245,244,245,0.75)' }}>
+      <Typography variant="body2" sx={{ color: 'rgba(4, 26, 40, 0.6)' }}>
         Tip: tap the Task Force menu icon to open navigation and move between programmes.
       </Typography>
     </Stack>

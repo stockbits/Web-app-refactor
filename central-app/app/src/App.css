@@ -7,9 +7,15 @@ html {
   background-color: #02070c;
 }
 
+:root {
+  --page-gutter: clamp(1rem, 3vw, 2.75rem);
+  --canvas-overlap: clamp(2.5rem, 6vw, 4.5rem);
+}
+
 #root {
   min-height: 100vh;
   width: 100%;
+  display: flex;
 }
 
 body {
@@ -22,24 +28,38 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  padding: clamp(1.5rem, 4vw, 3rem);
+  padding: 0;
+  padding-bottom: var(--page-gutter);
   box-sizing: border-box;
   width: 100%;
   max-width: none;
   margin: 0;
 }
 
+.app-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.app-hero {
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
 .app-canvas {
   flex: 1;
   min-height: 320px;
   background: rgba(245, 244, 245, 0.98);
-  border-radius: 24px;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  border: 1px solid rgba(236, 236, 236, 0.8);
-  box-shadow: 0 30px 80px rgba(3, 7, 12, 0.35);
+  border-radius: 0;
+  padding: clamp(1.5rem, 3vw, 2.75rem) var(--page-gutter) var(--page-gutter);
+  border: 1px solid rgba(7, 59, 76, 0.08);
+  box-shadow: none;
   color: #202020;
   width: 100%;
+  margin-top: 0;
 }
 
 .canvas-label {
@@ -53,5 +73,13 @@ body {
 @media (max-width: 1024px) {
   .app-canvas {
     min-height: 240px;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-canvas {
+    padding: clamp(1.25rem, 6vw, 1.75rem) clamp(0.75rem, 6vw, 1.25rem) clamp(1rem, 4vw, 1.5rem);
+    margin-top: 0;
   }
 }

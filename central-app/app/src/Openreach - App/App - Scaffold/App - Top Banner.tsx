@@ -86,12 +86,14 @@ export const OpenreachTopBanner = ({
       elevation={0}
       sx={{
         width: '100%',
-        borderRadius: 3,
-        px: { xs: 2, md: 3 },
-        py: { xs: 2, md: 3 },
+        borderRadius: 0,
+        px: 0,
+        py: 0,
+        minHeight: { xs: 84, md: 104 },
         backgroundImage: `linear-gradient(120deg, ${palette.coreBlock}, ${palette.supportingBlock})`,
         color: palette.fibreThreads,
-        boxShadow: '0 20px 40px rgba(2, 9, 20, 0.35)',
+        boxShadow: '0 12px 32px rgba(3, 7, 12, 0.45)',
+        borderBottom: '1px solid rgba(4,11,18,0.35)',
         position: 'relative',
         overflow: 'hidden',
         isolation: 'isolate',
@@ -99,10 +101,8 @@ export const OpenreachTopBanner = ({
           content: '""',
           position: 'absolute',
           inset: 0,
-          backgroundImage:
-            'repeating-linear-gradient(135deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 4px, transparent 5px, transparent 16px)',
-          opacity: 0.35,
-          mixBlendMode: 'soft-light',
+          backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.08), transparent 65%)',
+          opacity: 0.3,
           pointerEvents: 'none',
         },
       }}
@@ -110,6 +110,8 @@ export const OpenreachTopBanner = ({
       <Toolbar
         disableGutters
         sx={{
+          px: 'var(--page-gutter)',
+          py: { xs: 1.25, md: 1.75 },
           gap: 3,
           flexDirection: 'row',
           alignItems: 'center',
