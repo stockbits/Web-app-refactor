@@ -288,6 +288,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           p: { xs: 1.5, sm: 2 },
           height: '100vh',
           maxHeight: '100vh',
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
         },
       }}
     >

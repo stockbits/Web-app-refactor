@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react'
+import { useState } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { alpha } from '@mui/material/styles'
 import {
   AppBar,
@@ -6,6 +7,8 @@ import {
   Box,
   Chip,
   IconButton,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   Typography,
@@ -68,6 +71,14 @@ export const OpenreachTopBanner = ({
   userRole = 'Fibre Operations',
 }: OpenreachTopBannerProps) => {
   const chipTone = statusChip?.tone ?? 'default'
+  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
+  const profileMenuOpen = Boolean(profileAnchorEl)
+
+  const handleProfileMenuOpen = (event: MouseEvent<HTMLElement>) => {
+    setProfileAnchorEl(event.currentTarget)
+  }
+
+  const handleProfileMenuClose = () => setProfileAnchorEl(null)
 
   return (
     <AppBar
@@ -156,19 +167,56 @@ export const OpenreachTopBanner = ({
         >
           {actions}
 
-          <Stack direction="row" gap={1} alignItems="center" flexWrap="nowrap">
-            <Avatar sx={{ bgcolor: palette.energyAccent, color: palette.coreBlock }}>
-              <EngineeringRoundedIcon fontSize="small" />
-            </Avatar>
-            <Box>
-              <Typography variant="body2" fontWeight={600}>
-                {userName ?? userInitials}
-              </Typography>
-              <Typography variant="caption" sx={{ color: alpha('#FFFFFF', 0.8) }}>
-                {userRole}
-              </Typography>
-            </Box>
-          </Stack>
+          <>
+            <IconButton
+              aria-label="Open profile menu"
+              onClick={handleProfileMenuOpen}
+              sx={{
+                p: 0,
+                borderRadius: '50%',
+                border: '2px solid rgba(245,244,245,0.35)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor: palette.energyAccent,
+                  boxShadow: '0 0 0 4px rgba(0,204,173,0.18)',
+                },
+              }}
+            >
+              <Avatar sx={{ bgcolor: palette.energyAccent, color: palette.coreBlock }}>
+                <EngineeringRoundedIcon fontSize="small" />
+              </Avatar>
+            </IconButton>
+            <Menu
+              anchorEl={profileAnchorEl}
+              open={profileMenuOpen}
+              onClose={handleProfileMenuClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    minWidth: 220,
+                    px: 1,
+                    bgcolor: palette.supportingBlock,
+                    border: `1px solid ${alpha('#FFFFFF', 0.12)}`,
+                    color: palette.fibreThreads,
+                    boxShadow: '0 20px 40px rgba(2, 9, 20, 0.45)',
+                  },
+                },
+              }}
+            >
+              <MenuItem disabled sx={{ opacity: 1, cursor: 'default', whiteSpace: 'normal' }}>
+                <Stack>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: palette.fibreThreads }}>
+                    {userName ?? userInitials}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.75) }}>
+                    {userRole}
+                  </Typography>
+                </Stack>
+              </MenuItem>
+            </Menu>
+          </>
         </Stack>
       </Toolbar>
     </AppBar>

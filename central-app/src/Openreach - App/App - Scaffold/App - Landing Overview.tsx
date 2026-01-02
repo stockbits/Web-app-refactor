@@ -6,7 +6,6 @@ export interface LandingMenuGroup {
   label: string
   description: string
   icon: ElementType
-  accessLabel: string
   cards: { name: string; description: string }[]
 }
 
@@ -75,16 +74,6 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
                     {group.description}
                   </Typography>
                 </Box>
-                <Chip
-                  label={group.accessLabel}
-                  size="small"
-                  sx={{
-                    bgcolor: 'rgba(0,204,173,0.16)',
-                    color: '#00CCAD',
-                    border: '1px solid rgba(0,204,173,0.45)',
-                    fontWeight: 600,
-                  }}
-                />
               </Stack>
               <Box
                 sx={{
