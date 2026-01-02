@@ -8,8 +8,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["../src/*"],
-      "@central-logos/*": ["../Central Library/Image Assets/Logos/*"]
+      "@/*": ["./src/*"],
+      "@central-logos/*": ["../../Central Library/Image Assets/Logos/*"]
     },
 
     /* Bundler mode */
@@ -28,5 +28,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["../src", "../src/vite-env.d.ts"]
+  "include": ["./src", "./src/vite-env.d.ts"]
 }
