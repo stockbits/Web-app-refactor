@@ -7,6 +7,11 @@ html {
   background-color: #02070c;
 }
 
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
 body {
   background: radial-gradient(circle at top, rgba(0, 204, 173, 0.15), transparent 45%),
     linear-gradient(135deg, #040b12 0%, #0f1a28 70%, #040b12 100%);
@@ -20,8 +25,9 @@ body {
   gap: 1.5rem;
   padding: clamp(1.5rem, 4vw, 3rem);
   box-sizing: border-box;
-  width: min(1200px, 100%);
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
 .app-canvas {
