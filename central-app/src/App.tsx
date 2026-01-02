@@ -13,7 +13,6 @@ import {
   Typography,
 } from '@mui/material'
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded'
-import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedInRounded'
 import BuildCircleRoundedIcon from '@mui/icons-material/BuildCircleRounded'
 import SettingsSuggestRoundedIcon from '@mui/icons-material/SettingsSuggestRounded'
 import ChecklistRoundedIcon from '@mui/icons-material/ChecklistRounded'
@@ -43,32 +42,6 @@ interface MenuGroup {
 
 const MENU_GROUPS: MenuGroup[] = [
   {
-    id: 'resource-management',
-    label: 'Resource Management',
-    description: 'Manage every engineer, team, and asset at speed.',
-    icon: PeopleAltRoundedIcon,
-    accessLabel: 'Full access',
-    cards: [
-      {
-        name: 'Resource Management',
-        description: 'Manage all available resources, teams, and assets.',
-      },
-    ],
-  },
-  {
-    id: 'task-management',
-    label: 'Task Management',
-    description: 'Oversee, assign, and unblock delivery tasks.',
-    icon: AssignmentTurnedInRoundedIcon,
-    accessLabel: 'Full access',
-    cards: [
-      {
-        name: 'Task Management',
-        description: 'Oversee and assign operational tasks efficiently.',
-      },
-    ],
-  },
-  {
     id: 'operation-toolkit',
     label: 'Operation Toolkit',
     description: 'Live scheduling and callout controls.',
@@ -79,6 +52,23 @@ const MENU_GROUPS: MenuGroup[] = [
       { name: 'Schedule Explorer', description: 'Browse and analyse upcoming schedules and plans.' },
       { name: 'Callout Overview', description: 'Review all ongoing and past callout events.' },
       { name: 'Callout Launch', description: 'Initiate and configure new callout operations.' },
+    ],
+  },
+  {
+    id: 'operations-management',
+    label: 'Operations Management',
+    description: 'Coordinate resources and delivery tasks across every exchange.',
+    icon: PeopleAltRoundedIcon,
+    accessLabel: 'Full access',
+    cards: [
+      {
+        name: 'Resource Management',
+        description: 'Manage all engineers, depots, and physical assets.',
+      },
+      {
+        name: 'Task Management',
+        description: 'Oversee and assign operational tasks efficiently.',
+      },
     ],
   },
   {

@@ -30,6 +30,8 @@ import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
+import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 
 const palette = {
   coreBlock: '#073B4C',
@@ -38,6 +40,8 @@ const palette = {
   fibreThreads: '#F5F4F5',
   outline: '#ECECEC',
 } as const
+
+const CLIENT_BUILD = 'Client build 02.01.2026'
 
 export interface OpenreachNavItem {
   id: string
@@ -210,18 +214,21 @@ const taskForceMenuGroups: TaskForceMenuGroup[] = [
 export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSlot, onSearch, onSelect }: OpenreachSideNavProps) => {
   const items = useMemo(() => (navItems && navItems.length > 0 ? navItems : fallbackNavItems), [navItems])
   const [query, setQuery] = useState('')
+  const trimmedQuery = query.trim()
+  const hasCustomItems = Boolean(navItems && navItems.length > 0)
+  const showTreeResults = !hasCustomItems || Boolean(trimmedQuery)
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!query.trim()) return
-    onSearch?.(query.trim())
+    if (!trimmedQuery) return
+    onSearch?.(trimmedQuery)
   }
 
   const filteredGroups = useMemo(() => {
-    if (!query.trim()) {
+    if (!trimmedQuery) {
       return taskForceMenuGroups
     }
-    const value = query.trim().toLowerCase()
+    const value = trimmedQuery.toLowerCase()
     return taskForceMenuGroups
       .map((group) => ({
         ...group,
@@ -234,7 +241,28 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       .filter((group) => group.children.length > 0)
   }, [query])
 
-  const hasCustomItems = Boolean(navItems && navItems.length > 0)
+  const noMatches = showTreeResults && filteredGroups.length === 0
+
+  const footerContent = footerSlot ?? (
+    <Stack gap={0.5}>
+      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), letterSpacing: 1 }}>
+        {CLIENT_BUILD.toUpperCase()}
+      </Typography>
+      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
+        Last sync · 06:00 UTC
+      </Typography>
+    </Stack>
+  )
+
+  const handleGroupSelect = (group: TaskForceMenuGroup) => {
+    onSelect?.({
+      id: group.id,
+      label: group.label,
+      icon: group.icon,
+      description: `${group.children.length} tools`,
+    })
+    onClose()
+  }
 
   return (
     <Drawer
@@ -249,10 +277,12 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           display: 'flex',
           alignItems: 'flex-start',
           p: { xs: 1.5, sm: 2 },
+          height: '100vh',
+          maxHeight: '100vh',
         },
       }}
     >
-      <Box sx={{ width: { xs: 320, sm: 360 } }}>
+      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%' }}>
         <Paper
           component="nav"
           elevation={0}
@@ -266,6 +296,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             position: 'relative',
             overflow: 'hidden',
             isolation: 'isolate',
+            height: '100%',
             '&::after': {
               content: '""',
               position: 'absolute',
@@ -276,7 +307,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             },
           }}
         >
-          <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%' }}>
+          <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
               <Box sx={{ textAlign: 'left' }}>
                 {headerSlot ? (
@@ -328,10 +359,20 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 onChange={(event) => setQuery(event.target.value)}
                 inputProps={{ 'aria-label': 'Search Openreach workspace' }}
               />
+              {trimmedQuery && (
+                <IconButton
+                  aria-label="Clear search"
+                  size="small"
+                  onClick={() => setQuery('')}
+                  sx={{ color: alpha('#FFFFFF', 0.8), ml: 1 }}
+                >
+                  <ClearRoundedIcon fontSize="small" />
+                </IconButton>
+              )}
             </Stack>
 
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5 }}>
-              {hasCustomItems ? (
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, minHeight: 0 }}>
+              {!showTreeResults && (
                 <List component="div" disablePadding>
                   {items.map((item) => (
                     <ListItemButton
@@ -385,8 +426,15 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                     </ListItemButton>
                   ))}
                 </List>
-              ) : (
+              )}
+
+              {showTreeResults && (
                 <Stack gap={2.5}>
+                  {noMatches && (
+                    <Typography variant="body2" sx={{ color: alpha(palette.fibreThreads, 0.8) }}>
+                      No menus match “{trimmedQuery}”. Try another term.
+                    </Typography>
+                  )}
                   {filteredGroups.map((group, index) => (
                     <Box key={group.id}>
                       <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
@@ -411,10 +459,12 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         {group.children.map((child) => (
                           <ListItemButton
                             key={child.id}
+                            onClick={() => handleGroupSelect(group)}
                             sx={{
                               borderRadius: 2,
                               mb: 0.5,
-                              px: 1.5,
+                              pl: 3.5,
+                              pr: 1.25,
                               py: 1,
                               alignItems: 'flex-start',
                               color: palette.fibreThreads,
@@ -423,6 +473,15 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                               },
                             }}
                           >
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 28,
+                                mt: 0.2,
+                                color: alpha(palette.fibreThreads, 0.7),
+                              }}
+                            >
+                              <ChevronRightRoundedIcon fontSize="small" />
+                            </ListItemIcon>
                             <ListItemText
                               primary={child.label}
                               secondary={child.description}
@@ -442,8 +501,16 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               )}
             </Box>
 
-            {footerSlot && <Divider sx={{ borderColor: alpha('#FFFFFF', 0.08) }} />}
-            {footerSlot && <Box>{footerSlot}</Box>}
+            {footerContent && (
+              <Box
+                mt="auto"
+                pt={2}
+                pb="calc(0.5rem + env(safe-area-inset-bottom, 12px))"
+              >
+                <Divider sx={{ mb: 1.5, borderColor: alpha('#FFFFFF', 0.08) }} />
+                {footerContent}
+              </Box>
+            )}
           </Stack>
         </Paper>
       </Box>
