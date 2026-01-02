@@ -1,0 +1,4 @@
+App Module History:
+- Established: January 2026
+- Purpose: Store reference implementations showing how consumers integrate the central library.
+- Notes: Keep examples minimal, pair with README steps, include changelog entries when APIs shift.

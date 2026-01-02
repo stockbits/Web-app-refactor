@@ -1,0 +1,4 @@
+React Framework History:
+- Established: January 2026
+- Purpose: Host common React utilities, hooks, and shared component scaffolding.
+- Notes: Document component contracts, keep stories/tests adjacent, prefer TypeScript strict mode.
