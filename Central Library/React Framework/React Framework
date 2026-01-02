@@ -1,0 +1,12 @@
+React Framework History:
+- Established: January 2026
+- Purpose: Host common React utilities, hooks, and shared component scaffolding.
+- Notes: Document component contracts, keep stories/tests adjacent, prefer TypeScript strict mode.
+
+General React Libraries:
+- Material UI DataGrid — primary table component for most screens: https://mui.com/x/react-data-grid/
+- Material UI Components — text fields, dropdowns, cards, chips, drawers, and more: https://mui.com/material-ui/getting-started/
+- Bryntum Scheduler — renders the scheduling chart experience: https://bryntum.com/products/scheduler/examples/
+- Highcharts React — dashboards and analytical charts: https://www.highcharts.com/integrations/react/
+- Material Design 3 — baseline for typography, icons, color, spacing: https://m3.material.io/
+- MUI X DataGrid density control demo — reference for accessibility-friendly density switching: https://mui.com/x/react-data-grid/accessibility/#set-the-density-programmatically
