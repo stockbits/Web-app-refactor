@@ -10,3 +10,8 @@ General React Libraries:
 - Highcharts React — dashboards and analytical charts: https://www.highcharts.com/integrations/react/
 - Material Design 3 — baseline for typography, icons, color, spacing: https://m3.material.io/
 - MUI X DataGrid density control demo — reference for accessibility-friendly density switching: https://mui.com/x/react-data-grid/accessibility/#set-the-density-programmatically
+
+Installed Stack Snapshot (central-app, Jan 2026):
+- Runtime deps: React 19.2, React DOM 19.2, @mui/material 7.3, @mui/icons-material 7.3, @mui/x-data-grid 8.23, @emotion/react 11.14, @emotion/styled 11.14.
+- Tooling deps: Vite 7.2, TypeScript 5.9, @vitejs/plugin-react 5.1, eslint 9.39 with React Hooks/Refresh plugins, types for React/Node, globals, typescript-eslint.
+- Project scaffold: Runtime code lives in /central-app/src, while the tooling stack (package.json, Vite, tsconfig, node_modules) stays isolated in /central-app/app. The app folder keeps a local src symlink back to the top-level directory, and the repo root exposes node_modules as a symlink to /central-app/app/node_modules so npm scripts (run from /central-app/app) operate normally without cluttering the root.

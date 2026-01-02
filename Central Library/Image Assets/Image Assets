@@ -2,3 +2,13 @@ Image Assets History:
 - Established: January 2026
 - Purpose: Store reusable illustrations, icons, and photography guidelines for the shared library.
 - Notes: Keep assets optimized (SVG/WEBP first) and document licensing per file.
+
+Supporting Logos (Jan 2026):
+- Openreach Primary Logo (color) — Logos/Openreach-Logo.jpeg
+	- Source: https://www.openreach.com header fragment (retrieved 2026-01-02).
+	- Usage: Standard light backgrounds or photographic overlays with ≥ 70% brightness.
+- Openreach Knockout Logo (white) — Logos/Openreach-Logo-White.png
+	- Source: https://www.openreach.com footer fragment (retrieved 2026-01-02).
+	- Usage: Dark green/blue hero blocks per new brand; maintain 24px min padding around the mark.
+
+Future work: replace with official SVG set once the refreshed asset kit is published; track licensing in this file when updating.

@@ -2,3 +2,20 @@ Application Theme History:
 - Established: January 2026
 - Purpose: Define design tokens, typography stacks, and theme contracts for consuming apps.
 - Notes: Track token provenance, include light/dark variations, align with accessibility contrast rules.
+
+Key Colors & Elements (Jan 2026 refresh):
+- Core Block — Dark Green #073B4C: dominant hero/background slabs, paired with crisp white typography for contrast ≥ 7:1.
+- Supporting Block — Deep Blue #142032: alternates with Dark Green to create split layouts and anchor navigation drawers.
+- Energy Accent — Fibre Teal #00CCAD: restrained accent for interactive states and badges; never more than 15% of a view.
+- Fibre Threads — White #FFFFFF (or #F5F4F5 at 80% opacity): thin diagonal strokes referencing fibre lines that separate the large color blocks.
+- Surface & Outline — #ECECEC borders, #F5F4F5 panels: keep interior cards airy while still harmonizing with the dark frame.
+- Typography Ink — #202020 primary copy, #63666A secondary labels to maintain legibility atop light surfaces.
+
+Usage Notes:
+- Blocks should appear as bold, uninterrupted color fields bisected by the fibre-like white lines to emphasize connectivity.
+- Avoid legacy purple accents—new Openreach guidance reserves purple for BT Group assets only.
+- Ensure teal accents sit atop either the dark green or blue fields, never on white, to preserve the intended contrast story.
+
+References:
+- Values sourced from the Jan 2026 Openreach branding refresh (dark green/blue blocks with fibre lines) and cross-checked against live clientlib-site/clientlib-nzg bundles.
+- Map tokens into Material Design 3 slot names (`primary`, `primaryContainer`, `secondary`, `surface`, `surfaceVariant`, `outline`) to keep downstream theming consistent.
