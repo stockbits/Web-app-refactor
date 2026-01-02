@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
-import type { ElementType, JSX } from 'react'
-import './App.css'
+import { useMemo, useState } from "react";
+import type { ElementType, JSX } from "react";
+import "./App.css";
 import {
   Box,
   Button,
@@ -10,251 +10,393 @@ import {
   CssBaseline,
   Stack,
   Typography,
-} from '@mui/material'
-import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded'
-import BuildCircleRoundedIcon from '@mui/icons-material/BuildCircleRounded'
-import SettingsSuggestRoundedIcon from '@mui/icons-material/SettingsSuggestRounded'
-import ChecklistRoundedIcon from '@mui/icons-material/ChecklistRounded'
-import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
-import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded'
-import HandshakeRoundedIcon from '@mui/icons-material/HandshakeRounded'
-import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded'
-import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
-import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded'
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded'
-import { OpenreachSideNav } from './Openreach - App/App - Scaffold/App - Side Nav'
-import { OpenreachTopBanner } from './Openreach - App/App - Scaffold/App - Top Banner'
-import { LandingOverview } from './Openreach - App/App - Scaffold/App - Landing Overview'
+} from "@mui/material";
+import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
+import BuildCircleRoundedIcon from "@mui/icons-material/BuildCircleRounded";
+import SettingsSuggestRoundedIcon from "@mui/icons-material/SettingsSuggestRounded";
+import ChecklistRoundedIcon from "@mui/icons-material/ChecklistRounded";
+import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
+import AccountTreeRoundedIcon from "@mui/icons-material/AccountTreeRounded";
+import HandshakeRoundedIcon from "@mui/icons-material/HandshakeRounded";
+import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
+import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
+import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
+import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Nav";
+import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
+import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 
 interface MenuCardTile {
-  name: string
-  description: string
+  name: string;
+  description: string;
 }
 
 interface MenuGroup {
-  id: string
-  label: string
-  description: string
-  icon: ElementType
-  cards: MenuCardTile[]
-  accessLabel: string
+  id: string;
+  label: string;
+  description: string;
+  icon: ElementType;
+  cards: MenuCardTile[];
+  accessLabel: string;
 }
 
 const MENU_GROUPS: MenuGroup[] = [
   {
-    id: 'operation-toolkit',
-    label: 'Operation Toolkit',
-    description: 'Live scheduling and callout controls.',
+    id: "operation-toolkit",
+    label: "Operation Toolkit",
+    description: "Live scheduling and callout controls.",
     icon: BuildCircleRoundedIcon,
-    accessLabel: 'Full access',
+    accessLabel: "Full access",
     cards: [
-      { name: 'Schedule Live', description: 'Monitor and adjust live schedules in real-time.' },
-      { name: 'Schedule Explorer', description: 'Browse and analyse upcoming schedules and plans.' },
-      { name: 'Callout Overview', description: 'Review all ongoing and past callout events.' },
-      { name: 'Callout Launch', description: 'Initiate and configure new callout operations.' },
+      {
+        name: "Schedule Live",
+        description: "Monitor and adjust live schedules in real-time.",
+      },
+      {
+        name: "Schedule Explorer",
+        description: "Browse and analyse upcoming schedules and plans.",
+      },
+      {
+        name: "Callout Overview",
+        description: "Review all ongoing and past callout events.",
+      },
+      {
+        name: "Callout Launch",
+        description: "Initiate and configure new callout operations.",
+      },
     ],
   },
   {
-    id: 'operations-management',
-    label: 'Operations Management',
-    description: 'Coordinate resources and delivery tasks across every exchange.',
+    id: "operations-management",
+    label: "Operations Management",
+    description:
+      "Coordinate resources and delivery tasks across every exchange.",
     icon: PeopleAltRoundedIcon,
-    accessLabel: 'Full access',
+    accessLabel: "Full access",
     cards: [
       {
-        name: 'Resource Management',
-        description: 'Manage all engineers, depots, and physical assets.',
+        name: "Resource Management",
+        description: "Manage all engineers, depots, and physical assets.",
       },
       {
-        name: 'Task Management',
-        description: 'Oversee and assign operational tasks efficiently.',
+        name: "Task Management",
+        description: "Oversee and assign operational tasks efficiently.",
       },
     ],
   },
   {
-    id: 'general-settings',
-    label: 'General Settings',
-    description: 'Preferences, notifications, and API access.',
+    id: "general-settings",
+    label: "General Settings",
+    description: "Preferences, notifications, and API access.",
     icon: SettingsSuggestRoundedIcon,
-    accessLabel: 'Editor access',
+    accessLabel: "Editor access",
     cards: [
-      { name: 'System Preferences', description: 'Modify user-level settings, preferences, and themes.' },
-      { name: 'Notification Channels', description: 'Configure alert destinations and channels.' },
-      { name: 'Theme Builder', description: 'Adjust palettes and typography tokens.' },
-      { name: 'API Keys', description: 'Manage access tokens and integrations securely.' },
+      {
+        name: "System Preferences",
+        description: "Modify user-level settings, preferences, and themes.",
+      },
+      {
+        name: "Notification Channels",
+        description: "Configure alert destinations and channels.",
+      },
+      {
+        name: "Theme Builder",
+        description: "Adjust palettes and typography tokens.",
+      },
+      {
+        name: "API Keys",
+        description: "Manage access tokens and integrations securely.",
+      },
     ],
   },
   {
-    id: 'task-admin',
-    label: 'Task Admin',
-    description: 'Core definitions that shape work routing.',
+    id: "task-admin",
+    label: "Task Admin",
+    description: "Core definitions that shape work routing.",
     icon: ChecklistRoundedIcon,
-    accessLabel: 'Editor access',
+    accessLabel: "Editor access",
     cards: [
-      { name: 'Task Type', description: 'Define and manage task categories and types.' },
-      { name: 'Task Routing', description: 'Configure routing and escalation rules.' },
-      { name: 'Task Importance', description: 'Set and manage task priority and importance levels.' },
+      {
+        name: "Task Type",
+        description: "Define and manage task categories and types.",
+      },
+      {
+        name: "Task Routing",
+        description: "Configure routing and escalation rules.",
+      },
+      {
+        name: "Task Importance",
+        description: "Set and manage task priority and importance levels.",
+      },
     ],
   },
   {
-    id: 'jeopardy-admin',
-    label: 'Jeopardy Admin',
-    description: 'Alert templates, actions, and thresholds.',
+    id: "jeopardy-admin",
+    label: "Jeopardy Admin",
+    description: "Alert templates, actions, and thresholds.",
     icon: WarningAmberRoundedIcon,
-    accessLabel: 'Editor access',
+    accessLabel: "Editor access",
     cards: [
-      { name: 'Alert Definitions', description: 'Define and manage all alert templates.' },
-      { name: 'Alert Action Definition', description: 'Configure automated or manual alert responses.' },
-      { name: 'Alert Parameter Definition', description: 'Set up variable parameters and alert thresholds.' },
-      { name: 'Alert Ranking', description: 'Prioritise alerts by severity or impact.' },
-      { name: 'Alert Exclusion', description: 'Manage exceptions and exclusion rules for alerts.' },
+      {
+        name: "Alert Definitions",
+        description: "Define and manage all alert templates.",
+      },
+      {
+        name: "Alert Action Definition",
+        description: "Configure automated or manual alert responses.",
+      },
+      {
+        name: "Alert Parameter Definition",
+        description: "Set up variable parameters and alert thresholds.",
+      },
+      {
+        name: "Alert Ranking",
+        description: "Prioritise alerts by severity or impact.",
+      },
+      {
+        name: "Alert Exclusion",
+        description: "Manage exceptions and exclusion rules for alerts.",
+      },
     ],
   },
   {
-    id: 'resource-admin',
-    label: 'Resource Admin',
-    description: 'Rota governance and overtime controls.',
+    id: "resource-admin",
+    label: "Resource Admin",
+    description: "Rota governance and overtime controls.",
     icon: AccountTreeRoundedIcon,
-    accessLabel: 'Full access',
+    accessLabel: "Full access",
     cards: [
-      { name: 'Rota Day Record', description: 'Manage and track individual rota day records.' },
-      { name: 'Rota Week Record', description: 'Oversee weekly rota summaries and status tracking.' },
-      { name: 'Rota Template Record', description: 'Design and configure rota templates for scheduling.' },
-      { name: 'Closure User Group', description: 'Administer closure groups for specific operations.' },
-      { name: 'Access Restriction', description: 'Set user and role-based access limitations.' },
-      { name: 'Personal Overtime', description: 'Monitor and manage personal overtime records.' },
-      { name: 'Business Overtime', description: 'Control and review business-wide overtime data.' },
+      {
+        name: "Rota Day Record",
+        description: "Manage and track individual rota day records.",
+      },
+      {
+        name: "Rota Week Record",
+        description: "Oversee weekly rota summaries and status tracking.",
+      },
+      {
+        name: "Rota Template Record",
+        description: "Design and configure rota templates for scheduling.",
+      },
+      {
+        name: "Closure User Group",
+        description: "Administer closure groups for specific operations.",
+      },
+      {
+        name: "Access Restriction",
+        description: "Set user and role-based access limitations.",
+      },
+      {
+        name: "Personal Overtime",
+        description: "Monitor and manage personal overtime records.",
+      },
+      {
+        name: "Business Overtime",
+        description: "Control and review business-wide overtime data.",
+      },
     ],
   },
   {
-    id: 'self-service-admin',
-    label: 'Self Service Admin',
-    description: 'Self-selection policy and scoring.',
+    id: "self-service-admin",
+    label: "Self Service Admin",
+    description: "Self-selection policy and scoring.",
     icon: HandshakeRoundedIcon,
-    accessLabel: 'Requester only',
+    accessLabel: "Requester only",
     cards: [
-      { name: 'Self Selection Settings Admin', description: 'Configure system-wide self-selection settings.' },
-      { name: 'Self Selection Task Rating Admin', description: 'Manage task rating parameters.' },
-      { name: 'Self Selection Patch Admin', description: 'Handle patch management for self-selection.' },
-      { name: 'Self Selection Work Type Admin', description: 'Control available work types.' },
+      {
+        name: "Self Selection Settings Admin",
+        description: "Configure system-wide self-selection settings.",
+      },
+      {
+        name: "Self Selection Task Rating Admin",
+        description: "Manage task rating parameters.",
+      },
+      {
+        name: "Self Selection Patch Admin",
+        description: "Handle patch management for self-selection.",
+      },
+      {
+        name: "Self Selection Work Type Admin",
+        description: "Control available work types.",
+      },
     ],
   },
   {
-    id: 'user-admin',
-    label: 'User Admin',
-    description: 'Identity, roles, and access.',
+    id: "user-admin",
+    label: "User Admin",
+    description: "Identity, roles, and access.",
     icon: AdminPanelSettingsRoundedIcon,
-    accessLabel: 'Restricted',
+    accessLabel: "Restricted",
     cards: [
-      { name: 'User Account', description: 'Create and manage system user accounts and credentials.' },
-      { name: 'User ID', description: 'View and assign unique user identification numbers.' },
-      { name: 'Unbar User', description: 'Unblock or reinstate restricted user accounts.' },
-      { name: 'User Role Profile', description: 'Define user roles and associated permissions.' },
-      { name: 'Supervisor Change Password', description: 'Allow supervisors to reset/change passwords.' },
+      {
+        name: "User Account",
+        description: "Create and manage system user accounts and credentials.",
+      },
+      {
+        name: "User ID",
+        description: "View and assign unique user identification numbers.",
+      },
+      {
+        name: "Unbar User",
+        description: "Unblock or reinstate restricted user accounts.",
+      },
+      {
+        name: "User Role Profile",
+        description: "Define user roles and associated permissions.",
+      },
+      {
+        name: "Supervisor Change Password",
+        description: "Allow supervisors to reset/change passwords.",
+      },
     ],
   },
   {
-    id: 'domain-admin',
-    label: 'Domain Admin',
-    description: 'Geography, assets, and workforce coverage.',
+    id: "domain-admin",
+    label: "Domain Admin",
+    description: "Geography, assets, and workforce coverage.",
     icon: PublicRoundedIcon,
-    accessLabel: 'Full access',
+    accessLabel: "Full access",
     cards: [
-      { name: 'Domain Building', description: 'Configure and structure operational domains.' },
-      { name: 'Post Areas', description: 'Define post boundaries, checkpoints, and zones.' },
-      { name: 'Travel Areas', description: 'Set travel regions and mobility zones.' },
-      { name: 'Asset', description: 'Manage fixed and movable assets.' },
-      { name: 'Workforce', description: 'Assign and monitor domain workforce allocations.' },
-      { name: 'Division', description: 'Oversee structural divisions.' },
+      {
+        name: "Domain Building",
+        description: "Configure and structure operational domains.",
+      },
+      {
+        name: "Post Areas",
+        description: "Define post boundaries, checkpoints, and zones.",
+      },
+      {
+        name: "Travel Areas",
+        description: "Set travel regions and mobility zones.",
+      },
+      { name: "Asset", description: "Manage fixed and movable assets." },
+      {
+        name: "Workforce",
+        description: "Assign and monitor domain workforce allocations.",
+      },
+      { name: "Division", description: "Oversee structural divisions." },
     ],
   },
   {
-    id: 'schedule-admin',
-    label: 'Schedule Admin',
-    description: 'Master schedule & SRM governance.',
+    id: "schedule-admin",
+    label: "Schedule Admin",
+    description: "Master schedule & SRM governance.",
     icon: CalendarMonthRoundedIcon,
-    accessLabel: 'Editor access',
+    accessLabel: "Editor access",
     cards: [
-      { name: 'MSS Admin', description: 'Manage and configure the Master Schedule System.' },
-      { name: 'SRM Admin', description: 'Administer SRM modules & permissions.' },
-      { name: 'SRM Audit', description: 'Audit SRM changes and scheduling history.' },
+      {
+        name: "MSS Admin",
+        description: "Manage and configure the Master Schedule System.",
+      },
+      {
+        name: "SRM Admin",
+        description: "Administer SRM modules & permissions.",
+      },
+      {
+        name: "SRM Audit",
+        description: "Audit SRM changes and scheduling history.",
+      },
     ],
   },
   {
-    id: 'system-admin',
-    label: 'System Admin',
-    description: 'Algorithms, audits, and holiday tables.',
+    id: "system-admin",
+    label: "System Admin",
+    description: "Algorithms, audits, and holiday tables.",
     icon: MemoryRoundedIcon,
-    accessLabel: 'Read only',
+    accessLabel: "Read only",
     cards: [
-      { name: 'Algorithm Parameters', description: 'Configure algorithm behaviours & weights.' },
-      { name: 'System Code Editor', description: 'Maintain scripts, triggers & automation.' },
-      { name: 'Record Audit', description: 'Review detailed audit trails.' },
-      { name: 'Public Holiday', description: 'Manage holiday dates affecting schedules.' },
-      { name: 'General Travel Times', description: 'Configure default travel time settings.' },
+      {
+        name: "Algorithm Parameters",
+        description: "Configure algorithm behaviours & weights.",
+      },
+      {
+        name: "System Code Editor",
+        description: "Maintain scripts, triggers & automation.",
+      },
+      { name: "Record Audit", description: "Review detailed audit trails." },
+      {
+        name: "Public Holiday",
+        description: "Manage holiday dates affecting schedules.",
+      },
+      {
+        name: "General Travel Times",
+        description: "Configure default travel time settings.",
+      },
     ],
   },
-]
+];
 
-const TOTAL_TOOL_COUNT = MENU_GROUPS.reduce((total, group) => total + group.cards.length, 0)
+const TOTAL_TOOL_COUNT = MENU_GROUPS.reduce(
+  (total, group) => total + group.cards.length,
+  0
+);
 
-type PageComponent = () => JSX.Element
+type PageComponent = () => JSX.Element;
 
-const pageModules = import.meta.glob('./Openreach - App/App - Scaffold/App - Pages/**/*.tsx', {
-  eager: true,
-  import: 'default',
-}) as Record<string, PageComponent>
+const pageModules = import.meta.glob(
+  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx",
+  {
+    eager: true,
+    import: "default",
+  }
+) as Record<string, PageComponent>;
 
-const PAGE_COMPONENTS = Object.entries(pageModules).reduce<Record<string, Record<string, PageComponent>>>(
-  (acc, [path, component]) => {
-    const segments = path.split('/')
-    const folderName = segments[segments.length - 2]
-    const fileName = segments[segments.length - 1].replace('.tsx', '')
-    if (!acc[folderName]) {
-      acc[folderName] = {}
-    }
-    acc[folderName][fileName] = component
-    return acc
-  },
-  {}
-)
+const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
+  Record<string, Record<string, PageComponent>>
+>((acc, [path, component]) => {
+  const segments = path.split("/");
+  const folderName = segments[segments.length - 2];
+  const fileName = segments[segments.length - 1].replace(".tsx", "");
+  if (!acc[folderName]) {
+    acc[folderName] = {};
+  }
+  acc[folderName][fileName] = component;
+  return acc;
+}, {});
 
 function App() {
-  const [navOpen, setNavOpen] = useState(false)
-  const [selectedMenuId, setSelectedMenuId] = useState(MENU_GROUPS[0].id)
-  const [showWelcome, setShowWelcome] = useState(true)
-  const [activePage, setActivePage] = useState<{ menuLabel: string; cardName: string } | null>(null)
+  const [navOpen, setNavOpen] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState(MENU_GROUPS[0].id);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [activePage, setActivePage] = useState<{
+    menuLabel: string;
+    cardName: string;
+  } | null>(null);
 
-  const openNav = () => setNavOpen(true)
-  const closeNav = () => setNavOpen(false)
+  const openNav = () => setNavOpen(true);
+  const closeNav = () => setNavOpen(false);
 
   const selectedMenu = useMemo(
-    () => MENU_GROUPS.find((group) => group.id === selectedMenuId) ?? MENU_GROUPS[0],
+    () =>
+      MENU_GROUPS.find((group) => group.id === selectedMenuId) ??
+      MENU_GROUPS[0],
     [selectedMenuId]
-  )
+  );
 
   const navItems = useMemo(
     () =>
       MENU_GROUPS.map((group) => {
-        const Icon = group.icon
+        const Icon = group.icon;
         return {
           id: group.id,
           label: group.label,
-          icon: <Icon fontSize='small' />,
+          icon: <Icon fontSize="small" />,
           description: group.description,
           active: group.id === selectedMenuId,
-        }
+        };
       }),
     [selectedMenuId]
-  )
+  );
 
   const handleNavSelection = (itemId: string) => {
-    setSelectedMenuId(itemId)
-    setShowWelcome(false)
-    const nextGroup = MENU_GROUPS.find((group) => group.id === itemId)
-    setActivePage((current) => (current && current.menuLabel === nextGroup?.label ? current : null))
-  }
+    setSelectedMenuId(itemId);
+    setShowWelcome(false);
+    const nextGroup = MENU_GROUPS.find((group) => group.id === itemId);
+    setActivePage((current) =>
+      current && current.menuLabel === nextGroup?.label ? current : null
+    );
+  };
 
   return (
     <>
@@ -262,53 +404,56 @@ function App() {
       <OpenreachSideNav
         open={navOpen}
         onClose={closeNav}
-        onSearch={(value) => console.log('Search query:', value)}
+        onSearch={(value) => console.log("Search query:", value)}
         navItems={navItems}
         onSelect={(item) => handleNavSelection(item.id)}
       />
 
-      <Box className='app-stage'>
-        <Stack className='app-stack' gap={0} width='100%'>
-          <Box className='app-hero'>
+      <Box className="app-stage">
+        <Stack className="app-stack" gap={0} width="100%">
+          <Box className="app-hero">
             <OpenreachTopBanner
-              title='Task Force'
-              subtitle='Day-to-day operational tool for Openreach operations.'
-              statusChip={{ label: 'LIVE STATUS', tone: 'success' }}
-              userInitials='JD'
-              userName='Jordan Davies'
-              userRole='Delivery Lead'
+              title="Task Force"
+              subtitle="Day-to-day operational tool for Openreach operations."
+              statusChip={{ label: "LIVE STATUS", tone: "success" }}
+              userInitials="JD"
+              userName="Jordan Davies"
+              userRole="Delivery Lead"
               onMenuClick={openNav}
             />
           </Box>
 
-          <Box className='app-canvas'>
+          <Box className="app-canvas">
             {showWelcome ? (
-              <LandingOverview groups={MENU_GROUPS} totalTools={TOTAL_TOOL_COUNT} />
+              <LandingOverview
+                groups={MENU_GROUPS}
+                totalTools={TOTAL_TOOL_COUNT}
+              />
             ) : (
               <>
                 <Stack gap={1} mb={2}>
                   <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                    direction={{ xs: "column", sm: "row" }}
+                    alignItems={{ xs: "flex-start", sm: "center" }}
                     gap={0.75}
                   >
                     {activePage && (
                       <Button
-                        variant='text'
-                        color='inherit'
+                        variant="text"
+                        color="inherit"
                         onClick={() => setActivePage(null)}
-                        startIcon={<ArrowBackRoundedIcon fontSize='small' />}
+                        startIcon={<ArrowBackRoundedIcon fontSize="small" />}
                         sx={{ px: 0, minWidth: 0, fontWeight: 600 }}
                       >
                         Back
                       </Button>
                     )}
-                    <Typography variant='overline' className='canvas-label'>
+                    <Typography variant="overline" className="canvas-label">
                       MENU • {selectedMenu.label}
                     </Typography>
                   </Stack>
                   {!activePage && (
-                    <Typography variant='h5' fontWeight={700}>
+                    <Typography variant="h5" fontWeight={700}>
                       {selectedMenu.label}
                     </Typography>
                   )}
@@ -316,17 +461,26 @@ function App() {
 
                 {activePage ? (
                   <Stack gap={3}>
-                    <Box p={2.5} borderRadius={3} border='1px solid rgba(7,59,76,0.12)' bgcolor='#fff'>
+                    <Box
+                      p={2.5}
+                      borderRadius={3}
+                      border="1px solid rgba(7,59,76,0.12)"
+                      bgcolor="#fff"
+                    >
                       {(() => {
-                        const ActivePageComponent = PAGE_COMPONENTS[activePage.menuLabel]?.[activePage.cardName]
+                        const ActivePageComponent =
+                          PAGE_COMPONENTS[activePage.menuLabel]?.[
+                            activePage.cardName
+                          ];
                         if (!ActivePageComponent) {
                           return (
-                            <Typography color='text.secondary'>
-                              No page scaffold wired for {activePage.cardName} yet.
+                            <Typography color="text.secondary">
+                              No page scaffold wired for {activePage.cardName}{" "}
+                              yet.
                             </Typography>
-                          )
+                          );
                         }
-                        return <ActivePageComponent />
+                        return <ActivePageComponent />;
                       })()}
                     </Box>
                   </Stack>
@@ -334,25 +488,37 @@ function App() {
                   <>
                     <Box
                       sx={{
-                        display: 'grid',
+                        display: "grid",
                         gap: 2,
                         gridTemplateColumns: {
-                          xs: 'repeat(1, minmax(0, 1fr))',
-                          sm: 'repeat(2, minmax(0, 1fr))',
-                          md: 'repeat(3, minmax(0, 1fr))',
+                          xs: "repeat(1, minmax(0, 1fr))",
+                          sm: "repeat(2, minmax(0, 1fr))",
+                          md: "repeat(3, minmax(0, 1fr))",
                         },
                       }}
                     >
                       {selectedMenu.cards.map((card) => (
-                        <Card className='menu-card' key={card.name}>
+                        <Card className="menu-card" key={card.name}>
                           <CardActionArea
-                            onClick={() => setActivePage({ menuLabel: selectedMenu.label, cardName: card.name })}
+                            onClick={() =>
+                              setActivePage({
+                                menuLabel: selectedMenu.label,
+                                cardName: card.name,
+                              })
+                            }
                           >
                             <CardContent>
-                              <Typography variant='subtitle1' fontWeight={600} gutterBottom>
+                              <Typography
+                                variant="subtitle1"
+                                fontWeight={600}
+                                gutterBottom
+                              >
                                 {card.name}
                               </Typography>
-                              <Typography variant='body2' color='text.secondary'>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {card.description}
                               </Typography>
                             </CardContent>
@@ -360,8 +526,14 @@ function App() {
                         </Card>
                       ))}
                     </Box>
-                    <Box mt={4} p={2.5} borderRadius={3} border='1px solid rgba(7,59,76,0.12)' bgcolor='#fff'>
-                      <Typography color='text.secondary'>
+                    <Box
+                      mt={4}
+                      p={2.5}
+                      borderRadius={3}
+                      border="1px solid rgba(7,59,76,0.12)"
+                      bgcolor="#fff"
+                    >
+                      <Typography color="text.secondary">
                         Select a tool card to load its scaffolded page.
                       </Typography>
                     </Box>
@@ -373,7 +545,7 @@ function App() {
         </Stack>
       </Box>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
