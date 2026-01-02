@@ -225,11 +225,6 @@ function App() {
   const [selectedMenuId, setSelectedMenuId] = useState(MENU_GROUPS[0].id)
   const [showWelcome, setShowWelcome] = useState(true)
   const [activePage, setActivePage] = useState<{ menuLabel: string; cardName: string } | null>(null)
-  const activeCardDetails = activePage
-    ? MENU_GROUPS.find((group) => group.label === activePage.menuLabel)?.cards.find(
-        (card) => card.name === activePage.cardName
-      )
-    : null
 
   const openNav = () => setNavOpen(true)
   const closeNav = () => setNavOpen(false)
