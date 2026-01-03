@@ -240,8 +240,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   const noMatches = showTreeResults && filteredGroups.length === 0
 
   const footerContent = footerSlot ?? (
-    <Stack gap={0.75} alignItems="flex-start">
-      <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap">
+    <Stack gap={0.5} alignItems="stretch">
+      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} sx={{ width: '100%' }}>
         <Chip
           label={CLIENT_BUILD.label}
           size="small"
@@ -258,7 +258,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             },
           }}
         />
-        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7) }}>
+        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), fontWeight: 600 }}>
           {CLIENT_BUILD.date}
         </Typography>
       </Stack>
