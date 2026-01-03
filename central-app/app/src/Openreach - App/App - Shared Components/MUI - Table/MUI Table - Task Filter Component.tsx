@@ -356,18 +356,6 @@ const TaskTableQueryConfig = ({
               value={draftQuery.responseCodes}
               onChange={handleResponseCodesChange}
             />
-            <TaskDateWindowField
-              value={dateRangeValue}
-              onChange={handleDateRangeChange}
-              sx={{
-                gridColumn: {
-                  xs: 'span 1',
-                  sm: 'span 2',
-                  md: 'span 2',
-                  lg: 'span 2',
-                },
-              }}
-            />
           </Box>
         )}
 
