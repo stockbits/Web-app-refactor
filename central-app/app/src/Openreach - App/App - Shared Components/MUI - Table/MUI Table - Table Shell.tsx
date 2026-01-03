@@ -59,7 +59,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
-  initialPageSize = 5,
+  initialPageSize = 30,
   emptyState,
 }: SharedMuiTableProps<T>) {
   const resolvedRowIds = rows.map((row, index) => {
@@ -91,12 +91,14 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     [densityMode, handleDensityToggle],
   )
 
-  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [5, 10, 25]
+  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [30, 100, 500]
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
   const resolvedInitialPageSize = resolvedPageSizeOptions.includes(normalizedInitialPageSize)
     ? normalizedInitialPageSize
     : resolvedPageSizeOptions[0]
   const resolvedHideFooter = showFooterControls ? false : hideFooter
+  // Large page sizes need a scrollable viewport instead of stretching the layout.
+  const resolvedAutoHeight = showFooterControls ? false : autoHeight
   const paginationSettings = !resolvedHideFooter
     ? {
         pagination: true as const,
@@ -163,7 +165,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
       <DataGrid
         apiRef={apiRef}
-        autoHeight={autoHeight}
+        autoHeight={resolvedAutoHeight}
         rows={rows}
         columns={columns}
         getRowId={getRowId}
