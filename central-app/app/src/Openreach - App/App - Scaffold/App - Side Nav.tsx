@@ -335,18 +335,12 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 {headerSlot ? (
                   headerSlot
                 ) : (
-                  <>
-                    <Typography
-                      variant="overline"
-                      sx={{
-                        color: palette.energyAccent,
-                        letterSpacing: 2,
-                        fontWeight: 700,
-                      }}
-                    >
-                      OPENREACH
-                    </Typography>
-                  </>
+                  <Box
+                    component="img"
+                    src={openreachLogo}
+                    alt="Openreach brand mark"
+                    sx={{ width: 132, height: 'auto', filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
+                  />
                 )}
               </Box>
 
