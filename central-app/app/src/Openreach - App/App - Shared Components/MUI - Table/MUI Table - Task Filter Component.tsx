@@ -338,33 +338,49 @@ const TaskTableQueryConfig = ({
               sx={{
                 gridColumn: {
                   xs: 'span 1',
-                  sm: 'span 2',
-                  md: 'span 2',
-                  lg: 'span 2',
+                  sm: 'span 1',
+                  md: 'span 1',
+                  lg: 'span 1',
                 },
               }}
             />
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <ToggleButtonGroup
-                value={draftQuery.impactOperator ?? null}
-                exclusive
-                size="small"
-                onChange={handleImpactOperatorChange}
-              >
-                <ToggleButton value="gt">&gt;</ToggleButton>
-                <ToggleButton value="lt">&lt;</ToggleButton>
-                <ToggleButton value="eq">=</ToggleButton>
-              </ToggleButtonGroup>
-              <TextField
-                label="Impact"
-                size="small"
-                value={draftQuery.impactValue ?? ''}
-                onChange={handleImpactValueChange}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
-                placeholder="999"
-                sx={{ width: 96 }}
-              />
-            </Box>
+            <TextField
+              label="Impact"
+              size="small"
+              value={draftQuery.impactValue ?? ''}
+              onChange={handleImpactValueChange}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
+              placeholder="999"
+              sx={{
+                gridColumn: {
+                  xs: 'span 1',
+                  sm: 'span 1',
+                  md: 'span 1',
+                  lg: 'span 1',
+                },
+                width: '100%',
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Tooltip title={draftQuery.impactOperator === 'gt' ? 'Greater than' : draftQuery.impactOperator === 'lt' ? 'Less than' : 'Equal'}>
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          const order: Array<'gt' | 'lt' | 'eq'> = ['gt', 'lt', 'eq']
+                          const current = draftQuery.impactOperator ?? 'gt'
+                          const next = order[(order.indexOf(current) + 1) % order.length]
+                          setDraftQuery((prev) => ({ ...prev, impactOperator: next }))
+                        }}
+                        aria-label="Toggle impact operator"
+                      >
+                        {draftQuery.impactOperator === 'gt' ? '>' : draftQuery.impactOperator === 'lt' ? '<' : '='}
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              }}
+            />
           </Box>
         )}
 
