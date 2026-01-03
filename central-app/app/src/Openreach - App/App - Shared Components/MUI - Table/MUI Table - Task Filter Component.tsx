@@ -41,6 +41,8 @@ export type TaskTableQueryState = {
   responseCodes: TaskTableRow['responseCode'][]
   updatedFrom: string | null
   updatedTo: string | null
+  impactOperator?: 'gt' | 'lt' | 'eq' | null
+  impactValue?: number | null
 }
 
 type TaskFilterTab = 'simple' | 'advanced'
@@ -68,6 +70,8 @@ export const buildDefaultTaskTableQuery = (): TaskTableQueryState => ({
   responseCodes: [],
   updatedFrom: null,
   updatedTo: null,
+  impactOperator: null,
+  impactValue: null,
 })
 
 interface TaskTableQueryConfigProps {
@@ -194,6 +198,18 @@ const TaskTableQueryConfig = ({
       ...prev,
       responseCodes: value,
     }))
+    setValidationError(null)
+  }
+
+  const handleImpactOperatorChange = (_event: SyntheticEvent, next: 'gt' | 'lt' | 'eq' | null) => {
+    setDraftQuery((prev) => ({ ...prev, impactOperator: next }))
+    setValidationError(null)
+  }
+
+  const handleImpactValueChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value.replace(/\D/g, '').slice(0, 3)
+    const val = raw === '' ? null : Number(raw)
+    setDraftQuery((prev) => ({ ...prev, impactValue: val }))
     setValidationError(null)
   }
 
@@ -328,6 +344,27 @@ const TaskTableQueryConfig = ({
                 },
               }}
             />
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <ToggleButtonGroup
+                value={draftQuery.impactOperator ?? null}
+                exclusive
+                size="small"
+                onChange={handleImpactOperatorChange}
+              >
+                <ToggleButton value="gt">&gt;</ToggleButton>
+                <ToggleButton value="lt">&lt;</ToggleButton>
+                <ToggleButton value="eq">=</ToggleButton>
+              </ToggleButtonGroup>
+              <TextField
+                label="Impact"
+                size="small"
+                value={draftQuery.impactValue ?? ''}
+                onChange={handleImpactValueChange}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
+                placeholder="999"
+                sx={{ width: 96 }}
+              />
+            </Box>
           </Box>
         )}
 
@@ -712,7 +749,9 @@ const areQueriesEqual = (a: TaskTableQueryState, b: TaskTableQueryState) =>
   arraysEqual(a.capabilities, b.capabilities) &&
   arraysEqual(a.responseCodes, b.responseCodes) &&
   a.updatedFrom === b.updatedFrom &&
-  a.updatedTo === b.updatedTo
+  a.updatedTo === b.updatedTo &&
+  (a.impactOperator ?? null) === (b.impactOperator ?? null) &&
+  (a.impactValue ?? null) === (b.impactValue ?? null)
 
 const arraysEqual = (left: string[], right: string[]) => {
   if (left.length !== right.length) {

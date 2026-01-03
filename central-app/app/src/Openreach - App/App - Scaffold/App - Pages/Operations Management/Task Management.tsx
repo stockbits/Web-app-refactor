@@ -393,6 +393,19 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
       return false
     }
 
+    if (query.impactValue != null && query.impactOperator) {
+      const val = query.impactValue
+      if (query.impactOperator === 'gt' && !(row.impactScore > val)) {
+        return false
+      }
+      if (query.impactOperator === 'lt' && !(row.impactScore < val)) {
+        return false
+      }
+      if (query.impactOperator === 'eq' && !(row.impactScore === val)) {
+        return false
+      }
+    }
+
     const updatedAt = new Date(row.updatedAt)
     if (fromDate && updatedAt < fromDate) {
       return false
