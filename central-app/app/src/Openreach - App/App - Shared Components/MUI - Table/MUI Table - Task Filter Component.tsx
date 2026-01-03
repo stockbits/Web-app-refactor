@@ -102,6 +102,7 @@ const TaskTableQueryConfig = ({
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [impactFocused, setImpactFocused] = useState(false)
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
       return null
@@ -345,10 +346,12 @@ const TaskTableQueryConfig = ({
               }}
             />
             <TextField
-              label="Impact"
+              label={impactFocused ? 'Score' : undefined}
               size="small"
               value={draftQuery.impactValue ?? ''}
               onChange={handleImpactValueChange}
+              onFocus={() => setImpactFocused(true)}
+              onBlur={() => setImpactFocused(false)}
               inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
               placeholder="999"
               sx={{
@@ -360,6 +363,7 @@ const TaskTableQueryConfig = ({
                 },
                 width: '100%',
               }}
+              InputLabelProps={{ shrink: Boolean(impactFocused) }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
