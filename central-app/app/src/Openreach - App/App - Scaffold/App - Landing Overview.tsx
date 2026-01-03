@@ -1,5 +1,8 @@
 import type { ElementType } from 'react'
-import { Box, Chip, Paper, Stack, Typography } from '@mui/material'
+import type { MouseEvent } from 'react'
+import { useState } from 'react'
+import { Box, Chip, IconButton, Paper, Popover, Stack, Typography } from '@mui/material'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 export interface LandingMenuGroup {
   id: string
@@ -15,29 +18,82 @@ export interface LandingOverviewProps {
 }
 
 export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) => {
+  const [infoAnchor, setInfoAnchor] = useState<HTMLElement | null>(null)
+  const infoOpen = Boolean(infoAnchor)
+
+  const handleInfoToggle = (event: MouseEvent<HTMLButtonElement>) => {
+    setInfoAnchor((prev) => (prev ? null : event.currentTarget))
+  }
+
+  const handleInfoClose = () => setInfoAnchor(null)
+
   return (
-    <Stack gap={3}>
-      <Stack gap={1}>
-        <Typography
-          variant="overline"
-          sx={{ letterSpacing: 4, color: '#008f92', fontWeight: 700, display: 'inline-block' }}
+    <Stack gap={2.5}>
+      <Stack gap={0.5}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            alignItems: 'center',
+            color: '#037971',
+          }}
         >
-          OPENREACH TASK FORCE
-        </Typography>
-        <Typography variant="h4" fontWeight={700} sx={{ color: '#042432' }}>
-          Access overview
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'rgba(4, 26, 40, 0.72)' }}>
-          Hi Jordan, you have access to {groups.length} programmes and {totalTools} tools. Use the left navigation to
-          jump straight into a workspace.
-        </Typography>
+          <Typography
+            variant="overline"
+            sx={{ letterSpacing: 3, textTransform: 'uppercase', fontWeight: 700, color: '#037971' }}
+          >
+            Access summary
+          </Typography>
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            • {groups.length} programmes · {totalTools} tools ready to launch
+          </Typography>
+          <IconButton
+            size="small"
+            color="inherit"
+            aria-label="Show access tip"
+            onClick={handleInfoToggle}
+            aria-describedby={infoOpen ? 'access-summary-tip' : undefined}
+            sx={{ ml: { xs: 0, sm: 1 }, p: 0.25 }}
+          >
+            <InfoOutlinedIcon fontSize="small" />
+          </IconButton>
+        </Box>
+        <Popover
+          id="access-summary-tip"
+          open={infoOpen}
+          anchorEl={infoAnchor}
+          onClose={handleInfoClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          disableRestoreFocus
+          slotProps={{
+            paper: {
+              sx: {
+                px: 2,
+                py: 1.5,
+                borderRadius: 2,
+                maxWidth: 320,
+                boxShadow: '0 20px 40px rgba(4, 26, 40, 0.25)',
+              },
+            },
+          }}
+        >
+          <Typography variant="body2" sx={{ color: 'rgba(4, 26, 40, 0.85)' }}>
+            Tap the menu icon to open the navigation and move between tools.
+          </Typography>
+        </Popover>
       </Stack>
 
       <Box
         sx={{
           display: 'grid',
           gap: 2,
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' },
+          gridTemplateColumns: {
+            xs: '1fr',
+            sm: 'repeat(2, minmax(0, 1fr))',
+            lg: 'repeat(3, minmax(0, 1fr))',
+          },
         }}
       >
         {groups.map((group) => {
@@ -106,9 +162,6 @@ export const LandingOverview = ({ groups, totalTools }: LandingOverviewProps) =>
         })}
       </Box>
 
-      <Typography variant="body2" sx={{ color: 'rgba(4, 26, 40, 0.6)' }}>
-        Tip: tap the Task Force menu icon to open navigation and move between programmes.
-      </Typography>
     </Stack>
   )
 }

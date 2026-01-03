@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { alpha } from '@mui/material/styles'
+import { alpha, useTheme } from '@mui/material/styles'
 import {
   Box,
   Chip,
@@ -33,14 +33,6 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 import openreachLogo from '@central-logos/Openreach-Logo-White.png'
-
-const palette = {
-  coreBlock: '#073B4C',
-  supportingBlock: '#142032',
-  energyAccent: '#00CCAD',
-  fibreThreads: '#F5F4F5',
-  outline: '#ECECEC',
-} as const
 
 const CLIENT_BUILD = 'Client build 02.01.2026'
 
@@ -213,6 +205,9 @@ const taskForceMenuGroups: TaskForceMenuGroup[] = [
 ]
 
 export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSlot, onSearch, onSelect }: OpenreachSideNavProps) => {
+  const theme = useTheme()
+  const palette = theme.openreach
+  const white = theme.palette.common.white
   const items = useMemo(() => (navItems && navItems.length > 0 ? navItems : fallbackNavItems), [navItems])
   const [query, setQuery] = useState('')
   const trimmedQuery = query.trim()
@@ -356,13 +351,13 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               onSubmit={submitSearch}
               alignItems="center"
               sx={{
-                bgcolor: alpha('#FFFFFF', 0.08),
+                bgcolor: alpha(white, 0.08),
                 borderRadius: 999,
                 px: 2,
                 py: 0.5,
               }}
             >
-              <SearchRoundedIcon fontSize="small" sx={{ color: alpha('#FFFFFF', 0.8) }} />
+              <SearchRoundedIcon fontSize="small" sx={{ color: alpha(white, 0.8) }} />
               <InputBase
                 placeholder="Search menu and tools"
                 value={query}
@@ -375,7 +370,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   aria-label="Clear search"
                   size="small"
                   onClick={() => setQuery('')}
-                  sx={{ color: alpha('#FFFFFF', 0.8), ml: 1 }}
+                  sx={{ color: alpha(white, 0.8), ml: 1 }}
                 >
                   <ClearRoundedIcon fontSize="small" />
                 </IconButton>
@@ -404,7 +399,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                           '&:hover': { bgcolor: palette.coreBlock },
                         },
                         '&:hover': {
-                          bgcolor: alpha('#FFFFFF', 0.08),
+                          bgcolor: alpha(white, 0.08),
                         },
                       }}
                     >
@@ -419,7 +414,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       <ListItemText
                         primary={item.label}
                         secondary={item.description}
-                        primaryTypographyProps={{ fontWeight: 600 }}
+                        primaryTypographyProps={{ fontWeight: 600, color: palette.fibreThreads }}
                         secondaryTypographyProps={{ color: alpha(palette.fibreThreads, 0.75) }}
                       />
                       {item.badge && (
@@ -454,14 +449,14 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                             width: 36,
                             height: 36,
                             borderRadius: '50%',
-                            bgcolor: alpha('#FFFFFF', 0.08),
+                            bgcolor: alpha(white, 0.08),
                             display: 'grid',
                             placeItems: 'center',
                           }}
                         >
                           {group.icon}
                         </Box>
-                        <Typography variant="subtitle2" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        <Typography variant="subtitle2" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: palette.fibreThreads }}>
                           {group.label}
                         </Typography>
                       </Stack>
@@ -480,7 +475,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                               alignItems: 'flex-start',
                               color: palette.fibreThreads,
                               '&:hover': {
-                                bgcolor: alpha('#FFFFFF', 0.08),
+                                bgcolor: alpha(white, 0.08),
                               },
                             }}
                           >
@@ -496,7 +491,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                             <ListItemText
                               primary={child.label}
                               secondary={child.description}
-                              primaryTypographyProps={{ fontWeight: 600 }}
+                              primaryTypographyProps={{ fontWeight: 600, color: palette.fibreThreads }}
                               secondaryTypographyProps={{ color: alpha(palette.fibreThreads, 0.7) }}
                             />
                           </ListItemButton>
@@ -504,7 +499,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       </List>
 
                       {index < filteredGroups.length - 1 && (
-                        <Divider sx={{ mt: 2, borderColor: alpha('#FFFFFF', 0.08) }} />
+                        <Divider sx={{ mt: 2, borderColor: alpha(white, 0.08) }} />
                       )}
                     </Box>
                   ))}
@@ -518,7 +513,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 pt={2.5}
                 pb="calc(1.25rem + env(safe-area-inset-bottom, 16px))"
               >
-                <Divider sx={{ mb: 1.5, borderColor: alpha('#FFFFFF', 0.08) }} />
+                <Divider sx={{ mb: 1.5, borderColor: alpha(white, 0.08) }} />
                 {footerContent}
               </Box>
             )}

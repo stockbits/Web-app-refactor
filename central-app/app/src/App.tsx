@@ -3,11 +3,11 @@ import type { ElementType, JSX } from "react";
 import "./App.css";
 import {
   Box,
-  Button,
+  Breadcrumbs,
   Card,
   CardActionArea,
   CardContent,
-  CssBaseline,
+  Link,
   Stack,
   Typography,
 } from "@mui/material";
@@ -400,7 +400,6 @@ function App() {
 
   return (
     <>
-      <CssBaseline />
       <OpenreachSideNav
         open={navOpen}
         onClose={closeNav}
@@ -431,42 +430,61 @@ function App() {
               />
             ) : (
               <>
-                <Stack gap={1} mb={2}>
-                  <Stack
-                    direction={{ xs: "column", sm: "row" }}
-                    alignItems={{ xs: "flex-start", sm: "center" }}
-                    gap={0.75}
-                  >
-                    {activePage && (
-                      <Button
-                        variant="text"
-                        color="inherit"
-                        onClick={() => setActivePage(null)}
-                        startIcon={<ArrowBackRoundedIcon fontSize="small" />}
-                        sx={{ px: 0, minWidth: 0, fontWeight: 600 }}
-                      >
-                        Back
-                      </Button>
-                    )}
+                {!activePage && (
+                  <Stack gap={1} mb={2}>
                     <Typography variant="overline" className="canvas-label">
                       MENU • {selectedMenu.label}
                     </Typography>
                   </Stack>
-                  {!activePage && (
-                    <Typography variant="h5" fontWeight={700}>
-                      {selectedMenu.label}
-                    </Typography>
-                  )}
-                </Stack>
+                )}
 
                 {activePage ? (
-                  <Stack gap={3}>
-                    <Box
-                      p={2.5}
-                      borderRadius={3}
-                      border="1px solid rgba(7,59,76,0.12)"
-                      bgcolor="#fff"
-                    >
+                  <Box
+                    component="section"
+                    borderRadius={2}
+                    border="1px solid rgba(7,59,76,0.12)"
+                    bgcolor="#fff"
+                    px={{ xs: 1, sm: 1.5, md: 2 }}
+                    py={{ xs: 0.9, sm: 1.4, md: 1.75 }}
+                  >
+                    <Stack gap={1.5}>
+                      <Breadcrumbs
+                        aria-label="breadcrumb"
+                        separator="•"
+                        sx={{
+                          fontWeight: 600,
+                          mb: 0.5,
+                          "& .MuiBreadcrumbs-separator": {
+                            fontWeight: 400,
+                            letterSpacing: 2,
+                            color: "text.secondary",
+                          },
+                        }}
+                      >
+                        <Link
+                          underline="hover"
+                          color="inherit"
+                          component="button"
+                          type="button"
+                          onClick={() => setActivePage(null)}
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            cursor: "pointer",
+                            border: 0,
+                            background: "none",
+                            font: "inherit",
+                            fontWeight: 600,
+                          }}
+                        >
+                          <ArrowBackRoundedIcon fontSize="small" />
+                          {selectedMenu.label}
+                        </Link>
+                        <Typography sx={{ fontWeight: 600 }}>
+                          {activePage.cardName}
+                        </Typography>
+                      </Breadcrumbs>
                       {(() => {
                         const ActivePageComponent =
                           PAGE_COMPONENTS[activePage.menuLabel]?.[
@@ -482,8 +500,8 @@ function App() {
                         }
                         return <ActivePageComponent />;
                       })()}
-                    </Box>
-                  </Stack>
+                    </Stack>
+                  </Box>
                 ) : (
                   <>
                     <Box

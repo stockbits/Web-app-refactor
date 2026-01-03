@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { MouseEvent, ReactNode } from 'react'
-import { alpha } from '@mui/material/styles'
+import { alpha, useTheme } from '@mui/material/styles'
 import {
   AppBar,
   Avatar,
@@ -16,35 +16,7 @@ import {
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
 
-const palette = {
-  coreBlock: '#073B4C',
-  supportingBlock: '#142032',
-  energyAccent: '#00CCAD',
-  fibreThreads: '#F5F4F5',
-  surface: '#F5F4F5',
-} as const
-
 type StatusTone = 'default' | 'info' | 'success' | 'warning'
-
-const statusChipStyles: Record<StatusTone, { bg: string; color: string; border?: string }> = {
-  default: {
-    bg: alpha('#FFFFFF', 0.12),
-    color: palette.surface,
-  },
-  info: {
-    bg: alpha(palette.energyAccent, 0.12),
-    color: palette.energyAccent,
-    border: `1px solid ${alpha(palette.energyAccent, 0.4)}`,
-  },
-  success: {
-    bg: alpha('#3FB984', 0.16),
-    color: '#3FB984',
-  },
-  warning: {
-    bg: alpha('#FFB703', 0.2),
-    color: '#FFB703',
-  },
-}
 
 export interface OpenreachTopBannerProps {
   title: string
@@ -70,6 +42,27 @@ export const OpenreachTopBanner = ({
   userName,
   userRole = 'Fibre Operations',
 }: OpenreachTopBannerProps) => {
+  const theme = useTheme()
+  const brand = theme.openreach
+  const statusChipStyles: Record<StatusTone, { bg: string; color: string; border?: string }> = {
+    default: {
+      bg: alpha(theme.palette.common.white, 0.12),
+      color: brand.fibreThreads,
+    },
+    info: {
+      bg: alpha(brand.energyAccent, 0.12),
+      color: brand.energyAccent,
+      border: `1px solid ${alpha(brand.energyAccent, 0.4)}`,
+    },
+    success: {
+      bg: alpha('#3FB984', 0.16),
+      color: '#3FB984',
+    },
+    warning: {
+      bg: alpha('#FFB703', 0.2),
+      color: '#FFB703',
+    },
+  }
   const chipTone = statusChip?.tone ?? 'default'
   const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
   const profileMenuOpen = Boolean(profileAnchorEl)
@@ -90,8 +83,8 @@ export const OpenreachTopBanner = ({
         px: 0,
         py: 0,
         minHeight: { xs: 72, md: 92 },
-        backgroundImage: `linear-gradient(120deg, ${palette.coreBlock}, ${palette.supportingBlock})`,
-        color: palette.fibreThreads,
+        backgroundImage: `linear-gradient(120deg, ${brand.coreBlock}, ${brand.supportingBlock})`,
+        color: brand.fibreThreads,
         boxShadow: '0 12px 32px rgba(3, 7, 12, 0.45)',
         borderBottom: '1px solid rgba(4,11,18,0.35)',
         position: 'relative',
@@ -110,7 +103,8 @@ export const OpenreachTopBanner = ({
       <Toolbar
         disableGutters
         sx={{
-          px: 'var(--page-gutter)',
+          pl: { xs: 0.75, sm: 1 },
+          pr: 'var(--page-gutter)',
           py: { xs: 0.85, md: 1.2 },
           gap: 2,
           flexDirection: 'row',
@@ -126,9 +120,11 @@ export const OpenreachTopBanner = ({
             aria-label="Open navigation"
             onClick={onMenuClick}
             sx={{
-              bgcolor: alpha('#FFFFFF', 0.12),
-              color: palette.fibreThreads,
-              '&:hover': { bgcolor: alpha('#FFFFFF', 0.24) },
+              bgcolor: 'transparent',
+              color: brand.fibreThreads,
+              p: 0.75,
+              '&:hover': { bgcolor: alpha('#FFFFFF', 0.12) },
+              '&:active': { bgcolor: alpha('#FFFFFF', 0.2) },
             }}
           >
             <MenuRoundedIcon />
@@ -154,7 +150,7 @@ export const OpenreachTopBanner = ({
               )}
             </Stack>
             {subtitle && (
-              <Typography variant="body2" sx={{ mt: 0.5, color: alpha(palette.surface, 0.9) }}>
+              <Typography variant="body2" sx={{ mt: 0.5, color: alpha(brand.fibreThreads, 0.85) }}>
                 {subtitle}
               </Typography>
             )}
@@ -176,15 +172,15 @@ export const OpenreachTopBanner = ({
               sx={{
                 p: 0,
                 borderRadius: '50%',
-                border: '2px solid rgba(245,244,245,0.35)',
+                border: `2px solid ${alpha(brand.fibreThreads, 0.35)}`,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  borderColor: palette.energyAccent,
+                  borderColor: brand.energyAccent,
                   boxShadow: '0 0 0 4px rgba(0,204,173,0.18)',
                 },
               }}
             >
-              <Avatar sx={{ bgcolor: palette.energyAccent, color: palette.coreBlock }}>
+              <Avatar sx={{ bgcolor: brand.energyAccent, color: brand.coreBlock }}>
                 <EngineeringRoundedIcon fontSize="small" />
               </Avatar>
             </IconButton>
@@ -199,20 +195,21 @@ export const OpenreachTopBanner = ({
                   sx: {
                     minWidth: 220,
                     px: 1,
-                    bgcolor: palette.supportingBlock,
-                    border: `1px solid ${alpha('#FFFFFF', 0.12)}`,
-                    color: palette.fibreThreads,
-                    boxShadow: '0 20px 40px rgba(2, 9, 20, 0.45)',
+                    bgcolor: theme.palette.background.paper,
+                    border: `1px solid ${theme.palette.divider}`,
+                    color: theme.palette.text.primary,
+                    boxShadow: theme.shadows[8],
+                    borderRadius: 2,
                   },
                 },
               }}
             >
               <MenuItem disabled sx={{ opacity: 1, cursor: 'default', whiteSpace: 'normal' }}>
                 <Stack>
-                  <Typography variant="body2" fontWeight={700} sx={{ color: palette.fibreThreads }}>
+                  <Typography variant="body2" fontWeight={700} sx={{ color: theme.palette.text.primary }}>
                     {userName ?? userInitials}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.75) }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     {userRole}
                   </Typography>
                 </Stack>
