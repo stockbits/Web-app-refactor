@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import {
   Box,
   Button,
@@ -6,15 +7,28 @@ import {
   Chip,
   Divider,
   FormControl,
+  IconButton,
+  InputAdornment,
   InputLabel,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListSubheader,
   MenuItem,
+  OutlinedInput,
   Paper,
+  Popover,
   Select,
   Stack,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import type { SxProps, Theme } from '@mui/material/styles'
 import type { SelectChangeEvent } from '@mui/material/Select'
+import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import type { TaskTableRow } from '../../App - Data Base/Task - Table'
 
 export type TaskTableQueryState = {
@@ -69,15 +83,20 @@ const TaskTableQueryConfig = ({
     [resolvedInitialQuery, resolvedDefaultQuery],
   )
   const showClearAction = isDirty || hasAppliedFilters
+  const dateRangeValue = useMemo<DateRangeValue>(
+    () => ({
+      start: draftQuery.updatedFrom ? new Date(draftQuery.updatedFrom) : null,
+      end: draftQuery.updatedTo ? new Date(draftQuery.updatedTo) : null,
+    }),
+    [draftQuery.updatedFrom, draftQuery.updatedTo],
+  )
 
-  const handleTextChange = (field: keyof Pick<TaskTableQueryState, 'searchTerm' | 'updatedFrom' | 'updatedTo'>) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value || null
-      setDraftQuery((prev) => ({
-        ...prev,
-        [field]: field === 'searchTerm' ? event.target.value : value,
-      }))
-    }
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDraftQuery((prev) => ({
+      ...prev,
+      searchTerm: event.target.value,
+    }))
+  }
 
   const handleMultiSelectChange = (field: keyof Pick<TaskTableQueryState, 'owners' | 'priorities' | 'statuses'>) =>
     (event: SelectChangeEvent<string[]>) => {
@@ -87,6 +106,14 @@ const TaskTableQueryConfig = ({
         [field]: value,
       }))
     }
+
+  const handleDateRangeChange = (nextRange: DateRangeValue) => {
+    setDraftQuery((prev) => ({
+      ...prev,
+      updatedFrom: nextRange.start ? nextRange.start.toISOString() : null,
+      updatedTo: nextRange.end ? nextRange.end.toISOString() : null,
+    }))
+  }
 
   const handleApply = () => {
     onApply(draftQuery)
@@ -138,7 +165,7 @@ const TaskTableQueryConfig = ({
             label="Keyword search"
             placeholder="Task, owner, or ID"
             value={draftQuery.searchTerm}
-            onChange={handleTextChange('searchTerm')}
+            onChange={handleSearchChange}
             fullWidth
           />
           <FormControl fullWidth>
@@ -195,21 +222,17 @@ const TaskTableQueryConfig = ({
               ))}
             </Select>
           </FormControl>
-          <TextField
-            type="date"
-            label="Updated from"
-            InputLabelProps={{ shrink: true }}
-            value={draftQuery.updatedFrom ?? ''}
-            onChange={handleTextChange('updatedFrom')}
-            fullWidth
-          />
-          <TextField
-            type="date"
-            label="Updated to"
-            InputLabelProps={{ shrink: true }}
-            value={draftQuery.updatedTo ?? ''}
-            onChange={handleTextChange('updatedTo')}
-            fullWidth
+          <TaskDateWindowField
+            value={dateRangeValue}
+            onChange={handleDateRangeChange}
+            sx={{
+              gridColumn: {
+                xs: 'span 1',
+                sm: 'span 2',
+                md: 'span 3',
+                lg: 'span 2',
+              },
+            }}
           />
         </Box>
 
@@ -233,6 +256,326 @@ const TaskTableQueryConfig = ({
 }
 
 export default TaskTableQueryConfig
+
+type DateRangeValue = {
+  start: Date | null
+  end: Date | null
+}
+
+type TaskDateShortcut = {
+  label: string
+  hint?: string
+  resolveRange: (context: DateRangeValue) => DateRangeValue
+}
+
+interface TaskDateWindowFieldProps {
+  value: DateRangeValue
+  onChange: (value: DateRangeValue) => void
+  shortcuts?: TaskDateShortcut[]
+  sx?: SxProps<Theme>
+}
+
+const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCUTS, sx }: TaskDateWindowFieldProps) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [activeField, setActiveField] = useState<'start' | 'end'>('start')
+  const [draftRange, setDraftRange] = useState<DateRangeValue>(value)
+
+  useEffect(() => {
+    if (!anchorEl) {
+      setDraftRange(value)
+    }
+  }, [value, anchorEl])
+
+  const handleDateChange = (nextDate: Date | null) => {
+    if (!nextDate) {
+      setDraftRange((prev) => ({ ...prev, [activeField]: null }))
+      return
+    }
+
+    const existing = draftRange[activeField]
+    const updated = new Date(nextDate)
+
+    if (existing) {
+      updated.setHours(existing.getHours(), existing.getMinutes(), existing.getSeconds(), existing.getMilliseconds())
+    } else if (activeField === 'start') {
+      updated.setHours(0, 0, 0, 0)
+    } else {
+      updated.setHours(23, 59, 59, 999)
+    }
+
+    setDraftRange((prev) => ({ ...prev, [activeField]: updated }))
+  }
+
+  const handleTimeChange = (field: 'start' | 'end') => (event: ChangeEvent<HTMLInputElement>) => {
+    const rawValue = event.target.value
+    if (!rawValue) {
+      setDraftRange((prev) => ({ ...prev, [field]: null }))
+      return
+    }
+
+    const [hoursStr, minutesStr] = rawValue.split(':')
+    const hours = Number(hoursStr)
+    const minutes = Number(minutesStr)
+
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+      return
+    }
+
+    const reference = draftRange[field] ?? new Date()
+    const next = new Date(reference)
+    next.setHours(hours, minutes, field === 'end' ? 59 : 0, field === 'end' ? 999 : 0)
+    setDraftRange((prev) => ({ ...prev, [field]: next }))
+  }
+
+  const handleShortcut = (resolveRange: TaskDateShortcut['resolveRange']) => () => {
+    setDraftRange(resolveRange(draftRange))
+  }
+
+  const handleOpen = (event: MouseEvent<HTMLElement>) => {
+    setDraftRange(value)
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => setAnchorEl(null)
+
+  const handleClear = () => {
+    setDraftRange({ start: null, end: null })
+  }
+
+  const handleApplySelection = () => {
+    onChange(draftRange)
+    setAnchorEl(null)
+  }
+
+  const open = Boolean(anchorEl)
+  const summaryLabel = buildSummaryLabel(value)
+
+  return (
+    <Box sx={{ minWidth: 0, ...sx }}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <OutlinedInput
+          value={summaryLabel}
+          readOnly
+          onClick={handleOpen}
+          placeholder="Date Time Picker"
+          endAdornment={
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={handleOpen} aria-label="Edit date window">
+                <CalendarMonthRoundedIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          }
+        />
+
+        <Popover
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          PaperProps={{ sx: { p: 2, borderRadius: 2, maxWidth: 720 } }}
+        >
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="stretch">
+            <List
+              dense
+              subheader={<ListSubheader component="div">Shortcuts</ListSubheader>}
+              sx={{ minWidth: 200, bgcolor: 'rgba(7,59,76,0.03)', borderRadius: 2 }}
+            >
+              {shortcuts.map((shortcut) => (
+                <ListItemButton key={shortcut.label} onClick={handleShortcut(shortcut.resolveRange)}>
+                  <ListItemText primary={shortcut.label} secondary={shortcut.hint} primaryTypographyProps={{ fontWeight: 600 }} />
+                </ListItemButton>
+              ))}
+              <Divider sx={{ my: 0.5 }} />
+              <ListItemButton onClick={handleClear}>
+                <ListItemText primary="Clear window" />
+              </ListItemButton>
+            </List>
+            <Stack spacing={2} flexGrow={1}>
+              <ToggleButtonGroup
+                value={activeField}
+                exclusive
+                onChange={(_event, next) => {
+                  if (next) setActiveField(next)
+                }}
+                size="small"
+              >
+                <ToggleButton value="start">Start date</ToggleButton>
+                <ToggleButton value="end">End date</ToggleButton>
+              </ToggleButtonGroup>
+              <StaticDatePicker
+                displayStaticWrapperAs="desktop"
+                value={draftRange[activeField]}
+                onChange={handleDateChange}
+                slotProps={{
+                  actionBar: { actions: [] },
+                }}
+              />
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  label="Start time"
+                  type="time"
+                  value={formatTimeInput(draftRange.start)}
+                  onChange={handleTimeChange('start')}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
+                  fullWidth
+                />
+                <TextField
+                  label="End time"
+                  type="time"
+                  value={formatTimeInput(draftRange.end)}
+                  onChange={handleTimeChange('end')}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
+                  fullWidth
+                />
+              </Stack>
+            </Stack>
+          </Stack>
+          <Stack direction="row" justifyContent="flex-end" spacing={1} mt={2}>
+            <Button color="inherit" onClick={handleClear}>
+              Clear
+            </Button>
+            <Button variant="contained" onClick={handleApplySelection}>
+              Apply
+            </Button>
+          </Stack>
+        </Popover>
+      </LocalizationProvider>
+    </Box>
+  )
+}
+
+const DEFAULT_DATE_SHORTCUTS: TaskDateShortcut[] = [
+  {
+    label: 'Today',
+    hint: 'Current calendar day',
+    resolveRange: () => buildSingleDayWindow(0),
+  },
+  {
+    label: 'Tomorrow',
+    hint: 'Next calendar day',
+    resolveRange: () => buildSingleDayWindow(1),
+  },
+  {
+    label: 'One week forward',
+    hint: 'Seven days ahead',
+    resolveRange: (context) => buildForwardWindowFrom(context, { days: 7 }),
+  },
+  {
+    label: 'Three months forward',
+    hint: 'Quarter ahead',
+    resolveRange: (context) => buildForwardWindowFrom(context, { months: 3, allowSystemFallback: true }),
+  },
+  {
+    label: 'One week back',
+    hint: 'Previous seven days',
+    resolveRange: (context) => buildBackwardWindowFrom(context, { days: 7 }),
+  },
+  {
+    label: 'Three months back',
+    hint: 'Previous quarter',
+    resolveRange: (context) => buildBackwardWindowFrom(context, { months: 3, allowSystemFallback: true }),
+  },
+  {
+    label: 'Last Twelve months',
+    hint: 'Rolling year',
+    resolveRange: (context) => buildBackwardWindowFrom(context, { months: 12, allowSystemFallback: true }),
+  },
+]
+
+const buildSingleDayWindow = (offsetDays: number): DateRangeValue => {
+  const target = addDays(new Date(), offsetDays)
+  return {
+    start: startOfDay(target),
+    end: endOfDay(target),
+  }
+}
+
+const buildForwardWindowFrom = (
+  context: DateRangeValue,
+  { days = 0, months = 0, allowSystemFallback = false }: { days?: number; months?: number; allowSystemFallback?: boolean },
+) => {
+  const anchor = context.start ?? context.end ?? (allowSystemFallback ? new Date() : null)
+  if (!anchor) {
+    return { ...context }
+  }
+  const endDate = months ? addMonths(anchor, months) : addDays(anchor, days)
+  return {
+    start: startOfDay(anchor),
+    end: endOfDay(endDate),
+  }
+}
+
+const buildBackwardWindowFrom = (
+  context: DateRangeValue,
+  { days = 0, months = 0, allowSystemFallback = false }: { days?: number; months?: number; allowSystemFallback?: boolean },
+) => {
+  const anchor = context.end ?? context.start ?? (allowSystemFallback ? new Date() : null)
+  if (!anchor) {
+    return { ...context }
+  }
+  const startDate = months ? addMonths(anchor, -months) : addDays(anchor, -days)
+  return {
+    start: startOfDay(startDate),
+    end: endOfDay(anchor),
+  }
+}
+
+const addDays = (base: Date, amount: number) => {
+  const result = new Date(base)
+  result.setDate(result.getDate() + amount)
+  return result
+}
+
+const addMonths = (base: Date, amount: number) => {
+  const result = new Date(base)
+  result.setMonth(result.getMonth() + amount)
+  return result
+}
+
+const startOfDay = (value: Date) => {
+  const next = new Date(value)
+  next.setHours(0, 0, 0, 0)
+  return next
+}
+
+const endOfDay = (value: Date) => {
+  const next = new Date(value)
+  next.setHours(23, 59, 59, 999)
+  return next
+}
+
+const formatDateTimeLabel = (value: Date) =>
+  new Intl.DateTimeFormat('en-GB', {
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(value)
+
+const formatTimeInput = (value: Date | null) => {
+  if (!value) {
+    return ''
+  }
+  const hours = value.getHours().toString().padStart(2, '0')
+  const minutes = value.getMinutes().toString().padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+const buildSummaryLabel = (value: DateRangeValue) => {
+  if (value.start && value.end) {
+    return `${formatDateTimeLabel(value.start)} – ${formatDateTimeLabel(value.end)}`
+  }
+  if (value.start) {
+    return `From ${formatDateTimeLabel(value.start)}`
+  }
+  if (value.end) {
+    return `Until ${formatDateTimeLabel(value.end)}`
+  }
+  return 'Date Time Picker'
+}
 
 const areQueriesEqual = (a: TaskTableQueryState, b: TaskTableQueryState) =>
   a.searchTerm === b.searchTerm &&

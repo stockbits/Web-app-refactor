@@ -155,8 +155,8 @@ const TaskManagementPage = () => {
 export default TaskManagementPage
 
 const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): TaskTableRow[] => {
-  const fromDate = query.updatedFrom ? startOfDay(query.updatedFrom) : null
-  const toDate = query.updatedTo ? endOfDay(query.updatedTo) : null
+  const fromDate = query.updatedFrom ? new Date(query.updatedFrom) : null
+  const toDate = query.updatedTo ? new Date(query.updatedTo) : null
   const keyword = query.searchTerm.trim().toLowerCase()
 
   return rows.filter((row) => {
@@ -192,13 +192,3 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
   })
 }
 
-const startOfDay = (value: string) => {
-  const date = new Date(`${value}T00:00:00`)
-  return date
-}
-
-const endOfDay = (value: string) => {
-  const date = new Date(`${value}T23:59:59`)
-  date.setMilliseconds(999)
-  return date
-}
