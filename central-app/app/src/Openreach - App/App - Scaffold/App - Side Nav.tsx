@@ -324,8 +324,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           }}
         >
           <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
-              <Box sx={{ textAlign: 'left' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ minHeight: 48 }}>
+              <Box sx={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
                 {headerSlot ? (
                   headerSlot
                 ) : (
@@ -333,7 +333,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                     component="img"
                     src={openreachLogo}
                     alt="Openreach brand mark"
-                    sx={{ width: 132, height: 'auto', filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
+                    sx={{ width: 132, height: 'auto', display: 'block', filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
                   />
                 )}
               </Box>
@@ -346,6 +346,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                     color: palette.fibreThreads,
                     '&:hover': { color: palette.energyAccent },
                     alignSelf: 'center',
+                    width: 40,
+                    height: 40,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   <CloseRoundedIcon />
