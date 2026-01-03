@@ -1,0 +1,35 @@
+Selection Logic Documentation
+============================
+
+Location
+- Core hook: central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Selection Logic.ts
+- Consumer: central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx
+
+Intent
+- Provide a predictable selection experience for every DataGrid instance shipped in the Openreach app.
+- Default to single-row selection, while supporting Ctrl/Cmd toggles and Shift-based range selection the way spreadsheet users expect.
+
+Key Behaviours
+1. Single click: Clears prior checks and selects only the clicked row. The hook persists that row id as the current anchor.
+2. Ctrl/Cmd click: Toggles the clicked row without clearing the previous ones, while updating the anchor so subsequent Shift operations know where to start.
+3. Shift click: Builds a range from the anchor to the clicked row using the grid-provided visible order (sorted/filtered) so only the rows between those two points become selected.
+4. Header checkbox reset: When the DataGrid header checkbox fires, we clear the custom selection state to stay in sync with native bulk actions.
+
+Implementation Notes
+- Modifier detection prefers the event payload from MUI callbacks; when no event is provided (keyboard toggles, programmatic selection) the hook falls back to global key listeners that keep track of Shift/Ctrl state.
+- Visible row order comes from the grid API (`getRowIndexRelativeToVisibleRows`). This guarantees Shift ranges respect the user’s current sort/filter view rather than the original dataset order.
+- The hook keeps an internal `anchorRef`: it is set on the most recent click (regular or Ctrl/Cmd) and reused when Shift-selecting.
+- Range selection always replaces the selection set with the contiguous ids in that range, mirroring spreadsheet UX and preventing orphaned selections outside the band.
+- Multi-select toggles clone the grid’s selection payload so downstream components see the exact same `GridRowSelectionModel` shape.
+- Clearing the selection resets the anchor so future Shift clicks start from the next selected row, not stale state.
+
+Integration Checklist
+1. Call `useGridApiRef()` in the table shell and pass that ref to `useMuiTableSelection` alongside the resolved row ids.
+2. Feed the hook’s `selectionModel` back into the DataGrid (`rowSelectionModel`) and wire `handleSelectionModelChange` to `onRowSelectionModelChange`.
+3. Whenever the consumer triggers a bulk action (e.g., clear filters, change dataset) invoke `clearSelection()` so the UI state stays in sync.
+4. If you expose custom toolbar buttons that modify selection, always go through the DataGrid API so the hook receives consistent callbacks.
+
+Testing Tips
+- Sort the Task ID column, click a row, then Shift-click another below it: only contiguous rows should be checked.
+- Apply filters to reduce the dataset; Shift-click should still select only the rows between the two clicks, ignoring removed rows.
+- Use Ctrl-click to add a non-adjacent row, then Shift-click farther down—range should now extend from that most recent click.

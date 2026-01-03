@@ -31,6 +31,10 @@ Selection helper (central-app/app/src/Openreach - App/App - Shared Components/MU
 - MUI primitives: `GridRowSelectionModel`, `GridCallbackDetails` from `@mui/x-data-grid`.
 - Custom work: Keyboard-aware selection manager providing single-select by default with Ctrl/Cmd multi-select and Shift range selection.
 
+Selection helper documentation (Central Library/Application - Logic/Selection Logic)
+- Outline: Purpose, behaviours, modifier handling, integration checklist, and testing guidance.
+- Custom notes: Explains how the hook reads visible row order from the DataGrid API and why anchor tracking matters for consistent Shift selection.
+
 Task filter + date window (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx)
 - MUI primitives: `Paper`, `Stack`, `Box`, `TextField`, `FormControl`, `InputLabel`, `Select`, `MenuItem`, `Checkbox`, `Chip`, `Button`, `Divider`, `OutlinedInput`, `InputAdornment`, `IconButton`, `Popover`, `List`, `ListItemButton`, `ListItemText`, `ListSubheader`, `ToggleButton`, `ToggleButtonGroup`, `StaticDatePicker`, `LocalizationProvider`.
 - Custom work: Keyword + multiselect filters feeding a draft query state, contextual shortcut list for the date popover (week and quarter jumps), preserved time controls, and deferred Apply/Clear workflow.

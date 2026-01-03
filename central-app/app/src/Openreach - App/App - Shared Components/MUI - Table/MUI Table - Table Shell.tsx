@@ -72,7 +72,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   })
 
   const apiRef = useGridApiRef()
-  const { selectionModel, handleSelectionModelChange, clearSelection } = useMuiTableSelection(resolvedRowIds)
+  const { selectionModel, handleSelectionModelChange, clearSelection } = useMuiTableSelection(resolvedRowIds, apiRef)
   const [densityMode, setDensityMode] = useState(density)
 
   useEffect(() => {

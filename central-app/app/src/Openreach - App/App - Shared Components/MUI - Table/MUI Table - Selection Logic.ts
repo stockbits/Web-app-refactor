@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import type { GridCallbackDetails, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
+import { useCallback, useEffect, useRef, useState, type MutableRefObject, type SyntheticEvent } from 'react'
+import type { GridApiCommon, GridCallbackDetails, GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
 
 interface UseMuiTableSelectionResult {
   selectionModel: GridRowSelectionModel
@@ -21,6 +21,43 @@ const cloneSelection = (model: GridRowSelectionModel): GridRowSelectionModel => 
 })
 
 const selectionIdsToArray = (model: GridRowSelectionModel) => Array.from(model.ids)
+
+const buildVisibleRowOrder = (rowIds: GridRowId[], api?: GridApiCommon | null) => {
+  const gridApi = api ?? undefined
+  if (!gridApi?.getRowIndexRelativeToVisibleRows) {
+    return rowIds
+  }
+
+  const ordered = rowIds
+    .map((id) => ({ id, position: gridApi.getRowIndexRelativeToVisibleRows(id) }))
+    .filter((entry) => entry.position !== -1)
+    .sort((a, b) => a.position - b.position)
+
+  return ordered.length ? ordered.map((entry) => entry.id) : rowIds
+}
+
+type ModifierSnapshot = { shift: boolean; ctrlMeta: boolean }
+
+const extractEventModifiers = (details?: GridCallbackDetails): ModifierSnapshot | null => {
+  const detailsWithEvent = details as
+    | (GridCallbackDetails & {
+        event?: SyntheticEvent & { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; nativeEvent?: Event }
+      })
+    | undefined
+
+  const syntheticEvent = detailsWithEvent?.event
+  const eventLike = syntheticEvent?.nativeEvent ?? syntheticEvent
+
+  if (!eventLike) {
+    return null
+  }
+
+  const possibleMouseEvent = eventLike as Partial<MouseEvent>
+  return {
+    shift: Boolean(possibleMouseEvent.shiftKey),
+    ctrlMeta: Boolean(possibleMouseEvent.metaKey || possibleMouseEvent.ctrlKey),
+  }
+}
 
 const findChangedId = (
   previousIds: Set<GridRowId>,
@@ -53,9 +90,12 @@ const buildRangeIds = (anchorId: GridRowId, targetId: GridRowId, orderedIds: Gri
 /**
  * Keeps row selection single-select by default, while allowing multi-select via Ctrl/Cmd and range select via Shift.
  */
-export const useMuiTableSelection = (rowOrder: GridRowId[]): UseMuiTableSelectionResult => {
+export const useMuiTableSelection = (
+  rowOrder: GridRowId[],
+  gridApiRef?: MutableRefObject<GridApiCommon | null>,
+): UseMuiTableSelectionResult => {
   const [selectionModel, setSelectionModel] = useState<GridRowSelectionModel>(createEmptySelection)
-  const modifierState = useRef({ ctrlMeta: false, shift: false })
+  const modifierState = useRef<ModifierSnapshot>({ ctrlMeta: false, shift: false })
   const rowOrderRef = useRef<GridRowId[]>(rowOrder)
   const anchorRef = useRef<GridRowId | null>(null)
 
@@ -95,15 +135,21 @@ export const useMuiTableSelection = (rowOrder: GridRowId[]): UseMuiTableSelectio
   }, [])
 
   const handleSelectionModelChange = useCallback(
-    (newSelection: GridRowSelectionModel, _details?: GridCallbackDetails) => {
+    (newSelection: GridRowSelectionModel, details?: GridCallbackDetails) => {
       setSelectionModel((previous) => {
-        const orderedIds = rowOrderRef.current
+        const pointerModifiers = extractEventModifiers(details)
+        const activeModifiers = pointerModifiers ?? modifierState.current
+        const orderedIdsFromApi = details?.api?.getAllRowIds?.()
+        const orderedIds = buildVisibleRowOrder(
+          orderedIdsFromApi?.length ? orderedIdsFromApi : rowOrderRef.current,
+          gridApiRef?.current ?? undefined,
+        )
         const prevIdsSet = previous.ids
         const nextIdsArray = selectionIdsToArray(newSelection)
         const nextIdsSet = new Set<GridRowId>(nextIdsArray)
         const changedId = findChangedId(prevIdsSet, nextIdsSet, orderedIds)
 
-        if (modifierState.current.shift) {
+        if (activeModifiers.shift) {
           const anchorId = anchorRef.current ?? changedId
           const targetId = changedId ?? anchorId
 
@@ -119,7 +165,7 @@ export const useMuiTableSelection = (rowOrder: GridRowId[]): UseMuiTableSelectio
           }
         }
 
-        if (modifierState.current.ctrlMeta) {
+        if (activeModifiers.ctrlMeta) {
           if (changedId !== undefined) {
             anchorRef.current = changedId
           }
@@ -139,7 +185,7 @@ export const useMuiTableSelection = (rowOrder: GridRowId[]): UseMuiTableSelectio
         }
       })
     },
-    [],
+    [gridApiRef],
   )
 
   const clearSelection = useCallback(() => {

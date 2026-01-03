@@ -6,8 +6,8 @@ export type TaskDomainId = 'ZA' | 'ZB' | 'ZC' | 'ZE' | 'MG' | 'MF' | 'MH'
 
 export const TASK_STATUS_LABELS: Record<TaskStatusCode, string> = {
   ACT: 'Active',
-  AWI: 'Awaiting info',
-  ISS: 'Issue',
+  AWI: 'Awaiting Issue',
+  ISS: 'Issued',
   EXC: 'Executing',
   COM: 'Complete',
 }
