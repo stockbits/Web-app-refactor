@@ -1,4 +1,14 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type MutableRefObject,
+  type ReactNode,
+  type WheelEvent,
+} from 'react'
 import { Box, Paper, Stack, Switch, Typography } from '@mui/material'
 import {
   DataGrid,
@@ -18,6 +28,13 @@ type DensityToggleContextValue = {
 }
 
 const DensityToggleContext = createContext<DensityToggleContextValue | null>(null)
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+
+type GridApiRefType = ReturnType<typeof useGridApiRef>
+type GridApiWithScroller = GridApiRefType['current'] & {
+  virtualScrollerRef?: MutableRefObject<HTMLDivElement | null>
+}
 
 const useDensityToggleContext = () => {
   const context = useContext(DensityToggleContext)
@@ -125,6 +142,52 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       unsubscribe?.()
     }
   }, [apiRef, clearSelection])
+
+  useEffect(() => {
+    const api = apiRef.current as GridApiWithScroller | null
+
+    if (!api?.subscribeEvent || !api.virtualScrollerRef?.current) {
+      return
+    }
+
+    const handleHorizontalWheel = (_params: unknown, event: WheelEvent) => {
+      const virtualScroller = api.virtualScrollerRef?.current
+      if (!virtualScroller) {
+        return
+      }
+
+      const prefersHorizontal = event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)
+      if (!prefersHorizontal) {
+        return
+      }
+
+      let delta = event.deltaX
+      if (event.shiftKey && delta === 0) {
+        delta = event.deltaY
+      }
+
+      if (!delta) {
+        return
+      }
+
+      const maxScrollable = virtualScroller.scrollWidth - virtualScroller.clientWidth
+      if (maxScrollable <= 0) {
+        return
+      }
+
+      event.preventDefault()
+
+      const currentLeft = Math.abs(virtualScroller.scrollLeft)
+      const nextLeft = clamp(currentLeft + delta, 0, maxScrollable)
+      api.scroll({ left: nextLeft })
+    }
+
+    const unsubscribe = api.subscribeEvent('virtualScrollerWheel', handleHorizontalWheel)
+
+    return () => {
+      unsubscribe?.()
+    }
+  }, [apiRef])
 
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>

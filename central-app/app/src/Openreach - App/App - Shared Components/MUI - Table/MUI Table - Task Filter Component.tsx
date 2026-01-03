@@ -76,6 +76,7 @@ interface TaskTableQueryConfigProps {
   statusOptions?: TaskTableRow['status'][]
   capabilityOptions?: TaskSkillCode[]
   responseCodeOptions?: TaskTableRow['responseCode'][]
+  exactSearchValues?: string[]
   initialQuery?: TaskTableQueryState
   defaultQuery?: TaskTableQueryState
   onApply: (query: TaskTableQueryState) => void
@@ -87,6 +88,7 @@ const TaskTableQueryConfig = ({
   statusOptions = DEFAULT_STATUSES,
   capabilityOptions = [],
   responseCodeOptions = [],
+  exactSearchValues = [],
   initialQuery,
   defaultQuery,
   onApply,
@@ -95,9 +97,17 @@ const TaskTableQueryConfig = ({
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
+  const [validationError, setValidationError] = useState<string | null>(null)
+  const exactSearchSet = useMemo(() => {
+    if (!exactSearchValues.length) {
+      return null
+    }
+    return new Set(exactSearchValues.map((value) => value.toLowerCase()))
+  }, [exactSearchValues])
 
   useEffect(() => {
     setDraftQuery(resolvedInitialQuery)
+    setValidationError(null)
   }, [resolvedInitialQuery])
 
   const isDirty = useMemo(() => !areQueriesEqual(draftQuery, resolvedInitialQuery), [draftQuery, resolvedInitialQuery])
@@ -144,6 +154,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       searchTerm: event.target.value,
     }))
+    setValidationError(null)
   }
 
   const handleStatusChange = (value: TaskTableRow['status'][]) => {
@@ -151,6 +162,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       statuses: value,
     }))
+    setValidationError(null)
   }
 
   const handleDivisionsChange = (value: TaskTableRow['division'][]) => {
@@ -158,6 +170,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       divisions: value,
     }))
+    setValidationError(null)
   }
 
   const handleDomainsChange = (value: TaskTableRow['domainId'][]) => {
@@ -165,6 +178,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       domains: value,
     }))
+    setValidationError(null)
   }
 
   const handleCapabilitiesChange = (value: TaskSkillCode[]) => {
@@ -172,6 +186,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       capabilities: value,
     }))
+    setValidationError(null)
   }
 
   const handleResponseCodesChange = (value: TaskTableRow['responseCode'][]) => {
@@ -179,6 +194,7 @@ const TaskTableQueryConfig = ({
       ...prev,
       responseCodes: value,
     }))
+    setValidationError(null)
   }
 
   const handleDateRangeChange = (nextRange: DateRangeValue) => {
@@ -190,12 +206,47 @@ const TaskTableQueryConfig = ({
   }
 
   const handleApply = () => {
-    onApply(draftQuery)
+    const trimmedSearch = draftQuery.searchTerm.trim()
+    const hasGlobalSearch = trimmedSearch.length > 0
+    const hasDivisionSelection = draftQuery.divisions.length > 0
+    const hasDomainSelection = draftQuery.domains.length > 0
+    const hasStatusSelection = draftQuery.statuses.length > 0
+    const hasCompleteFilterSet = hasDivisionSelection && hasDomainSelection && hasStatusSelection
+    const hasAnySimpleFilter = hasDivisionSelection || hasDomainSelection || hasStatusSelection
+
+    if (!hasGlobalSearch) {
+      if (!hasCompleteFilterSet) {
+        setValidationError('Select at least one Division, Domain, and Status when no global search is provided.')
+        return
+      }
+    } else {
+      if (hasAnySimpleFilter) {
+        setValidationError('Clear Division, Domain, and Status when using global search.')
+        return
+      }
+
+      if (exactSearchSet && !exactSearchSet.has(trimmedSearch.toLowerCase())) {
+        setValidationError('Global search must exactly match a Task ID, Work ID, or Resource ID.')
+        return
+      }
+    }
+
+    const nextQuery =
+      hasGlobalSearch && trimmedSearch !== draftQuery.searchTerm
+        ? {
+            ...draftQuery,
+            searchTerm: trimmedSearch,
+          }
+        : draftQuery
+
+    setDraftQuery(nextQuery)
+    setValidationError(null)
+    onApply(nextQuery)
   }
 
   const handleReset = () => {
     setDraftQuery(resolvedDefaultQuery)
-    onApply(resolvedDefaultQuery)
+    setValidationError(null)
   }
 
   return (
@@ -224,6 +275,8 @@ const TaskTableQueryConfig = ({
             placeholder="Task, resource, or ID"
             value={draftQuery.searchTerm}
             onChange={handleSearchChange}
+            error={Boolean(validationError)}
+            helperText={validationError ?? ' '}
             fullWidth
             sx={{
               maxWidth: { md: 320 },

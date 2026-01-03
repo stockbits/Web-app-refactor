@@ -25,7 +25,7 @@ Side navigation (central-app/app/src/Openreach - App/App - Scaffold/App - Side N
 
 Shared MUI table shell (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx)
 - MUI primitives: `Paper`, `Stack`, `Typography`, `Switch`, `Box`, `DataGrid`, `GridToolbarQuickFilter`, `GridPagination`, `GridFooterContainer`.
-- Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, and configurable empty state slot.
+- Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, configurable empty state slot, plus a custom horizontal wheel handler that proxies trackpad/Shift-scroll gestures through the DataGrid API and clamps distance so users can reach the final column without grabbing the scrollbar.
 
 Selection helper (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Selection Logic.ts)
 - MUI primitives: `GridRowSelectionModel`, `GridCallbackDetails` from `@mui/x-data-grid`.
@@ -37,11 +37,11 @@ Selection helper documentation (Central Library/Application - Logic/Selection Lo
 
 Task filter + date window (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx)
 - MUI primitives: `Paper`, `Stack`, `Box`, `TextField`, `FormControl`, `InputLabel`, `Select`, `MenuItem`, `Checkbox`, `Chip`, `Button`, `Divider`, `OutlinedInput`, `InputAdornment`, `IconButton`, `Popover`, `List`, `ListItemButton`, `ListItemText`, `ListSubheader`, `ToggleButton`, `ToggleButtonGroup`, `StaticDatePicker`, `LocalizationProvider`.
-- Custom work: Keyword + multiselect filters feeding a draft query state, contextual shortcut list for the date popover (week and quarter jumps), preserved time controls, deferred Apply/Clear workflow, and bulk-select inputs with select/clear icon logic documented in `Central Library/Application - Logic/Input Icon - Logic`.
+- Custom work: Keyword + multiselect filters feeding a draft query state, contextual shortcut list for the date popover (week and quarter jumps), preserved time controls, deferred Apply/Clear workflow, and bulk-select inputs with select/clear icon logic documented in `Central Library/Application - Logic/Input Icon - Logic`. Validation now enforces mutually exclusive search flows (exact-match global query vs. Division/Domain/Status trio), trims input before submission, surfaces inline helper text, and keeps the previous dataset visible when the form is cleared.
 
 Task management reference page (central-app/app/src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx)
 - MUI primitives: `Stack`, `Box`, `Typography`, `Chip` paired with the shared table shell.
-- Custom work: Priority/status chip palettes, `TaskTableQueryConfig` integration, memoised owner options, and filter pipeline driving the shared DataGrid instance.
+- Custom work: Priority/status chip palettes, `TaskTableQueryConfig` integration, memoised owner options, and filter pipeline driving the shared DataGrid instance. Exact-match validation now feeds on a memoised token set so global searches only return if they match real IDs; substring checks were replaced with equality checks to keep data honest.
 
 Suspense fallback + loaders (central-app/app/src/App.tsx)
 - MUI primitives: `Stack`, `CircularProgress` (indirect via compiled asset), typography usage inside Suspense fallback.

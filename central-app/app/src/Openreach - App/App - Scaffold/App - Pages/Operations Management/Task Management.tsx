@@ -264,6 +264,27 @@ const TaskManagementPage = () => {
     [],
   )
 
+  const exactSearchValues = useMemo(() => {
+    const tokens = new Set<string>()
+    TASK_TABLE_ROWS.forEach((row) => {
+      const candidates = [
+        row.taskId,
+        row.workId,
+        row.resourceId,
+        row.resourceName,
+        row.domainId,
+        row.division,
+      ]
+      candidates.forEach((value) => {
+        if (value == null) {
+          return
+        }
+        tokens.add(value.toString().toLowerCase())
+      })
+    })
+    return Array.from(tokens)
+  }, [])
+
   const defaultQuery = useMemo(() => buildDefaultTaskTableQuery(), [])
   const [activeQuery, setActiveQuery] = useState<TaskTableQueryState>(defaultQuery)
   const [hasAppliedQuery, setHasAppliedQuery] = useState(false)
@@ -287,6 +308,7 @@ const TaskManagementPage = () => {
         domainOptions={domainOptions}
         capabilityOptions={capabilityOptions}
         responseCodeOptions={responseCodeOptions}
+        exactSearchValues={exactSearchValues}
         onApply={handleApplyQuery}
       />
       {hasAppliedQuery ? (
@@ -329,8 +351,20 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
 
   return rows.filter((row) => {
     if (keyword) {
-      const haystack = `${row.taskId} ${row.workId} ${row.resourceId} ${row.resourceName ?? ''} ${row.domainId} ${row.division}`.toLowerCase()
-      if (!haystack.includes(keyword)) {
+      const hasExactMatch = [
+        row.taskId,
+        row.workId,
+        row.resourceId,
+        row.resourceName,
+        row.domainId,
+        row.division,
+      ].some((value) => {
+        if (value == null) {
+          return false
+        }
+        return value.toString().toLowerCase() === keyword
+      })
+      if (!hasExactMatch) {
         return false
       }
     }

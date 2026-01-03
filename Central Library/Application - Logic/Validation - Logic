@@ -1,0 +1,38 @@
+Validation Logic
+================
+
+Scope
+- Task management filter form + DataGrid view.
+- Components: central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx and central-app/app/src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx.
+
+Goals
+1. Prevent half-configured filter executions that would return misleading datasets.
+2. Guarantee that global-search runs only when the keyword is a true, exact identifier that the grid can satisfy.
+3. Keep the last successful result set visible until a new validated query is executed, even if the UI controls are cleared.
+
+Validation Paths
+- Global search lane: requires a non-empty string that exactly matches a Task ID, Work ID, or Resource ID (case-insensitive). The keyword must be the only active simple filter; the form blocks submission if Division, Domain, or Status selections exist.
+- Simple filter lane: users skip the global search field and provide at least one selection for Division, Domain, and Status simultaneously. Partial combinations (one or two selectors) are rejected to avoid ambiguous slicing.
+
+Error Messaging
+- Global lane mismatch → "Global search must exactly match a Task ID, Work ID, or Resource ID."
+- Mixed-mode attempt → "Clear Division, Domain, and Status when using global search."
+- Incomplete filter set → "Select at least one Division, Domain, and Status when no global search is provided."
+- The helper text is rendered under the global search TextField so the user sees immediate feedback without modal interruptions.
+
+Exact-Match Indexing
+- The Task Management page memoizes `exactSearchValues` by walking every `TaskTableRow` and collecting task/work/resource identifiers plus friendly labels (domain, division, resource name) in lowercase.
+- These tokens flow into `TaskTableQueryConfig` which builds a `Set` for O(1) membership checks whenever a user attempts a global search.
+
+State + UX Notes
+- `validationError` lives alongside the draft query state so typing or changing selectors automatically clears stale error messages.
+- Successful global searches trim whitespace before persisting state, keeping history entries clean and comparable.
+- Pressing Clear now only resets the UI controls; it does not re-run the default query, which means the table keeps showing the last approved result until another valid query fires.
+- Task-level filtering (`applyTaskFilters`) enforces the same exact-match semantics so the UI cannot drift from the documented rules.
+
+Testing Checklist
+1. Enter an unknown ID ("GG"), click Search → helper error only, no query fired.
+2. Enter a valid Task ID and select any Division at the same time → form blocks submission with the mixed-mode message.
+3. Leave global search empty, select Division+Domain but skip Status → error about completing all three selectors.
+4. Run a valid global search, then hit Clear → inputs reset but table still shows the fetched rows.
+5. Scroll horizontally with a trackpad or Shift+wheel → the DataGrid should reach the final column without grabbing the scrollbar.
