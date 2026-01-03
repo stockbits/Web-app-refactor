@@ -324,7 +324,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           }}
         >
           <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1}>
               <Box sx={{ textAlign: 'left' }}>
                 {headerSlot ? (
                   headerSlot
@@ -342,7 +342,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 <IconButton
                   aria-label="Close navigation"
                   onClick={onClose}
-                  sx={{ color: palette.fibreThreads, '&:hover': { color: palette.energyAccent } }}
+                  sx={{
+                    color: palette.fibreThreads,
+                    '&:hover': { color: palette.energyAccent },
+                    alignSelf: 'center',
+                  }}
                 >
                   <CloseRoundedIcon />
                 </IconButton>
