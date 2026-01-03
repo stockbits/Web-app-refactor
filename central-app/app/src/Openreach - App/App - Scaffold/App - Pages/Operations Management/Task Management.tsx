@@ -119,13 +119,10 @@ const TaskManagementPage = () => {
       </Box>
 
       <SharedMuiTable<TaskTableRow>
-        title="Operational tasks"
-        caption="Prioritised by escalation policies and SLA clocks"
         columns={columns}
         rows={TASK_TABLE_ROWS}
         getRowId={(row) => row.id}
         density="compact"
-        enableQuickFilter
       />
     </Stack>
   )

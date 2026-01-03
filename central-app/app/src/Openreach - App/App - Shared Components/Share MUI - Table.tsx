@@ -43,7 +43,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   loading,
   hideFooter = true,
   autoHeight = true,
-  enableQuickFilter = true,
+  enableQuickFilter = false,
   emptyState,
 }: SharedMuiTableProps<T>) {
   const NoRowsOverlay = () => (
@@ -89,7 +89,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         density={density}
         loading={loading}
         hideFooter={hideFooter}
-        disableColumnMenu
         disableRowSelectionOnClick
         slots={{
           toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
