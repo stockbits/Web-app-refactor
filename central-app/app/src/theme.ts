@@ -99,8 +99,9 @@ export const appTheme = createTheme({
         },
       },
     },
-    MuiDataGrid: {
-      styleOverrides: {
+    MuiDataGrid: {      defaultProps: {
+        autosizeOnMount: true,
+      },      styleOverrides: {
         root: {
           borderRadius: 0,
           marginBottom: '8px',

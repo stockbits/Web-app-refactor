@@ -451,7 +451,10 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
   }
 
   const handleShortcut = (resolveRange: TaskDateShortcut['resolveRange']) => () => {
-    setDraftRange(resolveRange(draftRange))
+    const newRange = resolveRange(draftRange)
+    setDraftRange(newRange)
+    // Set active field to 'start' to show the start date in the calendar
+    setActiveField('start')
   }
 
   const handleOpen = (event: MouseEvent<HTMLElement>) => {
@@ -511,10 +514,6 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                   <ListItemText primary={shortcut.label} secondary={shortcut.hint} primaryTypographyProps={{ fontWeight: 600 }} />
                 </ListItemButton>
               ))}
-              <Divider sx={{ my: 0.5 }} />
-              <ListItemButton onClick={handleClear}>
-                <ListItemText primary="Clear window" />
-              </ListItemButton>
             </List>
             <Stack spacing={2} flexGrow={1}>
               <ToggleButtonGroup
@@ -532,9 +531,10 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                 displayStaticWrapperAs="desktop"
                 value={draftRange[activeField]}
                 onChange={handleDateChange}
-                slotProps={{
-                  actionBar: { actions: [] },
-                }}
+                // Hide the internal OK/CANCEL action bar — we use our own buttons below
+                slots={{ actionBar: () => null }}
+                // Defensive: also set slotProps/slotProps for different MUI X versions
+                slotProps={{ actionBar: { sx: { display: 'none' } } } as any}
               />
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
@@ -586,27 +586,29 @@ const DEFAULT_DATE_SHORTCUTS: TaskDateShortcut[] = [
   {
     label: 'One week forward',
     hint: 'Seven days ahead',
-    resolveRange: (context) => buildForwardWindowFrom(context, { days: 7 }),
+    // Always anchor forward shortcuts to the current system date
+    resolveRange: (_context) => buildForwardWindowFrom({ start: new Date(), end: null }, { days: 7, allowSystemFallback: true }),
   },
   {
     label: 'Three months forward',
     hint: 'Quarter ahead',
-    resolveRange: (context) => buildForwardWindowFrom(context, { months: 3, allowSystemFallback: true }),
+    resolveRange: (_context) => buildForwardWindowFrom({ start: new Date(), end: null }, { months: 3, allowSystemFallback: true }),
   },
   {
     label: 'One week back',
     hint: 'Previous seven days',
-    resolveRange: (context) => buildBackwardWindowFrom(context, { days: 7 }),
+    // Always anchor backward shortcuts to the current system date
+    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { days: 7, allowSystemFallback: true }),
   },
   {
     label: 'Three months back',
     hint: 'Previous quarter',
-    resolveRange: (context) => buildBackwardWindowFrom(context, { months: 3, allowSystemFallback: true }),
+    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 3, allowSystemFallback: true }),
   },
   {
     label: 'Last Twelve months',
     hint: 'Rolling year',
-    resolveRange: (context) => buildBackwardWindowFrom(context, { months: 12, allowSystemFallback: true }),
+    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 12, allowSystemFallback: true }),
   },
 ]
 
