@@ -310,8 +310,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(5, minmax(0, 1fr))',
-                lg: 'repeat(5, minmax(0, 1fr))',
+                md: '2fr 2fr 2fr 2fr 1fr',
+                lg: '2fr 2fr 2fr 2fr 1fr',
               },
             }}
           >
@@ -361,7 +361,8 @@ const TaskTableQueryConfig = ({
                   md: 'span 1',
                   lg: 'span 1',
                 },
-                width: '100%',
+                width: { md: '80px', lg: '80px', xs: '100%' },
+                minWidth: 0,
               }}
               InputLabelProps={{ shrink: Boolean(impactFocused) }}
               InputProps={{
