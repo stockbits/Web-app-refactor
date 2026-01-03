@@ -345,15 +345,9 @@ const TaskTableQueryConfig = ({
                 },
               }}
             />
-            <TextField
-              label={impactFocused ? 'Score' : undefined}
+            <FormControl
               size="small"
-              value={draftQuery.impactValue ?? ''}
-              onChange={handleImpactValueChange}
-              onFocus={() => setImpactFocused(true)}
-              onBlur={() => setImpactFocused(false)}
-              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
-              placeholder="999"
+              variant="outlined"
               sx={{
                 gridColumn: {
                   xs: 'span 1',
@@ -364,9 +358,20 @@ const TaskTableQueryConfig = ({
                 width: { md: '110px', lg: '110px', xs: '100%' },
                 minWidth: 0,
               }}
-              InputLabelProps={{ shrink: Boolean(impactFocused) }}
-              InputProps={{
-                startAdornment: (
+            >
+              <InputLabel htmlFor="impact-score-input" shrink={impactFocused || Boolean(draftQuery.impactValue)}>
+                Score
+              </InputLabel>
+              <OutlinedInput
+                id="impact-score-input"
+                label="Score"
+                value={draftQuery.impactValue ?? ''}
+                onChange={handleImpactValueChange}
+                onFocus={() => setImpactFocused(true)}
+                onBlur={() => setImpactFocused(false)}
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
+                placeholder="999"
+                startAdornment={
                   <InputAdornment position="start">
                     <Tooltip title={draftQuery.impactOperator === 'gt' ? 'Greater than' : draftQuery.impactOperator === 'lt' ? 'Less than' : 'Equal'}>
                       <IconButton
@@ -378,14 +383,15 @@ const TaskTableQueryConfig = ({
                           setDraftQuery((prev) => ({ ...prev, impactOperator: next }))
                         }}
                         aria-label="Toggle impact operator"
+                        tabIndex={-1}
                       >
                         {draftQuery.impactOperator === 'gt' ? '>' : draftQuery.impactOperator === 'lt' ? '<' : '='}
                       </IconButton>
                     </Tooltip>
                   </InputAdornment>
-                ),
-              }}
-            />
+                }
+              />
+            </FormControl>
           </Box>
         )}
 
