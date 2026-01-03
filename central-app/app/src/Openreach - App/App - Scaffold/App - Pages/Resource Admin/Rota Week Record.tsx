@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material'
 
 const RotaWeekRecordPage = () => (
-  <Box sx={{ p: 2 }}>
+  <Box >
     <Typography variant="body1" color="text.secondary">
       Placeholder content for Rota Week Record. Wire real data pipelines here.
     </Typography>

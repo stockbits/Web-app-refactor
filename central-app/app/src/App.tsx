@@ -424,7 +424,7 @@ function App() {
             />
           </Box>
 
-          <Box className="app-canvas">
+          <Box className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}>
             {showWelcome ? (
               <LandingOverview
                 groups={MENU_GROUPS}
@@ -443,11 +443,7 @@ function App() {
                 {activePage ? (
                   <Box
                     component="section"
-                    borderRadius={2}
-                    border="1px solid rgba(7,59,76,0.12)"
-                    bgcolor="#fff"
-                    px={{ xs: 1, sm: 1.5, md: 2 }}
-                    py={{ xs: 0.9, sm: 1.4, md: 1.75 }}
+                    sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}
                   >
                     <Stack gap={1.5}>
                       <Breadcrumbs
@@ -456,6 +452,7 @@ function App() {
                         sx={{
                           fontWeight: 600,
                           mb: 0.5,
+                          pt: 1,
                           "& .MuiBreadcrumbs-separator": {
                             fontWeight: 400,
                             letterSpacing: 2,
@@ -511,7 +508,9 @@ function App() {
                               </Stack>
                             }
                           >
-                            <ActivePageComponent />
+                            <Box sx={{ flex: 1, px: 2 }}>
+                              <ActivePageComponent />
+                            </Box>
                           </Suspense>
                         );
                       })()}

@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/material'
 
 const TaskRoutingPage = () => (
-  <Box sx={{ p: 2 }}>
+  <Box >
     <Typography variant="body1" color="text.secondary">
       Placeholder content for Task Routing. Wire real data pipelines here.
     </Typography>

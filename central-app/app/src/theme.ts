@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import type {} from '@mui/x-data-grid/themeAugmentation';
 
 const blockGreen = "#073B4C";
 const deepBlue = "#142032";
@@ -95,6 +96,19 @@ export const appTheme = createTheme({
           "&::-webkit-scrollbar-corner": {
             backgroundColor: deepBlue,
           },
+        },
+      },
+    },
+    MuiDataGrid: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+          marginBottom: '8px',
+        },
+        columnHeader: {
+          backgroundColor: openreachPalette.fibreThreads,
+          color: openreachPalette.typographyInk,
+          fontWeight: 600,
         },
       },
     },
