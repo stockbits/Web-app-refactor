@@ -188,6 +188,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             letterSpacing: 0.6,
           },
           '& .MuiDataGrid-cell': {
+            display: 'flex',
+            alignItems: 'center',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
