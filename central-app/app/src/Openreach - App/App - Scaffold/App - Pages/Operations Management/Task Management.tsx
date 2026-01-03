@@ -1,5 +1,5 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
-import SharedMuiTable, { type SharedMuiTableColumn } from '../../../App - Shared Compodents/Share MUI - Table'
+import SharedMuiTable, { type SharedMuiTableColumn } from '../../../App - Shared Components/Share MUI - Table'
 import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
 
 const priorityStyles: Record<TaskTableRow['priority'], { color: string; bg: string }> = {
