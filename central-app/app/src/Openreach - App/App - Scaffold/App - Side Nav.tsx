@@ -241,12 +241,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
 
   const footerContent = footerSlot ?? (
     <Stack gap={0.75} alignItems="flex-start">
-      <Box
-        component="img"
-        src={openreachLogo}
-        alt="Openreach brand mark"
-        sx={{ width: 96, height: 'auto', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}
-      />
       <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap">
         <Chip
           label={CLIENT_BUILD.label}
