@@ -6,7 +6,7 @@ import TaskTableQueryConfig, {
   buildDefaultTaskTableQuery,
   type TaskTableQueryState,
 } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
-import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Base/Task - Table'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
 
 const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {
   ACT: { label: TASK_STATUS_LABELS.ACT, color: '#006C9E', bg: 'rgba(0,108,158,0.15)' },

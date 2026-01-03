@@ -1,38 +1,36 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import {
+  Autocomplete,
   Box,
   Button,
-  Checkbox,
   Chip,
   Divider,
-  FormControl,
   IconButton,
   InputAdornment,
-  InputLabel,
   List,
   ListItemButton,
   ListItemText,
   ListSubheader,
-  MenuItem,
   OutlinedInput,
   Paper,
   Popover,
+  Stack,
   Tab,
   Tabs,
-  Select,
-  Stack,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
+  Tooltip,
 } from '@mui/material'
+import { createFilterOptions, type AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import type { SxProps, Theme } from '@mui/material/styles'
-import type { SelectChangeEvent } from '@mui/material/Select'
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { TASK_STATUS_LABELS } from '../../App - Data Base/Task - Table'
-import type { TaskSkillCode, TaskTableRow } from '../../App - Data Base/Task - Table'
+import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import { TASK_STATUS_LABELS } from '../../App - Data Tables/Task - Table'
+import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 export type TaskTableQueryState = {
   searchTerm: string
@@ -116,6 +114,27 @@ const TaskTableQueryConfig = ({
     [draftQuery.updatedFrom, draftQuery.updatedTo],
   )
 
+  const divisionSelectOptions = useMemo(
+    () => buildLabeledOptions(divisionOptions, (value) => value),
+    [divisionOptions],
+  )
+  const domainSelectOptions = useMemo(
+    () => buildLabeledOptions(domainOptions, (value) => value),
+    [domainOptions],
+  )
+  const statusSelectOptions = useMemo(
+    () => buildLabeledOptions(statusOptions, (value) => STATUS_OPTION_LABELS[value] ?? value),
+    [statusOptions],
+  )
+  const capabilitySelectOptions = useMemo(
+    () => buildLabeledOptions(capabilityOptions, (value) => value),
+    [capabilityOptions],
+  )
+  const responseCodeSelectOptions = useMemo(
+    () => buildLabeledOptions(responseCodeOptions, (value) => value),
+    [responseCodeOptions],
+  )
+
   const handleTabChange = (_event: SyntheticEvent, nextTab: TaskFilterTab) => {
     setActiveTab(nextTab)
   }
@@ -127,40 +146,35 @@ const TaskTableQueryConfig = ({
     }))
   }
 
-  const handleStatusChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as TaskTableRow['status'][]
+  const handleStatusChange = (value: TaskTableRow['status'][]) => {
     setDraftQuery((prev) => ({
       ...prev,
       statuses: value,
     }))
   }
 
-  const handleDivisionsChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as TaskTableRow['division'][]
+  const handleDivisionsChange = (value: TaskTableRow['division'][]) => {
     setDraftQuery((prev) => ({
       ...prev,
       divisions: value,
     }))
   }
 
-  const handleDomainsChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as TaskTableRow['domainId'][]
+  const handleDomainsChange = (value: TaskTableRow['domainId'][]) => {
     setDraftQuery((prev) => ({
       ...prev,
       domains: value,
     }))
   }
 
-  const handleCapabilitiesChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as TaskSkillCode[]
+  const handleCapabilitiesChange = (value: TaskSkillCode[]) => {
     setDraftQuery((prev) => ({
       ...prev,
       capabilities: value,
     }))
   }
 
-  const handleResponseCodesChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value as TaskTableRow['responseCode'][]
+  const handleResponseCodesChange = (value: TaskTableRow['responseCode'][]) => {
     setDraftQuery((prev) => ({
       ...prev,
       responseCodes: value,
@@ -183,20 +197,6 @@ const TaskTableQueryConfig = ({
     setDraftQuery(resolvedDefaultQuery)
     onApply(resolvedDefaultQuery)
   }
-
-  const renderMultiValue = (selected: string[]) => (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-      {selected.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          Any
-        </Typography>
-      ) : (
-        selected.map((value) => (
-          <Chip key={value} label={value} size="small" />
-        ))
-      )}
-    </Box>
-  )
 
   return (
     <Paper
@@ -240,67 +240,29 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(3, minmax(0, 1fr))',
-                lg: 'repeat(6, minmax(0, 1fr))',
+                md: 'repeat(5, minmax(0, 1fr))',
+                lg: 'repeat(5, minmax(0, 1fr))',
               },
             }}
           >
-            <FormControl fullWidth>
-              <InputLabel id="division-filter-label">Divisions</InputLabel>
-              <Select
-                labelId="division-filter-label"
-                label="Divisions"
-                multiple
-                value={draftQuery.divisions}
-                onChange={handleDivisionsChange}
-                renderValue={renderMultiValue}
-              >
-                {divisionOptions.map((division) => (
-                  <MenuItem key={division} value={division}>
-                    <Checkbox checked={draftQuery.divisions.includes(division)} size="small" />
-                    <Typography variant="body2">{division}</Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="domain-filter-label">Domains</InputLabel>
-              <Select
-                labelId="domain-filter-label"
-                label="Domains"
-                multiple
-                value={draftQuery.domains}
-                onChange={handleDomainsChange}
-                renderValue={renderMultiValue}
-              >
-                {domainOptions.map((domain) => (
-                  <MenuItem key={domain} value={domain}>
-                    <Checkbox checked={draftQuery.domains.includes(domain)} size="small" />
-                    <Typography variant="body2">{domain}</Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="status-filter-label">Statuses</InputLabel>
-              <Select
-                labelId="status-filter-label"
-                label="Statuses"
-                multiple
-                value={draftQuery.statuses}
-                onChange={handleStatusChange}
-                renderValue={renderMultiValue}
-              >
-                {statusOptions.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    <Checkbox checked={draftQuery.statuses.includes(status)} size="small" />
-                    <Typography variant="body2">
-                      {STATUS_OPTION_LABELS[status] ?? status}
-                    </Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <BulkSelectableMultiSelect
+              label="Divisions"
+              options={divisionSelectOptions}
+              value={draftQuery.divisions}
+              onChange={handleDivisionsChange}
+            />
+            <BulkSelectableMultiSelect
+              label="Domains"
+              options={domainSelectOptions}
+              value={draftQuery.domains}
+              onChange={handleDomainsChange}
+            />
+            <BulkSelectableMultiSelect
+              label="Statuses"
+              options={statusSelectOptions}
+              value={draftQuery.statuses}
+              onChange={handleStatusChange}
+            />
           </Box>
         )}
 
@@ -312,47 +274,23 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: 'repeat(3, minmax(0, 1fr))',
-                lg: 'repeat(6, minmax(0, 1fr))',
+                md: 'repeat(5, minmax(0, 1fr))',
+                lg: 'repeat(5, minmax(0, 1fr))',
               },
             }}
           >
-            <FormControl fullWidth>
-              <InputLabel id="capability-filter-label">Capabilities</InputLabel>
-              <Select
-                labelId="capability-filter-label"
-                label="Capabilities"
-                multiple
-                value={draftQuery.capabilities}
-                onChange={handleCapabilitiesChange}
-                renderValue={renderMultiValue}
-              >
-                {capabilityOptions.map((capability) => (
-                  <MenuItem key={capability} value={capability}>
-                    <Checkbox checked={draftQuery.capabilities.includes(capability)} size="small" />
-                    <Typography variant="body2">{capability}</Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth>
-              <InputLabel id="response-filter-label">Response codes</InputLabel>
-              <Select
-                labelId="response-filter-label"
-                label="Response codes"
-                multiple
-                value={draftQuery.responseCodes}
-                onChange={handleResponseCodesChange}
-                renderValue={renderMultiValue}
-              >
-                {responseCodeOptions.map((responseCode) => (
-                  <MenuItem key={responseCode} value={responseCode}>
-                    <Checkbox checked={draftQuery.responseCodes.includes(responseCode)} size="small" />
-                    <Typography variant="body2">{responseCode}</Typography>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <BulkSelectableMultiSelect
+              label="Capabilities"
+              options={capabilitySelectOptions}
+              value={draftQuery.capabilities}
+              onChange={handleCapabilitiesChange}
+            />
+            <BulkSelectableMultiSelect
+              label="Response codes"
+              options={responseCodeSelectOptions}
+              value={draftQuery.responseCodes}
+              onChange={handleResponseCodesChange}
+            />
             <TaskDateWindowField
               value={dateRangeValue}
               onChange={handleDateRangeChange}
@@ -360,7 +298,7 @@ const TaskTableQueryConfig = ({
                 gridColumn: {
                   xs: 'span 1',
                   sm: 'span 2',
-                  md: 'span 3',
+                  md: 'span 2',
                   lg: 'span 2',
                 },
               }}
@@ -490,6 +428,8 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
           readOnly
           onClick={handleOpen}
           placeholder="Date Time Picker"
+          size="small"
+          fullWidth
           endAdornment={
             <InputAdornment position="end">
               <IconButton size="small" onClick={handleOpen} aria-label="Edit date window">
@@ -724,4 +664,259 @@ const arraysEqual = (left: string[], right: string[]) => {
     return false
   }
   return left.every((value, index) => value === right[index])
+}
+
+type LabeledOption<TValue extends string> = {
+  label: string
+  value: TValue
+}
+
+const buildLabeledOptions = <TValue extends string>(
+  values: TValue[],
+  resolveLabel: (value: TValue) => string,
+): LabeledOption<TValue>[] => values.map((value) => ({ value, label: resolveLabel(value) }))
+
+type BulkSelectableMultiSelectProps<TValue extends string> = {
+  label: string
+  options: LabeledOption<TValue>[]
+  value: TValue[]
+  onChange: (value: TValue[]) => void
+}
+
+const BulkSelectableMultiSelect = <TValue extends string>({
+  label,
+  options,
+  value,
+  onChange,
+}: BulkSelectableMultiSelectProps<TValue>) => {
+  const [inputValue, setInputValue] = useState('')
+  const [actionMode, setActionMode] = useState<'select' | 'clear'>('select')
+
+  useEffect(() => {
+    if (!value.length && actionMode !== 'select') {
+      setActionMode('select')
+    }
+  }, [actionMode, value.length])
+
+  const optionMap = useMemo(() => {
+    const nextMap = new Map<TValue, LabeledOption<TValue>>()
+    options.forEach((option) => nextMap.set(option.value, option))
+    return nextMap
+  }, [options])
+
+  const selectedOptions = useMemo(() => {
+    const mapped = value.map((selectedValue) => optionMap.get(selectedValue)).filter(Boolean)
+    return mapped as LabeledOption<TValue>[]
+  }, [optionMap, value])
+
+  const filterOptions = useMemo(
+    () =>
+      createFilterOptions<LabeledOption<TValue>>({
+        stringify: (option) => `${option.label} ${option.value}`,
+        trim: true,
+      }),
+    [],
+  )
+
+  const selectAllCandidates = useMemo(() => {
+    const trimmed = inputValue.trim()
+    if (!trimmed) {
+      return options
+    }
+    return filterOptions(options, {
+      inputValue: trimmed,
+      getOptionLabel: (option) => option.label,
+    })
+  }, [filterOptions, inputValue, options])
+
+  const selectedSet = useMemo(() => new Set(value), [value])
+  const bulkMatchCount = selectAllCandidates.length
+  const bulkAlreadySelected = selectAllCandidates.every((option) => selectedSet.has(option.value))
+  const hasSearchTerm = Boolean(inputValue.trim())
+  const showBulkSelect = options.length > 0
+  const isBulkActionDisabled = bulkMatchCount === 0 || bulkAlreadySelected
+  const isAllSelected = options.length > 0 && value.length === options.length
+  const shouldShowSelectAllIcon = actionMode === 'select' && showBulkSelect && bulkMatchCount > 0 && !isBulkActionDisabled
+  const shouldShowClearIcon = actionMode === 'clear' && value.length > 0
+
+  const handleBulkSelect = () => {
+    if (isBulkActionDisabled) {
+      return
+    }
+    const deduped = new Set<TValue>()
+    const merged: TValue[] = []
+
+    value.forEach((entry) => {
+      if (!deduped.has(entry)) {
+        deduped.add(entry)
+        merged.push(entry)
+      }
+    })
+
+    selectAllCandidates.forEach((option) => {
+      if (!deduped.has(option.value)) {
+        deduped.add(option.value)
+        merged.push(option.value)
+      }
+    })
+
+    onChange(merged)
+    setActionMode('clear')
+    setInputValue('')
+  }
+
+  const handleSelectionChange = (_event: SyntheticEvent, nextOptions: LabeledOption<TValue>[]) => {
+    onChange(nextOptions.map((option) => option.value))
+  }
+
+  const handleInputChange = (
+    _event: SyntheticEvent,
+    nextValue: string,
+    reason: AutocompleteInputChangeReason,
+  ) => {
+    if (reason === 'reset') {
+      setInputValue('')
+      setActionMode('select')
+      return
+    }
+    if (reason === 'input') {
+      setActionMode('select')
+    }
+    setInputValue(nextValue)
+  }
+
+  const handleClearSelection = () => {
+    if (!value.length) {
+      return
+    }
+    onChange([])
+    setActionMode('select')
+    setInputValue('')
+  }
+
+  const bulkTooltipLabel = !showBulkSelect
+    ? ''
+    : bulkMatchCount === 0
+      ? 'No options available'
+      : bulkAlreadySelected
+        ? hasSearchTerm
+          ? 'All matches already selected'
+          : 'All options already selected'
+        : hasSearchTerm
+          ? `Select ${bulkMatchCount} matches`
+          : `Select all ${bulkMatchCount} options`
+
+  return (
+    <Autocomplete
+      multiple
+      options={options}
+      value={selectedOptions}
+      onChange={handleSelectionChange}
+      inputValue={inputValue}
+      onInputChange={handleInputChange}
+      filterOptions={filterOptions}
+      disableCloseOnSelect
+      disableClearable
+      fullWidth
+      isOptionEqualToValue={(option, selected) => option.value === selected.value}
+      getOptionLabel={(option) => option.label}
+      renderTags={(tagValue, getTagProps) => {
+        if (isAllSelected) {
+          return (
+            <Chip
+              key="all-selected"
+              size="small"
+              label="All selected"
+              variant="outlined"
+              title="All selected"
+              onDelete={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                onChange([])
+                setActionMode('select')
+              }}
+            />
+          )
+        }
+        const MAX_VISIBLE_TAGS = 1
+        const visibleTags = tagValue.slice(0, MAX_VISIBLE_TAGS)
+        const hiddenCount = tagValue.length - visibleTags.length
+        return (
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'nowrap',
+              overflow: 'hidden',
+              gap: 0.5,
+              maxWidth: '100%',
+            }}
+          >
+            {visibleTags.map((option, index) => (
+              <Chip {...getTagProps({ index })} key={option.value} label={option.label} size="small" />
+            ))}
+            {hiddenCount > 0 && (
+              <Chip
+                size="small"
+                label={`+${hiddenCount} more`}
+                variant="outlined"
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}
+                onClick={(event) => {
+                  // keep focus on input so the dropdown remains accessible while preventing accidental removal
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}
+              />
+            )}
+          </Box>
+        )
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={value.length ? undefined : 'Filter list'}
+          size="small"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {shouldShowSelectAllIcon && (
+                  <Tooltip title={bulkTooltipLabel} placement="top">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={handleBulkSelect}
+                        disabled={isBulkActionDisabled}
+                        aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
+                      >
+                        <DoneAllRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {!shouldShowSelectAllIcon && shouldShowClearIcon && (
+                  <Tooltip title="Clear selection" placement="top">
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={handleClearSelection}
+                        aria-label="Clear selection"
+                        disabled={!value.length}
+                      >
+                        <CloseRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+    />
+  )
 }

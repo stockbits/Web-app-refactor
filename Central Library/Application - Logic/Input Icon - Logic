@@ -1,0 +1,22 @@
+# Input Icon Logic
+
+## Overview
+Multi-select filter fields inside `TaskTableQueryConfig` surface a single context-aware action icon beside each input. The icon toggles between two roles:
+
+1. **Select mode** (DoneAll icon): visible whenever there are selectable matches for the current search text or, if no text is present, when not all options have been applied yet. Clicking it bulk-selects every currently matched option, merges those with the existing selection, clears the search text, and flips the control into clear mode.
+2. **Clear mode** (Close icon): shown immediately after a bulk-select or any situation where the selection is non-empty and the select action is not available. Activating it wipes every value from the field, resets the search text, and returns the component to select mode.
+
+This behavior lets users run a rapid loop of: type filter → select all matches → type new filter → select all, without ever seeing conflicting icons.
+
+## Implementation Notes
+- Component: `BulkSelectableMultiSelect` at `central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx`.
+- State: `actionMode` (`'select' | 'clear'`) tracks which icon to show. The control reverts to `'select'` whenever the user types, clears, or deletes via chips.
+- Candidate resolution: `selectAllCandidates` is derived from the current input text using `createFilterOptions`. When the input is empty it falls back to the full option list so the DoneAll icon can represent “select everything”.
+- Select flow: clicking the DoneAll icon deduplicates the current selection plus candidates, updates `value`, empties the input, and switches `actionMode` to `'clear'`.
+- Clear flow: the Close icon simply calls `onChange([])` and restores select mode; chip-level delete handlers also reset the mode to keep icon state consistent.
+- Accessibility: tooltips describe the active action (“Select all”, “Clear selection”, etc.), so the user always understands what the lone icon will do.
+
+## Usage Guidance
+- Reserve this pattern for dense filtering UIs where users frequently apply multiple bulk segments.
+- Always pair it with deterministic chip rendering so state remains observable even when the icon alone changes.
+- If more than two actions are ever needed, migrate to an explicit button cluster; this pattern is optimized for single-action-at-a-time workflows.
