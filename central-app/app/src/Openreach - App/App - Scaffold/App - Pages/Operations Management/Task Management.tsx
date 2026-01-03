@@ -1,4 +1,4 @@
-import { Chip, Typography } from '@mui/material'
+import { Box, Chip, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/Share MUI - Table'
 import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
@@ -110,9 +110,11 @@ const TaskManagementPage = () => {
       minWidth: 160,
       sortable: false,
       renderCell: (params) => (
-        <Typography variant="body2" color="text.secondary" noWrap>
-          {dateFormatter.format(new Date(params.row.updatedAt))}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {dateFormatter.format(new Date(params.row.updatedAt))}
+          </Typography>
+        </Box>
       ),
     },
   ]
@@ -123,7 +125,8 @@ const TaskManagementPage = () => {
       rows={TASK_TABLE_ROWS}
       getRowId={(row) => row.id}
       density="compact"
-      enableDensitySelector
+      enableQuickFilter
+      showFooterControls
     />
   )
 }

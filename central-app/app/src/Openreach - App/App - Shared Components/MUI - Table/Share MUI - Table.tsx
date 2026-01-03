@@ -1,8 +1,9 @@
-import { useEffect, useMemo, type ReactNode } from 'react'
-import { Box, Paper, Stack, Typography } from '@mui/material'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Box, Paper, Stack, Switch, Typography } from '@mui/material'
 import {
   DataGrid,
-  GridToolbarDensitySelector,
+  GridFooterContainer,
+  GridPagination,
   GridToolbarQuickFilter,
   useGridApiRef,
   type GridColDef,
@@ -10,6 +11,23 @@ import {
   type GridValidRowModel,
 } from '@mui/x-data-grid'
 import { useMuiTableSelection } from './MUI Table - Selection Logic'
+
+type DensityToggleContextValue = {
+  isDense: boolean
+  onToggleDense: (next: boolean) => void
+}
+
+const DensityToggleContext = createContext<DensityToggleContextValue | null>(null)
+
+const useDensityToggleContext = () => {
+  const context = useContext(DensityToggleContext)
+
+  if (!context) {
+    throw new Error('Density toggle context must be used within its provider')
+  }
+
+  return context
+}
 
 export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   columns: GridColDef<T>[]
@@ -22,7 +40,9 @@ export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowM
   hideFooter?: boolean
   autoHeight?: boolean
   enableQuickFilter?: boolean
-  enableDensitySelector?: boolean
+  showFooterControls?: boolean
+  pageSizeOptions?: number[]
+  initialPageSize?: number
   emptyState?: ReactNode
 }
 
@@ -37,7 +57,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   hideFooter = true,
   autoHeight = true,
   enableQuickFilter = false,
-  enableDensitySelector = false,
+  showFooterControls = false,
+  pageSizeOptions,
+  initialPageSize = 5,
   emptyState,
 }: SharedMuiTableProps<T>) {
   const resolvedRowIds = rows.map((row, index) => {
@@ -51,6 +73,41 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
   const apiRef = useGridApiRef()
   const { selectionModel, handleSelectionModelChange, clearSelection } = useMuiTableSelection(resolvedRowIds)
+  const [densityMode, setDensityMode] = useState(density)
+
+  useEffect(() => {
+    setDensityMode(density)
+  }, [density])
+
+  const handleDensityToggle = useCallback((nextDense: boolean) => {
+    setDensityMode(nextDense ? 'compact' : 'standard')
+  }, [])
+
+  const densityContextValue = useMemo(
+    () => ({
+      isDense: densityMode === 'compact',
+      onToggleDense: handleDensityToggle,
+    }),
+    [densityMode, handleDensityToggle],
+  )
+
+  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [5, 10, 25]
+  const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
+  const resolvedInitialPageSize = resolvedPageSizeOptions.includes(normalizedInitialPageSize)
+    ? normalizedInitialPageSize
+    : resolvedPageSizeOptions[0]
+  const resolvedHideFooter = showFooterControls ? false : hideFooter
+  const paginationSettings = !resolvedHideFooter
+    ? {
+        pagination: true as const,
+        initialState: {
+          pagination: {
+            paginationModel: { pageSize: resolvedInitialPageSize },
+          },
+        },
+        pageSizeOptions: resolvedPageSizeOptions,
+      }
+    : null
 
   useEffect(() => {
     const api = apiRef.current
@@ -67,43 +124,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     }
   }, [apiRef, clearSelection])
 
-  const ToolbarComponent = useMemo(() => {
-    if (!enableQuickFilter && !enableDensitySelector) {
-      return undefined
-    }
-
-    const Toolbar = () => (
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        gap={1}
-        px={1.5}
-        py={1}
-        alignItems={{ xs: 'stretch', sm: 'center' }}
-      >
-        {enableQuickFilter && (
-          <Box sx={{ flexGrow: 1 }}>
-            <GridToolbarQuickFilter
-              debounceMs={250}
-              quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
-            />
-          </Box>
-        )}
-
-        {enableDensitySelector && (
-          <Stack direction="row" alignItems="center" spacing={0.75}>
-            <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
-              Density
-            </Typography>
-            <GridToolbarDensitySelector slotProps={{ tooltip: { title: 'Adjust row spacing' } }} />
-          </Stack>
-        )}
-      </Stack>
-    )
-
-    Toolbar.displayName = 'SharedMuiTableToolbar'
-    return Toolbar
-  }, [enableQuickFilter, enableDensitySelector])
-
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>
       {emptyState ?? (
@@ -114,7 +134,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     </Box>
   )
 
-  return (
+  const tableContent = (
     <Paper
       elevation={0}
       sx={{
@@ -145,16 +165,18 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         rows={rows}
         columns={columns}
         getRowId={getRowId}
-        density={density}
+        density={densityMode}
         loading={loading}
-        hideFooter={hideFooter}
+        hideFooter={resolvedHideFooter}
+        {...(paginationSettings ?? {})}
         rowSelectionModel={selectionModel}
         onRowSelectionModelChange={handleSelectionModelChange}
         checkboxSelection
         disableMultipleRowSelection={false}
         slots={{
-          toolbar: ToolbarComponent,
+          toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
           noRowsOverlay: NoRowsOverlay,
+          footer: showFooterControls ? DensePaddingFooter : undefined,
         }}
         sx={{
           border: 'none',
@@ -179,6 +201,52 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       />
     </Paper>
   )
+
+  if (showFooterControls) {
+    return <DensityToggleContext.Provider value={densityContextValue}>{tableContent}</DensityToggleContext.Provider>
+  }
+
+  return tableContent
 }
 
 export default SharedMuiTable
+
+const QuickFilterToolbar = () => (
+  <Stack px={1.5} py={1} alignItems="flex-start">
+    <Box sx={{ width: '100%' }}>
+      <GridToolbarQuickFilter
+        debounceMs={250}
+        quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
+      />
+    </Box>
+  </Stack>
+)
+
+const DensePaddingFooter = () => {
+  const { isDense, onToggleDense } = useDensityToggleContext()
+
+  return (
+    <GridFooterContainer sx={{ px: 2, py: 1.25, borderTop: '1px solid rgba(7,59,76,0.08)' }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={1.5}
+        width="100%"
+      >
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Switch
+            size="small"
+            checked={isDense}
+            onChange={(event) => onToggleDense(event.target.checked)}
+            inputProps={{ 'aria-label': 'Toggle dense padding' }}
+          />
+          <Typography variant="body2" color="text.secondary">
+            Dense padding
+          </Typography>
+        </Stack>
+        <GridPagination />
+      </Stack>
+    </GridFooterContainer>
+  )
+}
