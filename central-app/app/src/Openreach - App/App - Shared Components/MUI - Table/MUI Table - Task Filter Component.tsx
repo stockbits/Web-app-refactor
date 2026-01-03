@@ -361,7 +361,7 @@ const TaskTableQueryConfig = ({
                   md: 'span 1',
                   lg: 'span 1',
                 },
-                width: { md: '80px', lg: '80px', xs: '100%' },
+                width: { md: '110px', lg: '110px', xs: '100%' },
                 minWidth: 0,
               }}
               InputLabelProps={{ shrink: Boolean(impactFocused) }}
