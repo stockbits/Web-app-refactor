@@ -566,7 +566,7 @@ function App() {
                       bgcolor="#fff"
                     >
                       <Typography color="text.secondary">
-                        Select a tool card to load its scaffolded page.
+                      Select a tool card to load its page.
                       </Typography>
                     </Box>
                   </>
