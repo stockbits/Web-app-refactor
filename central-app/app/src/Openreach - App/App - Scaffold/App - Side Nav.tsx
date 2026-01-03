@@ -511,7 +511,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               <Box
                 mt="auto"
                 pt={2.5}
-                pb="calc(1.25rem + env(safe-area-inset-bottom, 16px))"
+                pb="env(safe-area-inset-bottom, 0px)"
               >
                 <Divider sx={{ mb: 1.5, borderColor: alpha(white, 0.08) }} />
                 {footerContent}
