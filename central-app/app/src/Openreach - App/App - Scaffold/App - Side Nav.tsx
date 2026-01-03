@@ -34,7 +34,7 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 import openreachLogo from '@central-logos/Openreach-Logo-White.png'
 
-const CLIENT_BUILD = 'Client build 02.01.2026'
+const CLIENT_BUILD = { label: 'Client build', date: '02.01.2026' }
 
 export interface OpenreachNavItem {
   id: string
@@ -240,21 +240,37 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   const noMatches = showTreeResults && filteredGroups.length === 0
 
   const footerContent = footerSlot ?? (
-    <Stack gap={1.25} alignItems="flex-start">
+    <Stack gap={0.75} alignItems="flex-start">
       <Box
         component="img"
         src={openreachLogo}
         alt="Openreach brand mark"
-        sx={{ width: 120, height: 'auto', filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.35))' }}
+        sx={{ width: 96, height: 'auto', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.35))' }}
       />
-      <Stack gap={0.5}>
-        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), letterSpacing: 1 }}>
-          {CLIENT_BUILD.toUpperCase()}
-        </Typography>
-        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
-          Last sync · 06:00 UTC
+      <Stack direction="row" gap={0.75} alignItems="center" flexWrap="wrap">
+        <Chip
+          label={CLIENT_BUILD.label}
+          size="small"
+          variant="outlined"
+          sx={{
+            height: 22,
+            borderColor: alpha(palette.fibreThreads, 0.3),
+            color: alpha(palette.fibreThreads, 0.85),
+            '& .MuiChip-label': {
+              px: 0.75,
+              fontSize: '0.65rem',
+              textTransform: 'uppercase',
+              letterSpacing: 0.5,
+            },
+          }}
+        />
+        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7) }}>
+          {CLIENT_BUILD.date}
         </Typography>
       </Stack>
+      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
+        Last sync · 06:00 UTC
+      </Typography>
     </Stack>
   )
 
@@ -510,10 +526,10 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             {footerContent && (
               <Box
                 mt="auto"
-                pt={2.5}
+                pt={1.75}
                 pb="env(safe-area-inset-bottom, 0px)"
               >
-                <Divider sx={{ mb: 1.5, borderColor: alpha(white, 0.08) }} />
+                <Divider sx={{ mb: 1, borderColor: alpha(white, 0.08) }} />
                 {footerContent}
               </Box>
             )}
