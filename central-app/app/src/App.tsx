@@ -448,15 +448,27 @@ function App() {
                     <Stack gap={1.5}>
                       <Breadcrumbs
                         aria-label="breadcrumb"
-                        separator="•"
+                        separator={
+                          <Box
+                            component="span"
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              mx: 1,
+                              color: 'text.secondary',
+                              fontWeight: 400,
+                            }}
+                          >
+                            {'\u2022'}
+                          </Box>
+                        }
                         sx={{
                           fontWeight: 600,
                           mb: 0.5,
                           pt: 1,
-                          "& .MuiBreadcrumbs-separator": {
-                            fontWeight: 400,
-                            letterSpacing: 2,
-                            color: "text.secondary",
+                          '& .MuiBreadcrumbs-separator': {
+                            display: 'inline-flex',
+                            alignItems: 'center',
                           },
                         }}
                       >
@@ -469,7 +481,7 @@ function App() {
                           sx={{
                             display: "inline-flex",
                             alignItems: "center",
-                            gap: 0.5,
+                            gap: 1,
                             cursor: "pointer",
                             border: 0,
                             background: "none",
