@@ -6,20 +6,14 @@ import TaskTableQueryConfig, {
   buildDefaultTaskTableQuery,
   type TaskTableQueryState,
 } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
-import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Base/Task - Table'
 
-const priorityStyles: Record<TaskTableRow['priority'], { color: string; bg: string }> = {
-  Critical: { color: '#A4161A', bg: 'rgba(164,22,26,0.1)' },
-  High: { color: '#B34700', bg: 'rgba(179,71,0,0.12)' },
-  Medium: { color: '#1565C0', bg: 'rgba(21,101,192,0.12)' },
-  Low: { color: '#2E7D32', bg: 'rgba(46,125,50,0.12)' },
-}
-
-const statusPalette: Record<TaskTableRow['status'], { color: string; bg: string }> = {
-  'In Progress': { color: '#006C9E', bg: 'rgba(0,108,158,0.15)' },
-  Queued: { color: '#6A5B8A', bg: 'rgba(106,91,138,0.18)' },
-  Blocked: { color: '#B71C1C', bg: 'rgba(183,28,28,0.15)' },
-  Complete: { color: '#1B5E20', bg: 'rgba(27,94,32,0.12)' },
+const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {
+  ACT: { label: TASK_STATUS_LABELS.ACT, color: '#006C9E', bg: 'rgba(0,108,158,0.15)' },
+  AWI: { label: TASK_STATUS_LABELS.AWI, color: '#6A5B8A', bg: 'rgba(106,91,138,0.18)' },
+  ISS: { label: TASK_STATUS_LABELS.ISS, color: '#B34700', bg: 'rgba(179,71,0,0.15)' },
+  EXC: { label: TASK_STATUS_LABELS.EXC, color: '#8B2F4E', bg: 'rgba(139,47,78,0.15)' },
+  COM: { label: TASK_STATUS_LABELS.COM, color: '#1B5E20', bg: 'rgba(27,94,32,0.12)' },
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
@@ -29,79 +23,212 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
   minute: '2-digit',
 })
 
+const commitDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+})
+
+const commitTypeLabels: Record<TaskTableRow['commitType'], string> = {
+  APPOINTMENT: 'Appointment',
+  'START BY': 'Start by',
+  'COMPLETE BY': 'Complete by',
+  TAIL: 'Tail',
+}
+
+const linkedTaskLabels: Record<TaskTableRow['linkedTask'], string> = {
+  Y: 'Yes',
+  N: 'No',
+}
+
 const TaskManagementPage = () => {
   const columns: GridColDef<TaskTableRow>[] = [
     {
-      field: 'id',
+      field: 'taskId',
       headerName: 'Task ID',
-      flex: 0.7,
-      minWidth: 120,
+      flex: 0.8,
+      minWidth: 140,
       renderCell: (params) => (
-        <Typography
-          variant="body2"
-          fontFamily="'IBM Plex Mono', monospace"
-          fontWeight={600}
-          color="text.primary"
-          noWrap
-        >
-          {params.row.id}
+        <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.taskId}
         </Typography>
-      ),
-    },
-    {
-      field: 'name',
-      headerName: 'Task',
-      flex: 1.6,
-      minWidth: 220,
-      renderCell: (params) => (
-        <Typography
-          variant="body2"
-          fontWeight={600}
-          noWrap
-          sx={{ display: 'block', width: '100%' }}
-          title={`${params.row.name} • Owner: ${params.row.owner}`}
-        >
-          {params.row.name}
-          <Typography component="span" variant="body2" color="text.secondary" fontWeight={500} sx={{ ml: 1 }}>
-            • {params.row.owner}
-          </Typography>
-        </Typography>
-      ),
-    },
-    {
-      field: 'priority',
-      headerName: 'Priority',
-      align: 'center',
-      headerAlign: 'center',
-      flex: 0.7,
-      minWidth: 120,
-      renderCell: (params) => (
-        <Chip
-          label={params.row.priority}
-          size="small"
-          sx={{
-            bgcolor: priorityStyles[params.row.priority].bg,
-            color: priorityStyles[params.row.priority].color,
-            fontWeight: 600,
-          }}
-        />
       ),
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: 'Task status',
+      flex: 1,
+      minWidth: 160,
+      renderCell: (params) => {
+        const meta = statusMetadata[params.row.status]
+        return (
+          <Chip
+            label={`${meta.label} (${params.row.status})`}
+            size="small"
+            sx={{
+              bgcolor: meta.bg,
+              color: meta.color,
+              fontWeight: 600,
+            }}
+          />
+        )
+      },
+    },
+    {
+      field: 'primarySkill',
+      headerName: 'Primary skill',
       flex: 0.9,
       minWidth: 140,
       renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {params.row.primarySkill}
+        </Typography>
+      ),
+    },
+    {
+      field: 'capabilities',
+      headerName: 'Capabilities',
+      flex: 1.1,
+      minWidth: 200,
+      renderCell: (params) => (
+        <Stack direction="row" gap={0.5} flexWrap="wrap">
+          {params.row.capabilities.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              —
+            </Typography>
+          ) : (
+            params.row.capabilities.map((capability) => (
+              <Chip key={capability} label={capability} size="small" variant="outlined" sx={{ fontWeight: 600 }} />
+            ))
+          )}
+        </Stack>
+      ),
+    },
+    {
+      field: 'responseCode',
+      headerName: 'Response code',
+      flex: 0.9,
+      minWidth: 140,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {params.row.responseCode}
+        </Typography>
+      ),
+    },
+    {
+      field: 'linkedTask',
+      headerName: 'Linked task',
+      flex: 0.8,
+      minWidth: 120,
+      renderCell: (params) => (
         <Chip
-          label={params.row.status}
+          label={linkedTaskLabels[params.row.linkedTask]}
           size="small"
-          sx={{
-            bgcolor: statusPalette[params.row.status].bg,
-            color: statusPalette[params.row.status].color,
-            fontWeight: 600,
-          }}
+          variant="outlined"
+          sx={{ fontWeight: 600 }}
         />
+      ),
+    },
+    {
+      field: 'commitType',
+      headerName: 'Commit type',
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {commitTypeLabels[params.row.commitType]}
+        </Typography>
+      ),
+    },
+    {
+      field: 'commitDate',
+      headerName: 'Commit date',
+      flex: 0.9,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography variant="body2" color="text.secondary" noWrap>
+          {commitDateFormatter.format(new Date(params.row.commitDate))}
+        </Typography>
+      ),
+    },
+    {
+      field: 'workId',
+      headerName: 'Work ID',
+      flex: 1,
+      minWidth: 160,
+      renderCell: (params) => (
+        <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.workId}
+        </Typography>
+      ),
+    },
+    {
+      field: 'domainId',
+      headerName: 'Domain',
+      flex: 0.7,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {params.row.domainId}
+        </Typography>
+      ),
+    },
+    {
+      field: 'impactScore',
+      headerName: 'Impact score',
+      flex: 0.8,
+      minWidth: 140,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {params.row.impactScore}
+        </Typography>
+      ),
+    },
+    {
+      field: 'resourceId',
+      headerName: 'Resource ID',
+      flex: 0.9,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.resourceId}
+        </Typography>
+      ),
+    },
+    {
+      field: 'resourceName',
+      headerName: 'Resource name',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => (
+        <Typography variant="body2" color={params.row.resourceName ? 'text.primary' : 'text.secondary'} noWrap>
+          {params.row.resourceName || '—'}
+        </Typography>
+      ),
+    },
+    {
+      field: 'division',
+      headerName: 'Division',
+      flex: 1,
+      minWidth: 180,
+      renderCell: (params) => (
+        <Chip
+          label={params.row.division}
+          size="small"
+          variant="outlined"
+          sx={{ fontWeight: 600 }}
+        />
+      ),
+    },
+    {
+      field: 'postCode',
+      headerName: 'Post code',
+      flex: 0.8,
+      minWidth: 130,
+      renderCell: (params) => (
+        <Typography variant="body2" fontWeight={600} noWrap>
+          {params.row.postCode}
+        </Typography>
       ),
     },
     {
@@ -119,35 +246,76 @@ const TaskManagementPage = () => {
     },
   ]
 
-  const ownerOptions = useMemo(
-    () => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.owner))).sort((a, b) => a.localeCompare(b)),
+  const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
+
+  const domainOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.domainId))).sort((a, b) => a.localeCompare(b)), [])
+
+  const capabilityOptions = useMemo<TaskSkillCode[]>(() => {
+    const codes = new Set<TaskSkillCode>()
+    TASK_TABLE_ROWS.forEach((row) => {
+      codes.add(row.primarySkill)
+      row.capabilities.forEach((capability) => codes.add(capability))
+    })
+    return Array.from(codes).sort((a, b) => a.localeCompare(b))
+  }, [])
+
+  const responseCodeOptions = useMemo(
+    () => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.responseCode))).sort((a, b) => a.localeCompare(b)),
     [],
   )
+
   const defaultQuery = useMemo(() => buildDefaultTaskTableQuery(), [])
   const [activeQuery, setActiveQuery] = useState<TaskTableQueryState>(defaultQuery)
+  const [hasAppliedQuery, setHasAppliedQuery] = useState(false)
 
-  const filteredRows = useMemo(() => applyTaskFilters(TASK_TABLE_ROWS, activeQuery), [activeQuery])
+  const filteredRows = useMemo(
+    () => (hasAppliedQuery ? applyTaskFilters(TASK_TABLE_ROWS, activeQuery) : []),
+    [hasAppliedQuery, activeQuery],
+  )
 
   const handleApplyQuery = (nextQuery: TaskTableQueryState) => {
     setActiveQuery(nextQuery)
+    setHasAppliedQuery(true)
   }
 
   return (
     <Stack spacing={3}>
       <TaskTableQueryConfig
-        ownerOptions={ownerOptions}
         initialQuery={activeQuery}
         defaultQuery={defaultQuery}
+        divisionOptions={divisionOptions}
+        domainOptions={domainOptions}
+        capabilityOptions={capabilityOptions}
+        responseCodeOptions={responseCodeOptions}
         onApply={handleApplyQuery}
       />
-      <SharedMuiTable<TaskTableRow>
-        columns={columns}
-        rows={filteredRows}
-        getRowId={(row) => row.id}
-        density="compact"
-        enableQuickFilter
-        showFooterControls
-      />
+      {hasAppliedQuery ? (
+        <SharedMuiTable<TaskTableRow>
+          columns={columns}
+          rows={filteredRows}
+          getRowId={(row) => row.taskId}
+          density="compact"
+          enableQuickFilter
+          showFooterControls
+        />
+      ) : (
+        <Box
+          sx={{
+            borderRadius: 2,
+            border: '1px dashed rgba(7,59,76,0.3)',
+            bgcolor: 'rgba(7,59,76,0.02)',
+            p: 4,
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Run a query to load tasks
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Use the filters above to define your search, then hit Search to fetch matching rows.
+          </Typography>
+        </Box>
+      )}
     </Stack>
   )
 }
@@ -161,21 +329,33 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
 
   return rows.filter((row) => {
     if (keyword) {
-      const haystack = `${row.id} ${row.name} ${row.owner}`.toLowerCase()
+      const haystack = `${row.taskId} ${row.workId} ${row.resourceId} ${row.resourceName ?? ''} ${row.domainId} ${row.division}`.toLowerCase()
       if (!haystack.includes(keyword)) {
         return false
       }
     }
 
-    if (query.owners.length && !query.owners.includes(row.owner)) {
+    if (query.divisions.length && !query.divisions.includes(row.division)) {
       return false
     }
 
-    if (query.priorities.length && !query.priorities.includes(row.priority)) {
+    if (query.domains.length && !query.domains.includes(row.domainId)) {
       return false
     }
 
     if (query.statuses.length && !query.statuses.includes(row.status)) {
+      return false
+    }
+
+    if (query.capabilities.length) {
+      const capabilityPool = new Set<TaskSkillCode>([row.primarySkill, ...row.capabilities])
+      const hasMatch = query.capabilities.some((capability) => capabilityPool.has(capability))
+      if (!hasMatch) {
+        return false
+      }
+    }
+
+    if (query.responseCodes.length && !query.responseCodes.includes(row.responseCode)) {
       return false
     }
 
@@ -191,4 +371,6 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
     return true
   })
 }
+
+
 

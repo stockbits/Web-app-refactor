@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import {
   Box,
@@ -18,6 +18,8 @@ import {
   OutlinedInput,
   Paper,
   Popover,
+  Tab,
+  Tabs,
   Select,
   Stack,
   TextField,
@@ -29,42 +31,64 @@ import type { SxProps, Theme } from '@mui/material/styles'
 import type { SelectChangeEvent } from '@mui/material/Select'
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import type { TaskTableRow } from '../../App - Data Base/Task - Table'
+import { TASK_STATUS_LABELS } from '../../App - Data Base/Task - Table'
+import type { TaskSkillCode, TaskTableRow } from '../../App - Data Base/Task - Table'
 
 export type TaskTableQueryState = {
   searchTerm: string
-  owners: string[]
-  priorities: TaskTableRow['priority'][]
+  divisions: TaskTableRow['division'][]
+  domains: TaskTableRow['domainId'][]
   statuses: TaskTableRow['status'][]
+  capabilities: TaskSkillCode[]
+  responseCodes: TaskTableRow['responseCode'][]
   updatedFrom: string | null
   updatedTo: string | null
 }
 
-const DEFAULT_PRIORITIES: TaskTableRow['priority'][] = ['Critical', 'High', 'Medium', 'Low']
-const DEFAULT_STATUSES: TaskTableRow['status'][] = ['In Progress', 'Queued', 'Blocked', 'Complete']
+type TaskFilterTab = 'simple' | 'advanced'
+
+const TASK_FILTER_TABS: Array<{ value: TaskFilterTab; label: string }> = [
+  { value: 'simple', label: 'Simple view' },
+  { value: 'advanced', label: 'Advanced view' },
+]
+
+const DEFAULT_STATUSES: TaskTableRow['status'][] = ['ACT', 'AWI', 'ISS', 'EXC', 'COM']
+const STATUS_OPTION_LABELS: Record<TaskTableRow['status'], string> = {
+  ACT: `ACT - ${TASK_STATUS_LABELS.ACT}`,
+  AWI: `AWI - ${TASK_STATUS_LABELS.AWI}`,
+  ISS: `ISS - ${TASK_STATUS_LABELS.ISS}`,
+  EXC: `EXC - ${TASK_STATUS_LABELS.EXC}`,
+  COM: `COM - ${TASK_STATUS_LABELS.COM}`,
+}
 
 export const buildDefaultTaskTableQuery = (): TaskTableQueryState => ({
   searchTerm: '',
-  owners: [],
-  priorities: [],
+  divisions: [],
+  domains: [],
   statuses: [],
+  capabilities: [],
+  responseCodes: [],
   updatedFrom: null,
   updatedTo: null,
 })
 
 interface TaskTableQueryConfigProps {
-  ownerOptions: string[]
-  priorityOptions?: TaskTableRow['priority'][]
+  divisionOptions?: TaskTableRow['division'][]
+  domainOptions?: TaskTableRow['domainId'][]
   statusOptions?: TaskTableRow['status'][]
+  capabilityOptions?: TaskSkillCode[]
+  responseCodeOptions?: TaskTableRow['responseCode'][]
   initialQuery?: TaskTableQueryState
   defaultQuery?: TaskTableQueryState
   onApply: (query: TaskTableQueryState) => void
 }
 
 const TaskTableQueryConfig = ({
-  ownerOptions,
-  priorityOptions = DEFAULT_PRIORITIES,
+  divisionOptions = [],
+  domainOptions = [],
   statusOptions = DEFAULT_STATUSES,
+  capabilityOptions = [],
+  responseCodeOptions = [],
   initialQuery,
   defaultQuery,
   onApply,
@@ -72,6 +96,7 @@ const TaskTableQueryConfig = ({
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
+  const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
 
   useEffect(() => {
     setDraftQuery(resolvedInitialQuery)
@@ -91,6 +116,10 @@ const TaskTableQueryConfig = ({
     [draftQuery.updatedFrom, draftQuery.updatedTo],
   )
 
+  const handleTabChange = (_event: SyntheticEvent, nextTab: TaskFilterTab) => {
+    setActiveTab(nextTab)
+  }
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setDraftQuery((prev) => ({
       ...prev,
@@ -98,14 +127,45 @@ const TaskTableQueryConfig = ({
     }))
   }
 
-  const handleMultiSelectChange = (field: keyof Pick<TaskTableQueryState, 'owners' | 'priorities' | 'statuses'>) =>
-    (event: SelectChangeEvent<string[]>) => {
-      const value = event.target.value as string[]
-      setDraftQuery((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-    }
+  const handleStatusChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as TaskTableRow['status'][]
+    setDraftQuery((prev) => ({
+      ...prev,
+      statuses: value,
+    }))
+  }
+
+  const handleDivisionsChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as TaskTableRow['division'][]
+    setDraftQuery((prev) => ({
+      ...prev,
+      divisions: value,
+    }))
+  }
+
+  const handleDomainsChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as TaskTableRow['domainId'][]
+    setDraftQuery((prev) => ({
+      ...prev,
+      domains: value,
+    }))
+  }
+
+  const handleCapabilitiesChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as TaskSkillCode[]
+    setDraftQuery((prev) => ({
+      ...prev,
+      capabilities: value,
+    }))
+  }
+
+  const handleResponseCodesChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value as TaskTableRow['responseCode'][]
+    setDraftQuery((prev) => ({
+      ...prev,
+      responseCodes: value,
+    }))
+  }
 
   const handleDateRangeChange = (nextRange: DateRangeValue) => {
     setDraftQuery((prev) => ({
@@ -143,98 +203,170 @@ const TaskTableQueryConfig = ({
       elevation={0}
       sx={{
         borderRadius: 2,
-        border: '1px solid rgba(7,59,76,0.12)',
         bgcolor: '#fff',
         p: 2.5,
       }}
     >
       <Stack spacing={3}>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, minmax(0, 1fr))',
-              md: 'repeat(3, minmax(0, 1fr))',
-              lg: 'repeat(6, minmax(0, 1fr))',
-            },
-          }}
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', md: 'center' }}
         >
+          <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" allowScrollButtonsMobile>
+            {TASK_FILTER_TABS.map((tab) => (
+              <Tab key={tab.value} label={tab.label} value={tab.value} disableRipple />
+            ))}
+          </Tabs>
           <TextField
-            label="Keyword search"
-            placeholder="Task, owner, or ID"
+            label="Global search"
+            placeholder="Task, resource, or ID"
             value={draftQuery.searchTerm}
             onChange={handleSearchChange}
             fullWidth
-          />
-          <FormControl fullWidth>
-            <InputLabel id="owner-filter-label">Owners</InputLabel>
-            <Select
-              labelId="owner-filter-label"
-              label="Owners"
-              multiple
-              value={draftQuery.owners}
-              onChange={handleMultiSelectChange('owners')}
-              renderValue={renderMultiValue}
-            >
-              {ownerOptions.map((owner) => (
-                <MenuItem key={owner} value={owner}>
-                  <Checkbox checked={draftQuery.owners.includes(owner)} size="small" />
-                  <Typography variant="body2">{owner}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="priority-filter-label">Priorities</InputLabel>
-            <Select
-              labelId="priority-filter-label"
-              label="Priorities"
-              multiple
-              value={draftQuery.priorities}
-              onChange={handleMultiSelectChange('priorities')}
-              renderValue={renderMultiValue}
-            >
-              {priorityOptions.map((priority) => (
-                <MenuItem key={priority} value={priority}>
-                  <Checkbox checked={draftQuery.priorities.includes(priority)} size="small" />
-                  <Typography variant="body2">{priority}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="status-filter-label">Statuses</InputLabel>
-            <Select
-              labelId="status-filter-label"
-              label="Statuses"
-              multiple
-              value={draftQuery.statuses}
-              onChange={handleMultiSelectChange('statuses')}
-              renderValue={renderMultiValue}
-            >
-              {statusOptions.map((status) => (
-                <MenuItem key={status} value={status}>
-                  <Checkbox checked={draftQuery.statuses.includes(status)} size="small" />
-                  <Typography variant="body2">{status}</Typography>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TaskDateWindowField
-            value={dateRangeValue}
-            onChange={handleDateRangeChange}
             sx={{
-              gridColumn: {
-                xs: 'span 1',
-                sm: 'span 2',
-                md: 'span 3',
-                lg: 'span 2',
-              },
+              maxWidth: { md: 320 },
+              width: { xs: '100%', md: 'auto' },
             }}
           />
-        </Box>
+        </Stack>
+
+        {activeTab === 'simple' && (
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(3, minmax(0, 1fr))',
+                lg: 'repeat(6, minmax(0, 1fr))',
+              },
+            }}
+          >
+            <FormControl fullWidth>
+              <InputLabel id="division-filter-label">Divisions</InputLabel>
+              <Select
+                labelId="division-filter-label"
+                label="Divisions"
+                multiple
+                value={draftQuery.divisions}
+                onChange={handleDivisionsChange}
+                renderValue={renderMultiValue}
+              >
+                {divisionOptions.map((division) => (
+                  <MenuItem key={division} value={division}>
+                    <Checkbox checked={draftQuery.divisions.includes(division)} size="small" />
+                    <Typography variant="body2">{division}</Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="domain-filter-label">Domains</InputLabel>
+              <Select
+                labelId="domain-filter-label"
+                label="Domains"
+                multiple
+                value={draftQuery.domains}
+                onChange={handleDomainsChange}
+                renderValue={renderMultiValue}
+              >
+                {domainOptions.map((domain) => (
+                  <MenuItem key={domain} value={domain}>
+                    <Checkbox checked={draftQuery.domains.includes(domain)} size="small" />
+                    <Typography variant="body2">{domain}</Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="status-filter-label">Statuses</InputLabel>
+              <Select
+                labelId="status-filter-label"
+                label="Statuses"
+                multiple
+                value={draftQuery.statuses}
+                onChange={handleStatusChange}
+                renderValue={renderMultiValue}
+              >
+                {statusOptions.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    <Checkbox checked={draftQuery.statuses.includes(status)} size="small" />
+                    <Typography variant="body2">
+                      {STATUS_OPTION_LABELS[status] ?? status}
+                    </Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        )}
+
+        {activeTab === 'advanced' && (
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(3, minmax(0, 1fr))',
+                lg: 'repeat(6, minmax(0, 1fr))',
+              },
+            }}
+          >
+            <FormControl fullWidth>
+              <InputLabel id="capability-filter-label">Capabilities</InputLabel>
+              <Select
+                labelId="capability-filter-label"
+                label="Capabilities"
+                multiple
+                value={draftQuery.capabilities}
+                onChange={handleCapabilitiesChange}
+                renderValue={renderMultiValue}
+              >
+                {capabilityOptions.map((capability) => (
+                  <MenuItem key={capability} value={capability}>
+                    <Checkbox checked={draftQuery.capabilities.includes(capability)} size="small" />
+                    <Typography variant="body2">{capability}</Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth>
+              <InputLabel id="response-filter-label">Response codes</InputLabel>
+              <Select
+                labelId="response-filter-label"
+                label="Response codes"
+                multiple
+                value={draftQuery.responseCodes}
+                onChange={handleResponseCodesChange}
+                renderValue={renderMultiValue}
+              >
+                {responseCodeOptions.map((responseCode) => (
+                  <MenuItem key={responseCode} value={responseCode}>
+                    <Checkbox checked={draftQuery.responseCodes.includes(responseCode)} size="small" />
+                    <Typography variant="body2">{responseCode}</Typography>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TaskDateWindowField
+              value={dateRangeValue}
+              onChange={handleDateRangeChange}
+              sx={{
+                gridColumn: {
+                  xs: 'span 1',
+                  sm: 'span 2',
+                  md: 'span 3',
+                  lg: 'span 2',
+                },
+              }}
+            />
+          </Box>
+        )}
 
         <Divider light />
 
@@ -579,9 +711,11 @@ const buildSummaryLabel = (value: DateRangeValue) => {
 
 const areQueriesEqual = (a: TaskTableQueryState, b: TaskTableQueryState) =>
   a.searchTerm === b.searchTerm &&
-  arraysEqual(a.owners, b.owners) &&
-  arraysEqual(a.priorities, b.priorities) &&
+  arraysEqual(a.divisions, b.divisions) &&
+  arraysEqual(a.domains, b.domains) &&
   arraysEqual(a.statuses, b.statuses) &&
+  arraysEqual(a.capabilities, b.capabilities) &&
+  arraysEqual(a.responseCodes, b.responseCodes) &&
   a.updatedFrom === b.updatedFrom &&
   a.updatedTo === b.updatedTo
 
