@@ -414,7 +414,6 @@ function App() {
             <OpenreachTopBanner
               title="Task Force"
               subtitle="Day-to-day operational tool for Openreach operations."
-              statusChip={{ label: "LIVE STATUS", tone: "success" }}
               userInitials="JD"
               userName="Jordan Davies"
               userRole="Delivery Lead"

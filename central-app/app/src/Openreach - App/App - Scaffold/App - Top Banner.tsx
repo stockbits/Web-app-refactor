@@ -5,7 +5,6 @@ import {
   AppBar,
   Avatar,
   Box,
-  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -16,15 +15,9 @@ import {
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
 
-type StatusTone = 'default' | 'info' | 'success' | 'warning'
-
 export interface OpenreachTopBannerProps {
   title: string
   subtitle?: string
-  statusChip?: {
-    label: string
-    tone?: StatusTone
-  }
   onMenuClick: () => void
   actions?: ReactNode
   userInitials?: string
@@ -35,7 +28,6 @@ export interface OpenreachTopBannerProps {
 export const OpenreachTopBanner = ({
   title,
   subtitle,
-  statusChip,
   onMenuClick,
   actions,
   userInitials = 'OR',
@@ -44,26 +36,6 @@ export const OpenreachTopBanner = ({
 }: OpenreachTopBannerProps) => {
   const theme = useTheme()
   const brand = theme.openreach
-  const statusChipStyles: Record<StatusTone, { bg: string; color: string; border?: string }> = {
-    default: {
-      bg: alpha(theme.palette.common.white, 0.12),
-      color: brand.fibreThreads,
-    },
-    info: {
-      bg: alpha(brand.energyAccent, 0.12),
-      color: brand.energyAccent,
-      border: `1px solid ${alpha(brand.energyAccent, 0.4)}`,
-    },
-    success: {
-      bg: alpha('#3FB984', 0.16),
-      color: '#3FB984',
-    },
-    warning: {
-      bg: alpha('#FFB703', 0.2),
-      color: '#FFB703',
-    },
-  }
-  const chipTone = statusChip?.tone ?? 'default'
   const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
   const profileMenuOpen = Boolean(profileAnchorEl)
 
@@ -82,7 +54,7 @@ export const OpenreachTopBanner = ({
         borderRadius: 0,
         px: 0,
         py: 0,
-        minHeight: { xs: 72, md: 92 },
+        minHeight: { xs: 64, md: 80 },
         backgroundImage: `linear-gradient(120deg, ${brand.coreBlock}, ${brand.supportingBlock})`,
         color: brand.fibreThreads,
         boxShadow: '0 12px 32px rgba(3, 7, 12, 0.45)',
@@ -105,8 +77,8 @@ export const OpenreachTopBanner = ({
         sx={{
           pl: { xs: 0.75, sm: 1 },
           pr: 'var(--page-gutter)',
-          py: { xs: 0.85, md: 1.2 },
-          gap: 2,
+          py: { xs: 0.5, md: 0.85 },
+          gap: 1.5,
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -115,14 +87,14 @@ export const OpenreachTopBanner = ({
           zIndex: 1,
         }}
       >
-        <Stack direction="row" gap={2} alignItems="center" sx={{ width: '100%', flex: 1, minWidth: 0 }}>
+        <Stack direction="row" gap={1.5} alignItems="center" sx={{ width: '100%', flex: 1, minWidth: 0 }}>
           <IconButton
             aria-label="Open navigation"
             onClick={onMenuClick}
             sx={{
               bgcolor: 'transparent',
               color: brand.fibreThreads,
-              p: 0.75,
+              p: 0.6,
               '&:hover': { bgcolor: alpha('#FFFFFF', 0.12) },
               '&:active': { bgcolor: alpha('#FFFFFF', 0.2) },
             }}
@@ -131,26 +103,11 @@ export const OpenreachTopBanner = ({
           </IconButton>
 
           <Box>
-            <Stack direction="row" gap={1.5} flexWrap="wrap" alignItems="center">
-              <Typography variant="h5" fontWeight={700} letterSpacing={0.5}>
-                {title}
-              </Typography>
-              {statusChip?.label && (
-                <Chip
-                  label={statusChip.label}
-                  size="small"
-                  sx={{
-                    bgcolor: statusChipStyles[chipTone].bg,
-                    color: statusChipStyles[chipTone].color,
-                    border: statusChipStyles[chipTone].border,
-                    fontWeight: 600,
-                    letterSpacing: 0.3,
-                  }}
-                />
-              )}
-            </Stack>
+            <Typography variant="h5" fontWeight={700} letterSpacing={0.4}>
+              {title}
+            </Typography>
             {subtitle && (
-              <Typography variant="body2" sx={{ mt: 0.5, color: alpha(brand.fibreThreads, 0.85) }}>
+              <Typography variant="body2" sx={{ mt: 0.25, color: alpha(brand.fibreThreads, 0.85) }}>
                 {subtitle}
               </Typography>
             )}
