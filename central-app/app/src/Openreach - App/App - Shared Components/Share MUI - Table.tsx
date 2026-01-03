@@ -1,56 +1,60 @@
 import type { ReactNode } from 'react'
+import { Box, Paper, Stack, Typography } from '@mui/material'
 import {
-  Box,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from '@mui/material'
-import type { SxProps, Theme } from '@mui/material/styles'
+  DataGrid,
+  GridToolbarQuickFilter,
+  type GridColDef,
+  type GridRowId,
+  type GridValidRowModel,
+} from '@mui/x-data-grid'
 
-export interface SharedMuiTableColumn<T extends object> {
-  field?: keyof T
-  header: string
-  align?: 'left' | 'center' | 'right'
-  width?: number | string
-  sx?: SxProps<Theme>
-  render?: (row: T) => ReactNode
-}
-
-export interface SharedMuiTableProps<T extends object> {
-  columns: SharedMuiTableColumn<T>[]
+export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
+  columns: GridColDef<T>[]
   rows: T[]
-  getRowId?: (row: T, index: number) => string | number
   title?: string
   caption?: string
-  dense?: boolean
+  getRowId?: (row: T) => GridRowId
+  density?: 'compact' | 'standard' | 'comfortable'
+  loading?: boolean
+  hideFooter?: boolean
+  autoHeight?: boolean
+  enableQuickFilter?: boolean
   emptyState?: ReactNode
 }
 
-export function SharedMuiTable<T extends object>({
+const QuickFilterToolbar = () => (
+  <Stack px={1.5} py={1} alignItems="flex-start">
+    <Box sx={{ width: '100%' }}>
+      <GridToolbarQuickFilter
+        debounceMs={250}
+        quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
+      />
+    </Box>
+  </Stack>
+)
+
+export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
   columns,
   rows,
-  getRowId,
   title,
   caption,
-  dense = false,
+  getRowId,
+  density = 'compact',
+  loading,
+  hideFooter = true,
+  autoHeight = true,
+  enableQuickFilter = true,
   emptyState,
 }: SharedMuiTableProps<T>) {
-  const rowKey = (row: T, index: number) => {
-    if (getRowId) return getRowId(row, index)
-    if ('id' in row) {
-      const candidate = (row as { id?: unknown }).id
-      if (typeof candidate === 'string' || typeof candidate === 'number') {
-        return candidate
-      }
-    }
-    return index
-  }
+  const NoRowsOverlay = () => (
+    <Box sx={{ py: 4, textAlign: 'center' }}>
+      {emptyState ?? (
+        <Typography variant="body2" color="text.secondary">
+          No records available yet.
+        </Typography>
+      )}
+    </Box>
+  )
 
   return (
     <Paper
@@ -77,68 +81,36 @@ export function SharedMuiTable<T extends object>({
         </Stack>
       )}
 
-      <TableContainer>
-        <Table size={dense ? 'small' : 'medium'} sx={{ minWidth: 650 }}>
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.header}
-                  align={column.align ?? 'left'}
-                  sx={{
-                    fontWeight: 600,
-                    fontSize: '0.8rem',
-                    textTransform: 'uppercase',
-                    color: 'text.secondary',
-                    letterSpacing: 0.5,
-                    borderBottom: '1px solid rgba(7,59,76,0.12)',
-                    width: column.width,
-                    ...column.sx,
-                  }}
-                >
-                  {column.header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  {emptyState ?? (
-                    <Box py={4} textAlign="center">
-                      <Typography variant="body2" color="text.secondary">
-                        No records available yet.
-                      </Typography>
-                    </Box>
-                  )}
-                </TableCell>
-              </TableRow>
-            ) : (
-              rows.map((row, index) => (
-                <TableRow
-                  hover
-                  key={rowKey(row, index)}
-                  sx={{ '&:last-of-type td': { borderBottom: 0 } }}
-                >
-                  {columns.map((column) => {
-                    const content = column.render
-                      ? column.render(row)
-                      : column.field
-                        ? (row[column.field] as ReactNode)
-                        : null
-                    return (
-                      <TableCell key={column.header + rowKey(row, index)} align={column.align ?? 'left'}>
-                        {content ?? '—'}
-                      </TableCell>
-                    )
-                  })}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <DataGrid
+        autoHeight={autoHeight}
+        rows={rows}
+        columns={columns}
+        getRowId={getRowId}
+        density={density}
+        loading={loading}
+        hideFooter={hideFooter}
+        disableColumnMenu
+        disableRowSelectionOnClick
+        slots={{
+          toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
+          noRowsOverlay: NoRowsOverlay,
+        }}
+        sx={{
+          border: 'none',
+          '& .MuiDataGrid-columnHeaders': {
+            bgcolor: 'rgba(7,59,76,0.02)',
+            borderBottom: '1px solid rgba(7,59,76,0.08)',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: 0.6,
+          },
+          '& .MuiDataGrid-row': {
+            '&:last-of-type': {
+              borderBottom: 'none',
+            },
+          },
+        }}
+      />
     </Paper>
   )
 }

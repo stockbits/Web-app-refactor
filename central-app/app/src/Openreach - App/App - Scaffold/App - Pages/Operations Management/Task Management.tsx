@@ -1,5 +1,6 @@
 import { Box, Chip, Stack, Typography } from '@mui/material'
-import SharedMuiTable, { type SharedMuiTableColumn } from '../../../App - Shared Components/Share MUI - Table'
+import type { GridColDef } from '@mui/x-data-grid'
+import SharedMuiTable from '../../../App - Shared Components/Share MUI - Table'
 import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
 
 const priorityStyles: Record<TaskTableRow['priority'], { color: string; bg: string }> = {
@@ -24,68 +25,83 @@ const dateFormatter = new Intl.DateTimeFormat('en-GB', {
 })
 
 const TaskManagementPage = () => {
-  const columns: SharedMuiTableColumn<TaskTableRow>[] = [
+  const columns: GridColDef<TaskTableRow>[] = [
     {
-      header: 'Task ID',
       field: 'id',
-      render: (row) => (
+      headerName: 'Task ID',
+      flex: 0.7,
+      minWidth: 120,
+      sortable: false,
+      renderCell: (params) => (
         <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} color="text.primary">
-          {row.id}
+          {params.row.id}
         </Typography>
       ),
     },
     {
-      header: 'Task',
       field: 'name',
-      render: (row) => (
-        <Stack spacing={0.25}>
-          <Typography variant="body2" fontWeight={600}>
-            {row.name}
+      headerName: 'Task',
+      flex: 1.6,
+      minWidth: 220,
+      sortable: false,
+      renderCell: (params) => (
+        <Stack spacing={0.25} overflow="hidden">
+          <Typography variant="body2" fontWeight={600} noWrap>
+            {params.row.name}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Owner: {row.owner}
+            Owner: {params.row.owner}
           </Typography>
         </Stack>
       ),
     },
     {
-      header: 'Priority',
       field: 'priority',
+      headerName: 'Priority',
       align: 'center',
-      render: (row) => (
+      headerAlign: 'center',
+      flex: 0.7,
+      minWidth: 120,
+      sortable: false,
+      renderCell: (params) => (
         <Chip
-          label={row.priority}
+          label={params.row.priority}
           size="small"
           sx={{
-            bgcolor: priorityStyles[row.priority].bg,
-            color: priorityStyles[row.priority].color,
+            bgcolor: priorityStyles[params.row.priority].bg,
+            color: priorityStyles[params.row.priority].color,
             fontWeight: 600,
           }}
         />
       ),
     },
     {
-      header: 'Status',
       field: 'status',
-      render: (row) => (
+      headerName: 'Status',
+      flex: 0.9,
+      minWidth: 140,
+      sortable: false,
+      renderCell: (params) => (
         <Chip
-          label={row.status}
+          label={params.row.status}
           size="small"
           sx={{
-            bgcolor: statusPalette[row.status].bg,
-            color: statusPalette[row.status].color,
+            bgcolor: statusPalette[params.row.status].bg,
+            color: statusPalette[params.row.status].color,
             fontWeight: 600,
           }}
         />
       ),
     },
     {
-      header: 'Last update',
       field: 'updatedAt',
-      align: 'right',
-      render: (row) => (
+      headerName: 'Last update',
+      flex: 0.9,
+      minWidth: 160,
+      sortable: false,
+      renderCell: (params) => (
         <Typography variant="body2" color="text.secondary">
-          {dateFormatter.format(new Date(row.updatedAt))}
+          {dateFormatter.format(new Date(params.row.updatedAt))}
         </Typography>
       ),
     },
@@ -108,7 +124,8 @@ const TaskManagementPage = () => {
         columns={columns}
         rows={TASK_TABLE_ROWS}
         getRowId={(row) => row.id}
-        dense
+        density="compact"
+        enableQuickFilter
       />
     </Stack>
   )
