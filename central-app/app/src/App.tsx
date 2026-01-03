@@ -434,8 +434,22 @@ function App() {
               <>
                 {!activePage && (
                   <Stack gap={1} mb={2}>
-                    <Typography variant="overline" className="canvas-label">
-                      MENU • {selectedMenu.label}
+                    <Typography
+                      variant="overline"
+                      className="canvas-label"
+                      sx={{
+                        textTransform: 'uppercase',
+                        letterSpacing: 3,
+                        fontWeight: 700,
+                        color: '#037971',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 1,
+                      }}
+                    >
+                      <Box component="span" sx={{ opacity: 0.95 }}>MENU</Box>
+                      <Box component="span" sx={{ mx: 1, color: 'text.secondary' }}>{'\u2022'}</Box>
+                      <Box component="span">{selectedMenu.label.toUpperCase()}</Box>
                     </Typography>
                   </Stack>
                 )}
@@ -449,16 +463,7 @@ function App() {
                       <Breadcrumbs
                         aria-label="breadcrumb"
                         separator={
-                          <Box
-                            component="span"
-                            sx={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              mx: 1,
-                              color: 'text.secondary',
-                              fontWeight: 400,
-                            }}
-                          >
+                          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mx: 1, color: 'text.secondary' }}>
                             {'\u2022'}
                           </Box>
                         }
@@ -466,10 +471,7 @@ function App() {
                           fontWeight: 600,
                           mb: 0.5,
                           pt: 1,
-                          '& .MuiBreadcrumbs-separator': {
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                          },
+                          '& .MuiBreadcrumbs-separator': { display: 'inline-flex', alignItems: 'center' },
                         }}
                       >
                         <Link
@@ -479,20 +481,22 @@ function App() {
                           type="button"
                           onClick={() => setActivePage(null)}
                           sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
+                            display: 'inline-flex',
+                            alignItems: 'center',
                             gap: 1,
-                            cursor: "pointer",
+                            cursor: 'pointer',
                             border: 0,
-                            background: "none",
-                            font: "inherit",
-                            fontWeight: 600,
+                            background: 'none',
+                            font: 'inherit',
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: 2,
                           }}
                         >
                           <ArrowBackRoundedIcon fontSize="small" />
                           {selectedMenu.label}
                         </Link>
-                        <Typography sx={{ fontWeight: 600 }}>
+                        <Typography sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>
                           {activePage.cardName}
                         </Typography>
                       </Breadcrumbs>
