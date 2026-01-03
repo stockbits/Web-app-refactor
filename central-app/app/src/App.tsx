@@ -506,7 +506,7 @@ function App() {
                               <Stack alignItems="center" py={6} spacing={2}>
                                 <CircularProgress size={28} thickness={4} />
                                 <Typography color="text.secondary" fontWeight={500}>
-                                  Loading scaffold...
+                                  Loading...
                                 </Typography>
                               </Stack>
                             }

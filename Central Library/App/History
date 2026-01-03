@@ -2,3 +2,43 @@ App Module History:
 - Established: January 2026
 - Purpose: Store reference implementations showing how consumers integrate the central library.
 - Notes: Keep examples minimal, pair with README steps, include changelog entries when APIs shift.
+
+2026-01-03 · UI inventory refresh
+- Full scan captured every place we lean on MUI primitives plus the bespoke glue we provide to consumers.
+- Use this as the single reference when deciding whether to add new shared components or extend existing ones.
+
+Theme + tokens (central-app/app/src/theme.ts)
+- MUI primitives: `createTheme`, `ThemeOptions`, `MuiCssBaseline` styleOverrides.
+- Custom work: Openreach brand palette exposed via `theme.openreach`, typography defaults aligned to Inter, and scrollbar styling that matches fibre accents.
+
+Landing overview surface (central-app/app/src/Openreach - App/App - Scaffold/App - Landing Overview.tsx)
+- MUI primitives: `Stack`, `Box`, `Typography`, `Paper`, `Chip`, `IconButton`, `Popover`.
+- Custom work: Access summary banner with Info popover, responsive paper cards with program icons, and chip cloud for tool badges.
+
+Top banner (central-app/app/src/Openreach - App/App - Scaffold/App - Top Banner.tsx)
+- MUI primitives: `AppBar`, `Toolbar`, `Stack`, `IconButton`, `Avatar`, `Menu`, `MenuItem`, `Typography`.
+- Custom work: Gradient chrome, profile avatar menu with theme-aware tokens, and action slot for contextual buttons.
+
+Side navigation (central-app/app/src/Openreach - App/App - Scaffold/App - Side Nav.tsx)
+- MUI primitives: `Drawer`, `Paper`, `Stack`, `List`, `ListItemButton`, `ListItemIcon`, `ListItemText`, `InputBase`, `IconButton`, `Tooltip`, `Chip`, `Divider`, `Typography`.
+- Custom work: Searchable task-force tree with badge metadata, client build footer, and responsive brand theming (including fallback nav items).
+
+Shared MUI table shell (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx)
+- MUI primitives: `Paper`, `Stack`, `Typography`, `Switch`, `Box`, `DataGrid`, `GridToolbarQuickFilter`, `GridPagination`, `GridFooterContainer`.
+- Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, and configurable empty state slot.
+
+Selection helper (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Selection Logic.ts)
+- MUI primitives: `GridRowSelectionModel`, `GridCallbackDetails` from `@mui/x-data-grid`.
+- Custom work: Keyboard-aware selection manager providing single-select by default with Ctrl/Cmd multi-select and Shift range selection.
+
+Task filter + date window (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx)
+- MUI primitives: `Paper`, `Stack`, `Box`, `TextField`, `FormControl`, `InputLabel`, `Select`, `MenuItem`, `Checkbox`, `Chip`, `Button`, `Divider`, `OutlinedInput`, `InputAdornment`, `IconButton`, `Popover`, `List`, `ListItemButton`, `ListItemText`, `ListSubheader`, `ToggleButton`, `ToggleButtonGroup`, `StaticDatePicker`, `LocalizationProvider`.
+- Custom work: Keyword + multiselect filters feeding a draft query state, contextual shortcut list for the date popover (week and quarter jumps), preserved time controls, and deferred Apply/Clear workflow.
+
+Task management reference page (central-app/app/src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx)
+- MUI primitives: `Stack`, `Box`, `Typography`, `Chip` paired with the shared table shell.
+- Custom work: Priority/status chip palettes, `TaskTableQueryConfig` integration, memoised owner options, and filter pipeline driving the shared DataGrid instance.
+
+Suspense fallback + loaders (central-app/app/src/App.tsx)
+- MUI primitives: `Stack`, `CircularProgress` (indirect via compiled asset), typography usage inside Suspense fallback.
+- Custom work: Friendly "Loading..." copy plus lazy loading for every scaffold card.
