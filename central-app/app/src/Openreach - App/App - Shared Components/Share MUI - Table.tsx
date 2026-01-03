@@ -13,8 +13,8 @@ import {
 } from '@mui/material'
 import type { SxProps, Theme } from '@mui/material/styles'
 
-export interface SharedMuiTableColumn<T> {
-  field?: keyof T | string
+export interface SharedMuiTableColumn<T extends object> {
+  field?: keyof T
   header: string
   align?: 'left' | 'center' | 'right'
   width?: number | string
@@ -22,7 +22,7 @@ export interface SharedMuiTableColumn<T> {
   render?: (row: T) => ReactNode
 }
 
-export interface SharedMuiTableProps<T> {
+export interface SharedMuiTableProps<T extends object> {
   columns: SharedMuiTableColumn<T>[]
   rows: T[]
   getRowId?: (row: T, index: number) => string | number
@@ -32,7 +32,7 @@ export interface SharedMuiTableProps<T> {
   emptyState?: ReactNode
 }
 
-export function SharedMuiTable<T extends Record<string, unknown>>({
+export function SharedMuiTable<T extends object>({
   columns,
   rows,
   getRowId,
@@ -43,7 +43,12 @@ export function SharedMuiTable<T extends Record<string, unknown>>({
 }: SharedMuiTableProps<T>) {
   const rowKey = (row: T, index: number) => {
     if (getRowId) return getRowId(row, index)
-    if (typeof row.id === 'string' || typeof row.id === 'number') return row.id
+    if ('id' in row) {
+      const candidate = (row as { id?: unknown }).id
+      if (typeof candidate === 'string' || typeof candidate === 'number') {
+        return candidate
+      }
+    }
     return index
   }
 
@@ -119,7 +124,9 @@ export function SharedMuiTable<T extends Record<string, unknown>>({
                   {columns.map((column) => {
                     const content = column.render
                       ? column.render(row)
-                      : (row[column.field as keyof T] as ReactNode)
+                      : column.field
+                        ? (row[column.field] as ReactNode)
+                        : null
                     return (
                       <TableCell key={column.header + rowKey(row, index)} align={column.align ?? 'left'}>
                         {content ?? '—'}

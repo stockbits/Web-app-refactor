@@ -102,7 +102,7 @@ const TaskManagementPage = () => {
         </Typography>
       </Box>
 
-      <SharedMuiTable
+      <SharedMuiTable<TaskTableRow>
         title="Operational tasks"
         caption="Prioritised by escalation policies and SLA clocks"
         columns={columns}
