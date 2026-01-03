@@ -1,12 +1,14 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import {
   DataGrid,
   GridToolbarQuickFilter,
+  useGridApiRef,
   type GridColDef,
   type GridRowId,
   type GridValidRowModel,
 } from '@mui/x-data-grid'
+import { useMuiTableSelection } from './MUI Table - Selection Logic'
 
 export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   columns: GridColDef<T>[]
@@ -46,6 +48,33 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enableQuickFilter = false,
   emptyState,
 }: SharedMuiTableProps<T>) {
+  const resolvedRowIds = rows.map((row, index) => {
+    if (getRowId) {
+      return getRowId(row)
+    }
+
+    const candidate = (row as { id?: GridRowId }).id
+    return candidate ?? index
+  })
+
+  const apiRef = useGridApiRef()
+  const { selectionModel, handleSelectionModelChange, clearSelection } = useMuiTableSelection(resolvedRowIds)
+
+  useEffect(() => {
+    const api = apiRef.current
+    if (!api?.subscribeEvent) {
+      return
+    }
+
+    const unsubscribe = api.subscribeEvent('headerSelectionCheckboxChange', () => {
+      clearSelection()
+    })
+
+    return () => {
+      unsubscribe?.()
+    }
+  }, [apiRef, clearSelection])
+
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>
       {emptyState ?? (
@@ -82,6 +111,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       )}
 
       <DataGrid
+        apiRef={apiRef}
         autoHeight={autoHeight}
         rows={rows}
         columns={columns}
@@ -89,7 +119,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         density={density}
         loading={loading}
         hideFooter={hideFooter}
-        disableRowSelectionOnClick
+        rowSelectionModel={selectionModel}
+        onRowSelectionModelChange={handleSelectionModelChange}
+        checkboxSelection
+        disableMultipleRowSelection={false}
         slots={{
           toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
           noRowsOverlay: NoRowsOverlay,
@@ -102,6 +135,11 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: 0.6,
+          },
+          '& .MuiDataGrid-cell': {
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           },
           '& .MuiDataGrid-row': {
             '&:last-of-type': {

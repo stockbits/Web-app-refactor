@@ -1,6 +1,6 @@
-import { Box, Chip, Stack, Typography } from '@mui/material'
+import { Chip, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
-import SharedMuiTable from '../../../App - Shared Components/Share MUI - Table'
+import SharedMuiTable from '../../../App - Shared Components/MUI - Table/Share MUI - Table'
 import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
 
 const priorityStyles: Record<TaskTableRow['priority'], { color: string; bg: string }> = {
@@ -33,7 +33,13 @@ const TaskManagementPage = () => {
       minWidth: 120,
       sortable: false,
       renderCell: (params) => (
-        <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} color="text.primary">
+        <Typography
+          variant="body2"
+          fontFamily="'IBM Plex Mono', monospace"
+          fontWeight={600}
+          color="text.primary"
+          noWrap
+        >
           {params.row.id}
         </Typography>
       ),
@@ -45,14 +51,18 @@ const TaskManagementPage = () => {
       minWidth: 220,
       sortable: false,
       renderCell: (params) => (
-        <Stack spacing={0.25} overflow="hidden">
-          <Typography variant="body2" fontWeight={600} noWrap>
-            {params.row.name}
+        <Typography
+          variant="body2"
+          fontWeight={600}
+          noWrap
+          sx={{ display: 'block', width: '100%' }}
+          title={`${params.row.name} • Owner: ${params.row.owner}`}
+        >
+          {params.row.name}
+          <Typography component="span" variant="body2" color="text.secondary" fontWeight={500} sx={{ ml: 1 }}>
+            • {params.row.owner}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Owner: {params.row.owner}
-          </Typography>
-        </Stack>
+        </Typography>
       ),
     },
     {
@@ -100,7 +110,7 @@ const TaskManagementPage = () => {
       minWidth: 160,
       sortable: false,
       renderCell: (params) => (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" noWrap>
           {dateFormatter.format(new Date(params.row.updatedAt))}
         </Typography>
       ),
@@ -108,23 +118,12 @@ const TaskManagementPage = () => {
   ]
 
   return (
-    <Stack gap={2}>
-      <Box>
-        <Typography variant="h5" fontWeight={700} gutterBottom>
-          Task management live queue
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Data refreshes every 30 seconds from Command Centre feeds.
-        </Typography>
-      </Box>
-
-      <SharedMuiTable<TaskTableRow>
-        columns={columns}
-        rows={TASK_TABLE_ROWS}
-        getRowId={(row) => row.id}
-        density="compact"
-      />
-    </Stack>
+    <SharedMuiTable<TaskTableRow>
+      columns={columns}
+      rows={TASK_TABLE_ROWS}
+      getRowId={(row) => row.id}
+      density="compact"
+    />
   )
 }
 
