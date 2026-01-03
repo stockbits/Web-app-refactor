@@ -123,6 +123,7 @@ const TaskManagementPage = () => {
       rows={TASK_TABLE_ROWS}
       getRowId={(row) => row.id}
       density="compact"
+      enableDensitySelector
     />
   )
 }

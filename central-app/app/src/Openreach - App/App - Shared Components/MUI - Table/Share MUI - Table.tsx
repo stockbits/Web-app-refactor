@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useMemo, type ReactNode } from 'react'
 import { Box, Paper, Stack, Typography } from '@mui/material'
 import {
   DataGrid,
+  GridToolbarDensitySelector,
   GridToolbarQuickFilter,
   useGridApiRef,
   type GridColDef,
@@ -21,19 +22,9 @@ export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowM
   hideFooter?: boolean
   autoHeight?: boolean
   enableQuickFilter?: boolean
+  enableDensitySelector?: boolean
   emptyState?: ReactNode
 }
-
-const QuickFilterToolbar = () => (
-  <Stack px={1.5} py={1} alignItems="flex-start">
-    <Box sx={{ width: '100%' }}>
-      <GridToolbarQuickFilter
-        debounceMs={250}
-        quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
-      />
-    </Box>
-  </Stack>
-)
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
   columns,
@@ -46,6 +37,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   hideFooter = true,
   autoHeight = true,
   enableQuickFilter = false,
+  enableDensitySelector = false,
   emptyState,
 }: SharedMuiTableProps<T>) {
   const resolvedRowIds = rows.map((row, index) => {
@@ -74,6 +66,43 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       unsubscribe?.()
     }
   }, [apiRef, clearSelection])
+
+  const ToolbarComponent = useMemo(() => {
+    if (!enableQuickFilter && !enableDensitySelector) {
+      return undefined
+    }
+
+    const Toolbar = () => (
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        gap={1}
+        px={1.5}
+        py={1}
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+      >
+        {enableQuickFilter && (
+          <Box sx={{ flexGrow: 1 }}>
+            <GridToolbarQuickFilter
+              debounceMs={250}
+              quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
+            />
+          </Box>
+        )}
+
+        {enableDensitySelector && (
+          <Stack direction="row" alignItems="center" spacing={0.75}>
+            <Typography variant="caption" color="text.secondary" fontWeight={700} textTransform="uppercase">
+              Density
+            </Typography>
+            <GridToolbarDensitySelector slotProps={{ tooltip: { title: 'Adjust row spacing' } }} />
+          </Stack>
+        )}
+      </Stack>
+    )
+
+    Toolbar.displayName = 'SharedMuiTableToolbar'
+    return Toolbar
+  }, [enableQuickFilter, enableDensitySelector])
 
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -124,7 +153,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         checkboxSelection
         disableMultipleRowSelection={false}
         slots={{
-          toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
+          toolbar: ToolbarComponent,
           noRowsOverlay: NoRowsOverlay,
         }}
         sx={{
