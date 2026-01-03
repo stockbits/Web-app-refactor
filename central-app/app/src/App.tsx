@@ -437,19 +437,19 @@ function App() {
                     <Typography
                       variant="overline"
                       className="canvas-label"
-                      sx={{
+                      sx={(theme) => ({
                         textTransform: 'uppercase',
-                        letterSpacing: 3,
-                        fontWeight: 700,
-                        color: '#037971',
+                        letterSpacing: 1.5,
+                        fontWeight: 600,
+                        color: theme.openreach?.coreBlock ?? '#073B4C',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 1,
-                      }}
+                        gap: 0.75,
+                      })}
                     >
                       <Box component="span" sx={{ opacity: 0.95 }}>MENU</Box>
-                      <Box component="span" sx={{ mx: 1, color: 'text.secondary' }}>{'\u2022'}</Box>
-                      <Box component="span">{selectedMenu.label.toUpperCase()}</Box>
+                      <Box component="span" sx={{ mx: 0.75, color: 'text.secondary' }}>{'\u2022'}</Box>
+                      <Box component="span">{selectedMenu.label}</Box>
                     </Typography>
                   </Stack>
                 )}
@@ -463,16 +463,16 @@ function App() {
                       <Breadcrumbs
                         aria-label="breadcrumb"
                         separator={
-                          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mx: 1, color: 'text.secondary' }}>
+                          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mx: 0.75, color: 'text.secondary' }}>
                             {'\u2022'}
                           </Box>
                         }
-                        sx={{
-                          fontWeight: 600,
+                        sx={(theme) => ({
                           mb: 0.5,
                           pt: 1,
                           '& .MuiBreadcrumbs-separator': { display: 'inline-flex', alignItems: 'center' },
-                        }}
+                          color: theme.palette.text.primary,
+                        })}
                       >
                         <Link
                           underline="hover"
@@ -483,20 +483,20 @@ function App() {
                           sx={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 1,
+                            gap: 0.5,
                             cursor: 'pointer',
                             border: 0,
                             background: 'none',
                             font: 'inherit',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: 2,
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            letterSpacing: 1,
                           }}
                         >
                           <ArrowBackRoundedIcon fontSize="small" />
                           {selectedMenu.label}
                         </Link>
-                        <Typography sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2 }}>
+                        <Typography sx={{ fontWeight: 600, textTransform: 'none', letterSpacing: 1 }}>
                           {activePage.cardName}
                         </Typography>
                       </Breadcrumbs>
