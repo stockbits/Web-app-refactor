@@ -31,7 +31,6 @@ const TaskManagementPage = () => {
       headerName: 'Task ID',
       flex: 0.7,
       minWidth: 120,
-      sortable: false,
       renderCell: (params) => (
         <Typography
           variant="body2"
@@ -49,7 +48,6 @@ const TaskManagementPage = () => {
       headerName: 'Task',
       flex: 1.6,
       minWidth: 220,
-      sortable: false,
       renderCell: (params) => (
         <Typography
           variant="body2"
@@ -72,7 +70,6 @@ const TaskManagementPage = () => {
       headerAlign: 'center',
       flex: 0.7,
       minWidth: 120,
-      sortable: false,
       renderCell: (params) => (
         <Chip
           label={params.row.priority}
@@ -90,7 +87,6 @@ const TaskManagementPage = () => {
       headerName: 'Status',
       flex: 0.9,
       minWidth: 140,
-      sortable: false,
       renderCell: (params) => (
         <Chip
           label={params.row.status}
@@ -108,7 +104,6 @@ const TaskManagementPage = () => {
       headerName: 'Last update',
       flex: 0.9,
       minWidth: 160,
-      sortable: false,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
           <Typography variant="body2" color="text.secondary" noWrap>

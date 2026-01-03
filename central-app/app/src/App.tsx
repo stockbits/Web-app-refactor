@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import type { ElementType, JSX } from "react";
+import { Suspense, lazy, useMemo, useState } from "react";
+import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
   Box,
@@ -7,6 +7,7 @@ import {
   Card,
   CardActionArea,
   CardContent,
+  CircularProgress,
   Link,
   Stack,
   Typography,
@@ -333,25 +334,27 @@ const TOTAL_TOOL_COUNT = MENU_GROUPS.reduce(
 );
 
 type PageComponent = () => JSX.Element;
+type PageModule = { default: PageComponent };
+type PageModuleLoader = () => Promise<PageModule>;
+type LazyPageComponent = LazyExoticComponent<PageComponent>;
 
-const pageModules = import.meta.glob(
-  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx",
-  {
-    eager: true,
-    import: "default",
-  }
-) as Record<string, PageComponent>;
+const pageModules = import.meta.glob<PageModule>(
+  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx"
+) as Record<string, PageModuleLoader>;
 
 const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
-  Record<string, Record<string, PageComponent>>
->((acc, [path, component]) => {
+  Record<string, Record<string, LazyPageComponent>>
+>((acc, [path, loader]) => {
   const segments = path.split("/");
   const folderName = segments[segments.length - 2];
   const fileName = segments[segments.length - 1].replace(".tsx", "");
   if (!acc[folderName]) {
     acc[folderName] = {};
   }
-  acc[folderName][fileName] = component;
+  acc[folderName][fileName] = lazy(async () => {
+    const module = await loader();
+    return { default: module.default };
+  });
   return acc;
 }, {});
 
@@ -497,7 +500,20 @@ function App() {
                             </Typography>
                           );
                         }
-                        return <ActivePageComponent />;
+                        return (
+                          <Suspense
+                            fallback={
+                              <Stack alignItems="center" py={6} spacing={2}>
+                                <CircularProgress size={28} thickness={4} />
+                                <Typography color="text.secondary" fontWeight={500}>
+                                  Loading scaffold...
+                                </Typography>
+                              </Stack>
+                            }
+                          >
+                            <ActivePageComponent />
+                          </Suspense>
+                        );
                       })()}
                     </Stack>
                   </Box>

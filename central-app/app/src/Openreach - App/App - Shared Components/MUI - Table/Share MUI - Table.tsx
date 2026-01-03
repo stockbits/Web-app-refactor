@@ -134,6 +134,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     </Box>
   )
 
+  const hasSelection = selectionModel.ids.size > 0
+
   const tableContent = (
     <Paper
       elevation={0}
@@ -199,6 +201,17 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               borderBottom: 'none',
             },
           },
+          ...(!hasSelection
+            ? {
+                '& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-checkboxInput': {
+                  pointerEvents: 'none',
+                  opacity: 0.4,
+                },
+                '& .MuiDataGrid-columnHeaderCheckbox .MuiCheckbox-root': {
+                  pointerEvents: 'none',
+                },
+              }
+            : null),
         }}
       />
     </Paper>
