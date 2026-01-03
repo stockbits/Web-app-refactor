@@ -1,6 +1,11 @@
-import { Box, Chip, Typography } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { Box, Chip, Stack, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
-import SharedMuiTable from '../../../App - Shared Components/MUI - Table/Share MUI - Table'
+import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
+import TaskTableQueryConfig, {
+  buildDefaultTaskTableQuery,
+  type TaskTableQueryState,
+} from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import { TASK_TABLE_ROWS, type TaskTableRow } from '../../../App - Data Base/Task - Table'
 
 const priorityStyles: Record<TaskTableRow['priority'], { color: string; bg: string }> = {
@@ -114,16 +119,86 @@ const TaskManagementPage = () => {
     },
   ]
 
+  const ownerOptions = useMemo(
+    () => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.owner))).sort((a, b) => a.localeCompare(b)),
+    [],
+  )
+  const defaultQuery = useMemo(() => buildDefaultTaskTableQuery(), [])
+  const [activeQuery, setActiveQuery] = useState<TaskTableQueryState>(defaultQuery)
+
+  const filteredRows = useMemo(() => applyTaskFilters(TASK_TABLE_ROWS, activeQuery), [activeQuery])
+
+  const handleApplyQuery = (nextQuery: TaskTableQueryState) => {
+    setActiveQuery(nextQuery)
+  }
+
   return (
-    <SharedMuiTable<TaskTableRow>
-      columns={columns}
-      rows={TASK_TABLE_ROWS}
-      getRowId={(row) => row.id}
-      density="compact"
-      enableQuickFilter
-      showFooterControls
-    />
+    <Stack spacing={3}>
+      <TaskTableQueryConfig
+        ownerOptions={ownerOptions}
+        initialQuery={activeQuery}
+        defaultQuery={defaultQuery}
+        onApply={handleApplyQuery}
+      />
+      <SharedMuiTable<TaskTableRow>
+        columns={columns}
+        rows={filteredRows}
+        getRowId={(row) => row.id}
+        density="compact"
+        enableQuickFilter
+        showFooterControls
+      />
+    </Stack>
   )
 }
 
 export default TaskManagementPage
+
+const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): TaskTableRow[] => {
+  const fromDate = query.updatedFrom ? startOfDay(query.updatedFrom) : null
+  const toDate = query.updatedTo ? endOfDay(query.updatedTo) : null
+  const keyword = query.searchTerm.trim().toLowerCase()
+
+  return rows.filter((row) => {
+    if (keyword) {
+      const haystack = `${row.id} ${row.name} ${row.owner}`.toLowerCase()
+      if (!haystack.includes(keyword)) {
+        return false
+      }
+    }
+
+    if (query.owners.length && !query.owners.includes(row.owner)) {
+      return false
+    }
+
+    if (query.priorities.length && !query.priorities.includes(row.priority)) {
+      return false
+    }
+
+    if (query.statuses.length && !query.statuses.includes(row.status)) {
+      return false
+    }
+
+    const updatedAt = new Date(row.updatedAt)
+    if (fromDate && updatedAt < fromDate) {
+      return false
+    }
+
+    if (toDate && updatedAt > toDate) {
+      return false
+    }
+
+    return true
+  })
+}
+
+const startOfDay = (value: string) => {
+  const date = new Date(`${value}T00:00:00`)
+  return date
+}
+
+const endOfDay = (value: string) => {
+  const date = new Date(`${value}T23:59:59`)
+  date.setMilliseconds(999)
+  return date
+}
