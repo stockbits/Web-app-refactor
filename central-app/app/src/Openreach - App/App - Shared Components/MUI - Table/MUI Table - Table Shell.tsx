@@ -112,8 +112,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   const resolvedHideFooter = showFooterControls ? false : hideFooter
   // If maxHeight is set, force autoHeight to false so DataGrid scrolls vertically.
   const resolvedAutoHeight = typeof maxHeight !== 'undefined' ? false : (showFooterControls ? false : autoHeight)
-  // Default maxHeight to 600 if not provided (fits ~20 compact rows)
-  const resolvedMaxHeight = maxHeight ?? 600
+  // Default maxHeight to 100% for dynamic parent sizing
+  const resolvedMaxHeight = maxHeight ?? '100%'
   const paginationSettings = !resolvedHideFooter
     ? {
         pagination: true as const,
@@ -179,7 +179,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           )}
         </Stack>
       )}
-      <Box sx={{ maxHeight: resolvedMaxHeight, height: resolvedMaxHeight, width: '100%' }}>
+      <Box sx={{ height: '100%', maxHeight: resolvedMaxHeight, width: '100%', overflowY: 'auto' }}>
+        
         <DataGrid
           apiRef={apiRef}
           autoHeight={resolvedAutoHeight}

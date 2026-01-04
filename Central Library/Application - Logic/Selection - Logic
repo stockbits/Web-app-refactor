@@ -12,12 +12,12 @@ Intent
 Key Behaviours
 1. Single click: Clears prior checks and selects only the clicked row. The hook persists that row id as the current anchor.
 2. Ctrl/Cmd click: Toggles the clicked row without clearing the previous ones, while updating the anchor so subsequent Shift operations know where to start.
-3. Shift click: Builds a range from the anchor to the clicked row using the grid-provided visible order (sorted/filtered) so only the rows between those two points become selected.
+3. Shift click: Builds a range from the anchor to the clicked row using the DataGrid API's current visible row order (sorted/filtered), so only the rows between those two points become selected. The hook always queries the DataGrid API for the latest order to avoid bugs when sorting or filtering is active.
 4. Header checkbox reset: When the DataGrid header checkbox fires, we clear the custom selection state to stay in sync with native bulk actions.
 
 Implementation Notes
 - Modifier detection prefers the event payload from MUI callbacks; when no event is provided (keyboard toggles, programmatic selection) the hook falls back to global key listeners that keep track of Shift/Ctrl state.
-- Visible row order comes from the grid API (`getRowIndexRelativeToVisibleRows`). This guarantees Shift ranges respect the user’s current sort/filter view rather than the original dataset order.
+- Visible row order is always retrieved from the DataGrid API (`getAllRowIds` and `getRowIndexRelativeToVisibleRows`). This guarantees Shift ranges respect the user’s current sort/filter view rather than the original dataset order, and fixes bugs where selection could mismatch after sorting.
 - The hook keeps an internal `anchorRef`: it is set on the most recent click (regular or Ctrl/Cmd) and reused when Shift-selecting.
 - Range selection always replaces the selection set with the contiguous ids in that range, mirroring spreadsheet UX and preventing orphaned selections outside the band.
 - Multi-select toggles clone the grid’s selection payload so downstream components see the exact same `GridRowSelectionModel` shape.

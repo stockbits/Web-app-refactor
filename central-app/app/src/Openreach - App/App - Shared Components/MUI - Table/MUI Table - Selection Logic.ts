@@ -139,10 +139,12 @@ export const useMuiTableSelection = (
       setSelectionModel((previous) => {
         const pointerModifiers = extractEventModifiers(details)
         const activeModifiers = pointerModifiers ?? modifierState.current
-        const orderedIdsFromApi = details?.api?.getAllRowIds?.()
+        // Always use the DataGrid API for visible row order if available
+        const api = gridApiRef?.current
+        const orderedIdsFromApi = api?.getAllRowIds?.()
         const orderedIds = buildVisibleRowOrder(
-          orderedIdsFromApi?.length ? orderedIdsFromApi : rowOrderRef.current,
-          gridApiRef?.current ?? undefined,
+          orderedIdsFromApi && orderedIdsFromApi.length ? orderedIdsFromApi : rowOrderRef.current,
+          api,
         )
         const prevIdsSet = previous.ids
         const nextIdsArray = selectionIdsToArray(newSelection)

@@ -300,45 +300,59 @@ const TaskManagementPage = () => {
   }
 
   return (
-    <Stack spacing={3}>
-      <TaskTableQueryConfig
-        initialQuery={activeQuery}
-        defaultQuery={defaultQuery}
-        divisionOptions={divisionOptions}
-        domainOptions={domainOptions}
-        capabilityOptions={capabilityOptions}
-        responseCodeOptions={responseCodeOptions}
-        exactSearchValues={exactSearchValues}
-        onApply={handleApplyQuery}
-      />
-      {hasAppliedQuery ? (
-        <SharedMuiTable<TaskTableRow>
-          columns={columns}
-          rows={filteredRows}
-          getRowId={(row) => row.taskId}
-          density="compact"
-          enableQuickFilter
-          showFooterControls
+    <Box sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      minHeight: 0,
+    }}>
+      <Box sx={{ flexShrink: 0 }}>
+        <TaskTableQueryConfig
+          initialQuery={activeQuery}
+          defaultQuery={defaultQuery}
+          divisionOptions={divisionOptions}
+          domainOptions={domainOptions}
+          capabilityOptions={capabilityOptions}
+          responseCodeOptions={responseCodeOptions}
+          exactSearchValues={exactSearchValues}
+          onApply={handleApplyQuery}
         />
-      ) : (
-        <Box
-          sx={{
-            borderRadius: 2,
-            border: '1px dashed rgba(7,59,76,0.3)',
-            bgcolor: 'rgba(7,59,76,0.02)',
-            p: 4,
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Run a query to load tasks
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Use the filters above to define your search, then hit Search to fetch matching rows.
-          </Typography>
-        </Box>
-      )}
-    </Stack>
+      </Box>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {hasAppliedQuery ? (
+          <SharedMuiTable<TaskTableRow>
+            columns={columns}
+            rows={filteredRows}
+            getRowId={(row) => row.taskId}
+            density="compact"
+            enableQuickFilter
+            showFooterControls
+          />
+        ) : (
+          <Box
+            sx={{
+              borderRadius: 2,
+              border: '1px dashed rgba(7,59,76,0.3)',
+              bgcolor: 'rgba(7,59,76,0.02)',
+              p: 4,
+              textAlign: 'center',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Run a query to load tasks
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Use the filters above to define your search, then hit Search to fetch matching rows.
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Box>
   )
 }
 
