@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "react-split-pane": "^3.0.4"
+  }
+}
