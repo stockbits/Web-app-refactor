@@ -1,0 +1,38 @@
+/* Ensure SplitPane fills parent height */
+.SplitPane {
+  position: relative !important;
+  height: 100% !important;
+}
+
+/* Pane containers behave nicely with MUI flex children */
+.Pane {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Resizer base */
+.Resizer {
+  background: rgba(7, 59, 76, 0.12);
+  z-index: 10;
+  box-sizing: border-box;
+  background-clip: padding-box;
+}
+
+/* Vertical resizer */
+.Resizer.vertical {
+  width: 8px;
+  cursor: col-resize;
+  margin: 0 -4px;
+}
+
+/* Horizontal resizer */
+.Resizer.horizontal {
+  height: 8px;
+  cursor: row-resize;
+  margin: -4px 0;
+}
+
+.Resizer:hover {
+  background: rgba(7, 59, 76, 0.25);
+}
