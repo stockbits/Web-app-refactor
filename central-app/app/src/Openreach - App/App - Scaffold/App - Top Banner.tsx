@@ -57,7 +57,8 @@ export const OpenreachTopBanner = ({
         minHeight: { xs: 64, md: 80 },
         backgroundImage: `linear-gradient(120deg, ${brand.coreBlock}, ${brand.supportingBlock})`,
         color: brand.fibreThreads,
-        boxShadow: '0 12px 32px rgba(3, 7, 12, 0.45)',
+        // More dense, layered shadow for top banner
+        boxShadow: '0 6px 24px 0 rgba(3,7,12,0.55), 0 1.5px 8px 0 rgba(3,7,12,0.18)',
         borderBottom: '1px solid rgba(4,11,18,0.35)',
         position: 'relative',
         overflow: 'hidden',

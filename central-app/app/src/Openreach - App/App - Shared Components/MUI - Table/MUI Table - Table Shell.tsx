@@ -5,9 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
-  type MutableRefObject,
   type ReactNode,
-  type WheelEvent,
 } from 'react'
 import { Box, Paper, Stack, Switch, Typography } from '@mui/material'
 import {
@@ -29,12 +27,8 @@ type DensityToggleContextValue = {
 
 const DensityToggleContext = createContext<DensityToggleContextValue | null>(null)
 
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 
-type GridApiRefType = ReturnType<typeof useGridApiRef>
-type GridApiWithScroller = GridApiRefType['current'] & {
-  virtualScrollerRef?: MutableRefObject<HTMLDivElement | null>
-}
+// Removed unused GridApiRefType
 
 const useDensityToggleContext = () => {
   const context = useContext(DensityToggleContext)
@@ -61,6 +55,7 @@ export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowM
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
+  maxHeight?: number | string // New prop for max height of DataGrid container
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
@@ -72,12 +67,13 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   density = 'compact',
   loading,
   hideFooter = true,
-  autoHeight = true,
+  autoHeight,
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
   initialPageSize = 30,
   emptyState,
+  maxHeight,
 }: SharedMuiTableProps<T>) {
   const resolvedRowIds = rows.map((row, index) => {
     if (getRowId) {
@@ -114,8 +110,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     ? normalizedInitialPageSize
     : resolvedPageSizeOptions[0]
   const resolvedHideFooter = showFooterControls ? false : hideFooter
-  // Large page sizes need a scrollable viewport instead of stretching the layout.
-  const resolvedAutoHeight = showFooterControls ? false : autoHeight
+  // If maxHeight is set, force autoHeight to false so DataGrid scrolls vertically.
+  const resolvedAutoHeight = typeof maxHeight !== 'undefined' ? false : (showFooterControls ? false : autoHeight)
+  // Default maxHeight to 600 if not provided (fits ~20 compact rows)
+  const resolvedMaxHeight = maxHeight ?? 600
   const paginationSettings = !resolvedHideFooter
     ? {
         pagination: true as const,
@@ -143,51 +141,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     }
   }, [apiRef, clearSelection])
 
-  useEffect(() => {
-    const api = apiRef.current as GridApiWithScroller | null
-
-    if (!api?.subscribeEvent || !api.virtualScrollerRef?.current) {
-      return
-    }
-
-    const handleHorizontalWheel = (_params: unknown, event: WheelEvent) => {
-      const virtualScroller = api.virtualScrollerRef?.current
-      if (!virtualScroller) {
-        return
-      }
-
-      const prefersHorizontal = event.shiftKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)
-      if (!prefersHorizontal) {
-        return
-      }
-
-      let delta = event.deltaX
-      if (event.shiftKey && delta === 0) {
-        delta = event.deltaY
-      }
-
-      if (!delta) {
-        return
-      }
-
-      const maxScrollable = virtualScroller.scrollWidth - virtualScroller.clientWidth
-      if (maxScrollable <= 0) {
-        return
-      }
-
-      event.preventDefault()
-
-      const currentLeft = Math.abs(virtualScroller.scrollLeft)
-      const nextLeft = clamp(currentLeft + delta, 0, maxScrollable)
-      api.scroll({ left: nextLeft })
-    }
-
-    const unsubscribe = api.subscribeEvent('virtualScrollerWheel', handleHorizontalWheel)
-
-    return () => {
-      unsubscribe?.()
-    }
-  }, [apiRef])
+  // Removed custom horizontal wheel event logic to use standard MUI DataGrid horizontal scrolling
 
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -225,60 +179,57 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           )}
         </Stack>
       )}
-
-      <DataGrid
-        apiRef={apiRef}
-        autoHeight={resolvedAutoHeight}
-        rows={rows}
-        columns={columns}
-        getRowId={getRowId}
-        density={densityMode}
-        loading={loading}
-        hideFooter={resolvedHideFooter}
-        {...(paginationSettings ?? {})}
-        rowSelectionModel={selectionModel}
-        onRowSelectionModelChange={handleSelectionModelChange}
-        checkboxSelection
-        disableMultipleRowSelection={false}
-        slots={{
-          toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
-          noRowsOverlay: NoRowsOverlay,
-          footer: showFooterControls ? DensePaddingFooter : undefined,
-        }}
-        sx={{
-          border: 'none',
-          '& .MuiDataGrid-columnHeaders': {
-            bgcolor: 'rgba(7,59,76,0.02)',
-            borderBottom: '1px solid rgba(7,59,76,0.08)',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: 0.6,
-          },
-          '& .MuiDataGrid-cell': {
-            display: 'flex',
-            alignItems: 'center',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          },
-          '& .MuiDataGrid-row': {
-            '&:last-of-type': {
-              borderBottom: 'none',
+      <Box sx={{ maxHeight: resolvedMaxHeight, height: resolvedMaxHeight, width: '100%' }}>
+        <DataGrid
+          apiRef={apiRef}
+          autoHeight={resolvedAutoHeight}
+          rows={rows}
+          columns={columns}
+          getRowId={getRowId}
+          density={densityMode}
+          loading={loading}
+          hideFooter={resolvedHideFooter}
+          {...(paginationSettings ?? {})}
+          rowSelectionModel={selectionModel}
+          onRowSelectionModelChange={handleSelectionModelChange}
+          checkboxSelection
+          disableMultipleRowSelection={false}
+          slots={{
+            toolbar: enableQuickFilter ? QuickFilterToolbar : undefined,
+            noRowsOverlay: NoRowsOverlay,
+            footer: showFooterControls ? DensePaddingFooter : undefined,
+          }}
+          sx={{
+            border: 'none',
+            '& .MuiDataGrid-columnHeaders': {
+              bgcolor: 'rgba(7,59,76,0.02)',
+              borderBottom: '1px solid rgba(7,59,76,0.08)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: 0.6,
             },
-          },
-          ...(!hasSelection
-            ? {
-                '& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-checkboxInput': {
-                  pointerEvents: 'none',
-                  opacity: 0.4,
-                },
-                '& .MuiDataGrid-columnHeaderCheckbox .MuiCheckbox-root': {
-                  pointerEvents: 'none',
-                },
-              }
-            : null),
-        }}
-      />
+            '& .MuiDataGrid-cell': {
+              display: 'flex',
+              alignItems: 'center',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+            // No custom row border overrides; use MUI default row lines
+            ...(!hasSelection
+              ? {
+                  '& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-checkboxInput': {
+                    pointerEvents: 'none',
+                    opacity: 0.4,
+                  },
+                  '& .MuiDataGrid-columnHeaderCheckbox .MuiCheckbox-root': {
+                    pointerEvents: 'none',
+                  },
+                }
+              : null),
+          }}
+        />
+      </Box>
     </Paper>
   )
 

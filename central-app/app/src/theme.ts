@@ -9,6 +9,18 @@ const outline = "#ECECEC";
 const typographyInk = "#202020";
 const typographyMuted = "#63666A";
 
+
+const tableColors = {
+  headerBg: '#e3eaf2', // Light blue-grey for table header background (more visible separation)
+  footerBg: '#e3eaf2', // Match footer background to header for main tables
+  headerText: typographyInk, // Table header text
+  rowBg: '#F8FAFB', // Table row background (alternating or default)
+  rowText: typographyInk, // Table row text
+  rowAltBg: '#F1F3F6', // Alternate row background for zebra striping
+  selectedRowBg: '#E0F7FA', // Selected row background
+  border: outline, // Table border color
+};
+
 const openreachBrand = {
   coreBlock: blockGreen,
   supportingBlock: deepBlue,
@@ -17,9 +29,19 @@ const openreachBrand = {
   outline,
   typographyInk,
   typographyMuted,
+  tableColors,
 } as const;
 
 declare module "@mui/material/styles" {
+  interface TableColors {
+    headerBg: string;
+    headerText: string;
+    rowBg: string;
+    rowText: string;
+    rowAltBg: string;
+    selectedRowBg: string;
+    border: string;
+  }
   interface OpenreachPalette {
     coreBlock: string;
     supportingBlock: string;
@@ -28,6 +50,7 @@ declare module "@mui/material/styles" {
     outline: string;
     typographyInk: string;
     typographyMuted: string;
+    tableColors: TableColors;
   }
 
   interface Theme {
@@ -99,18 +122,28 @@ export const appTheme = createTheme({
         },
       },
     },
-    MuiDataGrid: {      defaultProps: {
+    MuiDataGrid: {
+      defaultProps: {
         autosizeOnMount: true,
-      },      styleOverrides: {
+      },
+      styleOverrides: {
         root: {
           borderRadius: 0,
           marginBottom: '8px',
         },
         columnHeader: {
-          backgroundColor: openreachPalette.fibreThreads,
-          color: openreachPalette.typographyInk,
+          backgroundColor: openreachPalette.tableColors.headerBg,
+          color: openreachPalette.tableColors.headerText,
           fontWeight: 600,
         },
+        footerContainer: {
+          backgroundColor: openreachPalette.tableColors.footerBg,
+        },
+        row: {
+          backgroundColor: openreachPalette.tableColors.rowBg,
+          color: openreachPalette.tableColors.rowText,
+        },
+        // Add alternate row and selected row styling via sx or in DataGrid usage as needed
       },
     },
   },
