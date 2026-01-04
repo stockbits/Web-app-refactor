@@ -23,9 +23,10 @@ Side navigation (central-app/app/src/Openreach - App/App - Scaffold/App - Side N
 - MUI primitives: `Drawer`, `Paper`, `Stack`, `List`, `ListItemButton`, `ListItemIcon`, `ListItemText`, `InputBase`, `IconButton`, `Tooltip`, `Chip`, `Divider`, `Typography`.
 - Custom work: Searchable task-force tree with badge metadata, client build footer, and responsive brand theming (including fallback nav items).
 
+
 Shared MUI table shell (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx)
 - MUI primitives: `Paper`, `Stack`, `Typography`, `Switch`, `Box`, `DataGrid`, `GridToolbarQuickFilter`, `GridPagination`, `GridFooterContainer`.
-- Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, configurable empty state slot, plus a custom horizontal wheel handler that proxies trackpad/Shift-scroll gestures through the DataGrid API and clamps distance so users can reach the final column without grabbing the scrollbar.
+- Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, configurable empty state slot. As of Jan 2026, custom horizontal wheel handler was removed in favor of standard MUI DataGrid scroll behavior. Default row lines are now restored for better accessibility and clarity. Table header/footer and row colors are theme-driven for improved separation and UX, with all color tokens managed in `theme.ts`.
 
 Selection helper (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Selection Logic.ts)
 - MUI primitives: `GridRowSelectionModel`, `GridCallbackDetails` from `@mui/x-data-grid`.
