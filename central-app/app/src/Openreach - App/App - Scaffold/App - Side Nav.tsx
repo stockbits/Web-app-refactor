@@ -322,7 +322,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             },
           }}
         >
-          <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0 }}>
+          <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ minHeight: 48 }}>
               <Box sx={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
                 {headerSlot ? (
@@ -521,9 +521,17 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
 
             {footerContent && (
               <Box
-                mt="auto"
-                pt={1.75}
-                pb="env(safe-area-inset-bottom, 0px)"
+                sx={{
+                  mt: 'auto',
+                  pt: 1.75,
+                  pb: 'env(safe-area-inset-bottom, 0px)',
+                  position: 'sticky',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  bgcolor: palette.supportingBlock,
+                  zIndex: 2,
+                }}
               >
                 <Divider sx={{ mb: 1, borderColor: alpha(white, 0.08) }} />
                 {footerContent}

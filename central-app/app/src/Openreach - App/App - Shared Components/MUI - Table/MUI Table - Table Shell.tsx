@@ -49,7 +49,6 @@ export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowM
   density?: 'compact' | 'standard' | 'comfortable'
   loading?: boolean
   hideFooter?: boolean
-  autoHeight?: boolean
   enableQuickFilter?: boolean
   showFooterControls?: boolean
   pageSizeOptions?: number[]
@@ -67,7 +66,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   density = 'compact',
   loading,
   hideFooter = true,
-  autoHeight,
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
@@ -110,10 +108,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     ? normalizedInitialPageSize
     : resolvedPageSizeOptions[0]
   const resolvedHideFooter = showFooterControls ? false : hideFooter
-  // If maxHeight is set, force autoHeight to false so DataGrid scrolls vertically.
-  const resolvedAutoHeight = typeof maxHeight !== 'undefined' ? false : (showFooterControls ? false : autoHeight)
-  // Default maxHeight to 100% for dynamic parent sizing
-  const resolvedMaxHeight = maxHeight ?? '100%'
+  // Always use autoHeight=false for internal DataGrid scroll, and let parent control height
+  const resolvedAutoHeight = false
+  // Use maxHeight or default to fill viewport minus header/footer (example: calc(100vh - 250px))
+  const resolvedMaxHeight = maxHeight ?? 'calc(100vh - 250px)'
   const paginationSettings = !resolvedHideFooter
     ? {
         pagination: true as const,
@@ -163,6 +161,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         border: '1px solid rgba(7,59,76,0.12)',
         overflow: 'hidden',
         bgcolor: '#fff',
+        height: resolvedMaxHeight,
+        display: 'flex',
+        flexDirection: 'column',
+        mb: 2,
       }}
     >
       {(title || caption) && (
@@ -179,8 +181,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           )}
         </Stack>
       )}
-      <Box sx={{ height: '100%', maxHeight: resolvedMaxHeight, width: '100%', overflowY: 'auto' }}>
-        
+      <Box sx={{ flex: 1, minHeight: 0, width: '100%' }}>
         <DataGrid
           apiRef={apiRef}
           autoHeight={resolvedAutoHeight}
@@ -216,7 +217,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             },
-            // No custom row border overrides; use MUI default row lines
             ...(!hasSelection
               ? {
                   '& .MuiDataGrid-columnHeaderCheckbox .MuiDataGrid-checkboxInput': {
