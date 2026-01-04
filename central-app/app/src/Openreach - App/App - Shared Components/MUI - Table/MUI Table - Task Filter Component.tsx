@@ -1,3 +1,15 @@
+export type TaskTableQueryState = {
+  searchTerm: string
+  divisions: TaskTableRow['division'][]
+  domains: TaskTableRow['domainId'][]
+  statuses: TaskTableRow['status'][]
+  capabilities: TaskSkillCode[]
+  responseCodes: TaskTableRow['responseCode'][]
+  updatedFrom: string | null
+  updatedTo: string | null
+  impactOperator?: 'gt' | 'lt' | 'eq' | null
+  impactValue?: number | null
+}
 import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import {
@@ -31,19 +43,6 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { TASK_STATUS_LABELS } from '../../App - Data Tables/Task - Table'
 import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table'
-
-export type TaskTableQueryState = {
-  searchTerm: string
-  divisions: TaskTableRow['division'][]
-  domains: TaskTableRow['domainId'][]
-  statuses: TaskTableRow['status'][]
-  capabilities: TaskSkillCode[]
-  responseCodes: TaskTableRow['responseCode'][]
-  updatedFrom: string | null
-  updatedTo: string | null
-  impactOperator?: 'gt' | 'lt' | 'eq' | null
-  impactValue?: number | null
-}
 
 type TaskFilterTab = 'simple' | 'advanced'
 
@@ -102,7 +101,6 @@ const TaskTableQueryConfig = ({
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [impactFocused, setImpactFocused] = useState(false)
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
       return null
@@ -201,12 +199,6 @@ const TaskTableQueryConfig = ({
     }))
     setValidationError(null)
   }
-
-  const handleImpactOperatorChange = (_event: SyntheticEvent, next: 'gt' | 'lt' | 'eq' | null) => {
-    setDraftQuery((prev) => ({ ...prev, impactOperator: next }))
-    setValidationError(null)
-  }
-
   const handleImpactValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value.replace(/\D/g, '').slice(0, 3)
     const val = raw === '' ? null : Number(raw)
@@ -345,9 +337,13 @@ const TaskTableQueryConfig = ({
                 },
               }}
             />
-            <FormControl
+            <TextField
+              label="Score"
               size="small"
-              variant="outlined"
+              value={draftQuery.impactValue ?? ''}
+              onChange={handleImpactValueChange}
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
+              placeholder="999"
               sx={{
                 gridColumn: {
                   xs: 'span 1',
@@ -355,27 +351,16 @@ const TaskTableQueryConfig = ({
                   md: 'span 1',
                   lg: 'span 1',
                 },
-                width: { md: '110px', lg: '110px', xs: '100%' },
+                width: { md: '160px', lg: '160px', xs: '100%' },
                 minWidth: 0,
               }}
-            >
-              <InputLabel htmlFor="impact-score-input" shrink={impactFocused || Boolean(draftQuery.impactValue)}>
-                Score
-              </InputLabel>
-              <OutlinedInput
-                id="impact-score-input"
-                label="Score"
-                value={draftQuery.impactValue ?? ''}
-                onChange={handleImpactValueChange}
-                onFocus={() => setImpactFocused(true)}
-                onBlur={() => setImpactFocused(false)}
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
-                placeholder="999"
-                startAdornment={
-                  <InputAdornment position="start">
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ alignItems: 'center' }}>
                     <Tooltip title={draftQuery.impactOperator === 'gt' ? 'Greater than' : draftQuery.impactOperator === 'lt' ? 'Less than' : 'Equal'}>
                       <IconButton
                         size="small"
+                        sx={{ mt: 0.5 }}
                         onClick={() => {
                           const order: Array<'gt' | 'lt' | 'eq'> = ['gt', 'lt', 'eq']
                           const current = draftQuery.impactOperator ?? 'gt'
@@ -389,9 +374,9 @@ const TaskTableQueryConfig = ({
                       </IconButton>
                     </Tooltip>
                   </InputAdornment>
-                }
-              />
-            </FormControl>
+                ),
+              }}
+            />
           </Box>
         )}
 

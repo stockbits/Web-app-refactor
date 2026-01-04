@@ -3,12 +3,10 @@ import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
   Box,
-  Breadcrumbs,
   Card,
   CardActionArea,
   CardContent,
   CircularProgress,
-  Link,
   Stack,
   Typography,
 } from "@mui/material";
@@ -23,15 +21,17 @@ import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSetting
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Nav";
 import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
+import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 
 interface MenuCardTile {
   name: string;
   description: string;
 }
+
+export default App;
 
 interface MenuGroup {
   id: string;
@@ -424,170 +424,117 @@ function App() {
             />
           </Box>
 
+          {/* Unified breadcrumb position and style for all pages */}
+          {showWelcome ? (
+            <AppBreadCrumb
+              left="Access summary"
+              accessSummary
+              groupsCount={MENU_GROUPS.length}
+              totalTools={TOTAL_TOOL_COUNT}
+            />
+          ) : !activePage ? (
+            <AppBreadCrumb left="MENU" right={selectedMenu.label} />
+          ) : (
+            <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
+          )}
+
           <Box className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}>
             {showWelcome ? (
               <LandingOverview
                 groups={MENU_GROUPS}
-                totalTools={TOTAL_TOOL_COUNT}
               />
-            ) : (
+            ) : !activePage ? (
               <>
-                {!activePage && (
-                  <Stack gap={1} mb={2}>
-                    <Typography
-                      variant="overline"
-                      className="canvas-label"
-                      sx={(theme) => ({
-                        textTransform: 'uppercase',
-                        letterSpacing: 1.5,
-                        fontWeight: 600,
-                        color: theme.openreach?.coreBlock ?? '#073B4C',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.75,
-                      })}
-                    >
-                      <Box component="span" sx={{ opacity: 0.95 }}>MENU</Box>
-                      <Box component="span" sx={{ mx: 0.75, color: 'text.secondary' }}>{'\u2022'}</Box>
-                      <Box component="span">{selectedMenu.label}</Box>
-                    </Typography>
-                  </Stack>
-                )}
-
-                {activePage ? (
-                  <Box
-                    component="section"
-                    sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}
-                  >
-                    <Stack gap={1.5}>
-                      <Breadcrumbs
-                        aria-label="breadcrumb"
-                        separator={
-                          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mx: 0.75, color: 'text.secondary' }}>
-                            {'\u2022'}
-                          </Box>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gap: 2,
+                    gridTemplateColumns: {
+                      xs: "repeat(1, minmax(0, 1fr))",
+                      sm: "repeat(2, minmax(0, 1fr))",
+                      md: "repeat(3, minmax(0, 1fr))",
+                    },
+                  }}
+                >
+                  {selectedMenu.cards.map((card) => (
+                    <Card className="menu-card" key={card.name}>
+                      <CardActionArea
+                        onClick={() =>
+                          setActivePage({
+                            menuLabel: selectedMenu.label,
+                            cardName: card.name,
+                          })
                         }
-                        sx={(theme) => ({
-                          mb: 0.5,
-                          pt: 1,
-                          '& .MuiBreadcrumbs-separator': { display: 'inline-flex', alignItems: 'center' },
-                          color: theme.palette.text.primary,
-                        })}
                       >
-                        <Link
-                          underline="hover"
-                          color="inherit"
-                          component="button"
-                          type="button"
-                          onClick={() => setActivePage(null)}
-                          sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.5,
-                            cursor: 'pointer',
-                            border: 0,
-                            background: 'none',
-                            font: 'inherit',
-                            fontWeight: 600,
-                            textTransform: 'none',
-                            letterSpacing: 1,
-                          }}
-                        >
-                          <ArrowBackRoundedIcon fontSize="small" />
-                          {selectedMenu.label}
-                        </Link>
-                        <Typography sx={{ fontWeight: 600, textTransform: 'none', letterSpacing: 1 }}>
-                          {activePage.cardName}
-                        </Typography>
-                      </Breadcrumbs>
-                      {(() => {
-                        const ActivePageComponent =
-                          PAGE_COMPONENTS[activePage.menuLabel]?.[
-                            activePage.cardName
-                          ];
-                        if (!ActivePageComponent) {
-                          return (
-                            <Typography color="text.secondary">
-                              No page scaffold wired for {activePage.cardName}{" "}
-                              yet.
-                            </Typography>
-                          );
-                        }
-                        return (
-                          <Suspense
-                            fallback={
-                              <Stack alignItems="center" py={6} spacing={2}>
-                                <CircularProgress size={28} thickness={4} />
-                                <Typography color="text.secondary" fontWeight={500}>
-                                  Loading...
-                                </Typography>
-                              </Stack>
-                            }
+                        <CardContent>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight={600}
+                            gutterBottom
                           >
-                            <Box sx={{ flex: 1, px: 2 }}>
-                              <ActivePageComponent />
-                            </Box>
-                          </Suspense>
-                        );
-                      })()}
-                    </Stack>
-                  </Box>
-                ) : (
-                  <>
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gap: 2,
-                        gridTemplateColumns: {
-                          xs: "repeat(1, minmax(0, 1fr))",
-                          sm: "repeat(2, minmax(0, 1fr))",
-                          md: "repeat(3, minmax(0, 1fr))",
-                        },
-                      }}
-                    >
-                      {selectedMenu.cards.map((card) => (
-                        <Card className="menu-card" key={card.name}>
-                          <CardActionArea
-                            onClick={() =>
-                              setActivePage({
-                                menuLabel: selectedMenu.label,
-                                cardName: card.name,
-                              })
-                            }
+                            {card.name}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
                           >
-                            <CardContent>
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight={600}
-                                gutterBottom
-                              >
-                                {card.name}
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {card.description}
-                              </Typography>
-                            </CardContent>
-                          </CardActionArea>
-                        </Card>
-                      ))}
-                    </Box>
-                    <Box
-                      mt={4}
-                      p={2.5}
-                      borderRadius={3}
-                      border="1px solid rgba(7,59,76,0.12)"
-                      bgcolor="#fff"
-                    >
-                      <Typography color="text.secondary">
-                      Select a tool card to load its page.
-                      </Typography>
-                    </Box>
-                  </>
-                )}
+                            {card.description}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  ))}
+                </Box>
+                <Box
+                  mt={4}
+                  p={2.5}
+                  borderRadius={3}
+                  border="1px solid rgba(7,59,76,0.12)"
+                  bgcolor="#fff"
+                >
+                  <Typography color="text.secondary">
+                    Select a tool card to load its page.
+                  </Typography>
+                </Box>
               </>
+            ) : (
+              <Box
+                component="section"
+                sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}
+              >
+                <Stack gap={1.5}>
+                  {(() => {
+                    const ActivePageComponent =
+                      PAGE_COMPONENTS[activePage.menuLabel]?.[
+                        activePage.cardName
+                      ];
+                    if (!ActivePageComponent) {
+                      return (
+                        <Typography color="text.secondary">
+                          No page scaffold wired for {activePage.cardName}{' '}
+                          yet.
+                        </Typography>
+                      );
+                    }
+                    return (
+                      <Suspense
+                        fallback={
+                          <Stack alignItems="center" py={6} spacing={2}>
+                            <CircularProgress size={28} thickness={4} />
+                            <Typography color="text.secondary" fontWeight={500}>
+                              Loading...
+                            </Typography>
+                          </Stack>
+                        }
+                      >
+                        <Box sx={{ flex: 1, px: 2 }}>
+                          <ActivePageComponent />
+                        </Box>
+                      </Suspense>
+                    );
+                  })()}
+                </Stack>
+              </Box>
             )}
           </Box>
         </Stack>
@@ -595,5 +542,3 @@ function App() {
     </>
   );
 }
-
-export default App;
