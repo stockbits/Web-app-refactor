@@ -23,10 +23,6 @@ Side navigation (central-app/app/src/Openreach - App/App - Scaffold/App - Side N
 - MUI primitives: `Drawer`, `Paper`, `Stack`, `List`, `ListItemButton`, `ListItemIcon`, `ListItemText`, `InputBase`, `IconButton`, `Tooltip`, `Chip`, `Divider`, `Typography`.
 - Custom work: Searchable task-force tree with badge metadata, client build footer, and responsive brand theming (including fallback nav items).
 
-
-
-
-
 Shared MUI table shell (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx)
 - MUI primitives: `Paper`, `Stack`, `Typography`, `Switch`, `Box`, `DataGrid`, `GridToolbarQuickFilter`, `GridPagination`, `GridFooterContainer`. Table height responsive to viewport, single internal scroll, and margin added for visual separation (all via MUI standard props/styles).
 - Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, configurable empty state slot.
