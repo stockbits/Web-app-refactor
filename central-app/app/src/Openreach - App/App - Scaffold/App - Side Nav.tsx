@@ -94,7 +94,6 @@ const taskForceMenuGroups: TaskForceMenuGroup[] = [
       { id: 'schedule-live', label: 'Schedule Live', description: 'Monitor and adjust live schedules in real-time.' },
       { id: 'schedule-explorer', label: 'Schedule Explorer', description: 'Browse and analyse upcoming schedules and plans.' },
       { id: 'callout-overview', label: 'Callout Overview', description: 'Review all ongoing and past callout events.' },
-      { id: 'callout-launch', label: 'Callout Launch', description: 'Initiate and configure new callout operations.' },
     ],
   },
   {

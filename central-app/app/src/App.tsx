@@ -62,10 +62,6 @@ const MENU_GROUPS: MenuGroup[] = [
         name: "Callout Overview",
         description: "Review all ongoing and past callout events.",
       },
-      {
-        name: "Callout Launch",
-        description: "Initiate and configure new callout operations.",
-      },
     ],
   },
   {
