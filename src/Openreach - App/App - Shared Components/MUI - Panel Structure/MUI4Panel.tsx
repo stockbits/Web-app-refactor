@@ -1,6 +1,6 @@
 import { Box, useTheme } from "@mui/material";
 import { useState } from "react";
-import { CustomSplitPane } from "./CustomSplitPane";
+import { CustomSplitPane } from "./MUI - split Custom";
 
 import LiveGantt from "./App - Pannels/Live - Gantt";
 import LiveMap from "./App - Pannels/Live - Map";
