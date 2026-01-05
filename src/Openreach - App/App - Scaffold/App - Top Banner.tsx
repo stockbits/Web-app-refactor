@@ -11,9 +11,18 @@ import {
   Stack,
   Toolbar,
   Typography,
+  Chip,
 } from '@mui/material'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+
+export interface DockedPanel {
+  id: string;
+  title: string;
+  icon: ReactNode;
+  content: ReactNode;
+}
 
 export interface OpenreachTopBannerProps {
   title: string
@@ -23,6 +32,8 @@ export interface OpenreachTopBannerProps {
   userInitials?: string
   userName?: string
   userRole?: string
+  dockedPanels?: DockedPanel[]
+  onUndockPanel?: (panelId: string) => void
 }
 
 export const OpenreachTopBanner = ({
@@ -33,6 +44,8 @@ export const OpenreachTopBanner = ({
   userInitials = 'OR',
   userName,
   userRole = 'Fibre Operations',
+  dockedPanels = [],
+  onUndockPanel,
 }: OpenreachTopBannerProps) => {
   const theme = useTheme()
   const brand = theme.openreach
@@ -121,6 +134,32 @@ export const OpenreachTopBanner = ({
           alignItems="center"
           sx={{ flexShrink: 0, justifyContent: 'flex-end', flexWrap: 'nowrap' }}
         >
+          {/* Docked Panels */}
+          {dockedPanels.map((panel) => (
+            <Chip
+              key={panel.id}
+              icon={panel.icon as React.ReactElement}
+              label={panel.title}
+              onDelete={() => onUndockPanel?.(panel.id)}
+              deleteIcon={<CloseRoundedIcon />}
+              size="small"
+              sx={{
+                bgcolor: alpha(theme.palette.background.paper, 0.9),
+                color: theme.palette.text.primary,
+                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                '& .MuiChip-deleteIcon': {
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    color: theme.palette.text.primary,
+                  },
+                },
+                '&:hover': {
+                  bgcolor: theme.palette.background.paper,
+                },
+              }}
+            />
+          ))}
+
           {actions}
 
           <>

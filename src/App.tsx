@@ -25,6 +25,8 @@ import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Na
 import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
+import MUI4Panel from "./Openreach - App/App - Shared Components/MUI - Panel Structure/MUI4Panel";
+import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 
 interface MenuCardTile {
   name: string;
@@ -362,6 +364,7 @@ function App() {
     menuLabel: string;
     cardName: string;
   } | null>(null);
+  const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
 
   const openNav = () => setNavOpen(true);
   const closeNav = () => setNavOpen(false);
@@ -417,6 +420,10 @@ function App() {
               userName="Jordan Davies"
               userRole="Delivery Lead"
               onMenuClick={openNav}
+              dockedPanels={dockedPanels}
+              onUndockPanel={(panelId) => {
+                setDockedPanels(prev => prev.filter(p => p.id !== panelId));
+              }}
             />
           </Box>
 
@@ -524,7 +531,14 @@ function App() {
                         }
                       >
                         <Box sx={{ flex: 1, px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
-                          <ActivePageComponent />
+                          {activePage?.cardName === 'Schedule Live' ? (
+                            <MUI4Panel
+                              onDockedPanelsChange={setDockedPanels}
+                              dockedPanels={dockedPanels}
+                            />
+                          ) : (
+                            <ActivePageComponent />
+                          )}
                         </Box>
                       </Suspense>
                     );
