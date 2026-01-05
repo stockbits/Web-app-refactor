@@ -1,11 +1,7 @@
-import { Box, Typography } from '@mui/material'
+import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 
 const ScheduleLivePage = () => (
-  <Box >
-    <Typography variant="body1" color="text.secondary">
-      Placeholder content for Schedule Live. Wire real data pipelines here.
-    </Typography>
-  </Box>
+  <MUI4Panel />
 )
 
 export default ScheduleLivePage

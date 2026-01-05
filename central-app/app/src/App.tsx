@@ -523,7 +523,7 @@ function App() {
                           </Stack>
                         }
                       >
-                        <Box sx={{ flex: 1, px: 2 }}>
+                        <Box sx={{ flex: 1, px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
                           <ActivePageComponent />
                         </Box>
                       </Suspense>

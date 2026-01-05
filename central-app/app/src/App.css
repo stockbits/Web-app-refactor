@@ -64,6 +64,7 @@ body {
 
 .app-canvas-page {
   padding: 0;
+  height: 100%;
 }
 
 .canvas-label {
@@ -86,4 +87,16 @@ body {
     padding: clamp(0.65rem, 6vw, 1rem) clamp(0.5rem, 5vw, 0.85rem) clamp(0.75rem, 5vw, 1.1rem);
     margin-top: 0;
   }
+}
+
+/* Split Pane React Styles */
+.SplitPane {
+  position: relative !important;
+  height: 100% !important;
+}
+
+.Pane {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }

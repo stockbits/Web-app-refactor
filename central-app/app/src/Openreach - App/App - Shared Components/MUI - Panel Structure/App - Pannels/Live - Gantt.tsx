@@ -1,7 +1,7 @@
 import { Box, AppBar, Toolbar, useTheme, Tooltip } from "@mui/material";
-import ChecklistIcon from "@mui/icons-material/Checklist";
+import TimelineIcon from "@mui/icons-material/Timeline";
 
-export default function LiveTask() {
+export default function LiveGantt() {
   const theme = useTheme();
 
   return (
@@ -20,7 +20,7 @@ export default function LiveTask() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.palette.warning?.main || '#f57c00',
+          backgroundColor: theme.palette.primary.main,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -29,11 +29,11 @@ export default function LiveTask() {
         }}
       >
         <Toolbar variant="dense">
-          <Tooltip title="Live Tasks - Active work assignments">
-            <ChecklistIcon
+          <Tooltip title="Gantt Chart - Live schedule visualization">
+            <TimelineIcon
               sx={{
                 fontSize: 20,
-                color: theme.palette.warning?.contrastText || '#000000',
+                color: theme.palette.primary.contrastText,
                 cursor: "pointer",
               }}
             />

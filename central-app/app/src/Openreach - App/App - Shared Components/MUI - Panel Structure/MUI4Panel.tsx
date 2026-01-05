@@ -1,98 +1,110 @@
-import React from "react"
-import { Box, Paper, Typography } from "@mui/material"
-import { SplitPane } from "react-split-pane"
+import { Box, useTheme } from "@mui/material";
+import { useState } from "react";
+import SplitPane from "split-pane-react";
+import "split-pane-react/esm/themes/default.css";
 
-import "./mui-4-panel.css"
-
-// ✅ Replace these placeholders with your real imports when ready
-// import Gantt from "./Gantt"
-// import MapView from "./MapView"
-// import PeopleTable from "./PeopleTable"
-// import TaskTable from "./TaskTable"
+import LiveGantt from "./App - Pannels/Live - Gantt";
+import LiveMap from "./App - Pannels/Live - Map";
+import LivePeople from "./App - Pannels/Live - People";
+import LiveTask from "./App - Pannels/Live - Task";
 
 export default function MUI4Panel() {
+  const theme = useTheme();
+  // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
+  const [verticalSizes, setVerticalSizes] = useState([50, 50]);
+  const [leftHorizontalSizes, setLeftHorizontalSizes] = useState([50, 50]);
+  const [rightHorizontalSizes, setRightHorizontalSizes] = useState([50, 50]);
+
+  const verticalSashRender = (_index: number, active: boolean) => (
+    <div
+      style={{
+        background: active
+          ? `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`
+          : `linear-gradient(90deg, ${theme.palette.divider}, ${theme.palette.action.hover})`,
+        width: active ? "3px" : "2px",
+        height: "100%",
+        cursor: "col-resize",
+        borderRadius: "1px",
+        boxShadow: active
+          ? `0 0 8px ${theme.palette.primary.main}40, inset 0 0 2px rgba(255,255,255,0.3)`
+          : `0 0 4px ${theme.palette.action.hover}`,
+        transition: "all 0.2s ease-in-out",
+        opacity: active ? 1 : 0.7,
+        position: "relative",
+        zIndex: 10,
+      }}
+    />
+  );
+
+  const horizontalSashRender = (_index: number, active: boolean) => (
+    <div
+      style={{
+        background: active
+          ? `linear-gradient(180deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`
+          : `linear-gradient(180deg, ${theme.palette.divider}, ${theme.palette.action.hover})`,
+        height: active ? "3px" : "2px",
+        width: "100%",
+        cursor: "row-resize",
+        borderRadius: "1px",
+        boxShadow: active
+          ? `0 0 8px ${theme.palette.primary.main}40, inset 0 0 2px rgba(255,255,255,0.3)`
+          : `0 0 4px ${theme.palette.action.hover}`,
+        transition: "all 0.2s ease-in-out",
+        opacity: active ? 1 : 0.7,
+        position: "relative",
+        zIndex: 10,
+      }}
+    />
+  );
+
   return (
     <Box
       sx={{
-        height: "100vh",
-        width: "100%",
-        overflow: "hidden",
+        height: "calc(100vh - 130px)", // Account for top banner (~80px) + breadcrumb (~50px)
+        width: "100%", // Full width now that padding is removed
+        backgroundColor: theme.palette.background.default,
+        position: "relative",
+        overflow: "hidden", // Prevent handles from extending beyond boundaries
       }}
     >
-      <SplitPane split="horizontal" minSize={120} defaultSize="50%">
-        {/* TOP HALF */}
-        <SplitPane split="vertical" minSize={200} defaultSize="50%">
-          <Panel title="Gantt">
-            <Placeholder label="Gantt component goes here" />
-          </Panel>
-
-          <Panel title="Map">
-            <Placeholder label="Map component goes here" />
-          </Panel>
+      <SplitPane
+        split="vertical"
+        sizes={verticalSizes}
+        onChange={setVerticalSizes}
+        sashRender={verticalSashRender}
+        style={{ height: "100%", position: "relative" }}
+      >
+        {/* Left Half */}
+        <SplitPane
+          split="horizontal"
+          sizes={leftHorizontalSizes}
+          onChange={setLeftHorizontalSizes}
+          sashRender={horizontalSashRender}
+          style={{ height: "100%", position: "relative" }}
+        >
+          <Box sx={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <LiveGantt />
+          </Box>
+          <Box sx={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <LivePeople />
+          </Box>
         </SplitPane>
-
-        {/* BOTTOM HALF */}
-        <SplitPane split="vertical" minSize={200} defaultSize="50%">
-          <Panel title="People">
-            <Placeholder label="People table goes here" />
-          </Panel>
-
-          <Panel title="Tasks">
-            <Placeholder label="Task table goes here" />
-          </Panel>
+        {/* Right Half */}
+        <SplitPane
+          split="horizontal"
+          sizes={rightHorizontalSizes}
+          onChange={setRightHorizontalSizes}
+          sashRender={horizontalSashRender}
+          style={{ height: "100%", position: "relative" }}
+        >
+          <Box sx={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <LiveMap />
+          </Box>
+          <Box sx={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <LiveTask />
+          </Box>
         </SplitPane>
       </SplitPane>
     </Box>
-  )
-}
-
-function Panel({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        width: "100%",
-        p: 1,
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <Paper
-        variant="outlined"
-        sx={{
-          height: "100%",
-          width: "100%",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 2,
-        }}
-      >
-        <Box sx={{ px: 1.5, py: 1, borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
-          <Typography variant="subtitle2">{title}</Typography>
-        </Box>
-
-        <Box sx={{ flex: 1, minHeight: 0, overflow: "hidden", p: 1 }}>{children}</Box>
-      </Paper>
-    </Box>
-  )
-}
-
-function Placeholder({ label }: { label: string }) {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        border: "1px dashed rgba(0,0,0,0.2)",
-        borderRadius: 2,
-        display: "grid",
-        placeItems: "center",
-      }}
-    >
-      <Typography variant="body2" color="text.secondary">
-        {label}
-      </Typography>
-    </Box>
-  )
+  );
 }
