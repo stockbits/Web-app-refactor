@@ -1,20 +1,20 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography } from '@mui/material'
-import {
-  DataGrid,
-  GridToolbarQuickFilter,
-  useGridApiRef,
-  type GridColDef,
-  type GridRowId,
-  type GridValidRowModel,
-} from '@mui/x-data-grid'
+  import { useCallback, useEffect, useState, type ReactNode } from 'react'
+  import { Box, Stack, Switch, Typography } from '@mui/material'
+  import {
+    DataGrid,
+    GridToolbarQuickFilter,
+    useGridApiRef,
+    type GridColDef,
+    type GridRowId,
+    type GridValidRowModel,
+  } from '@mui/x-data-grid'
 
-export interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
-  columns: GridColDef<T>[]
+interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
+  columns: GridColDef[]
   rows: T[]
   title?: string
   caption?: string
-  getRowId?: (row: T) => GridRowId
+  getRowId: (row: T) => GridRowId
   density?: 'compact' | 'standard' | 'comfortable'
   loading?: boolean
   hideFooter?: boolean
@@ -162,6 +162,17 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             minHeight: 0,
             overflowY: 'auto',
             overflowX: 'auto',
+          },
+
+          // Subtle column resize handles - visible but not overwhelming
+          '& .MuiDataGrid-columnSeparator': {
+            color: 'rgba(7,59,76,0.1)',
+            opacity: 0.3,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              color: 'rgba(7,59,76,0.4)',
+              opacity: 0.8,
+            },
           },
 
           // ✅ Footer/pagination stays fixed (no internal vertical scroll)

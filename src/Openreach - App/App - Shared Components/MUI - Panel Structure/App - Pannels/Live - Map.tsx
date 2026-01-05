@@ -20,7 +20,7 @@ export default function LiveMap() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.openreach.supportingBlock,
+          backgroundColor: theme.openreach.tableColors.headerBg,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,

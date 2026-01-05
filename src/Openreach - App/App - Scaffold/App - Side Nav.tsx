@@ -395,7 +395,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   {items.map((item) => (
                     <ListItemButton
                       key={item.id}
-                      selected={item.active}
                       onClick={() => {
                         onSelect?.(item)
                         onClose()
@@ -406,10 +405,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         px: 1.5,
                         py: 1,
                         color: palette.fibreThreads,
-                        '&.Mui-selected': {
-                          bgcolor: palette.coreBlock,
-                          '&:hover': { bgcolor: palette.coreBlock },
-                        },
                         '&:hover': {
                           bgcolor: alpha(white, 0.08),
                         },

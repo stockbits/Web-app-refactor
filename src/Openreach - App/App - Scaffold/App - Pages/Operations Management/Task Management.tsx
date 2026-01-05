@@ -325,6 +325,7 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
+            maxHeight="calc(100vh - 180px)" // Responsive height for table area
           />
         ) : (
           <Box

@@ -62,6 +62,7 @@ const TaskTableQueryConfig = ({
   defaultQuery,
   onApply,
 }: TaskTableQueryConfigProps) => {
+  const [hasQueried, setHasQueried] = useState(false)
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
@@ -78,10 +79,7 @@ const TaskTableQueryConfig = ({
   // Removed setValidationError(null) from effect to comply with lint rules
 
   const isDirty = useMemo(() => !areQueriesEqual(draftQuery, resolvedInitialQuery), [draftQuery, resolvedInitialQuery])
-  const hasAppliedFilters = useMemo(
-    () => !areQueriesEqual(resolvedInitialQuery, resolvedDefaultQuery),
-    [resolvedInitialQuery, resolvedDefaultQuery],
-  )
+  const hasAppliedFilters = useMemo(() => !areQueriesEqual(resolvedInitialQuery, resolvedDefaultQuery), [resolvedInitialQuery, resolvedDefaultQuery])
   const showClearAction = isDirty || hasAppliedFilters
   const dateRangeValue = useMemo<DateRangeValue>(
     () => ({
@@ -179,6 +177,7 @@ const TaskTableQueryConfig = ({
   }
 
   const handleApply = () => {
+      setHasQueried(true)
     const trimmedSearch = draftQuery.searchTerm.trim()
     const hasGlobalSearch = trimmedSearch.length > 0
     const hasDivisionSelection = draftQuery.divisions.length > 0
@@ -381,7 +380,7 @@ const TaskTableQueryConfig = ({
                 Clear
               </Button>
             )}
-            <Button variant="contained" onClick={handleApply} disabled={!isDirty}>
+            <Button variant="contained" onClick={handleApply} disabled={!isDirty && !hasQueried}>
               Search
             </Button>
           </Stack>

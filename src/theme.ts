@@ -11,14 +11,16 @@ const typographyMuted = "#63666A";
 
 
 const tableColors = {
-  headerBg: '#e3eaf2', // Light blue-grey for table header background (more visible separation)
-  footerBg: '#e3eaf2', // Match footer background to header for main tables
+  headerBg: '#f8f9fa', // Very light grey for subtle, modern header contrast
+  footerBg: '#fff', // Use pure white for table footer for a cleaner bottom break
   headerText: typographyInk, // Table header text
   rowBg: '#F8FAFB', // Table row background (alternating or default)
   rowText: typographyInk, // Table row text
   rowAltBg: '#F1F3F6', // Alternate row background for zebra striping
   selectedRowBg: '#E0F7FA', // Selected row background
-  border: outline, // Table border color
+  border: '#e0e0e0', // More visible, clean row border
+  columnSeparator: fibreTeal, // Accent color for column resize handle
+  columnSeparatorActive: blockGreen, // Active/hover color for column resize handle
 };
 
 const openreachBrand = {
@@ -142,6 +144,7 @@ export const appTheme = createTheme({
         row: {
           backgroundColor: openreachPalette.tableColors.rowBg,
           color: openreachPalette.tableColors.rowText,
+          borderBottom: '1px solid #e0e0e0',
         },
         // Add alternate row and selected row styling via sx or in DataGrid usage as needed
       },
