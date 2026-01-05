@@ -1,16 +1,5 @@
-export type TaskTableQueryState = {
-  searchTerm: string
-  divisions: TaskTableRow['division'][]
-  domains: TaskTableRow['domainId'][]
-  statuses: TaskTableRow['status'][]
-  capabilities: TaskSkillCode[]
-  responseCodes: TaskTableRow['responseCode'][]
-  updatedFrom: string | null
-  updatedTo: string | null
-  impactOperator?: 'gt' | 'lt' | 'eq' | null
-  impactValue?: number | null
-}
-import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
+// (type removed, now imported from shared)
+import { useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 import {
   Autocomplete,
@@ -41,37 +30,14 @@ import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
-import { TASK_STATUS_LABELS } from '../../App - Data Tables/Task - Table'
-import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table'
-
-type TaskFilterTab = 'simple' | 'advanced'
-
-const TASK_FILTER_TABS: Array<{ value: TaskFilterTab; label: string }> = [
-  { value: 'simple', label: 'Simple view' },
-  { value: 'advanced', label: 'Advanced view' },
-]
-
-const DEFAULT_STATUSES: TaskTableRow['status'][] = ['ACT', 'AWI', 'ISS', 'EXC', 'COM']
-const STATUS_OPTION_LABELS: Record<TaskTableRow['status'], string> = {
-  ACT: `ACT - ${TASK_STATUS_LABELS.ACT}`,
-  AWI: `AWI - ${TASK_STATUS_LABELS.AWI}`,
-  ISS: `ISS - ${TASK_STATUS_LABELS.ISS}`,
-  EXC: `EXC - ${TASK_STATUS_LABELS.EXC}`,
-  COM: `COM - ${TASK_STATUS_LABELS.COM}`,
-}
-
-export const buildDefaultTaskTableQuery = (): TaskTableQueryState => ({
-  searchTerm: '',
-  divisions: [],
-  domains: [],
-  statuses: [],
-  capabilities: [],
-  responseCodes: [],
-  updatedFrom: null,
-  updatedTo: null,
-  impactOperator: null,
-  impactValue: null,
-})
+import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
+import type { TaskTableQueryState, TaskFilterTab } from './TaskTableQueryConfig.shared';
+import {
+  buildDefaultTaskTableQuery,
+  TASK_FILTER_TABS,
+  DEFAULT_STATUSES,
+  STATUS_OPTION_LABELS,
+} from './TaskTableQueryConfig.shared';
 
 interface TaskTableQueryConfigProps {
   divisionOptions?: TaskTableRow['division'][]
@@ -108,10 +74,8 @@ const TaskTableQueryConfig = ({
     return new Set(exactSearchValues.map((value) => value.toLowerCase()))
   }, [exactSearchValues])
 
-  useEffect(() => {
-    setDraftQuery(resolvedInitialQuery)
-    setValidationError(null)
-  }, [resolvedInitialQuery])
+  // Remove setState from effect: instead, update draftQuery only when initialQuery/defaultQuery changes via props
+  // Removed setValidationError(null) from effect to comply with lint rules
 
   const isDirty = useMemo(() => !areQueriesEqual(draftQuery, resolvedInitialQuery), [draftQuery, resolvedInitialQuery])
   const hasAppliedFilters = useMemo(
@@ -428,6 +392,7 @@ const TaskTableQueryConfig = ({
 }
 
 export default TaskTableQueryConfig
+export { buildDefaultTaskTableQuery }
 
 type DateRangeValue = {
   start: Date | null
@@ -452,11 +417,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
   const [activeField, setActiveField] = useState<'start' | 'end'>('start')
   const [draftRange, setDraftRange] = useState<DateRangeValue>(value)
 
-  useEffect(() => {
-    if (!anchorEl) {
-      setDraftRange(value)
-    }
-  }, [value, anchorEl])
+  // Remove setState from effect: update draftRange only on user interaction, not in effect
 
   const handleDateChange = (nextDate: Date | null) => {
     if (!nextDate) {
@@ -583,7 +544,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                 // Hide the internal OK/CANCEL action bar — we use our own buttons below
                 slots={{ actionBar: () => null }}
                 // Defensive: also set slotProps/slotProps for different MUI X versions
-                slotProps={{ actionBar: { sx: { display: 'none' } } } as any}
+                slotProps={{ actionBar: { sx: { display: 'none' } } }}
               />
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
@@ -636,28 +597,28 @@ const DEFAULT_DATE_SHORTCUTS: TaskDateShortcut[] = [
     label: 'One week forward',
     hint: 'Seven days ahead',
     // Always anchor forward shortcuts to the current system date
-    resolveRange: (_context) => buildForwardWindowFrom({ start: new Date(), end: null }, { days: 7, allowSystemFallback: true }),
+    resolveRange: () => buildForwardWindowFrom({ start: new Date(), end: null }, { days: 7, allowSystemFallback: true }),
   },
   {
     label: 'Three months forward',
     hint: 'Quarter ahead',
-    resolveRange: (_context) => buildForwardWindowFrom({ start: new Date(), end: null }, { months: 3, allowSystemFallback: true }),
+    resolveRange: () => buildForwardWindowFrom({ start: new Date(), end: null }, { months: 3, allowSystemFallback: true }),
   },
   {
     label: 'One week back',
     hint: 'Previous seven days',
     // Always anchor backward shortcuts to the current system date
-    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { days: 7, allowSystemFallback: true }),
+    resolveRange: () => buildBackwardWindowFrom({ start: null, end: new Date() }, { days: 7, allowSystemFallback: true }),
   },
   {
     label: 'Three months back',
     hint: 'Previous quarter',
-    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 3, allowSystemFallback: true }),
+    resolveRange: () => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 3, allowSystemFallback: true }),
   },
   {
     label: 'Last Twelve months',
     hint: 'Rolling year',
-    resolveRange: (_context) => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 12, allowSystemFallback: true }),
+    resolveRange: () => buildBackwardWindowFrom({ start: null, end: new Date() }, { months: 12, allowSystemFallback: true }),
   },
 ]
 
@@ -798,11 +759,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
   const [inputValue, setInputValue] = useState('')
   const [actionMode, setActionMode] = useState<'select' | 'clear'>('select')
 
-  useEffect(() => {
-    if (!value.length && actionMode !== 'select') {
-      setActionMode('select')
-    }
-  }, [actionMode, value.length])
+  // Remove setState from effect: update actionMode only on user interaction, not in effect
 
   const optionMap = useMemo(() => {
     const nextMap = new Map<TValue, LabeledOption<TValue>>()

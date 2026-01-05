@@ -1,4 +1,5 @@
 import { Box, Typography, IconButton, Popover } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
@@ -18,7 +19,7 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
   const infoOpen = Boolean(infoAnchor);
 
   // Shared text style variables
-  const getTextStyles = (theme: any, colorOverride?: string) => ({
+  const getTextStyles = (theme: Theme, colorOverride?: string) => ({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     fontWeight: 600,

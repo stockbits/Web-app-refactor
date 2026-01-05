@@ -234,7 +234,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
         ),
       }))
       .filter((group) => group.children.length > 0)
-  }, [query])
+  }, [trimmedQuery])
 
   const noMatches = showTreeResults && filteredGroups.length === 0
 

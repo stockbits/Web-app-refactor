@@ -11,4 +11,7 @@ export default defineConfig({
       '@central-logos': path.resolve(__dirname, 'Central Library/Image Assets/Logos'),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+  },
 })
