@@ -20,7 +20,7 @@ export default function LiveGantt() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.palette.primary.main,
+          backgroundColor: theme.openreach.supportingBlock,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -33,7 +33,7 @@ export default function LiveGantt() {
             <TimelineIcon
               sx={{
                 fontSize: 20,
-                color: theme.palette.primary.contrastText,
+                color: theme.openreach.energyAccent,
                 cursor: "pointer",
               }}
             />

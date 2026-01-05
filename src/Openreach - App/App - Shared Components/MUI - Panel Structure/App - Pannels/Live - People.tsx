@@ -20,7 +20,7 @@ export default function LivePeople() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.palette.success?.main || '#388e3c',
+          backgroundColor: theme.openreach.supportingBlock,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -33,7 +33,7 @@ export default function LivePeople() {
             <PeopleIcon
               sx={{
                 fontSize: 20,
-                color: theme.palette.success?.contrastText || '#ffffff',
+                color: theme.openreach.energyAccent,
                 cursor: "pointer",
               }}
             />

@@ -20,7 +20,7 @@ export default function LiveTask() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.palette.warning?.main || '#f57c00',
+          backgroundColor: theme.openreach.supportingBlock,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -33,7 +33,7 @@ export default function LiveTask() {
             <ChecklistIcon
               sx={{
                 fontSize: 20,
-                color: theme.palette.warning?.contrastText || '#000000',
+                color: theme.openreach.energyAccent,
                 cursor: "pointer",
               }}
             />

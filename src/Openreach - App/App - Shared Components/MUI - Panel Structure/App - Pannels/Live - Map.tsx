@@ -20,7 +20,7 @@ export default function LiveMap() {
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.palette.secondary.main,
+          backgroundColor: theme.openreach.supportingBlock,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -33,7 +33,7 @@ export default function LiveMap() {
             <MapIcon
               sx={{
                 fontSize: 20,
-                color: theme.palette.secondary.contrastText,
+                color: theme.openreach.energyAccent,
                 cursor: "pointer",
               }}
             />
