@@ -2,6 +2,10 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack } from "@mui
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import { useEffect } from 'react';
+import L from 'leaflet';
 
 interface LiveMapProps {
   onDock?: () => void;
@@ -15,6 +19,16 @@ interface LiveMapProps {
 
 export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveMapProps = {}) {
   const theme = useTheme();
+
+  // Fix for default markers in react-leaflet
+  useEffect(() => {
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    });
+  }, []);
 
   if (minimized) {
     return (
@@ -118,7 +132,54 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           flex: 1,
           backgroundColor: theme.palette.background.paper,
         }}
-      />
+      >
+        <MapContainer
+          center={[54.5, -2.5]} // Center of UK
+          zoom={6}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {/* Sample markers for Openreach locations */}
+          <Marker position={[51.5074, -0.1278]}>
+            <Popup>
+              <strong>London Central</strong><br />
+              Active tasks: 12<br />
+              Engineers: 8
+            </Popup>
+          </Marker>
+          <Marker position={[53.4808, -2.2426]}>
+            <Popup>
+              <strong>Manchester</strong><br />
+              Active tasks: 6<br />
+              Engineers: 4
+            </Popup>
+          </Marker>
+          <Marker position={[52.4862, -1.8904]}>
+            <Popup>
+              <strong>Birmingham</strong><br />
+              Active tasks: 9<br />
+              Engineers: 6
+            </Popup>
+          </Marker>
+          <Marker position={[55.9533, -3.1883]}>
+            <Popup>
+              <strong>Edinburgh</strong><br />
+              Active tasks: 4<br />
+              Engineers: 3
+            </Popup>
+          </Marker>
+          <Marker position={[50.8225, -0.1372]}>
+            <Popup>
+              <strong>Brighton</strong><br />
+              Active tasks: 7<br />
+              Engineers: 5
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </Box>
     </Box>
   );
 }
