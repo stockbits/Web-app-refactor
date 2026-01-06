@@ -326,9 +326,9 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
-            initialPageSize={10}
-            pageSizeOptions={[10, 25, 50, 100]}
-            maxHeight="100%" // Responsive height for table area
+            initialPageSize={30}
+            pageSizeOptions={[30, 50, 100]}
+            maxHeight="calc(100vh - 250px)" // Show ~20 rows max, then internal scroll
           />
         ) : (
           <Box
