@@ -37,6 +37,7 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
         backgroundColor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
         boxSizing: "border-box",
+        minHeight: 0,
       }}
     >
       <AppBar

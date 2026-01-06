@@ -37,6 +37,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         backgroundColor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
         boxSizing: "border-box",
+        minHeight: 0,
       }}
     >
       <AppBar
