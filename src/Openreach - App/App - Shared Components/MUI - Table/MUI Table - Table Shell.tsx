@@ -142,6 +142,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         sx={{
           flex: 1,
           minHeight: 0,
+          height: '100%',
 
           // ✅ Key fix: root must NOT be a scroll container, only the virtual scroller should scroll
           overflow: 'hidden',
@@ -167,12 +168,14 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
+            height: '100%',
           },
 
           // ✅ Only body scrolls
           '& .MuiDataGrid-virtualScroller': {
             flex: 1,
             minHeight: 0,
+            height: '100%',
             overflowY: 'auto',
             overflowX: 'auto',
           },
