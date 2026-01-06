@@ -100,13 +100,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   return (
     <Box
       sx={{
-        height: hasFixedHeight ? heightValue : undefined,
-        maxHeight: hasFixedHeight ? undefined : resolvedMaxHeight,
         width: '100%',
+        height: '1200px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 0,
-        flex: hasFixedHeight ? undefined : 1,
         overflow: 'hidden',
       }}
       aria-label={title ?? caption ?? 'Table'}
@@ -140,11 +137,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           noRowsOverlay: NoRowsOverlay,
         }}
         sx={{
-          flex: 1,
-          minHeight: 0,
+          width: '100%',
           height: '100%',
-
-          // ✅ Key fix: root must NOT be a scroll container, only the virtual scroller should scroll
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -164,37 +158,15 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
           '& .MuiDataGrid-main': {
             flex: 1,
-            minHeight: 0,
             overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
           },
 
-          // ✅ Only body scrolls
           '& .MuiDataGrid-virtualScroller': {
-            flex: 1,
-            minHeight: 0,
-            height: '100%',
-            overflowY: 'auto',
-            overflowX: 'auto',
+            overflow: 'auto !important',
           },
 
-          // Subtle column resize handles - visible but not overwhelming
-          '& .MuiDataGrid-columnSeparator': {
-            color: 'rgba(7,59,76,0.1)',
-            opacity: 0.3,
-            transition: 'all 0.2s ease',
-            '&:hover': {
-              color: 'rgba(7,59,76,0.4)',
-              opacity: 0.8,
-            },
-          },
-
-          // ✅ Footer/pagination stays fixed (no internal vertical scroll)
           '& .MuiDataGrid-footerContainer': {
             flex: '0 0 auto',
-            overflow: 'hidden',
           },
 
           '& .MuiDataGrid-cell': {
