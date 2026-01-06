@@ -304,6 +304,7 @@ const TaskManagementPage = () => {
       flexDirection: 'column',
       height: '100%',
       minHeight: 0,
+      overflow: 'hidden',
     }}>
       <Box sx={{ flexShrink: 0 }}>
         <TaskTableQueryConfig
@@ -317,7 +318,7 @@ const TaskManagementPage = () => {
           onApply={handleApplyQuery}
         />
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -328,7 +329,6 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
-            maxHeight={1200} // Hard limit: ~20 rows visible, rest in overflow
           />
         ) : (
           <Box
