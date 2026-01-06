@@ -329,6 +329,7 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
+            maxHeight={1200}
           />
         ) : (
           <Box
