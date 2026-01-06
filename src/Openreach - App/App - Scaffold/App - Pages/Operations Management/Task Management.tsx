@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { Box, Chip, Stack, Typography } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
-import TaskTableQueryConfig, { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
+import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
+import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
 
 const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {

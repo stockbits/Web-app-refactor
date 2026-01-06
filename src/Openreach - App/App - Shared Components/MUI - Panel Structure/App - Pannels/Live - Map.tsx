@@ -3,7 +3,7 @@ import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import L from 'leaflet';
 
 // Import Leaflet CSS
@@ -21,17 +21,16 @@ interface LiveMapProps {
 
 export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveMapProps = {}) {
   const theme = useTheme();
-  const [isMounted, setIsMounted] = useState(false);
 
   // Fix for default markers in react-leaflet
   useEffect(() => {
-    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    const iconDefault = L.Icon.Default.prototype as unknown as Record<string, unknown>;
+    delete iconDefault._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
-    setIsMounted(true);
   }, []);
 
   if (minimized) {
@@ -138,12 +137,11 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           backgroundColor: theme.palette.background.paper,
         }}
       >
-        {isMounted ? (
-          <MapContainer
-            center={[54.5, -2.5]} // Center of UK
-            zoom={6}
-            style={{ height: '100%', width: '100%' }}
-          >
+        <MapContainer
+          center={[54.5, -2.5]} // Center of UK
+          zoom={6}
+          style={{ height: '100%', width: '100%' }}
+        >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -185,19 +183,6 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               </Popup>
             </Marker>
           </MapContainer>
-        ) : (
-          <Box
-            sx={{
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.palette.background.default,
-            }}
-          >
-            Loading map...
-          </Box>
-        )}
       </Box>
     </Box>
   );

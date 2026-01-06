@@ -390,9 +390,6 @@ const TaskTableQueryConfig = ({
   )
 }
 
-export default TaskTableQueryConfig
-export { buildDefaultTaskTableQuery }
-
 type DateRangeValue = {
   start: Date | null
   end: Date | null
@@ -982,3 +979,5 @@ const BulkSelectableMultiSelect = <TValue extends string>({
     />
   )
 }
+
+export default TaskTableQueryConfig

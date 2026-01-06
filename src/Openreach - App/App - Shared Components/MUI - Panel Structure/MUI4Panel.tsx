@@ -1,5 +1,5 @@
 import { Box, useTheme } from "@mui/material";
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import * as React from "react";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
@@ -31,6 +31,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   // isResizing: { type: 'row'|'col', index: number } | null
   const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const handleMouseUpRef = useRef<(() => void) | null>(null);
+  const handleTouchEndRef = useRef<(() => void) | null>(null);
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -105,6 +107,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     window.addEventListener('pointerup', upHandler);
   };
 
+  // Mouse event handlers
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -113,7 +116,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     const width = rect.width;
     const height = rect.height;
     if (isResizing.type === 'row') {
-      // Calculate new row sizes
       const total = rowSizes.reduce((a, b) => a + b, 0);
       const pct = (y / height) * 100;
       let newSizes = [...rowSizes];
@@ -122,17 +124,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       if (rowSizes.length === 2) {
         newSizes = [before, after];
       } else {
-        // For more than 2 rows, adjust only the two rows at the boundary
-        const idx = isResizing.index;
-        const sumBefore = rowSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        const sumBefore = rowSizes.slice(0, isResizing.index).reduce((a, b) => a + b, 0);
         before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = rowSizes[idx+1] + rowSizes[idx] - before;
-        newSizes[idx] = before;
-        newSizes[idx+1] = after;
+        after = rowSizes[isResizing.index+1] + rowSizes[isResizing.index] - before;
+        newSizes[isResizing.index] = before;
+        newSizes[isResizing.index+1] = after;
       }
       setRowSizes(newSizes);
     } else if (isResizing.type === 'col') {
-      // Calculate new col sizes
       const total = colSizes.reduce((a, b) => a + b, 0);
       const pct = (x / width) * 100;
       let newSizes = [...colSizes];
@@ -141,23 +140,27 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       if (colSizes.length === 2) {
         newSizes = [before, after];
       } else {
-        // For more than 2 cols, adjust only the two cols at the boundary
-        const idx = isResizing.index;
-        const sumBefore = colSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        const sumBefore = colSizes.slice(0, isResizing.index).reduce((a, b) => a + b, 0);
         before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = colSizes[idx+1] + colSizes[idx] - before;
-        newSizes[idx] = before;
-        newSizes[idx+1] = after;
+        after = colSizes[isResizing.index+1] + colSizes[isResizing.index] - before;
+        newSizes[isResizing.index] = before;
+        newSizes[isResizing.index+1] = after;
       }
       setColSizes(newSizes);
     }
-  }, [isResizing]);
+  }, [isResizing, rowSizes, colSizes]);
 
   const handleMouseUp = useCallback(() => {
     setIsResizing(null);
     document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
+    if (handleMouseUpRef.current) {
+      document.removeEventListener('mouseup', handleMouseUpRef.current);
+    }
   }, [handleMouseMove]);
+
+  useEffect(() => {
+    handleMouseUpRef.current = handleMouseUp;
+  }, [handleMouseUp]);
 
   // Touch event handlers
   const handleTouchMove = useCallback((e: TouchEvent) => {
@@ -207,8 +210,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const handleTouchEnd = useCallback(() => {
     setIsResizing(null);
     document.removeEventListener('touchmove', handleTouchMove);
-    document.removeEventListener('touchend', handleTouchEnd);
+    if (handleTouchEndRef.current) {
+      document.removeEventListener('touchend', handleTouchEndRef.current);
+    }
   }, [handleTouchMove]);
+
+  useEffect(() => {
+    handleTouchEndRef.current = handleTouchEnd;
+  }, [handleTouchEnd]);
 
   const handleCollapsePanel = () => {
     setExpandedPanelId(null);
@@ -267,11 +276,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             overflow: "hidden",
           }}
         >
-          {React.createElement(expandedPanel.component, {
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {React.createElement(expandedPanel.component as unknown as React.ComponentType<any>, {
             onExpand: () => handleExpandPanel(expandedPanel.id),
             onCollapse: handleCollapsePanel,
             isExpanded: true
-          } as any)}
+          })}
         </Box>
       );
     }
@@ -317,7 +327,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         }}>
           {visiblePanels.map((panel) => {
             // Find all grid cells this panel should occupy
-            let starts = [];
+            const starts: Array<[number, number]> = [];
             for (let r = 0; r < gridLayout.rows; r++) {
               for (let c = 0; c < gridLayout.cols; c++) {
                 if (gridLayout.areas[r] && gridLayout.areas[r][c] === panel.id) {
@@ -334,19 +344,21 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             const area = `${minRow+1} / ${minCol+1} / ${maxRow+2} / ${maxCol+2}`;
             return (
               <Box key={panel.id} sx={{ gridArea: area, overflow: 'hidden' }}>
-                {React.createElement(panel.component, {
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {React.createElement(panel.component as unknown as React.ComponentType<any>, {
                   onDock: () => handleDockPanel({
                     id: panel.id,
                     title: panel.props.title,
                     icon: panel.props.icon,
-                    content: React.createElement(panel.component, { minimized: true } as any)
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    content: React.createElement(panel.component as unknown as React.ComponentType<any>, { minimized: true })
                   }),
                   onUndock: () => handleUndockPanel(panel.id),
                   onExpand: () => handleExpandPanel(panel.id),
                   onCollapse: handleCollapsePanel,
                   isDocked: isPanelDocked(panel.id),
                   isExpanded: false
-                } as any)}
+                })}
               </Box>
             );
           })}
