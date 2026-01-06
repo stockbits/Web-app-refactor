@@ -90,8 +90,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const visiblePanels = useMemo(() => {
     const panels = [
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
-      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" /> } },
+      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" /> } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
@@ -100,13 +100,28 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {
     const count = visiblePanels.length;
-    if (count === 0) return { rows: 1, cols: 1, showVerticalHandle: false, showHorizontalHandle: false };
-    if (count === 1) return { rows: 1, cols: 1, showVerticalHandle: false, showHorizontalHandle: false };
-    if (count === 2) return { rows: 1, cols: 2, showVerticalHandle: true, showHorizontalHandle: false };
-    if (count === 3) return { rows: 2, cols: 2, showVerticalHandle: true, showHorizontalHandle: true };
+    if (count === 0) return { rows: 1, cols: 1, areas: [] };
+    if (count === 1) return { rows: 1, cols: 1, areas: [[visiblePanels[0].id]] };
+    if (count === 2) return { rows: 1, cols: 2, areas: [[visiblePanels[0].id, visiblePanels[1].id]] };
+    if (count === 3) {
+      // For 3 panels, fill a 2x2 grid, leaving one cell empty and letting panels expand
+      // Assign panels to top-left, top-right, bottom-left; bottom-right is empty
+      return {
+        rows: 2, cols: 2,
+        areas: [
+          [visiblePanels[0].id, visiblePanels[1].id],
+          [visiblePanels[2].id, visiblePanels[2].id]] // bottom row: panel 3 spans both columns
+      };
+    }
     // count === 4
-    return { rows: 2, cols: 2, showVerticalHandle: true, showHorizontalHandle: true };
-  }, [visiblePanels.length]);
+    return {
+      rows: 2, cols: 2,
+      areas: [
+        [visiblePanels[0].id, visiblePanels[1].id],
+        [visiblePanels[2].id, visiblePanels[3].id]
+      ]
+    };
+  }, [visiblePanels]);
 
   // If a panel is expanded, show only that panel
   if (expandedPanelId) {
@@ -161,8 +176,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         <Box sx={{
           height: '100%',
           display: 'grid',
-          gridTemplateRows: '1fr 1fr',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
+          gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
           gap: 0,
           position: 'relative',
           pointerEvents: isResizing ? 'none' : 'auto',
@@ -171,24 +186,24 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
           },
         }}>
           {visiblePanels.map((panel) => {
-            // Always assign fixed grid areas for 4 panels
-            let gridArea = '';
-            switch (panel.id) {
-              case 'gantt':
-                gridArea = '1 / 1 / 2 / 2'; // top-left
-                break;
-              case 'map':
-                gridArea = '1 / 2 / 2 / 3'; // top-right
-                break;
-              case 'people':
-                gridArea = '2 / 1 / 3 / 2'; // bottom-left
-                break;
-              case 'tasks':
-                gridArea = '2 / 2 / 3 / 3'; // bottom-right
-                break;
+            // Find all grid cells this panel should occupy
+            let starts = [];
+            for (let r = 0; r < gridLayout.rows; r++) {
+              for (let c = 0; c < gridLayout.cols; c++) {
+                if (gridLayout.areas[r] && gridLayout.areas[r][c] === panel.id) {
+                  starts.push([r, c]);
+                }
+              }
             }
+            if (starts.length === 0) return null;
+            // Calculate the minimal bounding box for this panel
+            const minRow = Math.min(...starts.map(([r]) => r));
+            const maxRow = Math.max(...starts.map(([r]) => r));
+            const minCol = Math.min(...starts.map(([,c]) => c));
+            const maxCol = Math.max(...starts.map(([,c]) => c));
+            const area = `${minRow+1} / ${minCol+1} / ${maxRow+2} / ${maxCol+2}`;
             return (
-              <Box key={panel.id} sx={{ gridArea, overflow: 'hidden' }}>
+              <Box key={panel.id} sx={{ gridArea: area, overflow: 'hidden' }}>
                 {React.createElement(panel.component, {
                   onDock: () => handleDockPanel({
                     id: panel.id,
@@ -205,50 +220,71 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
               </Box>
             );
           })}
-          
-          {/* Vertical resize handle - show when we have panels that can be resized vertically */}
-          {visiblePanels.length >= 2 && (
-            <Box
-              sx={{
-                position: 'absolute',
-                left: '50%',
-                top: 0,
-                bottom: 0,
-                width: '3px',
-                backgroundColor: theme.palette.divider,
-                cursor: 'col-resize',
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.main,
-                },
-                zIndex: 1000,
-                transform: 'translateX(-50%)',
-                pointerEvents: 'auto',
-              }}
-              onMouseDown={handleMouseDown('col')}
-            />
-          )}
-          
-          {/* Horizontal resize handle - show when we have panels that can be resized horizontally */}
-          {visiblePanels.length >= 3 && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: 0,
-                right: 0,
-                height: '3px',
-                backgroundColor: theme.palette.divider,
-                cursor: 'row-resize',
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.main,
-                },
-                zIndex: 1000,
-                transform: 'translateY(-50%)',
-                pointerEvents: 'auto',
-              }}
-              onMouseDown={handleMouseDown('row')}
-            />
-          )}
+
+          {/* Render short vertical handles only between adjacent panels */}
+          {[...Array(gridLayout.cols - 1)].map((_, c) => {
+            // For each row, if both sides of the boundary have a panel, render a short handle
+            return gridLayout.areas.map((row, r) => {
+              const leftPanel = row && row[c];
+              const rightPanel = row && row[c+1];
+              if (leftPanel && rightPanel && leftPanel !== rightPanel) {
+                return (
+                  <Box
+                    key={`vhandle-${r}-${c}`}
+                    sx={{
+                      position: 'absolute',
+                      left: `${((c+1)/gridLayout.cols)*100}%`,
+                      top: `${(r/gridLayout.rows)*100}%`,
+                      height: `${100/gridLayout.rows}%`,
+                      width: '3px',
+                      backgroundColor: theme.palette.divider,
+                      cursor: 'col-resize',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                      zIndex: 1000,
+                      transform: 'translateX(-50%)',
+                      pointerEvents: 'auto',
+                    }}
+                    onMouseDown={handleMouseDown('col')}
+                  />
+                );
+              }
+              return null;
+            });
+          })}
+
+          {/* Render short horizontal handles only between adjacent panels */}
+          {[...Array(gridLayout.rows - 1)].map((_, r) => {
+            return gridLayout.areas[0].map((_, c) => {
+              const topPanel = gridLayout.areas[r] && gridLayout.areas[r][c];
+              const bottomPanel = gridLayout.areas[r+1] && gridLayout.areas[r+1][c];
+              if (topPanel && bottomPanel && topPanel !== bottomPanel) {
+                return (
+                  <Box
+                    key={`hhandle-${r}-${c}`}
+                    sx={{
+                      position: 'absolute',
+                      top: `${((r+1)/gridLayout.rows)*100}%`,
+                      left: `${(c/gridLayout.cols)*100}%`,
+                      width: `${100/gridLayout.cols}%`,
+                      height: '3px',
+                      backgroundColor: theme.palette.divider,
+                      cursor: 'row-resize',
+                      '&:hover': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                      zIndex: 1000,
+                      transform: 'translateY(-50%)',
+                      pointerEvents: 'auto',
+                    }}
+                    onMouseDown={handleMouseDown('row')}
+                  />
+                );
+              }
+              return null;
+            });
+          })}
         </Box>
       )}
     </Box>
