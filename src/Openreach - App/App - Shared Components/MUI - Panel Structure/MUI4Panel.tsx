@@ -1,7 +1,6 @@
 import { Box, useTheme } from "@mui/material";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import * as React from "react";
-import { useMemo } from "react";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
 import MapIcon from "@mui/icons-material/Map";
@@ -29,7 +28,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
   const [rowSizes, setRowSizes] = useState([50, 50]); // percentages
   const [colSizes, setColSizes] = useState([50, 50]); // percentages
-  const [isResizing, setIsResizing] = useState<'row' | 'col' | null>(null);
+  // isResizing: { type: 'row'|'col', index: number } | null
+  const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
@@ -49,28 +49,107 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     setExpandedPanelId(panelId);
   };
 
-  const handleMouseDown = (type: 'row' | 'col') => (e: React.MouseEvent) => {
-    setIsResizing(type);
+
+  // Pointer event handler for resize handles
+  const handlePointerDown = (type: 'row' | 'col', index: number) => (e: React.PointerEvent) => {
+    setIsResizing({ type, index });
     e.preventDefault();
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    // Add pointermove and pointerup listeners
+    const moveHandler = (ev: PointerEvent) => {
+      if (!isResizing || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = ev.clientX - rect.left;
+      const y = ev.clientY - rect.top;
+      const width = rect.width;
+      const height = rect.height;
+      if (type === 'row') {
+        const total = rowSizes.reduce((a, b) => a + b, 0);
+        const pct = (y / height) * 100;
+        let newSizes = [...rowSizes];
+        let before = Math.max(10, Math.min(90, pct));
+        let after = total - before;
+        if (rowSizes.length === 2) {
+          newSizes = [before, after];
+        } else {
+          const sumBefore = rowSizes.slice(0, index).reduce((a, b) => a + b, 0);
+          before = Math.max(10, Math.min(90, pct - sumBefore));
+          after = rowSizes[index+1] + rowSizes[index] - before;
+          newSizes[index] = before;
+          newSizes[index+1] = after;
+        }
+        setRowSizes(newSizes);
+      } else if (type === 'col') {
+        const total = colSizes.reduce((a, b) => a + b, 0);
+        const pct = (x / width) * 100;
+        let newSizes = [...colSizes];
+        let before = Math.max(10, Math.min(90, pct));
+        let after = total - before;
+        if (colSizes.length === 2) {
+          newSizes = [before, after];
+        } else {
+          const sumBefore = colSizes.slice(0, index).reduce((a, b) => a + b, 0);
+          before = Math.max(10, Math.min(90, pct - sumBefore));
+          after = colSizes[index+1] + colSizes[index] - before;
+          newSizes[index] = before;
+          newSizes[index+1] = after;
+        }
+        setColSizes(newSizes);
+      }
+    };
+    const upHandler = () => {
+      setIsResizing(null);
+      window.removeEventListener('pointermove', moveHandler);
+      window.removeEventListener('pointerup', upHandler);
+    };
+    window.addEventListener('pointermove', moveHandler);
+    window.addEventListener('pointerup', upHandler);
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing || !containerRef.current) return;
-
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const width = rect.width;
     const height = rect.height;
-
-    if (isResizing === 'row') {
-      const percentage = (y / height) * 100;
-      setRowSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
-    } else if (isResizing === 'col') {
-      const percentage = (x / width) * 100;
-      setColSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
+    if (isResizing.type === 'row') {
+      // Calculate new row sizes
+      const total = rowSizes.reduce((a, b) => a + b, 0);
+      const pct = (y / height) * 100;
+      let newSizes = [...rowSizes];
+      let before = Math.max(10, Math.min(90, pct));
+      let after = total - before;
+      if (rowSizes.length === 2) {
+        newSizes = [before, after];
+      } else {
+        // For more than 2 rows, adjust only the two rows at the boundary
+        const idx = isResizing.index;
+        const sumBefore = rowSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        before = Math.max(10, Math.min(90, pct - sumBefore));
+        after = rowSizes[idx+1] + rowSizes[idx] - before;
+        newSizes[idx] = before;
+        newSizes[idx+1] = after;
+      }
+      setRowSizes(newSizes);
+    } else if (isResizing.type === 'col') {
+      // Calculate new col sizes
+      const total = colSizes.reduce((a, b) => a + b, 0);
+      const pct = (x / width) * 100;
+      let newSizes = [...colSizes];
+      let before = Math.max(10, Math.min(90, pct));
+      let after = total - before;
+      if (colSizes.length === 2) {
+        newSizes = [before, after];
+      } else {
+        // For more than 2 cols, adjust only the two cols at the boundary
+        const idx = isResizing.index;
+        const sumBefore = colSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        before = Math.max(10, Math.min(90, pct - sumBefore));
+        after = colSizes[idx+1] + colSizes[idx] - before;
+        newSizes[idx] = before;
+        newSizes[idx+1] = after;
+      }
+      setColSizes(newSizes);
     }
   }, [isResizing]);
 
@@ -79,6 +158,57 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
   }, [handleMouseMove]);
+
+  // Touch event handlers
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+      e.preventDefault();
+    if (!isResizing || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    if (isResizing.type === 'row') {
+      const total = rowSizes.reduce((a, b) => a + b, 0);
+      const pct = (y / rect.height) * 100;
+      let newSizes = [...rowSizes];
+      let before = Math.max(10, Math.min(90, pct));
+      let after = total - before;
+      if (rowSizes.length === 2) {
+        newSizes = [before, after];
+      } else {
+        const idx = isResizing.index;
+        const sumBefore = rowSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        before = Math.max(10, Math.min(90, pct - sumBefore));
+        after = rowSizes[idx+1] + rowSizes[idx] - before;
+        newSizes[idx] = before;
+        newSizes[idx+1] = after;
+      }
+      setRowSizes(newSizes);
+    } else if (isResizing.type === 'col') {
+      const total = colSizes.reduce((a, b) => a + b, 0);
+      const pct = (x / rect.width) * 100;
+      let newSizes = [...colSizes];
+      let before = Math.max(10, Math.min(90, pct));
+      let after = total - before;
+      if (colSizes.length === 2) {
+        newSizes = [before, after];
+      } else {
+        const idx = isResizing.index;
+        const sumBefore = colSizes.slice(0, idx).reduce((a, b) => a + b, 0);
+        before = Math.max(10, Math.min(90, pct - sumBefore));
+        after = colSizes[idx+1] + colSizes[idx] - before;
+        newSizes[idx] = before;
+        newSizes[idx+1] = after;
+      }
+      setColSizes(newSizes);
+    }
+  }, [isResizing, rowSizes, colSizes]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsResizing(null);
+    document.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('touchend', handleTouchEnd);
+  }, [handleTouchMove]);
 
   const handleCollapsePanel = () => {
     setExpandedPanelId(null);
@@ -156,7 +286,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         backgroundColor: theme.palette.background.default,
         position: 'relative',
         overflow: 'hidden',
-        cursor: isResizing ? (isResizing === 'row' ? 'row-resize' : 'col-resize') : 'default',
+        cursor: isResizing ? (isResizing.type === 'row' ? 'row-resize' : 'col-resize') : 'default',
         margin: 0,
         padding: 0,
       }}
@@ -176,8 +306,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         <Box sx={{
           height: '100%',
           display: 'grid',
-          gridTemplateRows: `repeat(${gridLayout.rows}, 1fr)`,
-          gridTemplateColumns: `repeat(${gridLayout.cols}, 1fr)`,
+          gridTemplateRows: rowSizes.slice(0, gridLayout.rows).map(s => `${s}%`).join(' '),
+          gridTemplateColumns: colSizes.slice(0, gridLayout.cols).map(s => `${s}%`).join(' '),
           gap: 0,
           position: 'relative',
           pointerEvents: isResizing ? 'none' : 'auto',
@@ -221,9 +351,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             );
           })}
 
-          {/* Render short vertical handles only between adjacent panels */}
+          {/* Chunky vertical handles: 5% of panel height, centered, fade in on hover/focus */}
           {[...Array(gridLayout.cols - 1)].map((_, c) => {
-            // For each row, if both sides of the boundary have a panel, render a short handle
             return gridLayout.areas.map((row, r) => {
               const leftPanel = row && row[c];
               const rightPanel = row && row[c+1];
@@ -233,28 +362,55 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     key={`vhandle-${r}-${c}`}
                     sx={{
                       position: 'absolute',
-                      left: `${((c+1)/gridLayout.cols)*100}%`,
-                      top: `${(r/gridLayout.rows)*100}%`,
-                      height: `${100/gridLayout.rows}%`,
-                      width: '3px',
-                      backgroundColor: theme.palette.divider,
-                      cursor: 'col-resize',
-                      '&:hover': {
-                        backgroundColor: theme.palette.primary.main,
-                      },
+                      left: `${((colSizes.slice(0, c+1).reduce((a,b)=>a+b,0))/100)*100}%`,
+                      top: `${(rowSizes.slice(0, r).reduce((a,b)=>a+b,0)/100)*100}%`,
+                      height: `${rowSizes[r]}%`,
+                      width: '24px', // hit area
+                      marginLeft: '-12px',
                       zIndex: 1000,
                       transform: 'translateX(-50%)',
                       pointerEvents: 'auto',
+                      background: 'none',
+                      cursor: 'col-resize',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
-                    onMouseDown={handleMouseDown('col')}
-                  />
+                    tabIndex={0}
+                    onPointerDown={handlePointerDown('col', c)}
+                  >
+                    <Box
+                      className="mui4panel-handle-block"
+                      sx={{
+                        width: '12px',
+                        height: '5%',
+                        minHeight: '32px',
+                        maxHeight: '64px',
+                        backgroundColor: theme.palette.divider,
+                        borderRadius: 2,
+                        opacity: 0,
+                        transition: 'background 0.2s, opacity 0.2s',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: 0,
+                        '&:hover, &:focus, .mui4panel-handle-block-active': {
+                          backgroundColor: theme.palette.primary.main,
+                          opacity: 1,
+                          boxShadow: theme.shadows[2],
+                        },
+                        pointerEvents: 'auto',
+                      }}
+                    />
+                  </Box>
                 );
               }
               return null;
             });
           })}
 
-          {/* Render short horizontal handles only between adjacent panels */}
+          {/* Chunky horizontal handles: 5% of panel width, centered, fade in on hover/focus */}
           {[...Array(gridLayout.rows - 1)].map((_, r) => {
             return gridLayout.areas[0].map((_, c) => {
               const topPanel = gridLayout.areas[r] && gridLayout.areas[r][c];
@@ -265,21 +421,48 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     key={`hhandle-${r}-${c}`}
                     sx={{
                       position: 'absolute',
-                      top: `${((r+1)/gridLayout.rows)*100}%`,
-                      left: `${(c/gridLayout.cols)*100}%`,
-                      width: `${100/gridLayout.cols}%`,
-                      height: '3px',
-                      backgroundColor: theme.palette.divider,
-                      cursor: 'row-resize',
-                      '&:hover': {
-                        backgroundColor: theme.palette.primary.main,
-                      },
+                      top: `${(rowSizes.slice(0, r+1).reduce((a,b)=>a+b,0)/100)*100}%`,
+                      left: `${(colSizes.slice(0, c).reduce((a,b)=>a+b,0)/100)*100}%`,
+                      width: `${colSizes[c]}%`,
+                      height: '24px', // hit area
+                      marginTop: '-12px',
                       zIndex: 1000,
                       transform: 'translateY(-50%)',
                       pointerEvents: 'auto',
+                      background: 'none',
+                      cursor: 'row-resize',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
-                    onMouseDown={handleMouseDown('row')}
-                  />
+                    tabIndex={0}
+                    onPointerDown={handlePointerDown('row', r)}
+                  >
+                    <Box
+                      className="mui4panel-handle-block"
+                      sx={{
+                        height: '12px',
+                        width: '5%',
+                        minWidth: '32px',
+                        maxWidth: '64px',
+                        backgroundColor: theme.palette.divider,
+                        borderRadius: 2,
+                        opacity: 0,
+                        transition: 'background 0.2s, opacity 0.2s',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: 0,
+                        '&:hover, &:focus, .mui4panel-handle-block-active': {
+                          backgroundColor: theme.palette.primary.main,
+                          opacity: 1,
+                          boxShadow: theme.shadows[2],
+                        },
+                        pointerEvents: 'auto',
+                      }}
+                    />
+                  </Box>
                 );
               }
               return null;
