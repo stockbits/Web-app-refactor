@@ -152,10 +152,14 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           '& .MuiDataGrid-main': {
             flex: 1,
             overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           },
 
           '& .MuiDataGrid-virtualScroller': {
+            flex: 1,
             overflow: 'auto !important',
+            height: 'auto',
           },
 
           '& .MuiDataGrid-footerContainer': {
