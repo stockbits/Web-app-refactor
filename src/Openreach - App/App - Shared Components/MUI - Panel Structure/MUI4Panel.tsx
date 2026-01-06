@@ -154,6 +154,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
           gridTemplateColumns: `${colSizes[0]}% ${colSizes[1]}%`,
           gap: 0,
           position: 'relative',
+          pointerEvents: isResizing ? 'none' : 'auto',
+          '& > *': {
+            pointerEvents: isResizing ? 'none' : 'auto',
+          },
         }}>
           <Box sx={{ gridRow: 1, gridColumn: 1, overflow: 'hidden' }}>
             <LiveGantt
@@ -178,13 +182,15 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
               left: `${colSizes[0]}%`,
               top: 0,
               bottom: 0,
-              width: '4px',
+              width: '8px',
               backgroundColor: theme.palette.divider,
               cursor: 'col-resize',
               '&:hover': {
                 backgroundColor: theme.palette.primary.main,
               },
-              zIndex: 10,
+              zIndex: 1000,
+              transform: 'translateX(-50%)',
+              pointerEvents: 'auto',
             }}
             onMouseDown={handleMouseDown('col')}
           />
@@ -212,13 +218,15 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
               top: `${rowSizes[0]}%`,
               left: 0,
               right: 0,
-              height: '4px',
+              height: '8px',
               backgroundColor: theme.palette.divider,
               cursor: 'row-resize',
               '&:hover': {
                 backgroundColor: theme.palette.primary.main,
               },
-              zIndex: 10,
+              zIndex: 1000,
+              transform: 'translateY(-50%)',
+              pointerEvents: 'auto',
             }}
             onMouseDown={handleMouseDown('row')}
           />
