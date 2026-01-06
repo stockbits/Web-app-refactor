@@ -305,8 +305,9 @@ const TaskManagementPage = () => {
       height: '100%',
       minHeight: 0,
       overflow: 'hidden',
+      width: '100%',
     }}>
-      <Box sx={{ flexShrink: 0 }}>
+      <Box sx={{ flexShrink: 0, mb: 2 }}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
@@ -329,7 +330,6 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
-            maxHeight={1200}
           />
         ) : (
           <Box
