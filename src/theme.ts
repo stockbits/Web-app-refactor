@@ -76,7 +76,7 @@ export const appTheme = createTheme({
       main: deepBlue,
     },
     background: {
-      default: "#040b12",
+      default: fibreWhite,
       paper: fibreWhite,
     },
     text: {

@@ -23,11 +23,11 @@ html, body, * {
 }
 :root,
 body,
-html {
+html, body {
   margin: 0;
   min-height: 100%;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #02070c;
+  background: #f5f4f5;
 }
 
 :root {
@@ -37,26 +37,27 @@ html {
 
 #root {
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
   display: flex;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 body {
-  background: radial-gradient(circle at top, rgba(0, 204, 173, 0.15), transparent 45%),
-    linear-gradient(135deg, #040b12 0%, #0f1a28 70%, #040b12 100%);
-  color: #f5f4f5;
+  background: #f5f4f5;
+  color: #202020;
 }
 
 .app-stage {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 0;
+  padding: 0 !important;
   box-sizing: border-box;
-  width: 100%;
+  width: 100vw;
   max-width: none;
-  margin: 0;
-  background: rgba(245, 244, 245, 0.98);
+  margin: 0 !important;
+  background: none;
 }
 
 .app-stack {
@@ -75,13 +76,14 @@ body {
 .app-canvas {
   flex: 1;
   min-height: 320px;
-  background: rgba(245, 244, 245, 0.98);
+  background: none;
   border-radius: 0;
-  padding: clamp(0.75rem, 1.8vw, 1.35rem) var(--page-gutter) clamp(0.85rem, 2vw, 1.5rem);
-  border: 1px solid rgba(7, 59, 76, 0.08);
+  padding: 0;
+  border: none;
   box-shadow: none;
   color: #202020;
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
   margin-top: 0;
 }
 
@@ -107,7 +109,7 @@ body {
 
 @media (max-width: 720px) {
   .app-canvas {
-    padding: clamp(0.65rem, 6vw, 1rem) clamp(0.5rem, 5vw, 0.85rem) clamp(0.75rem, 5vw, 1.1rem);
+    padding: 0 !important;
     margin-top: 0;
   }
 }

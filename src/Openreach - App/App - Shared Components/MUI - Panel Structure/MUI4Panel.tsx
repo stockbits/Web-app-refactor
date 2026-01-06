@@ -115,20 +115,18 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       return (
         <Box
           sx={{
-            height: "100%",
-            width: "100%",
+            height: "100vh",
+            width: "100vw",
             backgroundColor: theme.palette.background.default,
             position: "relative",
             overflow: "hidden",
           }}
         >
-          <Box sx={{ height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            {React.createElement(expandedPanel.component, {
-              onExpand: () => handleExpandPanel(expandedPanel.id),
-              onCollapse: handleCollapsePanel,
-              isExpanded: true
-            } as any)}
-          </Box>
+          {React.createElement(expandedPanel.component, {
+            onExpand: () => handleExpandPanel(expandedPanel.id),
+            onCollapse: handleCollapsePanel,
+            isExpanded: true
+          } as any)}
         </Box>
       );
     }
@@ -138,12 +136,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     <Box
       ref={containerRef}
       sx={{
-        height: "100%", // Account for top banner (~80px) + breadcrumb (~50px)
-        width: "100%", // Full width now that padding is removed
+        height: '100vh',
+        width: '100vw',
         backgroundColor: theme.palette.background.default,
-        position: "relative",
-        overflow: "hidden", // Prevent handles from extending beyond boundaries
+        position: 'relative',
+        overflow: 'hidden',
         cursor: isResizing ? (isResizing === 'row' ? 'row-resize' : 'col-resize') : 'default',
+        margin: 0,
+        padding: 0,
       }}
     >
       {visiblePanels.length === 0 ? (
@@ -171,7 +171,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
           },
         }}>
           {visiblePanels.map((panel) => {
-            // Position panels based on their ID, not array index
+            // Always assign fixed grid areas for 4 panels
             let gridArea = '';
             switch (panel.id) {
               case 'gantt':
@@ -181,15 +181,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                 gridArea = '1 / 2 / 2 / 3'; // top-right
                 break;
               case 'people':
-                // If tasks is docked, people should take full bottom row
-                gridArea = visiblePanels.some(p => p.id === 'tasks') ? '2 / 1 / 3 / 3' : '2 / 1 / 3 / 2';
+                gridArea = '2 / 1 / 3 / 2'; // bottom-left
                 break;
               case 'tasks':
-                // If people is docked, tasks should take full bottom row
-                gridArea = visiblePanels.some(p => p.id === 'people') ? '2 / 1 / 3 / 3' : '2 / 2 / 3 / 3';
+                gridArea = '2 / 2 / 3 / 3'; // bottom-right
                 break;
             }
-            
             return (
               <Box key={panel.id} sx={{ gridArea, overflow: 'hidden' }}>
                 {React.createElement(panel.component, {
@@ -217,7 +214,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                 left: '50%',
                 top: 0,
                 bottom: 0,
-                width: '8px',
+                width: '3px',
                 backgroundColor: theme.palette.divider,
                 cursor: 'col-resize',
                 '&:hover': {
@@ -239,7 +236,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                 top: '50%',
                 left: 0,
                 right: 0,
-                height: '8px',
+                height: '3px',
                 backgroundColor: theme.palette.divider,
                 cursor: 'row-resize',
                 '&:hover': {

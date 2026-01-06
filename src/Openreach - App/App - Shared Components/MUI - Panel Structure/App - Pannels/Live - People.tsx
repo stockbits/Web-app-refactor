@@ -30,12 +30,12 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
   return (
     <Box
       sx={{
-        height: "100%",
-        width: "100%",
+        height: isExpanded ? '100vh' : '100%',
+        width: isExpanded ? '100vw' : '100%',
         display: "flex",
         flexDirection: "column",
         backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
+        border: isExpanded ? 'none' : `1px solid ${theme.palette.divider}`,
         boxSizing: "border-box",
         minHeight: 0,
       }}
