@@ -97,6 +97,17 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
   }, [dockedPanels]);
 
+  // Calculate grid layout based on number of visible panels
+  const gridLayout = useMemo(() => {
+    const count = visiblePanels.length;
+    if (count === 0) return { rows: 1, cols: 1, showVerticalHandle: false, showHorizontalHandle: false };
+    if (count === 1) return { rows: 1, cols: 1, showVerticalHandle: false, showHorizontalHandle: false };
+    if (count === 2) return { rows: 1, cols: 2, showVerticalHandle: true, showHorizontalHandle: false };
+    if (count === 3) return { rows: 2, cols: 2, showVerticalHandle: true, showHorizontalHandle: true };
+    // count === 4
+    return { rows: 2, cols: 2, showVerticalHandle: true, showHorizontalHandle: true };
+  }, [visiblePanels.length]);
+
   // If a panel is expanded, show only that panel
   if (expandedPanelId) {
     const expandedPanel = visiblePanels.find(p => p.id === expandedPanelId);
@@ -146,12 +157,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
           All panels are docked to the top banner
         </Box>
       ) : (
-        // Simple 2x2 grid layout with resizable panels
+        // Dynamic grid layout based on number of visible panels
         <Box sx={{
           height: '100%',
           display: 'grid',
-          gridTemplateRows: `${rowSizes[0]}% ${rowSizes[1]}%`,
-          gridTemplateColumns: `${colSizes[0]}% ${colSizes[1]}%`,
+          gridTemplateRows: gridLayout.rows === 1 ? '100%' : `${rowSizes[0]}% ${rowSizes[1]}%`,
+          gridTemplateColumns: gridLayout.cols === 1 ? '100%' : `${colSizes[0]}% ${colSizes[1]}%`,
           gap: 0,
           position: 'relative',
           pointerEvents: isResizing ? 'none' : 'auto',
@@ -159,109 +170,74 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             pointerEvents: isResizing ? 'none' : 'auto',
           },
         }}>
-          <Box sx={{ gridRow: 1, gridColumn: 1, overflow: 'hidden' }}>
-            <LiveGantt
-              onDock={() => handleDockPanel({
-                id: 'gantt',
-                title: 'Gantt Chart',
-                icon: <TimelineIcon fontSize="small" />,
-                content: <LiveGantt minimized />
-              })}
-              onUndock={() => handleUndockPanel('gantt')}
-              onExpand={() => handleExpandPanel('gantt')}
-              onCollapse={handleCollapsePanel}
-              isDocked={isPanelDocked('gantt')}
-              isExpanded={false}
+          {visiblePanels.map((panel, index) => {
+            const row = gridLayout.rows === 1 ? 1 : (index < gridLayout.cols ? 1 : 2);
+            const col = gridLayout.cols === 1 ? 1 : ((index % gridLayout.cols) + 1);
+            
+            const commonProps = {
+              onDock: () => handleDockPanel({
+                id: panel.id,
+                title: panel.props.title,
+                icon: panel.props.icon,
+                content: React.createElement(panel.component, { minimized: true } as any)
+              }),
+              onUndock: () => handleUndockPanel(panel.id),
+              onExpand: () => handleExpandPanel(panel.id),
+              onCollapse: handleCollapsePanel,
+              isDocked: isPanelDocked(panel.id),
+              isExpanded: false
+            };
+            
+            return (
+              <Box key={panel.id} sx={{ gridRow: row, gridColumn: col, overflow: 'hidden' }}>
+                {React.createElement(panel.component, commonProps as any)}
+              </Box>
+            );
+          })}
+          
+          {/* Vertical resize handle - only show if needed */}
+          {gridLayout.showVerticalHandle && (
+            <Box
+              sx={{
+                position: 'absolute',
+                left: `${colSizes[0]}%`,
+                top: 0,
+                bottom: 0,
+                width: '8px',
+                backgroundColor: theme.palette.divider,
+                cursor: 'col-resize',
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.main,
+                },
+                zIndex: 1000,
+                transform: 'translateX(-50%)',
+                pointerEvents: 'auto',
+              }}
+              onMouseDown={handleMouseDown('col')}
             />
-          </Box>
+          )}
           
-          {/* Vertical resize handle */}
-          <Box
-            sx={{
-              position: 'absolute',
-              left: `${colSizes[0]}%`,
-              top: 0,
-              bottom: 0,
-              width: '8px',
-              backgroundColor: theme.palette.divider,
-              cursor: 'col-resize',
-              '&:hover': {
-                backgroundColor: theme.palette.primary.main,
-              },
-              zIndex: 1000,
-              transform: 'translateX(-50%)',
-              pointerEvents: 'auto',
-            }}
-            onMouseDown={handleMouseDown('col')}
-          />
-          
-          <Box sx={{ gridRow: 1, gridColumn: 2, overflow: 'hidden' }}>
-            <LiveMap
-              onDock={() => handleDockPanel({
-                id: 'map',
-                title: 'Live Map',
-                icon: <MapIcon fontSize="small" />,
-                content: <LiveMap minimized />
-              })}
-              onUndock={() => handleUndockPanel('map')}
-              onExpand={() => handleExpandPanel('map')}
-              onCollapse={handleCollapsePanel}
-              isDocked={isPanelDocked('map')}
-              isExpanded={false}
+          {/* Horizontal resize handle - only show if needed */}
+          {gridLayout.showHorizontalHandle && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: `${rowSizes[0]}%`,
+                left: 0,
+                right: 0,
+                height: '8px',
+                backgroundColor: theme.palette.divider,
+                cursor: 'row-resize',
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.main,
+                },
+                zIndex: 1000,
+                transform: 'translateY(-50%)',
+                pointerEvents: 'auto',
+              }}
+              onMouseDown={handleMouseDown('row')}
             />
-          </Box>
-          
-          {/* Horizontal resize handle */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: `${rowSizes[0]}%`,
-              left: 0,
-              right: 0,
-              height: '8px',
-              backgroundColor: theme.palette.divider,
-              cursor: 'row-resize',
-              '&:hover': {
-                backgroundColor: theme.palette.primary.main,
-              },
-              zIndex: 1000,
-              transform: 'translateY(-50%)',
-              pointerEvents: 'auto',
-            }}
-            onMouseDown={handleMouseDown('row')}
-          />
-          
-          <Box sx={{ gridRow: 2, gridColumn: 1, overflow: 'hidden' }}>
-            <LivePeople
-              onDock={() => handleDockPanel({
-                id: 'people',
-                title: 'Team Status',
-                icon: <PeopleIcon fontSize="small" />,
-                content: <LivePeople minimized />
-              })}
-              onUndock={() => handleUndockPanel('people')}
-              onExpand={() => handleExpandPanel('people')}
-              onCollapse={handleCollapsePanel}
-              isDocked={isPanelDocked('people')}
-              isExpanded={false}
-            />
-          </Box>
-          
-          <Box sx={{ gridRow: 2, gridColumn: 2, overflow: 'hidden' }}>
-            <LiveTask
-              onDock={() => handleDockPanel({
-                id: 'tasks',
-                title: 'Active Tasks',
-                icon: <ChecklistIcon fontSize="small" />,
-                content: <LiveTask minimized />
-              })}
-              onUndock={() => handleUndockPanel('tasks')}
-              onExpand={() => handleExpandPanel('tasks')}
-              onCollapse={handleCollapsePanel}
-              isDocked={isPanelDocked('tasks')}
-              isExpanded={false}
-            />
-          </Box>
+          )}
         </Box>
       )}
     </Box>
