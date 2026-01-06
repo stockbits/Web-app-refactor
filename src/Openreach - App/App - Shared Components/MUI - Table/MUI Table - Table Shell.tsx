@@ -46,7 +46,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   pageSizeOptions,
   initialPageSize = 30,
   emptyState,
-  maxHeight,
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
 
