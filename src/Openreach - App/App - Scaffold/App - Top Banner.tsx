@@ -89,7 +89,7 @@ export const OpenreachTopBanner = ({
       <Toolbar
         disableGutters
         sx={{
-          pl: { xs: 0.75, sm: 1 },
+          pl: 'var(--page-gutter)',
           pr: 'var(--page-gutter)',
           py: { xs: 0.5, md: 0.85 },
           gap: 1.5,

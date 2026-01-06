@@ -46,6 +46,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   pageSizeOptions,
   initialPageSize = 30,
   emptyState,
+  maxHeight = 'calc(100vh - 300px)',
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
 
@@ -94,7 +95,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     <Box
       sx={{
         width: '100%',
-        height: '1200px',
+        height: '100%',
+        maxHeight: maxHeight,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -111,6 +113,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         hideFooter={resolvedHideFooter}
         checkboxSelection
         disableRowSelectionOnClick={false}
+        autoHeight={false}
+        disableVirtualization={false}
         pageSizeOptions={resolvedPageSizeOptions}
         initialState={{
           pagination: {
@@ -138,6 +142,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
           '& .MuiDataGrid-toolbarContainer': {
             flex: '0 0 auto',
+            padding: 0,
           },
 
           '& .MuiDataGrid-columnHeaders': {
@@ -151,7 +156,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
           '& .MuiDataGrid-main': {
             flex: 1,
-            overflow: 'hidden',
+            overflow: 'hidden !important',
             display: 'flex',
             flexDirection: 'column',
           },
@@ -159,11 +164,22 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           '& .MuiDataGrid-virtualScroller': {
             flex: 1,
             overflow: 'auto !important',
-            height: 'auto',
+            minHeight: 0,
+            paddingBottom: '8px',
+            '& > div': {
+              height: 'auto !important',
+            },
+          },
+
+          '& .MuiDataGrid-row': {
+            maxHeight: 'none',
           },
 
           '& .MuiDataGrid-footerContainer': {
             flex: '0 0 auto',
+            borderTop: '1px solid rgba(7,59,76,0.08)',
+            padding: 0,
+            margin: 0,
           },
 
           '& .MuiDataGrid-cell': {

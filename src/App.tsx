@@ -443,11 +443,13 @@ function App() {
 
           <Box className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}>
             {showWelcome ? (
-              <LandingOverview
-                groups={MENU_GROUPS}
-              />
+              <Box sx={{ p: 2 }}>
+                <LandingOverview
+                  groups={MENU_GROUPS}
+                />
+              </Box>
             ) : !activePage ? (
-              <>
+              <Box sx={{ p: 2 }}>
                 <Box
                   sx={{
                     display: "grid",
@@ -499,7 +501,7 @@ function App() {
                     Select a tool card to load its page.
                   </Typography>
                 </Box>
-              </>
+              </Box>
             ) : (
               <Box
                 component="section"

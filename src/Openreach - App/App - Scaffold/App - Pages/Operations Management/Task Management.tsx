@@ -319,7 +319,7 @@ const TaskManagementPage = () => {
           onApply={handleApplyQuery}
         />
       </Box>
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{ flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -330,6 +330,7 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={20}
             pageSizeOptions={[20, 30, 50, 100]}
+            maxHeight="800px"
           />
         ) : (
           <Box
@@ -339,7 +340,8 @@ const TaskManagementPage = () => {
               bgcolor: 'rgba(7,59,76,0.02)',
               p: 4,
               textAlign: 'center',
-              height: '100%',
+              height: 'auto',
+              maxHeight: '800px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',

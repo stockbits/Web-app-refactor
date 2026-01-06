@@ -78,7 +78,7 @@ body {
   min-height: 320px;
   background: none;
   border-radius: 0;
-  padding: 0;
+  padding: var(--page-gutter);
   border: none;
   box-shadow: none;
   color: #202020;
@@ -90,7 +90,7 @@ body {
 }
 
 .app-canvas-page {
-  padding: 0;
+  padding: var(--page-gutter);
   flex: 1;
   min-height: 0;
   display: flex;

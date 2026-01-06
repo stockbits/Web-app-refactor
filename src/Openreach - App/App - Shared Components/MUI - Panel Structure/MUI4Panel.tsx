@@ -269,8 +269,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       return (
         <Box
           sx={{
-            height: "100vh",
-            width: "100vw",
+            height: "100%",
+            width: "100%",
             backgroundColor: theme.palette.background.default,
             position: "relative",
             overflow: "hidden",
@@ -291,8 +291,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     <Box
       ref={containerRef}
       sx={{
-        height: '100vh',
-        width: '100vw',
+        height: '100%',
+        width: '100%',
         backgroundColor: theme.palette.background.default,
         position: 'relative',
         overflow: 'hidden',
