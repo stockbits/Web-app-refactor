@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -117,8 +117,21 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
         sx={{
           flex: 1,
           backgroundColor: theme.palette.background.paper,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <TimelineIcon sx={{ fontSize: 48, color: theme.openreach.energyAccent, mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Gantt Chart
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Timeline view of scheduled tasks and resources
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 }

@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -117,8 +117,21 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         sx={{
           flex: 1,
           backgroundColor: theme.palette.background.paper,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <ChecklistIcon sx={{ fontSize: 48, color: theme.openreach.energyAccent, mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Active Tasks
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Current work orders and task assignments
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 }

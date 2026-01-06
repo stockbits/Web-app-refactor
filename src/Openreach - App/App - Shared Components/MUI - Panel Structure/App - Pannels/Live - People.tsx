@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -117,8 +117,21 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
         sx={{
           flex: 1,
           backgroundColor: theme.palette.background.paper,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        <Box sx={{ textAlign: 'center' }}>
+          <PeopleIcon sx={{ fontSize: 48, color: theme.openreach.energyAccent, mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            Team Status
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Real-time engineer availability and assignments
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 }
