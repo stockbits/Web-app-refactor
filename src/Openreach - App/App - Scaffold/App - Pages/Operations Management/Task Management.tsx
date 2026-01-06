@@ -328,7 +328,7 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
-            maxHeight="calc(100vh - 250px)" // Show ~20 rows max, then internal scroll
+            maxHeight={1200} // Hard limit: ~20 rows visible, rest in overflow
           />
         ) : (
           <Box
