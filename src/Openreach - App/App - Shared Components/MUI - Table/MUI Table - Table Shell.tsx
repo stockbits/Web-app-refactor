@@ -27,6 +27,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
    * Max height of the table container.
    * Can be a number (px) or any valid CSS height string.
    * Example: 520 or "calc(100vh - 250px)"
+   * Defaults to '100%' to fit the container and scroll internally.
    */
   maxHeight?: number | string
 }
@@ -69,7 +70,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   const resolvedHideFooter = showFooterControls ? false : hideFooter
 
   // Container max height (DataGrid scrolls internally)
-  const resolvedMaxHeight = maxHeight ?? 'calc(100vh - 250px)'
+  const resolvedMaxHeight = maxHeight ?? '100%'
 
   const paginationSettings = !resolvedHideFooter
     ? {

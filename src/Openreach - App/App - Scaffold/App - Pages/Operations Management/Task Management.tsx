@@ -301,7 +301,7 @@ const TaskManagementPage = () => {
     <Box sx={{
       display: 'flex',
       flexDirection: 'column',
-      height: '100vh',
+      height: '100%',
       minHeight: 0,
     }}>
       <Box sx={{ flexShrink: 0 }}>
@@ -325,7 +325,7 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
-            maxHeight="calc(100vh - 180px)" // Responsive height for table area
+            maxHeight="100%" // Responsive height for table area
           />
         ) : (
           <Box

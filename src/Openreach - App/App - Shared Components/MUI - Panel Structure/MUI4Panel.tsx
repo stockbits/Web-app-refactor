@@ -71,7 +71,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       return (
         <Box
           sx={{
-            height: "calc(100vh - 130px)",
+            height: "100%",
             width: "100%",
             backgroundColor: theme.palette.background.default,
             position: "relative",
@@ -93,7 +93,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   return (
     <Box
       sx={{
-        height: "calc(100vh - 130px)", // Account for top banner (~80px) + breadcrumb (~50px)
+        height: "100%", // Account for top banner (~80px) + breadcrumb (~50px)
         width: "100%", // Full width now that padding is removed
         backgroundColor: theme.palette.background.default,
         position: "relative",
