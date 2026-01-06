@@ -1,5 +1,5 @@
 import { Box, useTheme } from "@mui/material";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import * as React from "react";
 import { useMemo } from "react";
 import TimelineIcon from "@mui/icons-material/Timeline";
@@ -30,6 +30,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const [rowSizes, setRowSizes] = useState([50, 50]); // percentages
   const [colSizes, setColSizes] = useState([50, 50]); // percentages
   const [isResizing, setIsResizing] = useState<'row' | 'col' | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -51,12 +52,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const handleMouseDown = (type: 'row' | 'col') => (e: React.MouseEvent) => {
     setIsResizing(type);
     e.preventDefault();
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isResizing) return;
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizing || !containerRef.current) return;
 
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const width = rect.width;
@@ -69,11 +72,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
       const percentage = (x / width) * 100;
       setColSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
     }
-  };
+  }, [isResizing]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsResizing(null);
-  };
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+  }, [handleMouseMove]);
 
   const handleCollapsePanel = () => {
     setExpandedPanelId(null);
@@ -120,6 +125,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         height: "100%", // Account for top banner (~80px) + breadcrumb (~50px)
         width: "100%", // Full width now that padding is removed
@@ -128,9 +134,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         overflow: "hidden", // Prevent handles from extending beyond boundaries
         cursor: isResizing ? (isResizing === 'row' ? 'row-resize' : 'col-resize') : 'default',
       }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
     >
       {visiblePanels.length === 0 ? (
         <Box sx={{
