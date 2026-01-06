@@ -121,6 +121,12 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         hideFooter={resolvedHideFooter}
         checkboxSelection
         disableRowSelectionOnClick={false}
+        pageSizeOptions={resolvedPageSizeOptions}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: resolvedInitialPageSize, page: 0 },
+          },
+        }}
         {...paginationSettings}
         slots={{
           toolbar: enableQuickFilter
