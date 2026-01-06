@@ -161,8 +161,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         <Box sx={{
           height: '100%',
           display: 'grid',
-          gridTemplateRows: gridLayout.rows === 1 ? '100%' : `${rowSizes[0]}% ${rowSizes[1]}%`,
-          gridTemplateColumns: gridLayout.cols === 1 ? '100%' : `${colSizes[0]}% ${colSizes[1]}%`,
+          gridTemplateRows: '1fr 1fr',
+          gridTemplateColumns: '1fr 1fr',
           gap: 0,
           position: 'relative',
           pointerEvents: isResizing ? 'none' : 'auto',
@@ -170,37 +170,51 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             pointerEvents: isResizing ? 'none' : 'auto',
           },
         }}>
-          {visiblePanels.map((panel, index) => {
-            const row = gridLayout.rows === 1 ? 1 : (index < gridLayout.cols ? 1 : 2);
-            const col = gridLayout.cols === 1 ? 1 : ((index % gridLayout.cols) + 1);
-            
-            const commonProps = {
-              onDock: () => handleDockPanel({
-                id: panel.id,
-                title: panel.props.title,
-                icon: panel.props.icon,
-                content: React.createElement(panel.component, { minimized: true } as any)
-              }),
-              onUndock: () => handleUndockPanel(panel.id),
-              onExpand: () => handleExpandPanel(panel.id),
-              onCollapse: handleCollapsePanel,
-              isDocked: isPanelDocked(panel.id),
-              isExpanded: false
-            };
+          {visiblePanels.map((panel) => {
+            // Position panels based on their ID, not array index
+            let gridArea = '';
+            switch (panel.id) {
+              case 'gantt':
+                gridArea = '1 / 1 / 2 / 2'; // top-left
+                break;
+              case 'map':
+                gridArea = '1 / 2 / 2 / 3'; // top-right
+                break;
+              case 'people':
+                // If tasks is docked, people should take full bottom row
+                gridArea = visiblePanels.some(p => p.id === 'tasks') ? '2 / 1 / 3 / 3' : '2 / 1 / 3 / 2';
+                break;
+              case 'tasks':
+                // If people is docked, tasks should take full bottom row
+                gridArea = visiblePanels.some(p => p.id === 'people') ? '2 / 1 / 3 / 3' : '2 / 2 / 3 / 3';
+                break;
+            }
             
             return (
-              <Box key={panel.id} sx={{ gridRow: row, gridColumn: col, overflow: 'hidden' }}>
-                {React.createElement(panel.component, commonProps as any)}
+              <Box key={panel.id} sx={{ gridArea, overflow: 'hidden' }}>
+                {React.createElement(panel.component, {
+                  onDock: () => handleDockPanel({
+                    id: panel.id,
+                    title: panel.props.title,
+                    icon: panel.props.icon,
+                    content: React.createElement(panel.component, { minimized: true } as any)
+                  }),
+                  onUndock: () => handleUndockPanel(panel.id),
+                  onExpand: () => handleExpandPanel(panel.id),
+                  onCollapse: handleCollapsePanel,
+                  isDocked: isPanelDocked(panel.id),
+                  isExpanded: false
+                } as any)}
               </Box>
             );
           })}
           
-          {/* Vertical resize handle - only show if needed */}
-          {gridLayout.showVerticalHandle && (
+          {/* Vertical resize handle - show when we have panels that can be resized vertically */}
+          {visiblePanels.length >= 2 && (
             <Box
               sx={{
                 position: 'absolute',
-                left: `${colSizes[0]}%`,
+                left: '50%',
                 top: 0,
                 bottom: 0,
                 width: '8px',
@@ -217,12 +231,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
             />
           )}
           
-          {/* Horizontal resize handle - only show if needed */}
-          {gridLayout.showHorizontalHandle && (
+          {/* Horizontal resize handle - show when we have panels that can be resized horizontally */}
+          {visiblePanels.length >= 3 && (
             <Box
               sx={{
                 position: 'absolute',
-                top: `${rowSizes[0]}%`,
+                top: '50%',
                 left: 0,
                 right: 0,
                 height: '8px',
