@@ -27,6 +27,9 @@ export interface MUI4PanelProps {
 export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
+  const [rowSizes, setRowSizes] = useState([50, 50]); // percentages
+  const [colSizes, setColSizes] = useState([50, 50]); // percentages
+  const [isResizing, setIsResizing] = useState<'row' | 'col' | null>(null);
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -43,6 +46,33 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
 
   const handleExpandPanel = (panelId: string) => {
     setExpandedPanelId(panelId);
+  };
+
+  const handleMouseDown = (type: 'row' | 'col') => (e: React.MouseEvent) => {
+    setIsResizing(type);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isResizing) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const width = rect.width;
+    const height = rect.height;
+
+    if (isResizing === 'row') {
+      const percentage = (y / height) * 100;
+      setRowSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
+    } else if (isResizing === 'col') {
+      const percentage = (x / width) * 100;
+      setColSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsResizing(null);
   };
 
   const handleCollapsePanel = () => {
@@ -96,7 +126,11 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
         backgroundColor: theme.palette.background.default,
         position: "relative",
         overflow: "hidden", // Prevent handles from extending beyond boundaries
+        cursor: isResizing ? (isResizing === 'row' ? 'row-resize' : 'col-resize') : 'default',
       }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       {visiblePanels.length === 0 ? (
         <Box sx={{
@@ -109,16 +143,16 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
           All panels are docked to the top banner
         </Box>
       ) : (
-        // Simple 2x2 grid layout for testing
+        // Simple 2x2 grid layout with resizable panels
         <Box sx={{
           height: '100%',
           display: 'grid',
-          gridTemplateRows: '1fr 1fr',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 1,
-          p: 1
+          gridTemplateRows: `${rowSizes[0]}% ${rowSizes[1]}%`,
+          gridTemplateColumns: `${colSizes[0]}% ${colSizes[1]}%`,
+          gap: 0,
+          position: 'relative',
         }}>
-          <Box sx={{ height: '100%', overflow: 'hidden' }}>
+          <Box sx={{ gridRow: 1, gridColumn: 1, overflow: 'hidden' }}>
             <LiveGantt
               onDock={() => handleDockPanel({
                 id: 'gantt',
@@ -133,22 +167,26 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
               isExpanded={false}
             />
           </Box>
-          <Box sx={{ height: '100%', overflow: 'hidden' }}>
-            <LivePeople
-              onDock={() => handleDockPanel({
-                id: 'people',
-                title: 'Team Status',
-                icon: <PeopleIcon fontSize="small" />,
-                content: <LivePeople minimized />
-              })}
-              onUndock={() => handleUndockPanel('people')}
-              onExpand={() => handleExpandPanel('people')}
-              onCollapse={handleCollapsePanel}
-              isDocked={isPanelDocked('people')}
-              isExpanded={false}
-            />
-          </Box>
-          <Box sx={{ height: '100%', overflow: 'hidden' }}>
+          
+          {/* Vertical resize handle */}
+          <Box
+            sx={{
+              position: 'absolute',
+              left: `${colSizes[0]}%`,
+              top: 0,
+              bottom: 0,
+              width: '4px',
+              backgroundColor: theme.palette.divider,
+              cursor: 'col-resize',
+              '&:hover': {
+                backgroundColor: theme.palette.primary.main,
+              },
+              zIndex: 10,
+            }}
+            onMouseDown={handleMouseDown('col')}
+          />
+          
+          <Box sx={{ gridRow: 1, gridColumn: 2, overflow: 'hidden' }}>
             <LiveMap
               onDock={() => handleDockPanel({
                 id: 'map',
@@ -163,7 +201,42 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
               isExpanded={false}
             />
           </Box>
-          <Box sx={{ height: '100%', overflow: 'hidden' }}>
+          
+          {/* Horizontal resize handle */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: `${rowSizes[0]}%`,
+              left: 0,
+              right: 0,
+              height: '4px',
+              backgroundColor: theme.palette.divider,
+              cursor: 'row-resize',
+              '&:hover': {
+                backgroundColor: theme.palette.primary.main,
+              },
+              zIndex: 10,
+            }}
+            onMouseDown={handleMouseDown('row')}
+          />
+          
+          <Box sx={{ gridRow: 2, gridColumn: 1, overflow: 'hidden' }}>
+            <LivePeople
+              onDock={() => handleDockPanel({
+                id: 'people',
+                title: 'Team Status',
+                icon: <PeopleIcon fontSize="small" />,
+                content: <LivePeople minimized />
+              })}
+              onUndock={() => handleUndockPanel('people')}
+              onExpand={() => handleExpandPanel('people')}
+              onCollapse={handleCollapsePanel}
+              isDocked={isPanelDocked('people')}
+              isExpanded={false}
+            />
+          </Box>
+          
+          <Box sx={{ gridRow: 2, gridColumn: 2, overflow: 'hidden' }}>
             <LiveTask
               onDock={() => handleDockPanel({
                 id: 'tasks',
