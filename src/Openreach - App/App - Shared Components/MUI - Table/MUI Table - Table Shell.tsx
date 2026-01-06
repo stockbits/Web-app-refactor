@@ -69,9 +69,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   // If showFooterControls is enabled, we must show footer (pagination etc.)
   const resolvedHideFooter = showFooterControls ? false : hideFooter
 
-  // Container max height (DataGrid scrolls internally)
-  const resolvedMaxHeight = maxHeight ?? '100%'
-
   const paginationSettings = !resolvedHideFooter
     ? {
         pagination: true as const,
