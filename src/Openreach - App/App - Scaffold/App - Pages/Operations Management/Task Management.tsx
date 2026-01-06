@@ -328,8 +328,8 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
-            initialPageSize={30}
-            pageSizeOptions={[30, 50, 100]}
+            initialPageSize={20}
+            pageSizeOptions={[20, 30, 50, 100]}
           />
         ) : (
           <Box
