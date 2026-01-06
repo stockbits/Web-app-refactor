@@ -71,9 +71,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
   // Container max height (DataGrid scrolls internally)
   const resolvedMaxHeight = maxHeight ?? '100%'
-  const hasFixedHeight = typeof maxHeight === 'number' || (typeof maxHeight === 'string' && maxHeight !== '100%')
-  // Convert number to px string for CSS
-  const heightValue = typeof resolvedMaxHeight === 'number' ? `${resolvedMaxHeight}px` : resolvedMaxHeight
 
   const paginationSettings = !resolvedHideFooter
     ? {
