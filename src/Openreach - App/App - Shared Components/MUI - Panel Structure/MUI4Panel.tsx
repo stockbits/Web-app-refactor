@@ -50,6 +50,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   };
 
   const handleMouseDown = (type: 'row' | 'col') => (e: React.MouseEvent) => {
+    console.log('Mouse down on', type, 'handle');
     setIsResizing(type);
     e.preventDefault();
     document.addEventListener('mousemove', handleMouseMove);
@@ -57,7 +58,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing || !containerRef.current) return;
+    if (!isResizing || !containerRef.current) {
+      console.log('Mouse move ignored - not resizing or no container ref');
+      return;
+    }
 
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -65,16 +69,23 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     const width = rect.width;
     const height = rect.height;
 
+    console.log('Mouse move:', { x, y, width, height, isResizing });
+
     if (isResizing === 'row') {
       const percentage = (y / height) * 100;
-      setRowSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
+      const newSizes = [Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))];
+      console.log('New row sizes:', newSizes);
+      setRowSizes(newSizes);
     } else if (isResizing === 'col') {
       const percentage = (x / width) * 100;
-      setColSizes([Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))]);
+      const newSizes = [Math.max(20, Math.min(80, percentage)), Math.max(20, Math.min(80, 100 - percentage))];
+      console.log('New col sizes:', newSizes);
+      setColSizes(newSizes);
     }
   }, [isResizing]);
 
   const handleMouseUp = useCallback(() => {
+    console.log('Mouse up - stopping resize');
     setIsResizing(null);
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
