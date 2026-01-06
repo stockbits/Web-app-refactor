@@ -505,7 +505,7 @@ function App() {
                 component="section"
                 sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}
               >
-                <Stack gap={1.5} sx={{ flex: 1, minHeight: 0 }}>
+                <Stack gap={1.5} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   {(() => {
                     const ActivePageComponent =
                       PAGE_COMPONENTS[activePage.menuLabel]?.[
@@ -530,7 +530,7 @@ function App() {
                           </Stack>
                         }
                       >
-                        <Box sx={{ flex: 1, minHeight: 0, px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
+                        <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
                           {activePage?.cardName === 'Schedule Live' ? (
                             <MUI4Panel
                               onDockedPanelsChange={setDockedPanels}

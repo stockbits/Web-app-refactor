@@ -72,6 +72,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   // Container max height (DataGrid scrolls internally)
   const resolvedMaxHeight = maxHeight ?? '100%'
   const hasFixedHeight = typeof maxHeight === 'number' || (typeof maxHeight === 'string' && maxHeight !== '100%')
+  // Convert number to px string for CSS
+  const heightValue = typeof resolvedMaxHeight === 'number' ? `${resolvedMaxHeight}px` : resolvedMaxHeight
 
   const paginationSettings = !resolvedHideFooter
     ? {
@@ -98,7 +100,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   return (
     <Box
       sx={{
-        height: hasFixedHeight ? resolvedMaxHeight : undefined,
+        height: hasFixedHeight ? heightValue : undefined,
         maxHeight: hasFixedHeight ? undefined : resolvedMaxHeight,
         width: '100%',
         display: 'flex',
