@@ -326,6 +326,8 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
+            initialPageSize={10}
+            pageSizeOptions={[10, 25, 50, 100]}
             maxHeight="100%" // Responsive height for table area
           />
         ) : (

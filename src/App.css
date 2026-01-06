@@ -83,13 +83,18 @@ body {
   box-shadow: none;
   color: #202020;
   width: 100vw;
-  height: 100vh;
   margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .app-canvas-page {
   padding: 0;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .canvas-label {
