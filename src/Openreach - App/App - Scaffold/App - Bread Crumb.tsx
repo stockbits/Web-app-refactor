@@ -1,8 +1,5 @@
-import { Box, Typography, IconButton, Popover } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { useState } from 'react';
-import type { MouseEvent } from 'react';
 
 interface AppBreadCrumbProps {
   left: string;
@@ -15,10 +12,6 @@ interface AppBreadCrumbProps {
 }
 
 export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false, accessSummary = false, groupsCount, totalTools }: AppBreadCrumbProps) => {
-  const [infoAnchor, setInfoAnchor] = useState<HTMLElement | null>(null);
-  const infoOpen = Boolean(infoAnchor);
-
-  // Shared text style variables
   const getTextStyles = (theme: Theme, colorOverride?: string) => ({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
@@ -32,11 +25,6 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
     pl: 0,
     mb: 0,
   });
-
-  const handleInfoToggle = (event: MouseEvent<HTMLButtonElement>) => {
-    setInfoAnchor((prev) => (prev ? null : event.currentTarget));
-  };
-  const handleInfoClose = () => setInfoAnchor(null);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minHeight: 32, pl: 3, pt: 2.2, mb: 0.5 }}>
@@ -81,41 +69,7 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
               <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 400 }}>{'\u2022'}</Box>
               <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 700, textTransform: 'uppercase' }}>{totalTools} tools ready to launch</Box>
             </Typography>
-            <IconButton
-              size="small"
-              color="inherit"
-              aria-label="Show access tip"
-              onClick={handleInfoToggle}
-              aria-describedby={infoOpen ? 'access-summary-tip' : undefined}
-              sx={{ ml: 1, p: 0.25 }}
-            >
-              <InfoOutlinedIcon fontSize="small" />
-            </IconButton>
           </Box>
-          <Popover
-            id="access-summary-tip"
-            open={infoOpen}
-            anchorEl={infoAnchor}
-            onClose={handleInfoClose}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-            disableRestoreFocus
-            slotProps={{
-              paper: {
-                sx: {
-                  px: 2,
-                  py: 1.5,
-                  borderRadius: 2,
-                  maxWidth: 320,
-                  boxShadow: '0 20px 40px rgba(4, 26, 40, 0.25)',
-                },
-              },
-            }}
-          >
-            <Typography variant="body2" sx={theme => ({ color: theme.palette.text.secondary })}>
-              Tap the menu icon to open the navigation and move between tools.
-            </Typography>
-          </Popover>
         </>
       )}
     </Box>

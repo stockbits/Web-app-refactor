@@ -484,7 +484,7 @@ function App() {
                   }}
                 >
                   <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    Select a category to explore available tools and features.
+                    Tap the menu icon to open the navigation and move between tools.
                   </Typography>
                 </Popover>
                 <LandingOverview
