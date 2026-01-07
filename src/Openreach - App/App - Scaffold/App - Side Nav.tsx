@@ -32,6 +32,7 @@ import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
+import { ThemeToggleButton } from './ThemeToggleButton'
 import openreachLogo from '@central-logos/Openreach-Logo-White.png'
 
 const CLIENT_BUILD = { label: 'Client build', date: '02.01.2026' }
@@ -512,6 +513,21 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   ))}
                 </Stack>
               )}
+            </Box>
+
+            {/* Theme Toggle Button */}
+            <Box
+              sx={{
+                mt: 'auto',
+                pt: 2,
+                pb: 1.5,
+                px: 2,
+                display: 'flex',
+                justifyContent: 'center',
+                bgcolor: palette.supportingBlock,
+              }}
+            >
+              <ThemeToggleButton />
             </Box>
 
             {footerContent && (

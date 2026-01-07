@@ -22,16 +22,19 @@ export const ThemeToggleButton = () => {
         animation: `${spin} 0.6s ease-in-out`,
         '&:hover': {
           animation: `${spin} 0.6s ease-in-out`,
+          bgcolor: 'rgba(255,255,255,0.1)',
         },
-        color: 'inherit',
-        transition: 'color 0.3s ease-in-out',
+        color: 'rgba(255,255,255,0.9)',
+        transition: 'all 0.3s ease-in-out',
+        border: '1px solid rgba(255,255,255,0.2)',
+        padding: '10px',
       }}
       title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDarkMode ? (
-        <LightModeIcon sx={{ fontSize: 20 }} />
+        <LightModeIcon sx={{ fontSize: 22 }} />
       ) : (
-        <DarkModeIcon sx={{ fontSize: 20 }} />
+        <DarkModeIcon sx={{ fontSize: 22 }} />
       )}
     </IconButton>
   )

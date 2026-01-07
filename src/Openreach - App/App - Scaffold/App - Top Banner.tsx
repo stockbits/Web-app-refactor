@@ -16,7 +16,6 @@ import {
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
-import { ThemeToggleButton } from './ThemeToggleButton'
 
 export interface DockedPanel {
   id: string;
@@ -171,8 +170,6 @@ export const OpenreachTopBanner = ({
               ))}
             </Box>
           )}
-
-          <ThemeToggleButton />
 
           {actions}
 
