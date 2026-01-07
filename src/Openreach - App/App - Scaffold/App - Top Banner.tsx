@@ -132,33 +132,44 @@ export const OpenreachTopBanner = ({
           direction="row"
           gap={1.5}
           alignItems="center"
-          sx={{ flexShrink: 0, justifyContent: 'flex-end', flexWrap: 'nowrap' }}
+          sx={{ flexShrink: 0, justifyContent: 'flex-end' }}
         >
-          {/* Docked Panels */}
-          {dockedPanels.map((panel) => (
-            <Chip
-              key={panel.id}
-              icon={panel.icon as React.ReactElement}
-              label={panel.title}
-              onDelete={() => onUndockPanel?.(panel.id)}
-              deleteIcon={<CloseRoundedIcon />}
-              size="small"
+          {/* Docked Panels - 2x2 Grid */}
+          {dockedPanels.length > 0 && (
+            <Box
               sx={{
-                bgcolor: alpha(theme.palette.background.paper, 0.9),
-                color: theme.palette.text.primary,
-                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                '& .MuiChip-deleteIcon': {
-                  color: theme.palette.text.secondary,
-                  '&:hover': {
-                    color: theme.palette.text.primary,
-                  },
-                },
-                '&:hover': {
-                  bgcolor: theme.palette.background.paper,
-                },
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(120px, 1fr))',
+                gap: 0.75,
+                alignItems: 'center',
               }}
-            />
-          ))}
+            >
+              {dockedPanels.map((panel) => (
+                <Chip
+                  key={panel.id}
+                  icon={panel.icon as React.ReactElement}
+                  label={panel.title}
+                  onDelete={() => onUndockPanel?.(panel.id)}
+                  deleteIcon={<CloseRoundedIcon />}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(theme.palette.background.paper, 0.9),
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                    '& .MuiChip-deleteIcon': {
+                      color: theme.palette.text.secondary,
+                      '&:hover': {
+                        color: theme.palette.text.primary,
+                      },
+                    },
+                    '&:hover': {
+                      bgcolor: theme.palette.background.paper,
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          )}
 
           {actions}
 

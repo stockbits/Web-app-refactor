@@ -25,7 +25,6 @@ import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Na
 import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
-import MUI4Panel from "./Openreach - App/App - Shared Components/MUI - Panel Structure/MUI4Panel";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 
 interface MenuCardTile {
@@ -534,10 +533,8 @@ function App() {
                       >
                         <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
                           {activePage?.cardName === 'Schedule Live' ? (
-                            <ActivePageComponent 
-                              dockedPanels={dockedPanels}
-                              onDockedPanelsChange={setDockedPanels}
-                            />
+                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as any)} />
                           ) : (
                             <ActivePageComponent />
                           )}
