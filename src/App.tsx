@@ -371,6 +371,8 @@ function App() {
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
+  const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
+  const landingInfoOpen = Boolean(landingInfoAnchor);
 
   const openNav = () => setNavOpen(true);
   const closeNav = () => setNavOpen(false);
@@ -450,6 +452,41 @@ function App() {
           <Box className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}>
             {showWelcome ? (
               <Box sx={{ p: 2 }}>
+                <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 2 }}>
+                  <Tooltip title="Tap to view info" placement="left">
+                    <IconButton
+                      size="small"
+                      aria-label="Info: landing page help"
+                      onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
+                      aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
+                    >
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+                <Popover
+                  id="landing-info-popover"
+                  open={landingInfoOpen}
+                  anchorEl={landingInfoAnchor}
+                  onClose={() => setLandingInfoAnchor(null)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  disableRestoreFocus
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        px: 2,
+                        py: 1.5,
+                        borderRadius: 2,
+                        maxWidth: 320,
+                      },
+                    },
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Select a category to explore available tools and features.
+                  </Typography>
+                </Popover>
                 <LandingOverview
                   groups={MENU_GROUPS}
                 />
