@@ -1,5 +1,5 @@
   import { useCallback, useEffect, useState, type ReactNode } from 'react'
-  import { Box, Stack, Switch, Typography } from '@mui/material'
+  import { Box, Stack, Switch, Typography, useTheme } from '@mui/material'
   import {
     DataGrid,
     GridToolbarQuickFilter,
@@ -44,10 +44,11 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
-  initialPageSize = 16,
+  initialPageSize = 12,
   emptyState,
   maxHeight = 'calc(100vh - 360px)',
 }: SharedMuiTableProps<T>) {
+  const theme = useTheme()
   const apiRef = useGridApiRef()
 
   const [densityMode, setDensityMode] = useState(density)
@@ -98,6 +99,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        border: `1px solid ${theme.palette.divider}`,
       }}
       aria-label={title ?? caption ?? 'Table'}
     >
