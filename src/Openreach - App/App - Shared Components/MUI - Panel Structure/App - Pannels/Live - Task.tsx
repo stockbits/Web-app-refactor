@@ -69,10 +69,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                 sx={{
                   p: 0.5,
                   border: `1px solid ${theme.palette.divider}`,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                   color: theme.palette.text.primary,
                   '&:hover': {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                     boxShadow: theme.shadows[1],
                   },
                 }}
@@ -93,10 +93,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   sx={{
                     p: 0.5,
                     border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                       boxShadow: theme.shadows[1],
                     },
                   }}
@@ -113,10 +113,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   sx={{
                     p: 0.5,
                     border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                       boxShadow: theme.shadows[1],
                     },
                   }}

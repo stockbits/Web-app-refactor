@@ -1,33 +1,21 @@
-/* Modern neutral scrollbar style override - using theme-aligned colors */
+/* Theme-aware colors - managed via Material-UI theme */
 html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: #3A7F6B #F6F7F5;
+  /* Colors will be applied via theme system */
 }
 
-/* Chrome, Edge, Safari */
+/* Chrome, Edge, Safari - styled through MUI CssBaseline */
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-*::-webkit-scrollbar-track {
-  background: #F6F7F5;
-  border-radius: 8px;
-}
-*::-webkit-scrollbar-thumb {
-  background: #3A7F6B;
-  border-radius: 8px;
-  border: 2px solid #F6F7F5;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: #2F6E5D;
-}
+
 :root,
 body,
 html, body {
   margin: 0;
   min-height: 100%;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #F6F7F5;
 }
 
 :root {
@@ -41,11 +29,6 @@ html, body {
   display: flex;
   margin: 0 !important;
   padding: 0 !important;
-}
-
-body {
-  background: #F6F7F5;
-  color: #14323C;
 }
 
 .app-stage {
@@ -81,7 +64,6 @@ body {
   padding: var(--page-gutter);
   border: none;
   box-shadow: none;
-  color: #202020;
   width: 100vw;
   margin-top: 0;
   display: flex;
@@ -101,7 +83,6 @@ body {
   display: inline-block;
   letter-spacing: 0.25em;
   font-weight: 700;
-  color: #14323C;
   margin-bottom: 0.75rem;
 }
 

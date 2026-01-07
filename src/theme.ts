@@ -2,13 +2,27 @@ import { createTheme } from "@mui/material/styles";
 import type {} from '@mui/x-data-grid/themeAugmentation';
 
 // ============================================================
+// CORE BRAND COLORS (shared across light + dark)
+// ============================================================
+const brandColors = {
+  ultraWhite: "#FFFFFF",      // Ultra White
+  networkNavy: "#142032",     // Network Navy (primary)
+  goGreen: "#43B072",         // Go Green (success/accent)
+  blazingBlue: "#5488C7",     // Blazing Blue (info/secondary)
+  earthGrey: "#50535A",       // Earth Grey (text/neutral)
+} as const;
+
+// ============================================================
 // CORE BRAND (shared across light + dark)
 // ============================================================
 const brand = {
-  primary: "#3A7F6B",        // CTA green (buttons, key highlights)
-  secondary: "#7B6AA6",      // Accent purple (floating button / illustration)
-  ink: "#14323C",            // Main text on light surfaces (soft navy ink)
-  tealBase: "#1F3F4E",       // Deep teal structural background (menus/footers/sections)
+  primary: brandColors.networkNavy,           // Main CTA navy
+  secondary: brandColors.blazingBlue,         // Secondary accent blue
+  success: brandColors.goGreen,               // Success green
+  neutral: brandColors.earthGrey,             // Neutral grey text
+  white: brandColors.ultraWhite,              // Ultra white
+  ink: "#0F1820",                             // Deep navy for text
+  background: "#F8F9FA",                      // Light off-white background
 } as const;
 
 // ============================================================
@@ -17,159 +31,175 @@ const brand = {
 const lightTokens = {
   // Surfaces / Backgrounds
   background: {
-    default: "#F6F7F5",      // App page background (off-white)
-    paper: "#FFFFFF",        // Cards / dialogs / panels
-    alt: "#EEF2F1",          // Subtle section background
-    overlay: "rgba(20,50,60,0.45)",  // Modal backdrop on light
+    default: "#FAFBFC",      // Light off-white page background
+    paper: "#FFFFFF",        // Cards / dialogs / panels (ultra white)
+    alt: "#F3F4F7",          // Subtle section background
+    overlay: "rgba(20,32,50,0.5)",   // Modal backdrop on light
   },
   // Text
   text: {
-    primary: "#14323C",      // Headings + body
-    secondary: "#6F8C97",    // Muted/supporting copy
+    primary: "#142032",      // Network Navy for strong contrast headings + body text
+    secondary: "#50535A",    // Earth grey for secondary info
     inverse: "#FFFFFF",      // Text on primary buttons
-    disabled: "#9FB2B9",     // Disabled + placeholder
+    disabled: "#A8ABB2",     // Disabled + placeholder
   },
   // Borders / Dividers
-  divider: "#D9DBDE",        // Dividers on light
+  divider: "#D9DBDE",        // Light neutral dividers
   border: {
-    soft: "#D9DBDE",         // Inputs/cards subtle border
-    strong: "#3A7F6B",       // Outlined cards/chips (green frame)
+    soft: "#E8EAF0",         // Inputs/cards subtle border
+    strong: "#142032",       // Navy outlined elements
   },
-  // Primary Actions (buttons/links)
+  // Primary Actions (Go Green) - Now using green as primary
   primary: {
-    main: "#3A7F6B",
-    hover: "#2F6E5D",
-    active: "#285B4D",
-    disabled: "#D1E2DC",
-    text: "#FFFFFF",
+    main: brandColors.goGreen,
+    hover: "#38A264",        // Darker green on hover
+    active: "#2E8A53",       // Darker green when active
+    disabled: "#C8E6D1",     // Light disabled state
+    text: "#FFFFFF",         // Ultra white text
   },
-  // Secondary Actions
+  // Secondary Actions (Network Navy) - Changed from Blue
   secondary: {
-    main: "#7B6AA6",
-    hover: "#6B5B96",
-    text: "#FFFFFF",
-    outline: "#3A7F6B",      // Green-outlined chips/buttons
-    ghostBg: "rgba(58,127,107,0.10)",
+    main: brandColors.networkNavy,
+    hover: "#0F1820",        // Darker navy on hover
+    light: "rgba(20,32,50,0.12)",
+    text: "#FFFFFF",         // Ultra white text
+    outline: brandColors.goGreen,
+    ghostBg: "rgba(67,176,114,0.1)",
+  },
+  // Success (Go Green)
+  success: {
+    main: brandColors.goGreen,
+    hover: "#38A264",        // Darker green on hover
+    light: "rgba(67,176,114,0.15)",
+    text: "#FFFFFF",         // Ultra white text
   },
   // Chips / Filter Pills
   chip: {
-    bg: "#FFFFFF",
-    border: "#3A7F6B",
-    text: "#3A7F6B",
-    active: { bg: "#3A7F6B", text: "#FFFFFF" },
-    hover: { bg: "rgba(58,127,107,0.10)" },
+    bg: "#F3F4F7",
+    border: "#142032",
+    text: "#142032",
+    active: { bg: brandColors.goGreen, text: "#FFFFFF" },
+    hover: { bg: "rgba(67,176,114,0.1)" },
   },
   // Forms / Inputs
   input: {
     bg: "#FFFFFF",
     border: "#D9DBDE",
-    borderFocus: "#3A7F6B",
-    text: "#14323C",
-    placeholder: "#9FB2B9",
-    disabled: { bg: "#EFEFEF", text: "#9FB2B9" },
+    borderFocus: brandColors.goGreen,  // Use green for focus
+    text: "#142032",
+    placeholder: "#A8ABB2",
+    disabled: { bg: "#F3F4F7", text: "#A8ABB2" },
   },
   // States
   state: {
-    success: "#3A7F6B",
-    info: "#4C7F91",
-    warning: "#C7A24B",
-    error: "#A44A4A",
+    success: brandColors.goGreen,
+    info: brandColors.blazingBlue,
+    warning: "#D97706",      // Darker warning
+    error: "#DC2626",        // Darker error
   },
-  // Map / Data Visualization
+  // Data Visualization
   map: {
-    primary: "#3A7F6B",
-    secondary: "#6FAE9A",
-    tertiary: "#A8D2C3",
-    inactive: "#D4D4D4",
+    primary: brandColors.networkNavy,
+    secondary: brandColors.goGreen,
+    tertiary: brandColors.blazingBlue,
+    inactive: "#C9CBCE",
   },
   // Task Status Colors
   taskStatus: {
-    ACT: { color: "#006C9E", bg: "rgba(0,108,158,0.15)" },
-    AWI: { color: "#6A5B8A", bg: "rgba(106,91,138,0.18)" },
-    ISS: { color: "#B34700", bg: "rgba(179,71,0,0.15)" },
-    EXC: { color: "#8B2F4E", bg: "rgba(139,47,78,0.15)" },
-    COM: { color: "#1B5E20", bg: "rgba(27,94,32,0.12)" },
+    ACT: { color: brandColors.blazingBlue, bg: "rgba(84,136,199,0.15)" },
+    AWI: { color: "#D97706", bg: "rgba(217,119,6,0.12)" },
+    ISS: { color: "#DC2626", bg: "rgba(220,38,38,0.12)" },
+    EXC: { color: "#7C3AED", bg: "rgba(124,58,237,0.12)" },
+    COM: { color: brandColors.goGreen, bg: "rgba(67,176,114,0.15)" },
   },
 } as const;
 
 // ============================================================
-// DARK MODE TOKENS
+// DARK MODE TOKENS (with white incorporated)
 // ============================================================
 const darkTokens = {
   // Surfaces / Backgrounds
   background: {
-    default: "#1F3F4E",      // Main app background (deep teal)
-    paper: "#173341",        // Cards/panels on dark (slightly deeper)
-    alt: "#244B5B",          // Raised sections / subtle contrast
-    overlay: "rgba(0,0,0,0.45)",  // Modal backdrop on dark
+    default: "#0F1820",      // Deep navy background - dark mode
+    paper: "#1A2536",        // Slightly lighter navy for cards/panels
+    alt: "#252F40",          // Raised sections with more contrast
+    overlay: "rgba(0,0,0,0.65)",  // Modal backdrop on dark
   },
   // Text
   text: {
-    primary: "#FFFFFF",      // Main text on dark
-    secondary: "#C7D6DB",    // Muted text on dark
-    disabled: "#8FA6AC",     // Disabled on dark
-    onPrimary: "#FFFFFF",    // Text on green buttons
+    primary: "#F8FAFC",      // Off-white (not pure white) for less eye strain
+    secondary: "#D9DDE4",    // Lighter grey for secondary info
+    disabled: "#8C909A",     // Disabled text on dark
+    onPrimary: "#FFFFFF",    // Text on navy buttons
   },
   // Borders / Dividers
   divider: "rgba(255,255,255,0.18)",
   border: {
-    soft: "rgba(255,255,255,0.18)",
-    strong: "#6FAE9A",       // Green-tint outlines on dark
+    soft: "rgba(255,255,255,0.15)",
+    strong: "rgba(255,255,255,0.25)",
   },
-  // Primary Actions
+  // Primary Actions (Go Green on dark)
   primary: {
-    main: "#3A7F6B",
-    hover: "#2F6E5D",
-    active: "#285B4D",
-    disabled: "rgba(58,127,107,0.35)",
-    text: "#FFFFFF",
+    main: "#52BE84",         // Brighter green for dark mode
+    hover: "#66D896",        // Even brighter on hover
+    active: "#43B072",       // Active state
+    disabled: "rgba(255,255,255,0.12)",
+    text: "#FFFFFF",         // Ultra white text
   },
-  // Secondary Actions
+  // Secondary Actions (Navy on dark) - Changed from Blue
   secondary: {
-    main: "#7B6AA6",
-    hover: "#6B5B96",
-    text: "#FFFFFF",
-    outline: "#6FAE9A",
-    ghostBg: "rgba(111,174,154,0.18)",
+    main: "#1E3B52",         // Lighter navy variant for better visibility on dark
+    hover: "#2A4A63",        // Hover state
+    light: "rgba(30,59,82,0.2)",
+    text: "#FFFFFF",         // Ultra white text
+    outline: "rgba(255,255,255,0.35)",
+    ghostBg: "rgba(82,190,132,0.18)",
+  },
+  // Success (Go Green on dark)
+  success: {
+    main: "#52BE84",         // Brighter green for dark mode
+    hover: "#66D896",        // Even brighter on hover
+    light: "rgba(82,190,132,0.2)",
+    text: "#FFFFFF",         // Ultra white text
   },
   // Chips / Filter Pills
   chip: {
-    bg: "rgba(255,255,255,0.08)",
-    border: "#6FAE9A",
-    text: "#FFFFFF",
-    active: { bg: "#3A7F6B", text: "#FFFFFF" },
-    hover: { bg: "rgba(255,255,255,0.12)" },
+    bg: "rgba(255,255,255,0.12)",
+    border: "rgba(255,255,255,0.3)",
+    text: "#F8FAFC",
+    active: { bg: "#52BE84", text: "#FFFFFF" },
+    hover: { bg: "rgba(255,255,255,0.18)" },
   },
   // Forms / Inputs
   input: {
-    bg: "rgba(255,255,255,0.08)",
+    bg: "rgba(255,255,255,0.1)",
     border: "rgba(255,255,255,0.18)",
-    borderFocus: "#6FAE9A",
-    text: "#FFFFFF",
-    placeholder: "#8FA6AC",
-    disabled: { bg: "rgba(255,255,255,0.05)", text: "#8FA6AC" },
+    borderFocus: "#52BE84",  // Bright green focus
+    text: "#F8FAFC",
+    placeholder: "#8C909A",
+    disabled: { bg: "rgba(255,255,255,0.08)", text: "#8C909A" },
   },
   // States
   state: {
-    success: "#6FAE9A",
-    info: "#8BB8C7",
-    warning: "#D6BF7A",
-    error: "#C97A7A",
+    success: "#52BE84",
+    info: "#6B99D8",
+    warning: "#FBBF24",
+    error: "#FB7185",
   },
-  // Map / Data Visualization
+  // Data Visualization
   map: {
-    primary: "#6FAE9A",
-    secondary: "#A8D2C3",
-    tertiary: "#D1E2DC",
-    inactive: "rgba(255,255,255,0.22)",
+    primary: "#52BE84",
+    secondary: "#6B99D8",
+    tertiary: "rgba(255,255,255,0.35)",
+    inactive: "rgba(255,255,255,0.2)",
   },
-  // Task Status Colors (adjusted for dark mode)
+  // Task Status Colors
   taskStatus: {
-    ACT: { color: "#5B9BC4", bg: "rgba(91,155,196,0.18)" },
-    AWI: { color: "#9B8DB3", bg: "rgba(155,141,179,0.18)" },
-    ISS: { color: "#D4834F", bg: "rgba(212,131,79,0.18)" },
-    EXC: { color: "#C17A9A", bg: "rgba(193,122,154,0.18)" },
-    COM: { color: "#5DB167", bg: "rgba(93,177,103,0.18)" },
+    ACT: { color: "#6B99D8", bg: "rgba(107,153,216,0.25)" },
+    AWI: { color: "#FBBF24", bg: "rgba(251,191,36,0.2)" },
+    ISS: { color: "#FB7185", bg: "rgba(251,113,133,0.2)" },
+    EXC: { color: "#D8B4FE", bg: "rgba(216,180,254,0.2)" },
+    COM: { color: "#52BE84", bg: "rgba(82,190,132,0.25)" },
   },
 } as const;
 
@@ -199,7 +229,7 @@ const darkTableColors = {
   rowBg: darkTokens.background.paper,
   rowText: darkTokens.text.primary,
   rowAltBg: darkTokens.background.alt,
-  selectedRowBg: "rgba(58,127,107,0.25)",
+  selectedRowBg: "rgba(20,32,49,0.25)",
   border: darkTokens.border.soft,
   columnSeparator: "#6FAE9A",
   columnSeparatorActive: "#6FAE9A",
@@ -207,15 +237,16 @@ const darkTableColors = {
 
 const openreachBrand = {
   brand,
+  brandColors,
   lightTokens,
   darkTokens,
   tableColors,
   darkTableColors,
   // Backward compatibility with old naming
   coreBlock: brand.primary,
-  supportingBlock: brand.tealBase,
-  energyAccent: brand.primary,
-  fibreThreads: lightTokens.background.paper,
+  supportingBlock: brand.primary,  // Use green primary for consistency
+  energyAccent: brand.success,
+  fibreThreads: '#FFFFFF',  // Pure white for text on dark backgrounds
   outline: lightTokens.border.soft,
   typographyInk: lightTokens.text.primary,
   typographyMuted: lightTokens.text.secondary,
@@ -326,7 +357,7 @@ export const appTheme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          scrollbarColor: `${brand.primary} ${brand.tealBase}`,
+          scrollbarColor: `${brandColors.networkNavy} ${lightTokens.background.default}`,
           scrollbarWidth: "thin",
           "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
             width: "0.65rem",
@@ -337,7 +368,7 @@ export const appTheme = createTheme({
             borderRadius: "999px",
           },
           "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
-            backgroundColor: brand.primary,
+            backgroundColor: brandColors.networkNavy,
             border: `2px solid ${lightTokens.background.default}`,
             borderRadius: "999px",
             boxShadow: `inset 0 0 0 1px ${lightTokens.border.soft}`,
@@ -479,7 +510,7 @@ export const createDarkTheme = () => {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            scrollbarColor: `#6FAE9A ${brand.tealBase}`,
+            scrollbarColor: `#4A5568 ${darkTokens.background.default}`,
             scrollbarWidth: "thin",
             "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
               width: "0.65rem",
@@ -490,13 +521,13 @@ export const createDarkTheme = () => {
               borderRadius: "999px",
             },
             "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
-              backgroundColor: "#6FAE9A",
+              backgroundColor: "#4A5568",
               border: `2px solid ${darkTokens.background.default}`,
               borderRadius: "999px",
               boxShadow: `inset 0 0 0 1px ${darkTokens.border.soft}`,
             },
             "&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover": {
-              backgroundColor: darkTokens.primary.hover,
+              backgroundColor: "#6B7C93",
             },
             "&::-webkit-scrollbar-corner": {
               backgroundColor: darkTokens.background.default,

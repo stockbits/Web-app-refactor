@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Box, Stack, TextField, Autocomplete } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, useTheme } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
@@ -14,6 +14,7 @@ interface ScheduleLivePageProps {
 }
 
 const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleLivePageProps = {}) => {
+  const theme = useTheme()
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch, setGlobalSearch] = useState('')
@@ -34,7 +35,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
         sx={{ 
           flexShrink: 0, 
           p: 2, 
-          borderBottom: '1px solid rgba(7,59,76,0.08)',
+          borderBottom: `1px solid ${theme.palette.divider}`,
           bgcolor: 'background.paper',
         }}
       >

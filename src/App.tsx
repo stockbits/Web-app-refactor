@@ -547,9 +547,11 @@ function App() {
                         elevation={0}
                         sx={{
                           borderRadius: 3,
-                          border: "1px solid rgba(7,59,76,0.12)",
+                          border: `1px solid ${theme.palette.divider}`,
                           bgcolor: "background.paper",
-                          boxShadow: "0 12px 32px rgba(7,59,76,0.06)",
+                          boxShadow: `0 12px 32px ${theme.palette.mode === 'dark' 
+                            ? 'rgba(0,0,0,0.3)' 
+                            : 'rgba(20,32,50,0.1)'}`,
                         }}
                       >
                         <CardActionArea

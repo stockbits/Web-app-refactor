@@ -124,14 +124,14 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   fontSize: '0.75rem',
                   textTransform: 'none',
                   color: isDark ? theme.palette.common.white : theme.palette.text.primary,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                   border: `1px solid ${theme.palette.divider}`,
                   '&:hover': {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                   },
                   '&.Mui-selected': {
                     bgcolor: theme.openreach.energyAccent,
-                    color: '#fff',
+                    color: theme.openreach.brand.white,
                     boxShadow: theme.shadows[1],
                     borderColor: theme.openreach.energyAccent,
                     '&:hover': {
@@ -171,10 +171,10 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 sx={{
                   p: 0.5,
                   border: `1px solid ${theme.palette.divider}`,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                   color: theme.palette.text.primary,
                   '&:hover': {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                     boxShadow: theme.shadows[1],
                   },
                 }}
@@ -195,10 +195,10 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   sx={{
                     p: 0.5,
                     border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                       boxShadow: theme.shadows[1],
                     },
                   }}
@@ -215,10 +215,10 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   sx={{
                     p: 0.5,
                     border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                       boxShadow: theme.shadows[1],
                     },
                   }}

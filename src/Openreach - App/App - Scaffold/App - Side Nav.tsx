@@ -304,8 +304,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           elevation={0}
           sx={{
             width: '100%',
-            bgcolor: palette.supportingBlock,
-            color: palette.fibreThreads,
+            bgcolor: '#142032',
+            color: '#FFFFFF',
             borderRadius: 0,
             border: 'none',
             boxShadow: 'none',
@@ -317,8 +317,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               content: '""',
               position: 'absolute',
               inset: 0,
-              backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.08) 20%, transparent 20%)',
-              opacity: 0.5,
+              backgroundImage: 'none',
+              opacity: 0,
               pointerEvents: 'none',
             },
           }}
@@ -343,8 +343,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   aria-label="Close navigation"
                   onClick={onClose}
                   sx={{
-                    color: palette.fibreThreads,
-                    '&:hover': { color: palette.energyAccent },
+                    color: palette.energyAccent,
+                    '&:hover': { color: palette.energyAccent, opacity: 0.8 },
                     alignSelf: 'center',
                     width: 40,
                     height: 40,
@@ -370,7 +370,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 py: 0.5,
               }}
             >
-              <SearchRoundedIcon fontSize="small" sx={{ color: alpha(white, 0.8) }} />
+              <SearchRoundedIcon fontSize="small" sx={{ color: palette.energyAccent }} />
               <InputBase
                 placeholder="Search menu and tools"
                 value={query}
@@ -383,7 +383,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   aria-label="Clear search"
                   size="small"
                   onClick={() => setQuery('')}
-                  sx={{ color: alpha(white, 0.8), ml: 1 }}
+                  sx={{ color: palette.energyAccent, ml: 1 }}
                 >
                   <ClearRoundedIcon fontSize="small" />
                 </IconButton>
@@ -407,14 +407,14 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         py: 1,
                         color: palette.fibreThreads,
                         '&:hover': {
-                          bgcolor: alpha(white, 0.08),
+                          bgcolor: 'rgba(255,255,255,0.12)',
                         },
                       }}
                     >
                       <ListItemIcon
                         sx={{
                           minWidth: 40,
-                          color: palette.fibreThreads,
+                          color: palette.energyAccent,
                         }}
                       >
                         {item.icon}

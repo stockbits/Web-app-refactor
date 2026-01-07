@@ -137,7 +137,11 @@ const TaskManagementPage = () => {
             label={params.row.division}
             size="small"
             variant="outlined"
-            sx={{ fontWeight: 600 }}
+            sx={{ 
+              fontWeight: 600,
+              borderColor: tokens.success.main,
+              color: tokens.success.main,
+            }}
           />
         ),
       },
@@ -187,7 +191,16 @@ const TaskManagementPage = () => {
               </Typography>
             ) : (
               params.row.capabilities.map((capability) => (
-                <Chip key={capability} label={capability} size="small" variant="outlined" />
+                <Chip 
+                  key={capability} 
+                  label={capability} 
+                  size="small" 
+                  variant="outlined"
+                  sx={{
+                    borderColor: tokens.success.main,
+                    color: tokens.success.main,
+                  }}
+                />
               ))
             )}
           </Stack>
@@ -260,7 +273,7 @@ const TaskManagementPage = () => {
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels, tokens.success.main],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
@@ -412,8 +425,10 @@ const TaskManagementPage = () => {
       minHeight: 0,
       overflow: 'hidden',
       width: '100%',
+      gap: 2,
+      p: 0,
     }}>
-      <Box sx={{ flexShrink: 0, mb: 2 }}>
+      <Box sx={{ flexShrink: 0 }}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
@@ -428,7 +443,13 @@ const TaskManagementPage = () => {
           onExportCsv={handleExportCsv}
         />
       </Box>
-      <Box sx={{ flexShrink: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -439,28 +460,48 @@ const TaskManagementPage = () => {
             showFooterControls
             initialPageSize={20}
             pageSizeOptions={[20, 50, 100]}
-            maxHeight="calc(100vh - 320px)"
+            maxHeight="100%"
           />
         ) : (
           <Box
             sx={{
               borderRadius: 2,
-              border: '1px dashed rgba(7,59,76,0.3)',
-              bgcolor: 'rgba(7,59,76,0.02)',
+              border: `2px dashed ${theme.palette.divider}`,
+              bgcolor: theme.palette.mode === 'dark'
+                ? 'rgba(255, 255, 255, 0.02)'
+                : 'rgba(0, 0, 0, 0.02)',
               p: 4,
               textAlign: 'center',
-              height: 'auto',
-              maxHeight: '800px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                borderColor: theme.palette.primary.main,
+                bgcolor: theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.04)'
+                  : 'rgba(0, 0, 0, 0.04)',
+              },
             }}
           >
-            <Typography variant="h6" gutterBottom sx={{ color: theme.palette.mode === 'dark' ? tokens.text.primary : 'text.primary' }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
+                fontWeight: 600,
+                color: theme.palette.text.primary,
+              }}
+            >
               Run a query to load tasks
             </Typography>
-            <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? tokens.text.secondary : 'text.secondary' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.secondary,
+                maxWidth: '400px',
+              }}
+            >
               Use the filters above to define your search, then hit Search to fetch matching rows.
             </Typography>
           </Box>

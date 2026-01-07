@@ -68,11 +68,15 @@ export const OpenreachTopBanner = ({
         px: 0,
         py: 0,
         minHeight: { xs: 64, md: 80 },
-        backgroundImage: `linear-gradient(120deg, ${brand.coreBlock}, ${brand.supportingBlock})`,
-        color: brand.fibreThreads,
+        backgroundColor: theme.openreach.brand.primary,
+        color: theme.openreach.brand.white,
         // More dense, layered shadow for top banner
-        boxShadow: '0 6px 24px 0 rgba(3,7,12,0.55), 0 1.5px 8px 0 rgba(3,7,12,0.18)',
-        borderBottom: '1px solid rgba(4,11,18,0.35)',
+        boxShadow: theme.palette.mode === 'dark'
+          ? '0 6px 24px 0 rgba(0,0,0,0.5), 0 1.5px 8px 0 rgba(0,0,0,0.3)'
+          : '0 6px 24px 0 rgba(20,32,50,0.15), 0 1.5px 8px 0 rgba(20,32,50,0.08)',
+        borderBottom: theme.palette.mode === 'dark'
+          ? '1px solid rgba(255,255,255,0.15)'
+          : '1px solid rgba(20,32,50,0.2)',
         position: 'relative',
         overflow: 'hidden',
         isolation: 'isolate',
@@ -107,10 +111,10 @@ export const OpenreachTopBanner = ({
             onClick={onMenuClick}
             sx={{
               bgcolor: 'transparent',
-              color: brand.fibreThreads,
+              color: theme.openreach.brand.success,
               p: 0.6,
-              '&:hover': { bgcolor: alpha('#FFFFFF', 0.12) },
-              '&:active': { bgcolor: alpha('#FFFFFF', 0.2) },
+              '&:hover': { bgcolor: alpha(theme.openreach.brand.white, 0.12) },
+              '&:active': { bgcolor: alpha(theme.openreach.brand.white, 0.2) },
             }}
           >
             <MenuRoundedIcon />

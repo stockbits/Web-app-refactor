@@ -1,13 +1,13 @@
-  import { useCallback, useEffect, useState, type ReactNode } from 'react'
-  import { Box, Stack, Switch, Typography, useTheme } from '@mui/material'
-  import {
-    DataGrid,
-    GridToolbarQuickFilter,
-    useGridApiRef,
-    type GridColDef,
-    type GridRowId,
-    type GridValidRowModel,
-  } from '@mui/x-data-grid'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { Box, Stack, Switch, Typography, useTheme } from '@mui/material'
+import {
+  DataGrid,
+  GridToolbarQuickFilter,
+  useGridApiRef,
+  type GridColDef,
+  type GridRowId,
+  type GridValidRowModel,
+} from '@mui/x-data-grid'
 
 interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   columns: GridColDef[]
@@ -25,6 +25,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   emptyState?: ReactNode
   /**
    * Max height of the table container.
+        sx={{ flex: 1, minHeight: 0 }}
    * Can be a number (px) or any valid CSS height string.
    * Example: 520 or "calc(100vh - 250px)"
    * Defaults to '100%' to fit the container and scroll internally.
@@ -46,7 +47,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   pageSizeOptions,
   initialPageSize = 12,
   emptyState,
-  maxHeight = 'calc(100vh - 360px)',
+  maxHeight = 'calc(100dvh - 420px)',
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
   const apiRef = useGridApiRef()
@@ -94,16 +95,32 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     <Box
       sx={{
         width: '100%',
-        height: '100%',
+        height: maxHeight,
         maxHeight: maxHeight,
+        flex: '1 1 auto',
+        minHeight: 0,
+        boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
+        bgcolor: theme.palette.background.paper,
       }}
       aria-label={title ?? caption ?? 'Table'}
     >
       <DataGrid
+        sx={{
+          height: '100%',
+          '& .MuiDataGrid-footerContainer': {
+            px: 2,
+            py: 1.5,
+            minHeight: 'auto',
+          },
+          '& .MuiDataGrid-row': {
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          },
+        }}
         apiRef={apiRef}
         rows={rows}
         columns={columns}

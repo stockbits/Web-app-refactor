@@ -246,6 +246,9 @@ const TaskTableQueryConfig = ({
         borderRadius: 2,
         bgcolor: 'background.paper',
         p: 2.5,
+        border: `1px solid`,
+        borderColor: 'divider',
+        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
       }}
     >
       <Stack spacing={3}>
@@ -255,7 +258,24 @@ const TaskTableQueryConfig = ({
           justifyContent="space-between"
           alignItems={{ xs: 'flex-start', md: 'center' }}
         >
-          <Tabs value={activeTab} onChange={handleTabChange} variant="scrollable" allowScrollButtonsMobile>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            allowScrollButtonsMobile
+            sx={{
+              '& .MuiTabs-indicator': {
+                height: 3,
+                borderRadius: '3px 3px 0 0',
+              },
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: '0.95rem',
+                transition: 'all 0.2s ease-in-out',
+              },
+            }}
+          >
             {TASK_FILTER_TABS.map((tab) => (
               <Tab key={tab.value} label={tab.label} value={tab.value} disableRipple />
             ))}
@@ -265,9 +285,15 @@ const TaskTableQueryConfig = ({
             placeholder="Global search..."
             value={draftQuery.searchTerm}
             onChange={handleSearchChange}
-            sx={{ flex: 1, maxWidth: 400 }}
+            sx={{
+              flex: 1,
+              maxWidth: 400,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 1,
+              },
+            }}
             InputProps={{
-              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
+              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />,
             }}
           />
         </Stack>
@@ -386,19 +412,44 @@ const TaskTableQueryConfig = ({
           </Box>
         )}
 
-        <Divider light />
+        <Divider sx={{ my: 0.5 }} light />
 
         {validationError && (
-          <Typography variant="body2" color="error.main" sx={{ px: 0.5 }}>
+          <Typography
+            variant="body2"
+            color="error.main"
+            sx={{
+              px: 0.5,
+              py: 1,
+              backgroundColor: 'rgba(229, 57, 53, 0.08)',
+              borderRadius: 1,
+              pl: 1.5,
+            }}
+          >
             {validationError}
           </Typography>
         )}
 
-        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ pt: 0.5 }}
+        >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
             {hasRows && (onCopyHtml || onExportCsv) && (
               <>
-                <Button variant="contained" color="primary" size="small" onClick={handleOpenExportMenu}>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  size="small"
+                  onClick={handleOpenExportMenu}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 500,
+                  }}
+                >
                   Export / Copy
                 </Button>
                 <Menu
@@ -435,11 +486,31 @@ const TaskTableQueryConfig = ({
 
           <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
             {showClearAction && (
-              <Button variant="text" color="inherit" onClick={handleReset}>
+              <Button
+                variant="text"
+                color="inherit"
+                onClick={handleReset}
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
                 Clear
               </Button>
             )}
-            <Button variant="contained" onClick={handleApply} disabled={!isDirty && !hasQueried}>
+            <Button
+              variant="contained"
+              onClick={handleApply}
+              disabled={!isDirty && !hasQueried}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+              }}
+            >
               Search
             </Button>
           </Stack>

@@ -1,4 +1,4 @@
-import { IconButton, keyframes } from '@mui/material'
+import { IconButton, keyframes, useTheme } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useThemeMode } from '../../ThemeContext'
@@ -15,6 +15,7 @@ const spin = keyframes`
 
 export const ThemeToggleButton = () => {
   const { isDarkMode, toggleTheme } = useThemeMode()
+  const theme = useTheme()
   const [isAnimating, setIsAnimating] = useState(false)
 
   const handleClick = () => {
@@ -29,11 +30,15 @@ export const ThemeToggleButton = () => {
       sx={{
         animation: isAnimating ? `${spin} 0.6s ease-in-out` : 'none',
         '&:hover': {
-          bgcolor: 'rgba(255,255,255,0.1)',
+          bgcolor: theme.palette.mode === 'dark' 
+            ? 'rgba(255,255,255,0.15)' 
+            : 'rgba(20,32,50,0.1)',
         },
-        color: 'rgba(255,255,255,0.9)',
+        color: '#FFFFFF',
         transition: 'background-color 0.3s ease-in-out',
-        border: '1px solid rgba(255,255,255,0.2)',
+        border: theme.palette.mode === 'dark'
+          ? '1px solid rgba(255,255,255,0.2)'
+          : `1px solid ${theme.palette.divider}`,
         padding: '10px',
       }}
       title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
