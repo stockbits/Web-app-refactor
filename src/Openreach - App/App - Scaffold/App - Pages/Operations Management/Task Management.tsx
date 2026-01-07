@@ -260,7 +260,7 @@ const TaskManagementPage = () => {
         ),
       },
     ],
-    [statusMetadata],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])

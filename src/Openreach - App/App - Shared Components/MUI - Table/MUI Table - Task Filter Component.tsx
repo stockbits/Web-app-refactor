@@ -9,6 +9,8 @@ import {
   Divider,
   IconButton,
   InputAdornment,
+  Menu,
+  MenuItem,
   List,
   ListItemButton,
   ListItemText,
@@ -75,6 +77,7 @@ const TaskTableQueryConfig = ({
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [exportAnchor, setExportAnchor] = useState<null | HTMLElement>(null)
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
       return null
@@ -119,6 +122,14 @@ const TaskTableQueryConfig = ({
 
   const handleTabChange = (_event: SyntheticEvent, nextTab: TaskFilterTab) => {
     setActiveTab(nextTab)
+  }
+
+  const handleOpenExportMenu = (event: MouseEvent<HTMLButtonElement>) => {
+    setExportAnchor(event.currentTarget)
+  }
+
+  const handleCloseExportMenu = () => {
+    setExportAnchor(null)
   }
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -383,21 +394,46 @@ const TaskTableQueryConfig = ({
           </Typography>
         )}
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems="center">
-          <Stack direction="row" spacing={1} flexWrap="wrap" width={{ xs: '100%', md: 'auto' }}>
-            {hasRows && onCopyHtml && (
-              <Button variant="outlined" color="inherit" size="small" onClick={onCopyHtml}>
-                Copy table (HTML)
-              </Button>
-            )}
-            {hasRows && onExportCsv && (
-              <Button variant="outlined" color="inherit" size="small" onClick={onExportCsv}>
-                Export CSV
-              </Button>
+        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+          <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
+            {hasRows && (onCopyHtml || onExportCsv) && (
+              <>
+                <Button variant="contained" color="primary" size="small" onClick={handleOpenExportMenu}>
+                  Export / Copy
+                </Button>
+                <Menu
+                  anchorEl={exportAnchor}
+                  open={Boolean(exportAnchor)}
+                  onClose={handleCloseExportMenu}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                >
+                  {onCopyHtml && (
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseExportMenu()
+                        onCopyHtml()
+                      }}
+                    >
+                      Copy table (HTML)
+                    </MenuItem>
+                  )}
+                  {onExportCsv && (
+                    <MenuItem
+                      onClick={() => {
+                        handleCloseExportMenu()
+                        onExportCsv()
+                      }}
+                    >
+                      Export CSV
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
             )}
           </Stack>
 
-          <Stack direction="row" spacing={1} width={{ xs: '100%', md: 'auto' }} justifyContent={{ xs: 'flex-end', md: 'flex-end' }}>
+          <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
             {showClearAction && (
               <Button variant="text" color="inherit" onClick={handleReset}>
                 Clear
