@@ -145,8 +145,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
           '& .MuiDataGrid-columnHeaders': {
             flex: '0 0 auto',
-            bgcolor: 'rgba(7,59,76,0.02)',
-            borderBottom: '1px solid rgba(7,59,76,0.08)',
+            bgcolor: 'rgba(7,59,76,0.04)',
+            borderBottom: '1.5px solid rgba(58,127,107,0.24)',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: 0.6,
@@ -163,7 +163,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             flex: 1,
             overflow: 'auto !important',
             minHeight: 0,
-            paddingBottom: '8px',
+            paddingBottom: '0px',
             '& > div': {
               height: 'auto !important',
             },
@@ -171,13 +171,18 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
           '& .MuiDataGrid-row': {
             maxHeight: 'none',
+            borderBottom: '1px solid rgba(217,219,222,0.6)',
+            '&:hover': {
+              bgcolor: 'rgba(58,127,107,0.06)',
+            },
           },
 
           '& .MuiDataGrid-footerContainer': {
             flex: '0 0 auto',
-            borderTop: '1px solid rgba(7,59,76,0.08)',
+            borderTop: '1.5px solid rgba(58,127,107,0.24)',
             padding: 0,
             margin: 0,
+            bgcolor: 'rgba(7,59,76,0.02)',
           },
 
           '& .MuiDataGrid-cell': {
@@ -186,6 +191,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
+            borderRight: '1px solid rgba(217,219,222,0.4)',
           },
         }}
       />
