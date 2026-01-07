@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Alert, Box, Chip, Snackbar, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Chip, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -418,31 +418,37 @@ const TaskManagementPage = () => {
   }
 
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      minHeight: 0,
-      overflow: 'hidden',
-      width: '100%',
-      gap: 2,
-      p: 0,
-    }}>
-      <Box sx={{ flexShrink: 0 }}>
-        <TaskTableQueryConfig
-          initialQuery={activeQuery}
-          defaultQuery={defaultQuery}
-          divisionOptions={divisionOptions}
-          domainOptions={domainOptions}
-          capabilityOptions={capabilityOptions}
-          responseCodeOptions={responseCodeOptions}
-          exactSearchValues={exactSearchValues}
-          onApply={handleApplyQuery}
-          hasRows={filteredRows.length > 0}
-          onCopyHtml={handleCopyHtml}
-          onExportCsv={handleExportCsv}
-        />
-      </Box>
+    <Paper
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100dvh - 64px)',
+        maxHeight: 'calc(100dvh - 64px)',
+        minHeight: 0,
+        overflow: 'hidden',
+        width: '100%',
+        gap: 1.5,
+        p: { xs: 2, md: 3 },
+        pb: { xs: 3.5, md: 4.5 },
+        boxShadow: theme.shadows[10],
+        borderRadius: 2,
+        bgcolor: 'background.paper',
+      }}
+    >
+      <TaskTableQueryConfig
+        initialQuery={activeQuery}
+        defaultQuery={defaultQuery}
+        divisionOptions={divisionOptions}
+        domainOptions={domainOptions}
+        capabilityOptions={capabilityOptions}
+        responseCodeOptions={responseCodeOptions}
+        exactSearchValues={exactSearchValues}
+        onApply={handleApplyQuery}
+        hasRows={filteredRows.length > 0}
+        onCopyHtml={handleCopyHtml}
+        onExportCsv={handleExportCsv}
+      />
+
       <Box sx={{
         flex: 1,
         minHeight: 0,
@@ -458,8 +464,8 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
-            initialPageSize={20}
-            pageSizeOptions={[20, 50, 100]}
+            initialPageSize={16}
+            pageSizeOptions={[16, 32, 64]}
             maxHeight="100%"
           />
         ) : (
@@ -522,7 +528,7 @@ const TaskManagementPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Paper>
   )
 }
 

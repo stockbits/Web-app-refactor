@@ -16,7 +16,6 @@ import {
   ListItemText,
   ListSubheader,
   OutlinedInput,
-  Paper,
   Popover,
   Stack,
   Tab,
@@ -240,15 +239,12 @@ const TaskTableQueryConfig = ({
   }
 
   return (
-    <Paper
-      elevation={0}
+    <Box
       sx={{
         borderRadius: 2,
-        bgcolor: 'background.paper',
-        p: 2.5,
-        border: `1px solid`,
-        borderColor: 'divider',
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+        bgcolor: 'transparent',
+        p: 0,
+        boxShadow: 'none',
       }}
     >
       <Stack spacing={3}>
@@ -516,7 +512,7 @@ const TaskTableQueryConfig = ({
           </Stack>
         </Stack>
       </Stack>
-    </Paper>
+    </Box>
   )
 }
 

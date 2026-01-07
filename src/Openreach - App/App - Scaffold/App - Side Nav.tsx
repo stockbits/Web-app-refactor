@@ -207,7 +207,6 @@ const taskForceMenuGroups: TaskForceMenuGroup[] = [
 export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSlot, onSearch, onSelect }: OpenreachSideNavProps) => {
   const theme = useTheme()
   const palette = theme.openreach
-  const white = theme.palette.common.white
   const items = useMemo(() => (navItems && navItems.length > 0 ? navItems : fallbackNavItems), [navItems])
   const [query, setQuery] = useState('')
   const trimmedQuery = query.trim()
@@ -364,10 +363,18 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               onSubmit={submitSearch}
               alignItems="center"
               sx={{
-                bgcolor: alpha(white, 0.08),
+                bgcolor: alpha(palette.energyAccent, 0.12),
+                border: `1px solid ${alpha(palette.energyAccent, 0.35)}`,
+                boxShadow: `0 0 0 1px ${alpha(palette.energyAccent, 0.18)}`,
                 borderRadius: 999,
                 px: 2,
                 py: 0.5,
+                transition: 'border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease',
+                '&:focus-within': {
+                  borderColor: palette.energyAccent,
+                  boxShadow: `0 0 0 2px ${alpha(palette.energyAccent, 0.24)}`,
+                  bgcolor: alpha(palette.energyAccent, 0.16),
+                },
               }}
             >
               <SearchRoundedIcon fontSize="small" sx={{ color: palette.energyAccent }} />
@@ -407,7 +414,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         py: 1,
                         color: palette.fibreThreads,
                         '&:hover': {
-                          bgcolor: 'rgba(255,255,255,0.12)',
+                          bgcolor: alpha(palette.energyAccent, 0.16),
                         },
                       }}
                     >
@@ -457,7 +464,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                             width: 36,
                             height: 36,
                             borderRadius: '50%',
-                            bgcolor: alpha(white, 0.08),
+                            bgcolor: alpha(palette.energyAccent, 0.14),
                             display: 'grid',
                             placeItems: 'center',
                           }}
@@ -483,7 +490,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                               alignItems: 'flex-start',
                               color: palette.fibreThreads,
                               '&:hover': {
-                                bgcolor: alpha(white, 0.08),
+                                bgcolor: alpha(palette.energyAccent, 0.14),
                               },
                             }}
                           >
@@ -507,7 +514,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       </List>
 
                       {index < filteredGroups.length - 1 && (
-                        <Divider sx={{ mt: 2, borderColor: alpha(white, 0.08) }} />
+                        <Divider sx={{ mt: 2, borderColor: alpha(palette.energyAccent, 0.22) }} />
                       )}
                     </Box>
                   ))}
@@ -544,7 +551,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   zIndex: 2,
                 }}
               >
-                <Divider sx={{ mb: 1, borderColor: alpha(white, 0.08) }} />
+                <Divider sx={{ mb: 1, borderColor: alpha(palette.energyAccent, 0.2) }} />
                 {footerContent}
               </Box>
             )}

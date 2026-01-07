@@ -45,9 +45,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
-  initialPageSize = 12,
+  initialPageSize = 16,
   emptyState,
-  maxHeight = 'calc(100dvh - 420px)',
+  maxHeight = 'calc(100dvh - 360px)',
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
   const apiRef = useGridApiRef()
@@ -62,7 +62,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     setDensityMode(nextDense ? 'compact' : 'standard')
   }, [])
 
-  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [20, 50, 100]
+  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
   const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
 
@@ -103,9 +103,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        border: `1px solid ${theme.palette.divider}`,
-        borderRadius: 1,
-        bgcolor: theme.palette.background.paper,
+        border: 'none',
+        borderRadius: 0,
+        boxShadow: 'none',
+        bgcolor: 'transparent',
       }}
       aria-label={title ?? caption ?? 'Table'}
     >
