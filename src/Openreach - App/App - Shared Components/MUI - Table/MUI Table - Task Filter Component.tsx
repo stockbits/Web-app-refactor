@@ -633,13 +633,13 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
           onClose={handleClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          PaperProps={{ sx: { p: 2, borderRadius: 2, maxWidth: 720 } }}
+          PaperProps={{ sx: { p: 2, borderRadius: 2, maxWidth: 720, bgcolor: 'background.paper' } }}
         >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="stretch">
             <List
               dense
               subheader={<ListSubheader component="div">Shortcuts</ListSubheader>}
-              sx={{ minWidth: 200, bgcolor: 'action.hover', borderRadius: 2 }}
+              sx={{ minWidth: 200, bgcolor: 'background.paper', borderRadius: 2 }}
             >
               {shortcuts.map((shortcut) => (
                 <ListItemButton key={shortcut.label} onClick={handleShortcut(shortcut.resolveRange)}>
@@ -677,6 +677,8 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ step: 300 }}
                   fullWidth
+                  variant="outlined"
+                  size="small"
                 />
                 <TextField
                   label="End time"
@@ -686,6 +688,8 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ step: 300 }}
                   fullWidth
+                  variant="outlined"
+                  size="small"
                 />
               </Stack>
             </Stack>

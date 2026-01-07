@@ -5,6 +5,7 @@ import {
   GridToolbarQuickFilter,
   useGridApiRef,
   type GridColDef,
+  type GridPaginationModel,
   type GridRowId,
   type GridValidRowModel,
 } from '@mui/x-data-grid'
@@ -19,40 +20,36 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   loading?: boolean
   hideFooter?: boolean
   enableQuickFilter?: boolean
-  showFooterControls?: boolean
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
-  /**
-   * Max height of the table container.
-        sx={{ flex: 1, minHeight: 0 }}
-   * Can be a number (px) or any valid CSS height string.
-   * Example: 520 or "calc(100vh - 250px)"
-   * Defaults to '100%' to fit the container and scroll internally.
-   */
-  maxHeight?: number | string
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
   columns,
   rows,
-  title,
-  caption,
   getRowId,
   density = 'compact',
   loading,
-  hideFooter = true,
+  hideFooter = false,
   enableQuickFilter = false,
-  showFooterControls = false,
   pageSizeOptions,
   initialPageSize = 16,
   emptyState,
-  maxHeight = 'calc(100dvh - 360px)',
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
   const apiRef = useGridApiRef()
 
   const [densityMode, setDensityMode] = useState(density)
+  
+  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
+  const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
+  const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
+  
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    pageSize: resolvedInitialPageSize,
+    page: 0,
+  })
 
   useEffect(() => {
     setDensityMode(density)
@@ -61,25 +58,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   const handleDensityToggle = useCallback((nextDense: boolean) => {
     setDensityMode(nextDense ? 'compact' : 'standard')
   }, [])
-
-  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
-  const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
-  const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
-
-  // If showFooterControls is enabled, we must show footer (pagination etc.)
-  const resolvedHideFooter = showFooterControls ? false : hideFooter
-
-  const paginationSettings = !resolvedHideFooter
-    ? {
-        pagination: true as const,
-        initialState: {
-          pagination: {
-            paginationModel: { pageSize: resolvedInitialPageSize },
-          },
-        },
-        pageSizeOptions: resolvedPageSizeOptions,
-      }
-    : undefined
 
   const NoRowsOverlay = () => (
     <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -92,67 +70,40 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   )
 
   return (
-    <Box
+    <DataGrid
       sx={{
         width: '100%',
-        height: maxHeight,
-        maxHeight: maxHeight,
-        flex: '1 1 auto',
-        minHeight: 0,
-        boxSizing: 'border-box',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        border: 'none',
-        borderRadius: 0,
-        boxShadow: 'none',
-        bgcolor: 'transparent',
+        '& .MuiDataGrid-row': {
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        },
       }}
-      aria-label={title ?? caption ?? 'Table'}
-    >
-      <DataGrid
-        sx={{
-          height: '100%',
-          '& .MuiDataGrid-footerContainer': {
-            px: 2,
-            py: 1.5,
-            minHeight: 'auto',
-          },
-          '& .MuiDataGrid-row': {
-            borderBottom: `1px solid ${theme.palette.divider}`,
-          },
-        }}
-        apiRef={apiRef}
-        rows={rows}
-        columns={columns}
-        getRowId={getRowId}
-        density={densityMode}
-        loading={loading}
-        hideFooter={resolvedHideFooter}
-        checkboxSelection
-        disableRowSelectionOnClick={false}
-        autoHeight={false}
-        disableVirtualization={false}
-        pageSizeOptions={resolvedPageSizeOptions}
-        initialState={{
-          pagination: {
-            paginationModel: { pageSize: resolvedInitialPageSize, page: 0 },
-          },
-        }}
-        {...paginationSettings}
-        slots={{
-          toolbar: enableQuickFilter
-            ? () => (
-                <QuickFilterToolbar
-                  densityMode={densityMode}
-                  onToggleDensity={handleDensityToggle}
-                />
-              )
-            : undefined,
-          noRowsOverlay: NoRowsOverlay,
-        }}
-      />
-    </Box>
+      apiRef={apiRef}
+      rows={rows}
+      columns={columns}
+      getRowId={getRowId}
+      density={densityMode}
+      loading={loading}
+      hideFooter={hideFooter}
+      pagination
+      pageSizeOptions={resolvedPageSizeOptions}
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
+      checkboxSelection
+      disableRowSelectionOnClick={false}
+      autoHeight={false}
+      disableVirtualization={false}
+      slots={{
+        toolbar: enableQuickFilter
+          ? () => (
+              <QuickFilterToolbar
+                densityMode={densityMode}
+                onToggleDensity={handleDensityToggle}
+              />
+            )
+          : undefined,
+        noRowsOverlay: NoRowsOverlay,
+      }}
+    />
   )
 }
 

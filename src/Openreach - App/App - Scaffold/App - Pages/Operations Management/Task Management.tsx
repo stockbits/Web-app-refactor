@@ -420,42 +420,31 @@ const TaskManagementPage = () => {
   return (
     <Paper
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: 'calc(100dvh - 64px)',
-        maxHeight: 'calc(100dvh - 64px)',
-        minHeight: 0,
-        overflow: 'hidden',
-        width: '100%',
-        gap: 1.5,
-        p: { xs: 2, md: 3 },
-        pb: { xs: 3.5, md: 4.5 },
         boxShadow: theme.shadows[10],
         borderRadius: 2,
         bgcolor: 'background.paper',
-      }}
-    >
-      <TaskTableQueryConfig
-        initialQuery={activeQuery}
-        defaultQuery={defaultQuery}
-        divisionOptions={divisionOptions}
-        domainOptions={domainOptions}
-        capabilityOptions={capabilityOptions}
-        responseCodeOptions={responseCodeOptions}
-        exactSearchValues={exactSearchValues}
-        onApply={handleApplyQuery}
-        hasRows={filteredRows.length > 0}
-        onCopyHtml={handleCopyHtml}
-        onExportCsv={handleExportCsv}
-      />
-
-      <Box sx={{
-        flex: 1,
-        minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
-      }}>
+        height: '100%',
+      }}
+    >
+      <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <TaskTableQueryConfig
+          initialQuery={activeQuery}
+          defaultQuery={defaultQuery}
+          divisionOptions={divisionOptions}
+          domainOptions={domainOptions}
+          capabilityOptions={capabilityOptions}
+          responseCodeOptions={responseCodeOptions}
+          exactSearchValues={exactSearchValues}
+          onApply={handleApplyQuery}
+          hasRows={filteredRows.length > 0}
+          onCopyHtml={handleCopyHtml}
+          onExportCsv={handleExportCsv}
+        />
+      </Box>
+
+      <Box sx={{ flex: 1, overflow: 'auto' }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -463,10 +452,9 @@ const TaskManagementPage = () => {
             getRowId={(row) => row.taskId}
             density="compact"
             enableQuickFilter
-            showFooterControls
+            hideFooter={false}
             initialPageSize={16}
-            pageSizeOptions={[16, 32, 64]}
-            maxHeight="100%"
+            pageSizeOptions={[16, 20, 50, 100]}
           />
         ) : (
           <Box
@@ -477,6 +465,7 @@ const TaskManagementPage = () => {
                 ? 'rgba(255, 255, 255, 0.02)'
                 : 'rgba(0, 0, 0, 0.02)',
               p: 4,
+              m: 3,
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
@@ -513,6 +502,7 @@ const TaskManagementPage = () => {
           </Box>
         )}
       </Box>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

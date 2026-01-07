@@ -449,9 +449,12 @@ function App() {
             <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
           )}
 
-          <Box className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}>
+          <Box 
+            className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}
+            sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}
+          >
             {showWelcome ? (
-              <Box sx={{ p: 2 }}>
+              <Box>
                 <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 2 }}>
                   <Tooltip title="Tap to view info" placement="left">
                     <IconButton
@@ -492,7 +495,7 @@ function App() {
                 />
               </Box>
             ) : !activePage ? (
-              <Box sx={{ p: 2 }}>
+              <Box>
                 <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 1 }}>
                   <Tooltip title="Tap to view info" placement="left">
                     <IconButton
@@ -596,35 +599,34 @@ function App() {
             ) : (
               <Box
                 component="section"
-                sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}
+                sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', overflow: 'hidden' }}
               >
-                <Stack gap={1.5} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-                  {(() => {
-                    const ActivePageComponent =
-                      PAGE_COMPONENTS[activePage.menuLabel]?.[
-                        activePage.cardName
-                      ];
-                    if (!ActivePageComponent) {
-                      return (
-                        <Typography color="text.secondary">
-                          No page scaffold wired for {activePage.cardName}{' '}
-                          yet.
-                        </Typography>
-                      );
-                    }
+                {(() => {
+                  const ActivePageComponent =
+                    PAGE_COMPONENTS[activePage.menuLabel]?.[
+                      activePage.cardName
+                    ];
+                  if (!ActivePageComponent) {
                     return (
-                      <Suspense
-                        fallback={
-                          <Stack alignItems="center" py={6} spacing={2}>
-                            <CircularProgress size={28} thickness={4} />
-                            <Typography color="text.secondary" fontWeight={500}>
-                              Loading...
-                            </Typography>
-                          </Stack>
-                        }
-                      >
-                        <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
-                          {activePage?.cardName === 'Schedule Live' ? (
+                      <Typography color="text.secondary">
+                        No page scaffold wired for {activePage.cardName}{' '}
+                        yet.
+                      </Typography>
+                    );
+                  }
+                  return (
+                    <Suspense
+                      fallback={
+                        <Stack alignItems="center" py={6} spacing={2}>
+                          <CircularProgress size={28} thickness={4} />
+                          <Typography color="text.secondary" fontWeight={500}>
+                            Loading...
+                          </Typography>
+                        </Stack>
+                      }
+                    >
+                      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+                        {activePage?.cardName === 'Schedule Live' ? (
                             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                             <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as any)} />
                           ) : (
@@ -634,7 +636,6 @@ function App() {
                       </Suspense>
                     );
                   })()}
-                </Stack>
               </Box>
             )}
           </Box>
