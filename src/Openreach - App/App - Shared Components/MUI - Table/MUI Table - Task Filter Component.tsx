@@ -441,7 +441,7 @@ const TaskTableQueryConfig = ({
             {hasRows && (onCopyHtml || onExportCsv) && (
               <>
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   color="primary"
                   size="small"
                   onClick={handleOpenExportMenu}
@@ -450,7 +450,7 @@ const TaskTableQueryConfig = ({
                     fontWeight: 500,
                   }}
                 >
-                  Export / Copy
+                  Copy
                 </Button>
                 <Menu
                   anchorEl={exportAnchor}
@@ -466,7 +466,7 @@ const TaskTableQueryConfig = ({
                         onCopyHtml()
                       }}
                     >
-                      Copy table (HTML)
+                      Copy HTML
                     </MenuItem>
                   )}
                   {onExportCsv && (
