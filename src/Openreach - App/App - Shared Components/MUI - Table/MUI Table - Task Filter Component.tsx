@@ -226,7 +226,7 @@ const TaskTableQueryConfig = ({
       elevation={0}
       sx={{
         borderRadius: 2,
-        bgcolor: '#fff',
+        bgcolor: 'background.paper',
         p: 2.5,
       }}
     >
@@ -513,7 +513,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
             <List
               dense
               subheader={<ListSubheader component="div">Shortcuts</ListSubheader>}
-              sx={{ minWidth: 200, bgcolor: 'rgba(7,59,76,0.03)', borderRadius: 2 }}
+              sx={{ minWidth: 200, bgcolor: 'action.hover', borderRadius: 2 }}
             >
               {shortcuts.map((shortcut) => (
                 <ListItemButton key={shortcut.label} onClick={handleShortcut(shortcut.resolveRange)}>
