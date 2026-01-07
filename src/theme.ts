@@ -377,3 +377,109 @@ export const appTheme = createTheme({
     },
   },
 });
+
+export const createDarkTheme = () => {
+  return createTheme({
+    openreach: openreachBrand,
+    palette: {
+      mode: "dark",
+      primary: {
+        main: darkTokens.primary.main,
+        light: darkTokens.primary.hover,
+        dark: darkTokens.primary.active,
+        contrastText: darkTokens.primary.text,
+      },
+      secondary: {
+        main: darkTokens.secondary.main,
+        light: darkTokens.secondary.hover,
+        contrastText: darkTokens.secondary.text,
+      },
+      background: {
+        default: darkTokens.background.default,
+        paper: darkTokens.background.paper,
+      },
+      text: {
+        primary: darkTokens.text.primary,
+        secondary: darkTokens.text.secondary,
+        disabled: darkTokens.text.disabled,
+      },
+      divider: darkTokens.divider,
+      success: {
+        main: darkTokens.state.success,
+      },
+      info: {
+        main: darkTokens.state.info,
+      },
+      warning: {
+        main: darkTokens.state.warning,
+      },
+      error: {
+        main: darkTokens.state.error,
+      },
+    },
+    typography: {
+      fontFamily:
+        "'Inter','Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,sans-serif",
+      body1: {
+        color: darkTokens.text.primary,
+      },
+      body2: {
+        color: darkTokens.text.secondary,
+      },
+    },
+    components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            scrollbarColor: `#6FAE9A ${brand.tealBase}`,
+            scrollbarWidth: "thin",
+            "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
+              width: "0.65rem",
+              height: "0.65rem",
+            },
+            "&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track": {
+              backgroundColor: darkTokens.background.default,
+              borderRadius: "999px",
+            },
+            "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
+              backgroundColor: "#6FAE9A",
+              border: `2px solid ${darkTokens.background.default}`,
+              borderRadius: "999px",
+              boxShadow: `inset 0 0 0 1px ${darkTokens.border.soft}`,
+            },
+            "&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover": {
+              backgroundColor: darkTokens.primary.hover,
+            },
+            "&::-webkit-scrollbar-corner": {
+              backgroundColor: darkTokens.background.default,
+            },
+          },
+        },
+      },
+      MuiDataGrid: {
+        defaultProps: {
+          autosizeOnMount: true,
+        },
+        styleOverrides: {
+          root: {
+            borderRadius: 0,
+            marginBottom: '8px',
+          },
+          columnHeader: {
+            backgroundColor: darkTableColors.headerBg,
+            color: darkTableColors.headerText,
+            fontWeight: 600,
+          },
+          footerContainer: {
+            backgroundColor: darkTableColors.footerBg,
+          },
+          row: {
+            backgroundColor: darkTableColors.rowBg,
+            color: darkTableColors.rowText,
+            borderBottom: `1px solid ${darkTableColors.border}`,
+          },
+        },
+      },
+    },
+  });
+};

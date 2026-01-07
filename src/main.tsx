@@ -1,14 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { CssBaseline, ThemeProvider } from '@mui/material'
+import { CssBaseline } from '@mui/material'
 import App from './App.tsx'
-import { appTheme } from './theme'
+import { ThemeToggleProvider } from './ThemeContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={appTheme}>
+    <ThemeToggleProvider>
       <CssBaseline />
       <App />
-    </ThemeProvider>
+    </ThemeToggleProvider>
   </StrictMode>,
 )
