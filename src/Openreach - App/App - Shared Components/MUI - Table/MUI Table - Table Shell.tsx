@@ -44,9 +44,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enableQuickFilter = false,
   showFooterControls = false,
   pageSizeOptions,
-  initialPageSize = 30,
+  initialPageSize = 16,
   emptyState,
-  maxHeight = 'calc(100vh - 300px)',
+  maxHeight = 'calc(100vh - 360px)',
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
 
@@ -60,11 +60,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     setDensityMode(nextDense ? 'compact' : 'standard')
   }, [])
 
-  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [30, 100, 500]
+  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [20, 50, 100]
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
-  const resolvedInitialPageSize = resolvedPageSizeOptions.includes(normalizedInitialPageSize)
-    ? normalizedInitialPageSize
-    : resolvedPageSizeOptions[0]
+  const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
 
   // If showFooterControls is enabled, we must show footer (pagination etc.)
   const resolvedHideFooter = showFooterControls ? false : hideFooter

@@ -3,12 +3,15 @@ import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
   Box,
-  Card,
   CardActionArea,
-  CardContent,
   CircularProgress,
+  IconButton,
+  Paper,
+  Popover,
   Stack,
   Typography,
+  Tooltip,
+  useTheme,
 } from "@mui/material";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import BuildCircleRoundedIcon from "@mui/icons-material/BuildCircleRounded";
@@ -21,6 +24,7 @@ import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSetting
 import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Nav";
 import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
@@ -356,6 +360,7 @@ const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
 }, {});
 
 function App() {
+  const theme = useTheme();
   const [navOpen, setNavOpen] = useState(false);
   const [selectedMenuId, setSelectedMenuId] = useState(MENU_GROUPS[0].id);
   const [showWelcome, setShowWelcome] = useState(true);
@@ -364,6 +369,8 @@ function App() {
     cardName: string;
   } | null>(null);
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
+  const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
+  const menuInfoOpen = Boolean(menuInfoAnchor);
 
   const openNav = () => setNavOpen(true);
   const closeNav = () => setNavOpen(false);
@@ -449,6 +456,41 @@ function App() {
               </Box>
             ) : !activePage ? (
               <Box sx={{ p: 2 }}>
+                <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 1 }}>
+                  <Tooltip title="Tap to view info" placement="left">
+                    <IconButton
+                      size="small"
+                      aria-label="Info: select a tool card"
+                      onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
+                      aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
+                    >
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+                <Popover
+                  id="menu-info-popover"
+                  open={menuInfoOpen}
+                  anchorEl={menuInfoAnchor}
+                  onClose={() => setMenuInfoAnchor(null)}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  disableRestoreFocus
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        px: 2,
+                        py: 1.5,
+                        borderRadius: 2,
+                        maxWidth: 320,
+                      },
+                    },
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    Select a tool card to load its page.
+                  </Typography>
+                </Popover>
                 <Box
                   sx={{
                     display: "grid",
@@ -460,45 +502,56 @@ function App() {
                     },
                   }}
                 >
-                  {selectedMenu.cards.map((card) => (
-                    <Card className="menu-card" key={card.name}>
-                      <CardActionArea
-                        onClick={() =>
-                          setActivePage({
-                            menuLabel: selectedMenu.label,
-                            cardName: card.name,
-                          })
-                        }
+                  {selectedMenu.cards.map((card) => {
+                    const MenuIcon = selectedMenu.icon;
+                    return (
+                      <Paper
+                        key={card.name}
+                        elevation={0}
+                        sx={{
+                          borderRadius: 3,
+                          border: "1px solid rgba(7,59,76,0.12)",
+                          bgcolor: "background.paper",
+                          boxShadow: "0 12px 32px rgba(7,59,76,0.06)",
+                        }}
                       >
-                        <CardContent>
-                          <Typography
-                            variant="subtitle1"
-                            fontWeight={600}
-                            gutterBottom
-                          >
-                            {card.name}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                          >
-                            {card.description}
-                          </Typography>
-                        </CardContent>
-                      </CardActionArea>
-                    </Card>
-                  ))}
-                </Box>
-                <Box
-                  mt={4}
-                  p={2.5}
-                  borderRadius={3}
-                  border="1px solid rgba(7,59,76,0.12)"
-                  bgcolor="#fff"
-                >
-                  <Typography color="text.secondary">
-                    Select a tool card to load its page.
-                  </Typography>
+                        <CardActionArea
+                          onClick={() =>
+                            setActivePage({
+                              menuLabel: selectedMenu.label,
+                              cardName: card.name,
+                            })
+                          }
+                          sx={{ p: 2 }}
+                        >
+                          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                            <Box
+                              sx={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: "50%",
+                                display: "grid",
+                                placeItems: "center",
+                                backgroundColor: `${theme.palette.primary.main}20`,
+                                color: theme.palette.primary.main,
+                                flexShrink: 0,
+                              }}
+                            >
+                              <MenuIcon fontSize="small" />
+                            </Box>
+                            <Box flexGrow={1} minWidth={0}>
+                              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                                {card.name}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {card.description}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </CardActionArea>
+                      </Paper>
+                    );
+                  })}
                 </Box>
               </Box>
             ) : (
