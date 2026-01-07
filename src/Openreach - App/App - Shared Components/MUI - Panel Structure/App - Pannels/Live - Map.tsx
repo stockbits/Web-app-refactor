@@ -26,6 +26,8 @@ interface LiveMapProps {
 
 export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveMapProps = {}) {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
   const [mapLayer, setMapLayer] = useState<MapLayerType>('roadmap');
 
   // Fix for default markers in react-leaflet
@@ -98,7 +100,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.openreach.tableColors.headerBg,
+          backgroundColor: headerBg,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -109,7 +111,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
           {/* Left side - Map type controls */}
           <Stack direction="row" spacing={1} alignItems="center">
-            <LayersIcon sx={{ fontSize: 18, color: theme.openreach.typographyMuted }} />
+            <LayersIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
             <ToggleButtonGroup
               value={mapLayer}
               exclusive
@@ -121,10 +123,17 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   py: 0.25,
                   fontSize: '0.75rem',
                   textTransform: 'none',
-                  border: '1px solid rgba(7,59,76,0.12)',
+                  color: isDark ? theme.palette.common.white : theme.palette.text.primary,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                  },
                   '&.Mui-selected': {
                     bgcolor: theme.openreach.energyAccent,
                     color: '#fff',
+                    boxShadow: theme.shadows[1],
+                    borderColor: theme.openreach.energyAccent,
                     '&:hover': {
                       bgcolor: theme.openreach.coreBlock,
                     }
@@ -161,8 +170,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
                   p: 0.5,
+                  border: `1px solid ${theme.palette.divider}`,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  color: theme.palette.text.primary,
                   '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                    boxShadow: theme.shadows[1],
                   },
                 }}
               >
@@ -181,9 +194,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   onClick={onExpand}
                   sx={{
                     p: 0.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      boxShadow: theme.shadows[1],
                     },
                   }}
                 >
@@ -198,9 +214,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   onClick={onCollapse}
                   sx={{
                     p: 0.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      boxShadow: theme.shadows[1],
                     },
                   }}
                 >

@@ -15,6 +15,10 @@ interface LiveGanttProps {
 
 export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveGanttProps = {}) {
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
+  const bodyIconColor = theme.openreach.energyAccent;
+  const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
 
   if (minimized) {
     return (
@@ -44,7 +48,7 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
         position="static"
         elevation={0}
         sx={{
-          backgroundColor: theme.openreach.tableColors.headerBg,
+          backgroundColor: headerBg,
           minHeight: 40,
           '& .MuiToolbar-root': {
             minHeight: 40,
@@ -64,8 +68,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
                   p: 0.5,
+                  border: `1px solid ${theme.palette.divider}`,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
+                  color: theme.palette.text.primary,
                   '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                    boxShadow: theme.shadows[1],
                   },
                 }}
               >
@@ -84,9 +92,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                   onClick={onExpand}
                   sx={{
                     p: 0.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      boxShadow: theme.shadows[1],
                     },
                   }}
                 >
@@ -101,9 +112,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                   onClick={onCollapse}
                   sx={{
                     p: 0.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(7,59,76,0.06)',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(7,59,76,0.12)',
+                      boxShadow: theme.shadows[1],
                     },
                   }}
                 >
@@ -124,12 +138,9 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
-          <TimelineIcon sx={{ fontSize: 48, color: theme.openreach.energyAccent, mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
+          <TimelineIcon sx={{ fontSize: 48, color: bodyIconColor, mb: 2 }} />
+          <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
             Gantt Chart
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Timeline view of scheduled tasks and resources
           </Typography>
         </Box>
       </Box>
