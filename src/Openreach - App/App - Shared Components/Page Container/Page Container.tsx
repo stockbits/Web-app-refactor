@@ -54,13 +54,13 @@ export interface PageContainerProps {
    * Uses responsive breakpoints by default
    * @default { xs: 1, sm: 1.5, md: 2 }
    */
-  paddingX?: SxProps<Theme>["px"];
+  paddingX?: number | { xs?: number; sm?: number; md?: number; lg?: number; xl?: number };
 
   /**
    * Vertical padding applied to top/bottom
    * @default 2
    */
-  paddingY?: SxProps<Theme>["py"];
+  paddingY?: number;
 
   /**
    * Additional custom MUI sx props (overrides defaults)
