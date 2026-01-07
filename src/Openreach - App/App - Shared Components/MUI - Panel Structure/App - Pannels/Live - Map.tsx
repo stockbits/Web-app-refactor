@@ -47,8 +47,8 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   return (
     <Box
       sx={{
-        height: isExpanded ? '100vh' : '100%',
-        width: isExpanded ? '100vw' : '100%',
+        height: '100%',
+        width: '100%',
         display: "flex",
         flexDirection: "column",
         backgroundColor: theme.palette.background.paper,
