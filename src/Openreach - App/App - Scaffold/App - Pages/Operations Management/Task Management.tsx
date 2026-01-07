@@ -437,7 +437,7 @@ const TaskManagementPage = () => {
             density="compact"
             enableQuickFilter
             showFooterControls
-            initialPageSize={16}
+            initialPageSize={20}
             pageSizeOptions={[20, 50, 100]}
             maxHeight="calc(100vh - 320px)"
           />
@@ -457,10 +457,10 @@ const TaskManagementPage = () => {
               justifyContent: 'center',
             }}
           >
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: theme.palette.mode === 'dark' ? tokens.text.primary : 'text.primary' }}>
               Run a query to load tasks
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: theme.palette.mode === 'dark' ? tokens.text.secondary : 'text.secondary' }}>
               Use the filters above to define your search, then hit Search to fetch matching rows.
             </Typography>
           </Box>
