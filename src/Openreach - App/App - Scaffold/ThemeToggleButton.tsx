@@ -2,6 +2,7 @@ import { IconButton, keyframes } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useThemeMode } from '../../ThemeContext'
+import { useState } from 'react'
 
 const spin = keyframes`
   from {
@@ -14,18 +15,24 @@ const spin = keyframes`
 
 export const ThemeToggleButton = () => {
   const { isDarkMode, toggleTheme } = useThemeMode()
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  const handleClick = () => {
+    setIsAnimating(true)
+    toggleTheme()
+    setTimeout(() => setIsAnimating(false), 600)
+  }
 
   return (
     <IconButton
-      onClick={toggleTheme}
+      onClick={handleClick}
       sx={{
-        animation: `${spin} 0.6s ease-in-out`,
+        animation: isAnimating ? `${spin} 0.6s ease-in-out` : 'none',
         '&:hover': {
-          animation: `${spin} 0.6s ease-in-out`,
           bgcolor: 'rgba(255,255,255,0.1)',
         },
         color: 'rgba(255,255,255,0.9)',
-        transition: 'all 0.3s ease-in-out',
+        transition: 'background-color 0.3s ease-in-out',
         border: '1px solid rgba(255,255,255,0.2)',
         padding: '10px',
       }}

@@ -351,6 +351,54 @@ export const appTheme = createTheme({
         },
       },
     },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            backgroundColor: lightTokens.input.bg,
+            '& fieldset': {
+              borderColor: lightTokens.input.border,
+            },
+            '&:hover fieldset': {
+              borderColor: lightTokens.input.borderFocus,
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: lightTokens.input.borderFocus,
+            },
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: lightTokens.input.bg,
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: lightTokens.input.border,
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: lightTokens.input.borderFocus,
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: lightTokens.input.borderFocus,
+          },
+        },
+        input: {
+          color: lightTokens.input.text,
+          '&::placeholder': {
+            color: lightTokens.input.placeholder,
+            opacity: 1,
+          },
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: lightTokens.input.text,
+        },
+      },
+    },
     MuiDataGrid: {
       defaultProps: {
         autosizeOnMount: true,
@@ -452,6 +500,78 @@ export const createDarkTheme = () => {
             },
             "&::-webkit-scrollbar-corner": {
               backgroundColor: darkTokens.background.default,
+            },
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: darkTokens.input.bg,
+              color: darkTokens.input.text,
+              '& fieldset': {
+                borderColor: darkTokens.input.border,
+              },
+              '&:hover fieldset': {
+                borderColor: darkTokens.input.borderFocus,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: darkTokens.input.borderFocus,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: darkTokens.text.secondary,
+            },
+            '& .MuiInputLabel-root.Mui-focused': {
+              color: darkTokens.input.borderFocus,
+            },
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            backgroundColor: darkTokens.input.bg,
+            color: darkTokens.input.text,
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: darkTokens.input.border,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: darkTokens.input.borderFocus,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: darkTokens.input.borderFocus,
+            },
+          },
+          input: {
+            color: darkTokens.input.text,
+            '&::placeholder': {
+              color: darkTokens.input.placeholder,
+              opacity: 1,
+            },
+          },
+        },
+      },
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            color: darkTokens.input.text,
+          },
+          input: {
+            '&::placeholder': {
+              color: darkTokens.input.placeholder,
+              opacity: 1,
+            },
+          },
+        },
+      },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            color: darkTokens.text.secondary,
+            '&.Mui-focused': {
+              color: darkTokens.input.borderFocus,
             },
           },
         },
