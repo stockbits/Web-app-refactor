@@ -504,7 +504,7 @@ function App() {
             ) : (
               <Box
                 component="section"
-                sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}
+                sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}
               >
                 <Stack gap={1.5} sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                   {(() => {

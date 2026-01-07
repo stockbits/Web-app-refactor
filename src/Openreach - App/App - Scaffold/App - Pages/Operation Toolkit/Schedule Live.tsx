@@ -35,7 +35,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           flexShrink: 0, 
           p: 2, 
           borderBottom: '1px solid rgba(7,59,76,0.08)',
-          bgcolor: '#fff',
+          bgcolor: 'background.paper',
         }}
       >
         <Stack direction="row" spacing={2} alignItems="center">
@@ -68,7 +68,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             value={globalSearch}
             onChange={(e) => setGlobalSearch(e.target.value)}
             InputProps={{
-              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />,
+              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
             }}
           />
         </Stack>

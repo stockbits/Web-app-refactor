@@ -188,7 +188,7 @@ export const OpenreachTopBanner = ({
                 },
               }}
             >
-              <Avatar sx={{ bgcolor: brand.energyAccent, color: brand.coreBlock }}>
+              <Avatar sx={{ bgcolor: brand.energyAccent, color: brand.fibreThreads }}>
                 <EngineeringRoundedIcon fontSize="small" />
               </Avatar>
             </IconButton>

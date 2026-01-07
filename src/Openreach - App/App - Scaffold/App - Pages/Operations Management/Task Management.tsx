@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Box, Chip, Stack, Typography } from '@mui/material'
+import { Box, Chip, Stack, Typography, useTheme } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -7,40 +7,43 @@ import type { TaskTableQueryState } from '../../../App - Shared Components/MUI -
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
 
-const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {
-  ACT: { label: TASK_STATUS_LABELS.ACT, color: '#006C9E', bg: 'rgba(0,108,158,0.15)' },
-  AWI: { label: TASK_STATUS_LABELS.AWI, color: '#6A5B8A', bg: 'rgba(106,91,138,0.18)' },
-  ISS: { label: TASK_STATUS_LABELS.ISS, color: '#B34700', bg: 'rgba(179,71,0,0.15)' },
-  EXC: { label: TASK_STATUS_LABELS.EXC, color: '#8B2F4E', bg: 'rgba(139,47,78,0.15)' },
-  COM: { label: TASK_STATUS_LABELS.COM, color: '#1B5E20', bg: 'rgba(27,94,32,0.12)' },
-}
-
-const dateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-})
-
-const commitDateFormatter = new Intl.DateTimeFormat('en-GB', {
-  day: '2-digit',
-  month: 'short',
-  year: 'numeric',
-})
-
-const commitTypeLabels: Record<TaskTableRow['commitType'], string> = {
-  APPOINTMENT: 'Appointment',
-  'START BY': 'Start by',
-  'COMPLETE BY': 'Complete by',
-  TAIL: 'Tail',
-}
-
-const linkedTaskLabels: Record<TaskTableRow['linkedTask'], string> = {
-  Y: 'Yes',
-  N: 'No',
-}
-
 const TaskManagementPage = () => {
+  const theme = useTheme()
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+  
+  const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {
+    ACT: { label: TASK_STATUS_LABELS.ACT, ...tokens.taskStatus.ACT },
+    AWI: { label: TASK_STATUS_LABELS.AWI, ...tokens.taskStatus.AWI },
+    ISS: { label: TASK_STATUS_LABELS.ISS, ...tokens.taskStatus.ISS },
+    EXC: { label: TASK_STATUS_LABELS.EXC, ...tokens.taskStatus.EXC },
+    COM: { label: TASK_STATUS_LABELS.COM, ...tokens.taskStatus.COM },
+  }
+
+  const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+
+  const commitDateFormatter = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  const commitTypeLabels: Record<TaskTableRow['commitType'], string> = {
+    APPOINTMENT: 'Appointment',
+    'START BY': 'Start by',
+    'COMPLETE BY': 'Complete by',
+    TAIL: 'Tail',
+  }
+
+  const linkedTaskLabels: Record<TaskTableRow['linkedTask'], string> = {
+    Y: 'Yes',
+    N: 'No',
+  }
+
   const columns: GridColDef<TaskTableRow>[] = [
     {
       field: 'taskId',

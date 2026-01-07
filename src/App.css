@@ -1,7 +1,7 @@
-/* Modern neutral scrollbar style override */
+/* Modern neutral scrollbar style override - using theme-aligned colors */
 html, body, * {
   scrollbar-width: thin;
-  scrollbar-color: #b0b0b0 #f5f5f5;
+  scrollbar-color: #3A7F6B #F6F7F5;
 }
 
 /* Chrome, Edge, Safari */
@@ -10,16 +10,16 @@ html, body, * {
   height: 8px;
 }
 *::-webkit-scrollbar-track {
-  background: #f5f5f5;
+  background: #F6F7F5;
   border-radius: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #b0b0b0;
+  background: #3A7F6B;
   border-radius: 8px;
-  border: 2px solid #f5f5f5;
+  border: 2px solid #F6F7F5;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #888;
+  background: #2F6E5D;
 }
 :root,
 body,
@@ -27,7 +27,7 @@ html, body {
   margin: 0;
   min-height: 100%;
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f5f4f5;
+  background: #F6F7F5;
 }
 
 :root {
@@ -44,8 +44,8 @@ html, body {
 }
 
 body {
-  background: #f5f4f5;
-  color: #202020;
+  background: #F6F7F5;
+  color: #14323C;
 }
 
 .app-stage {
@@ -101,7 +101,7 @@ body {
   display: inline-block;
   letter-spacing: 0.25em;
   font-weight: 700;
-  color: #073b4c;
+  color: #14323C;
   margin-bottom: 0.75rem;
 }
 
