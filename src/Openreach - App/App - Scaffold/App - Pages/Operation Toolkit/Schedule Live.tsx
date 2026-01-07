@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme } from '@mui/material'
+import { Stack, TextField, Autocomplete } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import { PageContainer, SectionWrapper } from '../../../App - Shared Components/Page Container'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -14,7 +15,6 @@ interface ScheduleLivePageProps {
 }
 
 const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleLivePageProps = {}) => {
-  const theme = useTheme()
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch, setGlobalSearch] = useState('')
@@ -29,16 +29,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   [])
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+    <PageContainer maxWidth={false} spacing={2} sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       {/* Top Toolbar */}
-      <Box 
-        sx={{ 
-          flexShrink: 0, 
-          p: 2, 
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          bgcolor: 'background.paper',
-        }}
-      >
+      <SectionWrapper withBorder={false} padding={2}>
         <Stack direction="row" spacing={2} alignItems="center">
           <Autocomplete
             size="small"
@@ -73,16 +66,16 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             }}
           />
         </Stack>
-      </Box>
+      </SectionWrapper>
 
       {/* Panel Grid */}
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+      <SectionWrapper sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }} withBorder={false} padding={0}>
         <MUI4Panel
           dockedPanels={dockedPanels}
           onDockedPanelsChange={onDockedPanelsChange}
         />
-      </Box>
-    </Box>
+      </SectionWrapper>
+    </PageContainer>
   )
 }
 
