@@ -1,6 +1,6 @@
-// (type removed, now imported from shared)
 import { useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
   Autocomplete,
   Box,
@@ -23,6 +23,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
+  Typography,
 } from '@mui/material'
 import { createFilterOptions, type AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import type { SxProps, Theme } from '@mui/material/styles'
@@ -243,16 +244,13 @@ const TaskTableQueryConfig = ({
             ))}
           </Tabs>
           <TextField
-            label="Global search"
-            placeholder="Task, resource, or ID"
+            size="small"
+            placeholder="Global search..."
             value={draftQuery.searchTerm}
             onChange={handleSearchChange}
-            error={Boolean(validationError)}
-            helperText={validationError ?? ' '}
-            fullWidth
-            sx={{
-              maxWidth: { md: 320 },
-              width: { xs: '100%', md: 'auto' },
+            sx={{ flex: 1, maxWidth: 400 }}
+            InputProps={{
+              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
             }}
           />
         </Stack>
@@ -372,6 +370,12 @@ const TaskTableQueryConfig = ({
         )}
 
         <Divider light />
+
+        {validationError && (
+          <Box sx={{ p: 1.5, bgcolor: 'error.main', color: 'error.contrastText', borderRadius: 1 }}>
+            <Typography variant="body2">{validationError}</Typography>
+          </Box>
+        )}
 
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="flex-end" alignItems="center">
           <Stack direction="row" spacing={1} width={{ xs: '100%', md: 'auto' }} justifyContent={{ xs: 'flex-end', md: 'flex-end' }}>
