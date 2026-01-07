@@ -534,9 +534,9 @@ function App() {
                       >
                         <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden', px: activePage?.cardName === 'Schedule Live' ? 0 : 2 }}>
                           {activePage?.cardName === 'Schedule Live' ? (
-                            <MUI4Panel
-                              onDockedPanelsChange={setDockedPanels}
+                            <ActivePageComponent 
                               dockedPanels={dockedPanels}
+                              onDockedPanelsChange={setDockedPanels}
                             />
                           ) : (
                             <ActivePageComponent />
