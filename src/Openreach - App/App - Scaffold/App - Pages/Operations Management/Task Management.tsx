@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Box, Chip, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Chip, Stack, TextField, Typography, useTheme } from '@mui/material'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -10,6 +11,7 @@ import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTable
 const TaskManagementPage = () => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+  const [globalSearch, setGlobalSearch] = useState('')
   
   const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = {
     ACT: { label: TASK_STATUS_LABELS.ACT, ...tokens.taskStatus.ACT },
@@ -291,10 +293,34 @@ const TaskManagementPage = () => {
   const [activeQuery, setActiveQuery] = useState<TaskTableQueryState>(defaultQuery)
   const [hasAppliedQuery, setHasAppliedQuery] = useState(false)
 
-  const filteredRows = useMemo(
-    () => (hasAppliedQuery ? applyTaskFilters(TASK_TABLE_ROWS, activeQuery) : []),
-    [hasAppliedQuery, activeQuery],
-  )
+  const filteredRows = useMemo(() => {
+    if (!hasAppliedQuery) return []
+    
+    let rows = applyTaskFilters(TASK_TABLE_ROWS, activeQuery)
+    
+    // Apply global search filter
+    if (globalSearch.trim()) {
+      const searchTerm = globalSearch.trim().toLowerCase()
+      rows = rows.filter((row) => {
+        return [
+          row.taskId,
+          row.workId,
+          row.resourceId,
+          row.resourceName,
+          row.domainId,
+          row.division,
+          row.primarySkill,
+          row.status,
+          ...row.capabilities,
+        ].some((value) => {
+          if (value == null) return false
+          return value.toString().toLowerCase().includes(searchTerm)
+        })
+      })
+    }
+    
+    return rows
+  }, [hasAppliedQuery, activeQuery, globalSearch])
 
   const handleApplyQuery = (nextQuery: TaskTableQueryState) => {
     setActiveQuery(nextQuery)
@@ -310,7 +336,28 @@ const TaskManagementPage = () => {
       overflow: 'hidden',
       width: '100%',
     }}>
-      <Box sx={{ flexShrink: 0, mb: 2 }}>
+      {/* Global Search Bar */}
+      <Box 
+        sx={{ 
+          flexShrink: 0, 
+          p: 2, 
+          pb: 1,
+          bgcolor: 'background.default',
+        }}
+      >
+        <TextField
+          size="small"
+          sx={{ flex: 1, maxWidth: 400 }}
+          placeholder="Global search..."
+          value={globalSearch}
+          onChange={(e) => setGlobalSearch(e.target.value)}
+          InputProps={{
+            startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
+          }}
+        />
+      </Box>
+
+      <Box sx={{ flexShrink: 0, px: 2, pb: 2 }}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
