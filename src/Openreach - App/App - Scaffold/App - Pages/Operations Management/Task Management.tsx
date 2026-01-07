@@ -1,11 +1,12 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Alert, Box, Chip, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Chip, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
+import { PageContainer, SectionWrapper } from '../../../App - Shared Components/Page Container'
 
 const TaskManagementPage = () => {
   const theme = useTheme()
@@ -418,17 +419,8 @@ const TaskManagementPage = () => {
   }
 
   return (
-    <Paper
-      sx={{
-        boxShadow: theme.shadows[10],
-        borderRadius: 2,
-        bgcolor: 'background.paper',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
-    >
-      <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
+    <PageContainer maxWidth="xl" spacing={3}>
+      <SectionWrapper title="Task Filters" elevation={2}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
@@ -442,9 +434,9 @@ const TaskManagementPage = () => {
           onCopyHtml={handleCopyHtml}
           onExportCsv={handleExportCsv}
         />
-      </Box>
+      </SectionWrapper>
 
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <SectionWrapper title="Task Results" elevation={2} sx={{ minHeight: 400 }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -465,7 +457,6 @@ const TaskManagementPage = () => {
                 ? 'rgba(255, 255, 255, 0.02)'
                 : 'rgba(0, 0, 0, 0.02)',
               p: 4,
-              m: 3,
               textAlign: 'center',
               display: 'flex',
               flexDirection: 'column',
@@ -501,7 +492,7 @@ const TaskManagementPage = () => {
             </Typography>
           </Box>
         )}
-      </Box>
+      </SectionWrapper>
 
       <Snackbar
         open={snackbar.open}
@@ -518,7 +509,7 @@ const TaskManagementPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Paper>
+    </PageContainer>
   )
 }
 
