@@ -50,6 +50,9 @@ interface TaskTableQueryConfigProps {
   initialQuery?: TaskTableQueryState
   defaultQuery?: TaskTableQueryState
   onApply: (query: TaskTableQueryState) => void
+  hasRows?: boolean
+  onCopyHtml?: () => void
+  onExportCsv?: () => void
 }
 
 const TaskTableQueryConfig = ({
@@ -62,6 +65,9 @@ const TaskTableQueryConfig = ({
   initialQuery,
   defaultQuery,
   onApply,
+  hasRows = false,
+  onCopyHtml,
+  onExportCsv,
 }: TaskTableQueryConfigProps) => {
   const [hasQueried, setHasQueried] = useState(false)
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
@@ -372,12 +378,25 @@ const TaskTableQueryConfig = ({
         <Divider light />
 
         {validationError && (
-          <Box sx={{ p: 1.5, bgcolor: 'error.main', color: 'error.contrastText', borderRadius: 1 }}>
-            <Typography variant="body2">{validationError}</Typography>
-          </Box>
+          <Typography variant="body2" color="error.main" sx={{ px: 0.5 }}>
+            {validationError}
+          </Typography>
         )}
 
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="flex-end" alignItems="center">
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems="center">
+          <Stack direction="row" spacing={1} flexWrap="wrap" width={{ xs: '100%', md: 'auto' }}>
+            {hasRows && onCopyHtml && (
+              <Button variant="outlined" color="inherit" size="small" onClick={onCopyHtml}>
+                Copy table (HTML)
+              </Button>
+            )}
+            {hasRows && onExportCsv && (
+              <Button variant="outlined" color="inherit" size="small" onClick={onExportCsv}>
+                Export CSV
+              </Button>
+            )}
+          </Stack>
+
           <Stack direction="row" spacing={1} width={{ xs: '100%', md: 'auto' }} justifyContent={{ xs: 'flex-end', md: 'flex-end' }}>
             {showClearAction && (
               <Button variant="text" color="inherit" onClick={handleReset}>
