@@ -74,7 +74,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         sx={{
           width: '100%',
           height: '100%',
-          overflow: 'hidden',
+          overflow: 'auto',
           display: 'flex',
           flexDirection: 'column'
         }}
@@ -84,7 +84,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             width: '100%',
             height: '100%',
             '& .MuiDataGrid-virtualScroller': {
-              overflow: 'auto !important',
+              overflow: 'auto',
             },
           }}
           apiRef={apiRef}
