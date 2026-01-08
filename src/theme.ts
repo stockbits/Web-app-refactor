@@ -455,13 +455,6 @@ export const appTheme = createTheme({
         },
       },
     },
-    MuiSvgIcon: {
-      styleOverrides: {
-        root: {
-          color: brand.primary, // Green theme color for all icons
-        },
-      },
-    },
   },
 });
 
@@ -638,13 +631,6 @@ export const createDarkTheme = () => {
             color: darkTableColors.rowText,
             borderBottom: `1px solid ${darkTableColors.border}`,
           },
-        },
-      },
-    },
-    MuiSvgIcon: {
-      styleOverrides: {
-        root: {
-          color: brand.primary, // Green theme color for all icons
         },
       },
     },
