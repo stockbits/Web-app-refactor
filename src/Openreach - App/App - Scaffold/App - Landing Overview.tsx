@@ -51,10 +51,8 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                   sx={{
                     width: 44,
                     height: 44,
-                    borderRadius: '50%',
                     display: 'grid',
                     placeItems: 'center',
-                    backgroundColor: `${theme.palette.primary.main}20`,
                     color: theme.palette.primary.main,
                   }}
                 >
