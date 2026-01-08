@@ -1,6 +1,6 @@
 import { IconButton, keyframes, useTheme } from '@mui/material'
-import LightModeIcon from '@mui/icons-material/Brightness5'
-import DarkModeIcon from '@mui/icons-material/Brightness4'
+import LightModeIcon from '@mui/icons-material/LightMode'
+import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useThemeMode } from '../../ThemeContext'
 import { useState } from 'react'
 
@@ -32,7 +32,7 @@ export const ThemeToggleButton = () => {
         '&:hover': {
           bgcolor: 'transparent',
         },
-        color: theme.palette.primary.main,
+        color: '#FFFFFF',
         transition: 'background-color 0.3s ease-in-out',
         padding: '10px',
       }}
