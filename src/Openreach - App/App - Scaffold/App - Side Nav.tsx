@@ -463,10 +463,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                           sx={{
                             width: 36,
                             height: 36,
-                            borderRadius: '50%',
-                            bgcolor: alpha(palette.energyAccent, 0.14),
                             display: 'grid',
                             placeItems: 'center',
+                            color: palette.energyAccent,
                           }}
                         >
                           {group.icon}
