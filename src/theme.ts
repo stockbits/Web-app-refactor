@@ -215,8 +215,8 @@ const tableColors = {
   rowAltBg: lightTokens.background.alt,
   selectedRowBg: lightTokens.secondary.ghostBg,
   border: "#D9DBDE", // Changed from lightTokens.border.soft for more defined borders
-  columnSeparator: brand.primary,
-  columnSeparatorActive: brand.primary,
+  columnSeparator: 'transparent',
+  columnSeparatorActive: 'transparent',
 };
 
 // ============================================================
@@ -231,8 +231,8 @@ const darkTableColors = {
   rowAltBg: darkTokens.background.alt,
   selectedRowBg: "rgba(20,32,49,0.25)",
   border: darkTokens.border.soft,
-  columnSeparator: "#6FAE9A",
-  columnSeparatorActive: "#6FAE9A",
+  columnSeparator: 'transparent',
+  columnSeparatorActive: 'transparent',
 };
 
 const openreachBrand = {
