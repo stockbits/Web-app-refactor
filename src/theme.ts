@@ -214,7 +214,7 @@ const tableColors = {
   rowText: lightTokens.text.primary,
   rowAltBg: lightTokens.background.alt,
   selectedRowBg: lightTokens.secondary.ghostBg,
-  border: lightTokens.border.soft,
+  border: "#D9DBDE", // Changed from lightTokens.border.soft for more defined borders
   columnSeparator: brand.primary,
   columnSeparatorActive: brand.primary,
 };
@@ -438,6 +438,7 @@ export const appTheme = createTheme({
         root: {
           borderRadius: 0,
           marginBottom: '8px',
+          border: `1px solid ${tableColors.border}`,
         },
         columnHeader: {
           backgroundColor: tableColors.headerBg,
@@ -615,6 +616,7 @@ export const createDarkTheme = () => {
           root: {
             borderRadius: 0,
             marginBottom: '8px',
+            border: `1px solid ${darkTableColors.border}`,
           },
           columnHeader: {
             backgroundColor: darkTableColors.headerBg,

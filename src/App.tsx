@@ -549,7 +549,6 @@ function App() {
                         key={card.name}
                         elevation={0}
                         sx={{
-                          borderRadius: 3,
                           border: `1px solid ${theme.palette.divider}`,
                           bgcolor: "background.paper",
                           boxShadow: `0 12px 32px ${theme.palette.mode === 'dark' 
