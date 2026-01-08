@@ -43,7 +43,7 @@ export interface SectionWrapperProps {
    * Padding inside the section container
    * @default 2.5
    */
-  padding?: SxProps<Theme>["p"];
+  padding?: number | string | { xs?: number | string; sm?: number | string; md?: number | string };
 
   /**
    * Gap between stack items
