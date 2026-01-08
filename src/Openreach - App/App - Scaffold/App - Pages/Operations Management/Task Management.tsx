@@ -445,7 +445,7 @@ const TaskManagementPage = () => {
         />
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0, maxHeight: '60vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
