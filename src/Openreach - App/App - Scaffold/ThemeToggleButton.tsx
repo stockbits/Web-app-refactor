@@ -1,4 +1,4 @@
-import { IconButton, keyframes, useTheme } from '@mui/material'
+import { IconButton, keyframes } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useThemeMode } from '../../ThemeContext'
@@ -15,7 +15,6 @@ const spin = keyframes`
 
 export const ThemeToggleButton = () => {
   const { isDarkMode, toggleTheme } = useThemeMode()
-  const theme = useTheme()
   const [isAnimating, setIsAnimating] = useState(false)
 
   const handleClick = () => {
