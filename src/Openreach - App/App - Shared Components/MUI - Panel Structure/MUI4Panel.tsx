@@ -262,6 +262,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     };
   }, [visiblePanels]);
 
+  // Update sizes when grid layout changes
+  useEffect(() => {
+    setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows));
+    setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols));
+  }, [gridLayout.rows, gridLayout.cols]);
+
   // If a panel is expanded, show only that panel
   if (expandedPanelId) {
     const expandedPanel = visiblePanels.find(p => p.id === expandedPanelId);
