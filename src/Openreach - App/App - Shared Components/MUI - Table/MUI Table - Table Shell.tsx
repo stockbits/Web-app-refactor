@@ -69,40 +69,52 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   )
 
   return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <DataGrid
+    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Box
         sx={{
           width: '100%',
           height: '100%',
-          flex: 1,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
         }}
-        apiRef={apiRef}
-      rows={rows}
-      columns={columns}
-      getRowId={getRowId}
-      density={densityMode}
-      loading={loading}
-      hideFooter={hideFooter}
-      pagination
-      pageSizeOptions={resolvedPageSizeOptions}
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
-      checkboxSelection
-      disableRowSelectionOnClick={false}
-      autoHeight={false}
-      disableVirtualization={false}
-      slots={{
-        toolbar: enableQuickFilter
-          ? () => (
-              <QuickFilterToolbar
-                densityMode={densityMode}
-                onToggleDensity={handleDensityToggle}
-              />
-            )
-          : undefined,
-        noRowsOverlay: NoRowsOverlay,
-      }}
-    />
+      >
+        <DataGrid
+          sx={{
+            width: '100%',
+            height: '100%',
+            '& .MuiDataGrid-virtualScroller': {
+              overflow: 'auto !important',
+            },
+          }}
+          apiRef={apiRef}
+          rows={rows}
+          columns={columns}
+          getRowId={getRowId}
+          density={densityMode}
+          loading={loading}
+          hideFooter={hideFooter}
+          pagination
+          pageSizeOptions={resolvedPageSizeOptions}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          checkboxSelection
+          disableRowSelectionOnClick={false}
+          autoHeight={false}
+          disableVirtualization={true}
+          slots={{
+            toolbar: enableQuickFilter
+              ? () => (
+                  <QuickFilterToolbar
+                    densityMode={densityMode}
+                    onToggleDensity={handleDensityToggle}
+                  />
+                )
+              : undefined,
+            noRowsOverlay: NoRowsOverlay,
+          }}
+        />
+      </Box>
     </Box>
   )
 }
