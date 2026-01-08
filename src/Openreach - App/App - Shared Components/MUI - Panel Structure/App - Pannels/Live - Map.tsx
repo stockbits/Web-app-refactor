@@ -1,10 +1,10 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, ToggleButtonGroup, ToggleButton, Typography, Chip } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
-import LayersIcon from "@mui/icons-material/Layers";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import L from 'leaflet';
@@ -29,6 +29,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
   const [mapLayer, setMapLayer] = useState<MapLayerType>('roadmap');
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   // Fix for default markers in react-leaflet
   useEffect(() => {
@@ -72,6 +73,40 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
 
   const tileConfig = getTileLayerConfig();
 
+  const getMapLayerLabel = () => {
+    const labels: Record<MapLayerType, string> = {
+      roadmap: 'Road',
+      satellite: 'Satellite',
+      terrain: 'Terrain',
+      hybrid: 'Hybrid'
+    };
+    return labels[mapLayer];
+  };
+
+  const getMapLayerIcon = () => {
+    switch (mapLayer) {
+      case 'satellite':
+        return <SatelliteAltIcon sx={{ fontSize: 16 }} />;
+      case 'terrain':
+        return <TerrainIcon sx={{ fontSize: 16 }} />;
+      default:
+        return <MapIcon sx={{ fontSize: 16 }} />;
+    }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLayerSelect = (layer: MapLayerType) => {
+    setMapLayer(layer);
+    handleMenuClose();
+  };
+
   if (minimized) {
     return (
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -109,58 +144,94 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         }}
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
-          {/* Left side - Map type controls */}
-          <Stack direction="row" spacing={1} alignItems="center">
-            <LayersIcon sx={{ fontSize: 18, color: theme.palette.text.secondary }} />
-            <ToggleButtonGroup
-              value={mapLayer}
-              exclusive
-              onChange={(_, newLayer) => newLayer && setMapLayer(newLayer)}
+          {/* Left side - Map type dropdown */}
+          <Button
               size="small"
+              onClick={handleMenuOpen}
+              endIcon={<KeyboardArrowDownIcon />}
               sx={{
-                '& .MuiToggleButton-root': {
-                  px: 1,
-                  py: 0.25,
-                  fontSize: '0.75rem',
-                  textTransform: 'none',
-                  color: isDark ? theme.palette.common.white : theme.palette.text.primary,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
-                  border: `1px solid ${theme.palette.divider}`,
-                  '&:hover': {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
-                  },
-                  '&.Mui-selected': {
-                    bgcolor: theme.openreach.energyAccent,
-                    color: theme.openreach.brand.white,
-                    boxShadow: theme.shadows[1],
-                    borderColor: theme.openreach.energyAccent,
-                    '&:hover': {
-                      bgcolor: theme.openreach.coreBlock,
-                    }
-                  }
+                textTransform: 'none',
+                color: theme.palette.text.primary,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
+                border: `1px solid ${theme.palette.divider}`,
+                px: 1.5,
+                py: 0.5,
+                fontSize: '0.875rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                '&:hover': {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                 }
               }}
             >
-              <ToggleButton value="roadmap">
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <MapIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="caption">Road</Typography>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                {getMapLayerIcon()}
+                <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                  {getMapLayerLabel()}
+                </Typography>
+              </Stack>
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              PaperProps={{
+                sx: {
+                  backgroundColor: headerBg,
+                  border: `1px solid ${theme.palette.divider}`,
+                }
+              }}
+            >
+              <MenuItem
+                onClick={() => handleLayerSelect('roadmap')}
+                selected={mapLayer === 'roadmap'}
+                sx={{
+                  backgroundColor: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'transparent',
+                  color: mapLayer === 'roadmap' ? theme.openreach.brand.white : theme.palette.text.primary,
+                  '&:hover': {
+                    backgroundColor: mapLayer === 'roadmap' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                  <MapIcon sx={{ fontSize: 18, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <Typography variant="body2">Road Map</Typography>
                 </Stack>
-              </ToggleButton>
-              <ToggleButton value="satellite">
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <SatelliteAltIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="caption">Satellite</Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleLayerSelect('satellite')}
+                selected={mapLayer === 'satellite'}
+                sx={{
+                  backgroundColor: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'transparent',
+                  color: mapLayer === 'satellite' ? theme.openreach.brand.white : theme.palette.text.primary,
+                  '&:hover': {
+                    backgroundColor: mapLayer === 'satellite' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                  <SatelliteAltIcon sx={{ fontSize: 18, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <Typography variant="body2">Satellite</Typography>
                 </Stack>
-              </ToggleButton>
-              <ToggleButton value="terrain">
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <TerrainIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="caption">Terrain</Typography>
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleLayerSelect('terrain')}
+                selected={mapLayer === 'terrain'}
+                sx={{
+                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'transparent',
+                  color: mapLayer === 'terrain' ? theme.openreach.brand.white : theme.palette.text.primary,
+                  '&:hover': {
+                    backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                  <TerrainIcon sx={{ fontSize: 18, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <Typography variant="body2">Terrain</Typography>
                 </Stack>
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Stack>
+              </MenuItem>
+            </Menu>
 
           {/* Right side for secondary actions */}
           <Stack direction="row" spacing={0.5}>
@@ -234,6 +305,15 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         sx={{
           flex: 1,
           backgroundColor: theme.palette.background.paper,
+          '& .leaflet-tile-pane': {
+            filter: 'contrast(1.05)',
+          },
+          '& .leaflet-tile': {
+            border: 'none !important',
+          },
+          '& .leaflet-container': {
+            background: 'transparent',
+          }
         }}
       >
         <MapContainer
@@ -243,9 +323,14 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           key={mapLayer} // Force remount when layer changes for better performance
           attributionControl={false}
           zoomControl={true}
+          preferCanvas={true}
         >
             <TileLayer
               url={tileConfig.url}
+              maxZoom={19}
+              maxNativeZoom={18}
+              opacity={1}
+              className="smooth-tiles"
             />
             {/* Sample markers for Openreach locations */}
             <Marker position={[51.5074, -0.1278]}>
