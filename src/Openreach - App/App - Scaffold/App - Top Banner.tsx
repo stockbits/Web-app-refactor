@@ -211,7 +211,7 @@ export const OpenreachTopBanner = ({
                     border: `1px solid ${theme.palette.divider}`,
                     color: theme.palette.text.primary,
                     boxShadow: theme.shadows[8],
-                    borderRadius: 2,
+                    borderRadius: 0,
                   },
                 },
               }}

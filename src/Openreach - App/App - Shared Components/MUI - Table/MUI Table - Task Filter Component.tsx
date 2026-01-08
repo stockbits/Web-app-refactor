@@ -241,7 +241,7 @@ const TaskTableQueryConfig = ({
   return (
     <Box
       sx={{
-        borderRadius: 2,
+        borderRadius: 0,
         bgcolor: 'transparent',
         p: 0,
         boxShadow: 'none',
@@ -262,7 +262,7 @@ const TaskTableQueryConfig = ({
             sx={{
               '& .MuiTabs-indicator': {
                 height: 3,
-                borderRadius: '3px 3px 0 0',
+                borderRadius: 0,
               },
               '& .MuiTab-root': {
                 textTransform: 'none',
@@ -285,7 +285,7 @@ const TaskTableQueryConfig = ({
               flex: 1,
               maxWidth: 400,
               '& .MuiOutlinedInput-root': {
-                borderRadius: 1,
+                borderRadius: 0,
               },
             }}
             InputProps={{
@@ -418,7 +418,7 @@ const TaskTableQueryConfig = ({
               px: 0.5,
               py: 1,
               backgroundColor: 'rgba(229, 57, 53, 0.08)',
-              borderRadius: 1,
+              borderRadius: 0,
               pl: 1.5,
             }}
           >
@@ -633,13 +633,13 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
           onClose={handleClose}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
           transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          PaperProps={{ sx: { p: 2, borderRadius: 2, maxWidth: 720, bgcolor: 'background.paper' } }}
+          PaperProps={{ sx: { p: 2, borderRadius: 0, maxWidth: 720, bgcolor: 'background.paper' } }}
         >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="stretch">
             <List
               dense
               subheader={<ListSubheader component="div">Shortcuts</ListSubheader>}
-              sx={{ minWidth: 200, bgcolor: 'background.paper', borderRadius: 2 }}
+              sx={{ minWidth: 200, bgcolor: 'background.paper', borderRadius: 0 }}
             >
               {shortcuts.map((shortcut) => (
                 <ListItemButton key={shortcut.label} onClick={handleShortcut(shortcut.resolveRange)}>

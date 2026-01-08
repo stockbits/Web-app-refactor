@@ -40,7 +40,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
               elevation={0}
               sx={{
                 p: 2,
-                borderRadius: 3,
+                borderRadius: 0,
                 border: `1px solid ${tokens.border.soft}`,
                 backgroundColor: tokens.background.paper,
                 boxShadow: `0 12px 32px ${tokens.background.overlay}`,

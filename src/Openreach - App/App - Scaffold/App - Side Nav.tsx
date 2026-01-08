@@ -409,7 +409,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       }}
                       sx={{
                         mb: 0.5,
-                        borderRadius: 2,
+                        borderRadius: 0,
                         px: 1.5,
                         py: 1,
                         color: palette.fibreThreads,
@@ -482,7 +482,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                             key={child.id}
                             onClick={() => handleGroupSelect(group)}
                             sx={{
-                              borderRadius: 2,
+                              borderRadius: 0,
                               mb: 0.5,
                               pl: 3.5,
                               pr: 1.25,

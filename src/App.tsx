@@ -480,7 +480,7 @@ function App() {
                       sx: {
                         px: 2,
                         py: 1.5,
-                        borderRadius: 2,
+                        borderRadius: 0,
                         maxWidth: 320,
                       },
                     },
@@ -521,7 +521,7 @@ function App() {
                       sx: {
                         px: 2,
                         py: 1.5,
-                        borderRadius: 2,
+                        borderRadius: 0,
                         maxWidth: 320,
                       },
                     },
