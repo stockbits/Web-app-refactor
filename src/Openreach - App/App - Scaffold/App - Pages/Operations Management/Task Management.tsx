@@ -421,7 +421,6 @@ const TaskManagementPage = () => {
     <Paper
       sx={{
         boxShadow: theme.shadows[10],
-        borderRadius: 2,
         bgcolor: 'background.paper',
         display: 'flex',
         flexDirection: 'column',
@@ -429,7 +428,7 @@ const TaskManagementPage = () => {
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box sx={{ p: 3 }}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
