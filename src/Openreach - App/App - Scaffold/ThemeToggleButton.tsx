@@ -1,6 +1,6 @@
 import { IconButton, keyframes, useTheme } from '@mui/material'
-import LightModeIcon from '@mui/icons-material/LightMode'
-import DarkModeIcon from '@mui/icons-material/DarkMode'
+import LightModeIcon from '@mui/icons-material/Brightness5'
+import DarkModeIcon from '@mui/icons-material/Brightness4'
 import { useThemeMode } from '../../ThemeContext'
 import { useState } from 'react'
 
@@ -30,15 +30,10 @@ export const ThemeToggleButton = () => {
       sx={{
         animation: isAnimating ? `${spin} 0.6s ease-in-out` : 'none',
         '&:hover': {
-          bgcolor: theme.palette.mode === 'dark' 
-            ? 'rgba(255,255,255,0.15)' 
-            : 'rgba(20,32,50,0.1)',
+          bgcolor: 'transparent',
         },
-        color: '#FFFFFF',
+        color: theme.palette.primary.main,
         transition: 'background-color 0.3s ease-in-out',
-        border: theme.palette.mode === 'dark'
-          ? '1px solid rgba(255,255,255,0.2)'
-          : `1px solid ${theme.palette.divider}`,
         padding: '10px',
       }}
       title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
