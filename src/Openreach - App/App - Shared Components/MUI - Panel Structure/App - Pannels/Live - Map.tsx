@@ -6,12 +6,14 @@ import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LegendToggleIcon from "@mui/icons-material/LegendToggle";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { memo } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
+import { MAP_TASK_COLORS } from '../../../../constants/mapColors'
 import { TASK_TABLE_ROWS, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 
 // Import Leaflet CSS
@@ -32,10 +34,38 @@ interface LiveMapProps {
   layoutKey?: number;
 }
 
-export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
+interface MapClickHandlerProps {
+  popupState: { isOpen: boolean; position: [number, number] | null; content: React.ReactNode | null };
+  setPopupState: React.Dispatch<React.SetStateAction<{ isOpen: boolean; position: [number, number] | null; content: React.ReactNode | null }>>;
+  ignoreNextMapClickRef: React.MutableRefObject<boolean>;
+}
+
+function MapClickHandler({ popupState, setPopupState, ignoreNextMapClickRef }: MapClickHandlerProps) {
+  useMapEvents({
+    click: () => {
+      // Skip the very next map click if a marker double-tap just happened
+      if (ignoreNextMapClickRef.current) {
+        ignoreNextMapClickRef.current = false;
+        return;
+      }
+      // Close popup when clicking on map background (not on markers)
+      if (popupState.isOpen) {
+        setPopupState({
+          isOpen: false,
+          position: null,
+          content: null,
+        });
+      }
+    },
+  });
+  return null;
+}
+
+export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
+  const taskColors = isDark ? MAP_TASK_COLORS.dark : MAP_TASK_COLORS.light;
   
   // Map commit types to icon variants
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
@@ -63,6 +93,19 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     const saved = localStorage.getItem('liveMapShowLegend');
     return saved ? JSON.parse(saved) : false;
   });
+  const [clickedMarkerId, setClickedMarkerId] = useState<string | null>(null);
+  const ignoreNextMapClickRef = useRef(false); // Prevent map click from closing popup right after marker double-tap
+  
+  // Single popup state - stays open until explicitly closed
+  const [popupState, setPopupState] = useState<{
+    isOpen: boolean;
+    position: [number, number] | null;
+    content: React.ReactNode | null;
+  }>({
+    isOpen: false,
+    position: null,
+    content: null,
+  });
 
   // Persist legend visibility to localStorage
   const setShowLegend = (value: boolean | ((prev: boolean) => boolean)) => {
@@ -73,31 +116,49 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     });
   };
 
-  // Create custom icon helper with theme colors
-  const createTaskMarkerIcon = (variant: TaskIconVariant) => {
-    // Get colors from theme context before rendering to static markup
-    const colors = isDark ? {
-      appointment: theme.openreach.darkTokens.state.info,
-      startBy: theme.openreach.darkTokens.state.warning,
-      completeBy: theme.openreach.darkTokens.state.success,
-      failedSLA: theme.openreach.darkTokens.state.error,
-    } : {
-      appointment: theme.openreach.lightTokens.state.info,
-      startBy: theme.openreach.lightTokens.state.warning,
-      completeBy: theme.openreach.lightTokens.state.success,
-      failedSLA: theme.openreach.lightTokens.state.error,
-    };
-    
+  // Clear clicked marker after a short delay
+  const clickedMarkerIdRef = useRef(clickedMarkerId);
+  clickedMarkerIdRef.current = clickedMarkerId;
+
+  useEffect(() => {
+    if (clickedMarkerIdRef.current) {
+      const timer = setTimeout(() => {
+        setClickedMarkerId(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  // Create memoized marker icons with visual feedback
+  const createMarkerIcon = useCallback((variant: TaskIconVariant, isClicked: boolean) => {
     const iconHtml = renderToStaticMarkup(
-      <div style={{ width: '40px', height: '40px', position: 'relative' }}>
+      <div style={{ 
+        width: '40px', 
+        height: '40px', 
+        position: 'relative',
+        filter: isClicked ? 'brightness(1.3) drop-shadow(0 0 8px rgba(220, 38, 38, 0.6))' : 'none',
+        transition: 'filter 0.2s ease-in-out'
+      }}>
         <TaskIcon 
           variant={variant} 
           size={40} 
-          color={colors[variant]}
+          color={taskColors[variant]}
         />
+        {isClicked && (
+          <div style={{
+            position: 'absolute',
+            top: '-2px',
+            left: '-2px',
+            right: '-2px',
+            bottom: '-2px',
+            border: '2px solid #DC2626',
+            borderRadius: '4px',
+            pointerEvents: 'none'
+          }} />
+        )}
       </div>
     );
-    
+
     return L.divIcon({
       html: iconHtml,
       className: 'custom-task-icon',
@@ -105,7 +166,18 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
       iconAnchor: [20, 40],
       popupAnchor: [0, -40],
     });
-  };
+  }, [taskColors]);
+
+  // Memoize icons for each task to prevent recreation on every render
+  const taskIcons = useMemo(() => {
+    const icons: Record<string, L.DivIcon> = {};
+    TASK_TABLE_ROWS.forEach((task) => {
+      const variant = getIconVariant(task.commitType);
+      const key = `${task.taskId}-${clickedMarkerId === task.taskId}`;
+      icons[key] = createMarkerIcon(variant, clickedMarkerId === task.taskId);
+    });
+    return icons;
+  }, [createMarkerIcon, clickedMarkerId]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -446,7 +518,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="appointment" 
                 size={24}
-                color="#5488C7"
+                color={taskColors.appointment}
               />
               <Typography variant="body2">Appointment</Typography>
             </Stack>
@@ -454,7 +526,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="startBy" 
                 size={24}
-                color="#D97706"
+                color={taskColors.startBy}
               />
               <Typography variant="body2">Start By</Typography>
             </Stack>
@@ -462,7 +534,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="completeBy" 
                 size={24}
-                color="#43B072"
+                color={taskColors.completeBy}
               />
               <Typography variant="body2">Complete By</Typography>
             </Stack>
@@ -470,9 +542,28 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="failedSLA" 
                 size={24}
-                color="#DC2626"
+                color={taskColors.failedSLA}
               />
               <Typography variant="body2">Failed SLA</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  backgroundColor: theme.openreach.brand.primary,
+                  border: '2px solid #000000',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'white' }}>
+                  5
+                </Typography>
+              </Box>
+              <Typography variant="body2">Cluster Task</Typography>
             </Stack>
           </Stack>
         </Paper>
@@ -495,6 +586,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               opacity={1}
               className="smooth-tiles"
             />
+            {/* Map click handler to close popup */}
+            <MapClickHandler
+              popupState={popupState}
+              setPopupState={setPopupState}
+              ignoreNextMapClickRef={ignoreNextMapClickRef}
+            />
             {/* Clustered task markers - simplified visual */}
             <MarkerClusterGroup
               chunkedLoading
@@ -508,7 +605,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 const count = cluster.getChildCount();
                 return L.divIcon({
                   html: `<div style="
-                    background: ${isDark ? theme.openreach.darkTokens.primary.main : theme.openreach.lightTokens.primary.main};
+                    background: ${theme.openreach.brand.primary};
                     color: white;
                     border: 2px solid #000000;
                     border-radius: 50%;
@@ -528,38 +625,87 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               {/* Render markers from task data */}
               {TASK_TABLE_ROWS.map((task: typeof TASK_TABLE_ROWS[0]) => {
                 const variant = getIconVariant(task.commitType);
-                const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
+                const iconKey = `${task.taskId}-${clickedMarkerId === task.taskId}`;
 
                 return (
                   <Marker 
                     key={task.taskId} 
                     position={[task.taskLatitude, task.taskLongitude]} 
-                    icon={createTaskMarkerIcon(variant)}
+                    icon={taskIcons[iconKey]}
+                    eventHandlers={{
+                      click: (e) => {
+                        // Prevent default popup on single click and show visual feedback
+                        e.originalEvent.preventDefault();
+                        e.originalEvent.stopPropagation();
+                        setClickedMarkerId(task.taskId);
+                      },
+                      mousedown: (e) => {
+                        // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
+                        e.originalEvent.preventDefault();
+                        e.originalEvent.stopPropagation();
+                        setClickedMarkerId(task.taskId);
+                      },
+                      dblclick: () => {
+                        // Prevent map click handler from closing the popup after this interaction
+                        ignoreNextMapClickRef.current = true;
+                        setTimeout(() => {
+                          ignoreNextMapClickRef.current = false;
+                        }, 250);
+
+                        // Update popup with new marker position and content
+                        const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
+                        setPopupState({
+                          isOpen: true,
+                          position: [task.taskLatitude, task.taskLongitude],
+                          content: (
+                            <Box sx={{ p: 0.5, minWidth: 200 }}>
+                              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                                {task.resourceName || 'Unassigned'}
+                              </Typography>
+                              <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                                Task ID: {task.taskId}
+                              </Typography>
+                              <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                                {task.postCode}
+                              </Typography>
+                              <Chip
+                                label={variantLabel}
+                                size="small"
+                                sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors.appointment : variant === 'startBy' ? taskColors.startBy : variant === 'completeBy' ? taskColors.completeBy : taskColors.failedSLA, color: '#fff' }}
+                              />
+                            </Box>
+                          ),
+                        });
+                      }
+                    }}
                   >
-                    <Popup>
-                      <Box sx={{ p: 0.5, minWidth: 200 }}>
-                        <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                          {task.resourceName || 'Unassigned'}
-                        </Typography>
-                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                          Task ID: {task.taskId}
-                        </Typography>
-                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
-                          {task.postCode}
-                        </Typography>
-                        <Chip 
-                          label={variantLabel} 
-                          size="small" 
-                          sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? '#D97706' : variant === 'startBy' ? '#43B072' : variant === 'completeBy' ? '#5488C7' : '#DC2626', color: '#fff' }} 
-                        />
-                      </Box>
-                    </Popup>
                   </Marker>
                 );
               })}
             </MarkerClusterGroup>
+            
+            {/* Single reusable popup - stays open until explicitly closed */}
+            {popupState.isOpen && popupState.position && (
+              <Popup
+                position={popupState.position}
+                closeButton={true}
+                autoClose={false}  // Don't auto-close, we handle it manually
+                eventHandlers={{
+                  remove: () => {
+                    // Close popup when close button is clicked
+                    setPopupState({
+                      isOpen: false,
+                      position: null,
+                      content: null,
+                    });
+                  },
+                }}
+              >
+                {popupState.content}
+              </Popup>
+            )}
           </MapContainer>
       </Box>
     </Box>
   );
-}
+});

@@ -12,6 +12,16 @@ import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTable
 const TaskManagementPage = () => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  })
+
+  const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
+    setSnackbar({ open: true, message, severity })
+  }, [])
   
   const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = useMemo(
     () => ({
@@ -72,35 +82,29 @@ const TaskManagementPage = () => {
         minWidth: 150,
         align: 'left',
         headerAlign: 'left',
-        renderCell: (params) => {
-          const [showCopy, setShowCopy] = useState(false)
-          return (
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
-              onMouseEnter={() => setShowCopy(true)}
-              onMouseLeave={() => setShowCopy(false)}
-            >
-              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
-                {params.row.taskId}
-              </Typography>
-              {showCopy && (
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    size="small"
-                    onClick={async (e) => {
-                      e.stopPropagation()
-                      await navigator.clipboard.writeText(params.row.taskId)
-                      showMessage('Copied Task ID')
-                    }}
-                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
-                  >
-                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          )
-        },
+        renderCell: (params) => (
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
+          >
+            <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+              {params.row.taskId}
+            </Typography>
+            <Tooltip title="Copy to clipboard">
+              <IconButton
+                size="small"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await navigator.clipboard.writeText(params.row.taskId)
+                  showMessage('Copied Task ID')
+                }}
+                className="copy-button"
+                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
+              >
+                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
       },
       {
         field: 'status',
@@ -145,35 +149,29 @@ const TaskManagementPage = () => {
         minWidth: 160,
         align: 'left',
         headerAlign: 'left',
-        renderCell: (params) => {
-          const [showCopy, setShowCopy] = useState(false)
-          return (
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
-              onMouseEnter={() => setShowCopy(true)}
-              onMouseLeave={() => setShowCopy(false)}
-            >
-              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
-                {params.row.workId}
-              </Typography>
-              {showCopy && (
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    size="small"
-                    onClick={async (e) => {
-                      e.stopPropagation()
-                      await navigator.clipboard.writeText(params.row.workId)
-                      showMessage('Copied Work ID')
-                    }}
-                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
-                  >
-                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          )
-        },
+        renderCell: (params) => (
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
+          >
+            <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+              {params.row.workId}
+            </Typography>
+            <Tooltip title="Copy to clipboard">
+              <IconButton
+                size="small"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await navigator.clipboard.writeText(params.row.workId)
+                  showMessage('Copied Work ID')
+                }}
+                className="copy-button"
+                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
+              >
+                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
       },
       {
         field: 'resourceId',
@@ -182,35 +180,29 @@ const TaskManagementPage = () => {
         minWidth: 140,
         align: 'left',
         headerAlign: 'left',
-        renderCell: (params) => {
-          const [showCopy, setShowCopy] = useState(false)
-          return (
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
-              onMouseEnter={() => setShowCopy(true)}
-              onMouseLeave={() => setShowCopy(false)}
-            >
-              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
-                {params.row.resourceId}
-              </Typography>
-              {showCopy && (
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    size="small"
-                    onClick={async (e) => {
-                      e.stopPropagation()
-                      await navigator.clipboard.writeText(params.row.resourceId)
-                      showMessage('Copied Resource ID')
-                    }}
-                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
-                  >
-                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          )
-        },
+        renderCell: (params) => (
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
+          >
+            <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+              {params.row.resourceId}
+            </Typography>
+            <Tooltip title="Copy to clipboard">
+              <IconButton
+                size="small"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await navigator.clipboard.writeText(params.row.resourceId)
+                  showMessage('Copied Resource ID')
+                }}
+                className="copy-button"
+                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
+              >
+                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
       },
       {
         field: 'resourceName',
@@ -397,38 +389,32 @@ const TaskManagementPage = () => {
         minWidth: 130,
         align: 'left',
         headerAlign: 'left',
-        renderCell: (params) => {
-          const [showCopy, setShowCopy] = useState(false)
-          return (
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
-              onMouseEnter={() => setShowCopy(true)}
-              onMouseLeave={() => setShowCopy(false)}
-            >
-              <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1 }}>
-                {params.row.postCode}
-              </Typography>
-              {showCopy && (
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    size="small"
-                    onClick={async (e) => {
-                      e.stopPropagation()
-                      await navigator.clipboard.writeText(params.row.postCode)
-                      showMessage('Copied Post Code')
-                    }}
-                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
-                  >
-                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          )
-        },
+        renderCell: (params) => (
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
+          >
+            <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1 }}>
+              {params.row.postCode}
+            </Typography>
+            <Tooltip title="Copy to clipboard">
+              <IconButton
+                size="small"
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  await navigator.clipboard.writeText(params.row.postCode)
+                  showMessage('Copied Post Code')
+                }}
+                className="copy-button"
+                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
+              >
+                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels, tokens.success.main],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
@@ -473,20 +459,11 @@ const TaskManagementPage = () => {
   const defaultQuery = useMemo(() => buildDefaultTaskTableQuery(), [])
   const [activeQuery, setActiveQuery] = useState<TaskTableQueryState>(defaultQuery)
   const [hasAppliedQuery, setHasAppliedQuery] = useState(false)
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  })
 
   const filteredRows = useMemo(
     () => (hasAppliedQuery ? applyTaskFilters(TASK_TABLE_ROWS, activeQuery) : []),
     [hasAppliedQuery, activeQuery],
   )
-
-  const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
-    setSnackbar({ open: true, message, severity })
-  }, [])
 
   const getCellText = useCallback((row: TaskTableRow, field: string) => {
     const value = (row as unknown as Record<string, unknown>)[field]

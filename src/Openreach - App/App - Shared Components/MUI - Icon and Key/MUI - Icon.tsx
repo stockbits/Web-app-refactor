@@ -1,4 +1,5 @@
 import { useTheme } from '@mui/material'
+import { MAP_TASK_COLORS } from '../../../constants/mapColors'
 
 export type TaskIconVariant = 'appointment' | 'startBy' | 'completeBy' | 'failedSLA'
 
@@ -14,20 +15,7 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
 
   // Color mapping based on theme tokens (only used if color not provided)
   const getColors = () => {
-    if (isDark) {
-      return {
-        appointment: '#6B99D8',
-        startBy: '#FBBF24',
-        completeBy: '#52BE84',
-        failedSLA: '#FB7185',
-      }
-    }
-    return {
-      appointment: '#5488C7',
-      startBy: '#D97706',
-      completeBy: '#43B072',
-      failedSLA: '#DC2626',
-    }
+    return isDark ? MAP_TASK_COLORS.dark : MAP_TASK_COLORS.light;
   }
 
   const colors = getColors()

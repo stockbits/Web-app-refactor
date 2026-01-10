@@ -26,20 +26,56 @@ export interface MUI4PanelProps {
 export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
-  const [rowSizes, setRowSizes] = useState([50, 50]); // percentages
-  const [colSizes, setColSizes] = useState([50, 50]); // percentages
+
+  // Use dockedPanels.length as layout key to trigger re-renders when panels are docked/undocked
+  const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
   // isResizing: { type: 'row'|'col', index: number } | null
   const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number } | null>(null);
   const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
-  const [layoutKey, setLayoutKey] = useState(0);
 
-  // Trigger layout key update when panels are docked/undocked
-  useEffect(() => {
-    setLayoutKey(prev => prev + 1);
-  }, [dockedPanels.length]);
+  // Get list of visible panels (not docked)
+  const visiblePanels = useMemo(() => {
+    const panels = [
+      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
+      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" /> } },
+      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" /> } },
+    ];
+    return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
+  }, [dockedPanels]);
+
+  // Calculate grid layout based on number of visible panels
+  const gridLayout = useMemo(() => {
+    const count = visiblePanels.length;
+    if (count === 0) return { rows: 1, cols: 1, areas: [] };
+    if (count === 1) return { rows: 1, cols: 1, areas: [[visiblePanels[0].id]] };
+    if (count === 2) return { rows: 1, cols: 2, areas: [[visiblePanels[0].id, visiblePanels[1].id]] };
+    if (count === 3) {
+      // For 3 panels, fill a 2x2 grid, leaving one cell empty and letting panels expand
+      // Assign panels to top-left, top-right, bottom-left; bottom-right is empty
+      return {
+        rows: 2, cols: 2,
+        areas: [
+          [visiblePanels[0].id, visiblePanels[1].id],
+          [visiblePanels[2].id, visiblePanels[2].id]] // bottom row: panel 3 spans both columns
+      };
+    }
+    // count === 4
+    return {
+      rows: 2, cols: 2,
+      areas: [
+        [visiblePanels[0].id, visiblePanels[1].id],
+        [visiblePanels[2].id, visiblePanels[3].id]
+      ]
+    };
+  }, [visiblePanels]);
+
+  // Initialize grid sizes state
+  const [rowSizes, setRowSizes] = useState<number[]>(() => Array(gridLayout.rows).fill(100 / gridLayout.rows));
+  const [colSizes, setColSizes] = useState<number[]>(() => Array(gridLayout.cols).fill(100 / gridLayout.cols));
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -235,49 +271,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   };
 
   const isPanelDocked = (panelId: string) => dockedPanels.some(p => p.id === panelId);
-
-  // Get list of visible panels (not docked)
-  const visiblePanels = useMemo(() => {
-    const panels = [
-      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
-      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" /> } },
-      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" /> } },
-    ];
-    return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels]);
-
-  // Calculate grid layout based on number of visible panels
-  const gridLayout = useMemo(() => {
-    const count = visiblePanels.length;
-    if (count === 0) return { rows: 1, cols: 1, areas: [] };
-    if (count === 1) return { rows: 1, cols: 1, areas: [[visiblePanels[0].id]] };
-    if (count === 2) return { rows: 1, cols: 2, areas: [[visiblePanels[0].id, visiblePanels[1].id]] };
-    if (count === 3) {
-      // For 3 panels, fill a 2x2 grid, leaving one cell empty and letting panels expand
-      // Assign panels to top-left, top-right, bottom-left; bottom-right is empty
-      return {
-        rows: 2, cols: 2,
-        areas: [
-          [visiblePanels[0].id, visiblePanels[1].id],
-          [visiblePanels[2].id, visiblePanels[2].id]] // bottom row: panel 3 spans both columns
-      };
-    }
-    // count === 4
-    return {
-      rows: 2, cols: 2,
-      areas: [
-        [visiblePanels[0].id, visiblePanels[1].id],
-        [visiblePanels[2].id, visiblePanels[3].id]
-      ]
-    };
-  }, [visiblePanels]);
-
-  // Update sizes when grid layout changes
-  useEffect(() => {
-    setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows));
-    setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols));
-  }, [gridLayout.rows, gridLayout.cols]);
 
   // If a panel is expanded, show only that panel
   if (expandedPanelId) {

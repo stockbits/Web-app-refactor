@@ -112,6 +112,13 @@ const lightTokens = {
     EXC: { color: "#7C3AED", bg: "rgba(124,58,237,0.12)" },
     COM: { color: brandColors.goGreen, bg: "rgba(67,176,114,0.15)" },
   },
+  // Map Task Icon Colors
+  mapTaskColors: {
+    appointment: "#D97706",
+    startBy: "#43B072",
+    completeBy: "#5488C7",
+    failedSLA: "#50535A",
+  },
 } as const;
 
 // ============================================================
@@ -201,6 +208,13 @@ const darkTokens = {
     EXC: { color: "#D8B4FE", bg: "rgba(216,180,254,0.2)" },
     COM: { color: "#52BE84", bg: "rgba(82,190,132,0.25)" },
   },
+  // Map Task Icon Colors
+  mapTaskColors: {
+    appointment: "#FBBF24",
+    startBy: "#52BE84",
+    completeBy: "#6B99D8",
+    failedSLA: "#50535A",
+  },
 } as const;
 
 // ============================================================
@@ -276,6 +290,7 @@ declare module "@mui/material/styles" {
     input: Record<string, Record<string, string> | string>;
     state: Record<string, string>;
     map: Record<string, string>;
+    mapTaskColors: Record<string, string>;
   }
 
   interface OpenreachPalette {
