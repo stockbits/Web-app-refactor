@@ -38,7 +38,7 @@ export function TaskIcon({ variant, size = 32, color, backgroundColor }: TaskIco
 
   return (
     <div style={{ position: 'relative', width: size, height: size, display: 'inline-block' }}>
-      {/* Base PlaceIcon with black border */}
+      {/* Black border PlaceIcon */}
       <PlaceIcon
         sx={{
           position: 'absolute',
@@ -50,53 +50,17 @@ export function TaskIcon({ variant, size = 32, color, backgroundColor }: TaskIco
           filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))',
         }}
       />
-      {/* Colored PlaceIcon slightly smaller for border effect */}
+      {/* Colored filled PlaceIcon */}
       <PlaceIcon
         sx={{
           position: 'absolute',
-          top: '3%',
-          left: '3%',
-          width: size * 0.94,
-          height: size * 0.94,
+          top: '4%',
+          left: '4%',
+          width: size * 0.92,
+          height: size * 0.92,
           color: fillColor,
         }}
       />
-      {/* Inner circle overlay */}
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        {/* White background circle */}
-        <circle
-          cx="12"
-          cy="10"
-          r="4.5"
-          fill={bgColor}
-        />
-        {/* Black border circle */}
-        <circle
-          cx="12"
-          cy="10"
-          r="3.8"
-          fill="none"
-          stroke="#000000"
-          strokeWidth="0.6"
-        />
-        {/* Colored inner circle */}
-        <circle
-          cx="12"
-          cy="10"
-          r="3.2"
-          fill={fillColor}
-        />
-      </svg>
     </div>
   )
 }
