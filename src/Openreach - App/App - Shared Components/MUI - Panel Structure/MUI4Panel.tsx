@@ -395,7 +395,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       top: `${(rowSizes.slice(0, r).reduce((a,b)=>a+b,0)/100)*100}%`,
                       height: `${rowSizes[r]}%`,
                       width: '24px', // hit area
-                      marginLeft: '-12px',
                       zIndex: 1000,
                       transform: 'translateX(-50%)',
                       pointerEvents: 'auto',
@@ -453,7 +452,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       left: `${(colSizes.slice(0, c).reduce((a,b)=>a+b,0)/100)*100}%`,
                       width: `${colSizes[c]}%`,
                       height: '24px', // hit area
-                      marginTop: '-12px',
                       zIndex: 1000,
                       transform: 'translateY(-50%)',
                       pointerEvents: 'auto',
