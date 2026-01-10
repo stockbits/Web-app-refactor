@@ -61,7 +61,7 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
           <Box />
 
           {/* Right side for secondary actions */}
-          <Stack direction="row" spacing={0.5}>
+          <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
