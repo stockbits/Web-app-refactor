@@ -105,30 +105,35 @@ const TaskManagementPage = () => {
       {
         field: 'status',
         headerName: 'Task status',
-        flex: 1.2,
-        minWidth: 200,
+        flex: 1.3,
+        minWidth: 220,
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => {
           const meta = statusMetadata[params.row.status]
           return (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'center' }}>
-              <Chip
-                label={params.row.status}
-                size="small"
-                variant="outlined"
-                sx={{
-                  borderColor: meta.color,
-                  color: meta.color,
-                  fontWeight: 700,
-                  minWidth: 48,
-                }}
-              />
-              <ArrowForwardIcon sx={{ fontSize: 14, color: theme.palette.text.secondary, opacity: 0.5 }} />
-              <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
-                {meta.label}
-              </Typography>
-            </Box>
+            <Chip
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {params.row.status}
+                  </Typography>
+                  <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {meta.label}
+                  </Typography>
+                </Box>
+              }
+              size="small"
+              variant="outlined"
+              sx={{
+                borderColor: meta.color,
+                color: meta.color,
+                '& .MuiChip-label': {
+                  px: 1.5,
+                },
+              }}
+            />
           )
         },
       },
