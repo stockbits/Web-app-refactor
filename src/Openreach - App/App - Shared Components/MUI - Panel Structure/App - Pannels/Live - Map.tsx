@@ -228,7 +228,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
           {/* Left side - Map type dropdown */}
           <Button
-              size="medium"
+              size="small"
               onClick={handleMenuOpen}
               endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 20 }} />}
               sx={{
@@ -239,10 +239,8 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 px: 1.75,
                 py: 0.75,
                 ml: 0.5,
-                mt: 0.25,
-                mb: 0.25,
-                minHeight: 36,
-                fontSize: '0.80rem',
+                minHeight: 32,
+                fontSize: '0.875rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 0.75,
