@@ -68,12 +68,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
                   p: 0.5,
-                  border: `1px solid ${theme.palette.divider}`,
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
-                  color: theme.palette.text.primary,
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: theme.openreach.energyAccent,
                   '&:hover': {
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
-                    boxShadow: theme.shadows[1],
+                    backgroundColor: 'transparent',
+                    boxShadow: 'none',
                   },
                 }}
               >
@@ -92,12 +92,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                   onClick={onExpand}
                   sx={{
                     p: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
+                    border: 'none',
+                    backgroundColor: 'transparent',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
-                      boxShadow: theme.shadows[1],
+                      backgroundColor: 'transparent',
+                      boxShadow: 'none',
                     },
                   }}
                 >
@@ -112,12 +112,12 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                   onClick={onCollapse}
                   sx={{
                     p: 0.5,
-                    border: `1px solid ${theme.palette.divider}`,
-                    backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
+                    border: 'none',
+                    backgroundColor: 'transparent',
                     color: theme.openreach.energyAccent,
                     '&:hover': {
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
-                      boxShadow: theme.shadows[1],
+                      backgroundColor: 'transparent',
+                      boxShadow: 'none',
                     },
                   }}
                 >
