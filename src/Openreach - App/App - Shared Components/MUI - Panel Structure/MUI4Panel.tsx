@@ -406,6 +406,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     }}
                     tabIndex={0}
                     onPointerDown={handlePointerDown('col', c)}
+                    onDoubleClick={() => setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols))}
                     onMouseEnter={() => setHoveredHandle({ type: 'col', index: c })}
                     onMouseLeave={() => setHoveredHandle(null)}
                   >
@@ -463,6 +464,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     }}
                     tabIndex={0}
                     onPointerDown={handlePointerDown('row', r)}
+                    onDoubleClick={() => setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows))}
                     onMouseEnter={() => setHoveredHandle({ type: 'row', index: r })}
                     onMouseLeave={() => setHoveredHandle(null)}
                   >
