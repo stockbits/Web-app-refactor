@@ -1,5 +1,4 @@
 import { useTheme } from '@mui/material'
-import PlaceIcon from '@mui/icons-material/Place'
 
 export type TaskIconVariant = 'appointment' | 'startBy' | 'completeBy' | 'failedSLA'
 
@@ -7,10 +6,9 @@ interface TaskIconProps {
   variant: TaskIconVariant
   size?: number
   color?: string
-  backgroundColor?: string
 }
 
-export function TaskIcon({ variant, size = 32, color, backgroundColor }: TaskIconProps) {
+export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
 
@@ -18,50 +16,39 @@ export function TaskIcon({ variant, size = 32, color, backgroundColor }: TaskIco
   const getColors = () => {
     if (isDark) {
       return {
-        appointment: theme.openreach?.darkTokens?.state?.info ?? '#6B99D8',
-        startBy: theme.openreach?.darkTokens?.state?.warning ?? '#FBBF24',
-        completeBy: theme.openreach?.darkTokens?.state?.success ?? '#52BE84',
-        failedSLA: theme.openreach?.darkTokens?.state?.error ?? '#FB7185',
+        appointment: '#D97706',
+        startBy: '#43B072',
+        completeBy: '#5488C7',
+        failedSLA: '#DC2626',
       }
     }
     return {
-      appointment: theme.openreach?.lightTokens?.state?.info ?? '#5488C7',
-      startBy: theme.openreach?.lightTokens?.state?.warning ?? '#D97706',
-      completeBy: theme.openreach?.lightTokens?.state?.success ?? '#43B072',
-      failedSLA: theme.openreach?.lightTokens?.state?.error ?? '#DC2626',
+      appointment: '#D97706',
+      startBy: '#43B072',
+      completeBy: '#5488C7',
+      failedSLA: '#DC2626',
     }
   }
 
   const colors = getColors()
   const fillColor = color ?? colors[variant]
-  const bgColor = backgroundColor ?? theme.palette?.background?.paper ?? '#FFFFFF'
 
   return (
-    <div style={{ position: 'relative', width: size, height: size, display: 'inline-block' }}>
-      {/* Black border PlaceIcon */}
-      <PlaceIcon
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: size,
-          height: size,
-          color: '#000000',
-          filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))',
-        }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      style={{ display: 'inline-block' }}
+    >
+      {/* Solid map marker pin shape */}
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+        fill={fillColor}
+        stroke="#000000"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
       />
-      {/* Colored filled PlaceIcon */}
-      <PlaceIcon
-        sx={{
-          position: 'absolute',
-          top: '4%',
-          left: '4%',
-          width: size * 0.92,
-          height: size * 0.92,
-          color: fillColor,
-        }}
-      />
-    </div>
+    </svg>
   )
 }
 

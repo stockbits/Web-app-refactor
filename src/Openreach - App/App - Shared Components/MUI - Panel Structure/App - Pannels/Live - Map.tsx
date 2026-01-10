@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
+import { TASK_TABLE_ROWS, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -35,6 +36,22 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
   
+  // Map commit types to icon variants
+  const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
+    switch (commitType) {
+      case 'APPOINTMENT':
+        return 'appointment';
+      case 'START BY':
+        return 'startBy';
+      case 'COMPLETE BY':
+        return 'completeBy';
+      case 'TAIL':
+        return 'failedSLA';
+      default:
+        return 'appointment';
+    }
+  };
+  
   // Persist map layer selection in localStorage
   const [mapLayer, setMapLayer] = useState<MapLayerType>(() => {
     const saved = localStorage.getItem('liveMapLayer');
@@ -58,12 +75,11 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     };
     
     const iconHtml = renderToStaticMarkup(
-      <div style={{ width: '32px', height: '32px', position: 'relative' }}>
+      <div style={{ width: '40px', height: '40px', position: 'relative' }}>
         <TaskIcon 
           variant={variant} 
-          size={32} 
+          size={40} 
           color={colors[variant]}
-          backgroundColor={theme.palette.background.paper}
         />
       </div>
     );
@@ -71,9 +87,9 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     return L.divIcon({
       html: iconHtml,
       className: 'custom-task-icon',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -40],
     });
   };
 
@@ -392,19 +408,35 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           </Typography>
           <Stack spacing={1}>
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon variant="appointment" size={24} />
+              <TaskIcon 
+                variant="appointment" 
+                size={24}
+                color="#D97706"
+              />
               <Typography variant="body2">Appointment</Typography>
             </Stack>
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon variant="startBy" size={24} />
+              <TaskIcon 
+                variant="startBy" 
+                size={24}
+                color="#43B072"
+              />
               <Typography variant="body2">Start By</Typography>
             </Stack>
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon variant="completeBy" size={24} />
+              <TaskIcon 
+                variant="completeBy" 
+                size={24}
+                color="#5488C7"
+              />
               <Typography variant="body2">Complete By</Typography>
             </Stack>
             <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon variant="failedSLA" size={24} />
+              <TaskIcon 
+                variant="failedSLA" 
+                size={24}
+                color="#DC2626"
+              />
               <Typography variant="body2">Failed SLA</Typography>
             </Stack>
           </Stack>
@@ -427,11 +459,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               opacity={1}
               className="smooth-tiles"
             />
-            {/* Clustered task markers */}
+            {/* Clustered task markers - simplified visual */}
             <MarkerClusterGroup
               chunkedLoading
-              maxClusterRadius={50}
-              spiderfyOnMaxZoom={true}
+              maxClusterRadius={40}
+              disableClusteringAtZoom={11}
+              spiderfyOnMaxZoom={false}
               showCoverageOnHover={false}
               zoomToBoundsOnClick={true}
               iconCreateFunction={(cluster: any) => {
@@ -449,165 +482,44 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                     justify-content: center;
                     font-weight: 600;
                     font-size: 14px;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                   ">${count}</div>`,
                   className: 'custom-cluster-icon',
                   iconSize: L.point(40, 40, true),
                 });
               }}
             >
-              {/* London area cluster */}
-              <Marker position={[51.5074, -0.1278]} icon={createTaskMarkerIcon('appointment')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      London Central
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-001234
-                    </Typography>
-                    <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[51.5155, -0.1426]} icon={createTaskMarkerIcon('startBy')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      London King's Cross
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-001235
-                    </Typography>
-                    <Chip label="Start By 10:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.warning : theme.openreach.lightTokens.state.warning, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[51.5186, -0.1010]} icon={createTaskMarkerIcon('completeBy')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      London City
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-001236
-                    </Typography>
-                    <Chip label="Complete By 16:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.success : theme.openreach.lightTokens.state.success, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[51.4975, -0.1357]} icon={createTaskMarkerIcon('failedSLA')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      London Westminster
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-001237
-                    </Typography>
-                    <Chip label="Failed SLA" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.error : theme.openreach.lightTokens.state.error, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
+              {/* Render markers from task data */}
+              {TASK_TABLE_ROWS.map((task: typeof TASK_TABLE_ROWS[0]) => {
+                const variant = getIconVariant(task.commitType);
+                const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
 
-              {/* Manchester area cluster */}
-              <Marker position={[53.4808, -2.2426]} icon={createTaskMarkerIcon('startBy')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Manchester
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-002456
-                    </Typography>
-                    <Chip label="Start By 14:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.warning : theme.openreach.lightTokens.state.warning, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[53.4630, -2.2910]} icon={createTaskMarkerIcon('appointment')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Manchester Trafford
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-002457
-                    </Typography>
-                    <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[53.4967, -2.2451]} icon={createTaskMarkerIcon('completeBy')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Manchester Salford
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-002458
-                    </Typography>
-                    <Chip label="Complete By 18:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.success : theme.openreach.lightTokens.state.success, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-
-              {/* Birmingham area */}
-              <Marker position={[52.4862, -1.8904]} icon={createTaskMarkerIcon('completeBy')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Birmingham
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-003789
-                    </Typography>
-                    <Chip label="Complete By 17:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.success : theme.openreach.lightTokens.state.success, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-              <Marker position={[52.4695, -1.9342]} icon={createTaskMarkerIcon('appointment')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Birmingham Edgbaston
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-003790
-                    </Typography>
-                    <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-
-              {/* Edinburgh area */}
-              <Marker position={[55.9533, -3.1883]} icon={createTaskMarkerIcon('failedSLA')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Edinburgh
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-004012
-                    </Typography>
-                    <Chip label="Failed SLA" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.error : theme.openreach.lightTokens.state.error, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
-
-              {/* Brighton area */}
-              <Marker position={[50.8225, -0.1372]} icon={createTaskMarkerIcon('appointment')}>
-                <Popup>
-                  <Box sx={{ p: 0.5, minWidth: 160 }}>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                      Brighton
-                    </Typography>
-                    <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                      Task ID: TSK-005345
-                    </Typography>
-                    <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
-                  </Box>
-                </Popup>
-              </Marker>
+                return (
+                  <Marker 
+                    key={task.taskId} 
+                    position={[task.taskLatitude, task.taskLongitude]} 
+                    icon={createTaskMarkerIcon(variant)}
+                  >
+                    <Popup>
+                      <Box sx={{ p: 0.5, minWidth: 200 }}>
+                        <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                          {task.resourceName || 'Unassigned'}
+                        </Typography>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                          Task ID: {task.taskId}
+                        </Typography>
+                        <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                          {task.postCode}
+                        </Typography>
+                        <Chip 
+                          label={variantLabel} 
+                          size="small" 
+                          sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? '#D97706' : variant === 'startBy' ? '#43B072' : variant === 'completeBy' ? '#5488C7' : '#DC2626', color: '#fff' }} 
+                        />
+                      </Box>
+                    </Popup>
+                  </Marker>
+                );
+              })}
             </MarkerClusterGroup>
           </MapContainer>
       </Box>
