@@ -101,7 +101,7 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
                     },
                   }}
                 >
-                  <OpenInFullIcon fontSize="small" />
+                  <OpenInFullIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -121,7 +121,7 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
                     },
                   }}
                 >
-                  <CloseFullscreenIcon fontSize="small" />
+                  <CloseFullscreenIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}

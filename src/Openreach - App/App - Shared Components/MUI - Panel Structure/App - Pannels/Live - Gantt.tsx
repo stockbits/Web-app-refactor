@@ -101,7 +101,7 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                     },
                   }}
                 >
-                  <OpenInFullIcon fontSize="small" />
+                  <OpenInFullIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -121,7 +121,7 @@ export default function LiveGantt({ onDock, onUndock, onExpand, onCollapse, isDo
                     },
                   }}
                 >
-                  <CloseFullscreenIcon fontSize="small" />
+                  <CloseFullscreenIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}

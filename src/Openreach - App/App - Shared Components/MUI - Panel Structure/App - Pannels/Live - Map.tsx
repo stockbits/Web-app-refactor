@@ -325,14 +325,14 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                   p: 0.5,
                   border: 'none',
                   backgroundColor: 'transparent',
-                  color: showLegend ? theme.openreach.energyAccent : theme.palette.text.primary,
+                  color: theme.openreach.energyAccent,
                   '&:hover': {
                     backgroundColor: 'transparent',
                     boxShadow: 'none',
                   },
                 }}
               >
-                <LegendToggleIcon fontSize="small" />
+                <LegendToggleIcon sx={{ fontSize: 20, color: 'inherit' }} />
               </IconButton>
             </Tooltip>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
@@ -374,7 +374,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                     },
                   }}
                 >
-                  <OpenInFullIcon fontSize="small" />
+                  <OpenInFullIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -394,7 +394,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                     },
                   }}
                 >
-                  <CloseFullscreenIcon fontSize="small" />
+                  <CloseFullscreenIcon sx={{ fontSize: 20, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
