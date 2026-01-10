@@ -65,44 +65,48 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
     e.preventDefault();
     // Add pointermove and pointerup listeners
     const moveHandler = (ev: PointerEvent) => {
-      if (!isResizing || !containerRef.current) return;
+      if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const x = ev.clientX - rect.left;
       const y = ev.clientY - rect.top;
       const width = rect.width;
       const height = rect.height;
       if (type === 'row') {
-        const total = rowSizes.reduce((a, b) => a + b, 0);
-        const pct = (y / height) * 100;
-        let newSizes = [...rowSizes];
-        let before = Math.max(10, Math.min(90, pct));
-        let after = total - before;
-        if (rowSizes.length === 2) {
-          newSizes = [before, after];
-        } else {
-          const sumBefore = rowSizes.slice(0, index).reduce((a, b) => a + b, 0);
-          before = Math.max(10, Math.min(90, pct - sumBefore));
-          after = rowSizes[index+1] + rowSizes[index] - before;
-          newSizes[index] = before;
-          newSizes[index+1] = after;
-        }
-        setRowSizes(newSizes);
+        setRowSizes(currentSizes => {
+          const total = currentSizes.reduce((a, b) => a + b, 0);
+          const pct = (y / height) * 100;
+          let newSizes = [...currentSizes];
+          let before = Math.max(10, Math.min(90, pct));
+          let after = total - before;
+          if (currentSizes.length === 2) {
+            newSizes = [before, after];
+          } else {
+            const sumBefore = currentSizes.slice(0, index).reduce((a, b) => a + b, 0);
+            before = Math.max(10, Math.min(90, pct - sumBefore));
+            after = currentSizes[index+1] + currentSizes[index] - before;
+            newSizes[index] = before;
+            newSizes[index+1] = after;
+          }
+          return newSizes;
+        });
       } else if (type === 'col') {
-        const total = colSizes.reduce((a, b) => a + b, 0);
-        const pct = (x / width) * 100;
-        let newSizes = [...colSizes];
-        let before = Math.max(10, Math.min(90, pct));
-        let after = total - before;
-        if (colSizes.length === 2) {
-          newSizes = [before, after];
-        } else {
-          const sumBefore = colSizes.slice(0, index).reduce((a, b) => a + b, 0);
-          before = Math.max(10, Math.min(90, pct - sumBefore));
-          after = colSizes[index+1] + colSizes[index] - before;
-          newSizes[index] = before;
-          newSizes[index+1] = after;
-        }
-        setColSizes(newSizes);
+        setColSizes(currentSizes => {
+          const total = currentSizes.reduce((a, b) => a + b, 0);
+          const pct = (x / width) * 100;
+          let newSizes = [...currentSizes];
+          let before = Math.max(10, Math.min(90, pct));
+          let after = total - before;
+          if (currentSizes.length === 2) {
+            newSizes = [before, after];
+          } else {
+            const sumBefore = currentSizes.slice(0, index).reduce((a, b) => a + b, 0);
+            before = Math.max(10, Math.min(90, pct - sumBefore));
+            after = currentSizes[index+1] + currentSizes[index] - before;
+            newSizes[index] = before;
+            newSizes[index+1] = after;
+          }
+          return newSizes;
+        });
       }
     };
     const upHandler = () => {
