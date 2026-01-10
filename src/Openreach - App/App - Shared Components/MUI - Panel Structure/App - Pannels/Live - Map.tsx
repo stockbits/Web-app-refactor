@@ -5,6 +5,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LegendToggleIcon from "@mui/icons-material/LegendToggle";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState } from 'react';
@@ -58,6 +59,19 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     return (saved as MapLayerType) || 'roadmap';
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showLegend, setShowLegendState] = useState(() => {
+    const saved = localStorage.getItem('liveMapShowLegend');
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Persist legend visibility to localStorage
+  const setShowLegend = (value: boolean | ((prev: boolean) => boolean)) => {
+    setShowLegendState((prev: boolean) => {
+      const newValue = typeof value === 'function' ? value(prev) : value;
+      localStorage.setItem('liveMapShowLegend', JSON.stringify(newValue));
+      return newValue;
+    });
+  };
 
   // Create custom icon helper with theme colors
   const createTaskMarkerIcon = (variant: TaskIconVariant) => {
@@ -303,6 +317,24 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
 
           {/* Right side for secondary actions */}
           <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
+            <Tooltip title={showLegend ? "Hide legend" : "Show legend"}>
+              <IconButton
+                size="small"
+                onClick={() => setShowLegend(!showLegend)}
+                sx={{
+                  p: 0.5,
+                  border: `1px solid ${theme.palette.divider}`,
+                  backgroundColor: showLegend ? theme.openreach.energyAccent : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  color: showLegend ? theme.openreach.brand.white : theme.openreach.energyAccent,
+                  '&:hover': {
+                    backgroundColor: showLegend ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected),
+                    boxShadow: theme.shadows[1],
+                  },
+                }}
+              >
+                <LegendToggleIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
@@ -390,6 +422,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         }}
       >
         {/* Task Icon Legend */}
+        {showLegend && (
         <Paper
           elevation={3}
           sx={{
@@ -441,6 +474,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
             </Stack>
           </Stack>
         </Paper>
+        )}
 
         <MapContainer
           center={[54.5, -2.5]} // Center of UK
@@ -462,8 +496,8 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
             {/* Clustered task markers - simplified visual */}
             <MarkerClusterGroup
               chunkedLoading
-              maxClusterRadius={40}
-              disableClusteringAtZoom={11}
+              maxClusterRadius={200}
+              disableClusteringAtZoom={13}
               spiderfyOnMaxZoom={false}
               showCoverageOnHover={false}
               zoomToBoundsOnClick={true}
