@@ -132,9 +132,16 @@ const TaskTableQueryConfig = ({
   }
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newSearchValue = event.target.value
+    const hasSearchValue = newSearchValue.trim().length > 0
+    
     setDraftQuery((prev) => ({
       ...prev,
-      searchTerm: event.target.value,
+      searchTerm: newSearchValue,
+      // Auto-clear division, domain, and status filters when user enters a global search
+      divisions: hasSearchValue ? [] : prev.divisions,
+      domains: hasSearchValue ? [] : prev.domains,
+      statuses: hasSearchValue ? [] : prev.statuses,
     }))
     setValidationError(null)
   }

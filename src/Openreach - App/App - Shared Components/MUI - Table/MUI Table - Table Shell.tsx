@@ -83,6 +83,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           sx={{
             width: '100%',
             height: '100%',
+            '& .MuiDataGrid-cell': {
+              display: 'flex',
+              alignItems: 'center',
+            },
           }}
           apiRef={apiRef}
           rows={rows}
@@ -98,6 +102,12 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           checkboxSelection
           disableRowSelectionOnClick={false}
           autoHeight={false}
+          autosizeOnMount
+          autosizeOptions={{
+            columns: columns.map(col => col.field),
+            includeHeaders: true,
+            includeOutliers: false,
+          }}
           slots={{
             toolbar: enableQuickFilter
               ? () => (

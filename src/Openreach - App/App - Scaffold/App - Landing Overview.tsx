@@ -82,9 +82,8 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     size="small"
                     variant="outlined"
                     sx={{
-                      borderColor: tokens.border.soft,
-                      color: theme.palette.primary.main,
-                      bgcolor: tokens.secondary.ghostBg,
+                      borderColor: tokens.success.main,
+                      color: tokens.success.main,
                       fontWeight: 500,
                     }}
                   />

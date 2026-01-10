@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Alert, Box, Chip, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -67,26 +68,55 @@ const TaskManagementPage = () => {
         field: 'taskId',
         headerName: 'Task ID',
         flex: 0.9,
-        minWidth: 140,
-        renderCell: (params) => (
-          <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
-            {params.row.taskId}
-          </Typography>
-        ),
+        minWidth: 150,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const [showCopy, setShowCopy] = useState(false)
+          return (
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
+              onMouseEnter={() => setShowCopy(true)}
+              onMouseLeave={() => setShowCopy(false)}
+            >
+              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+                {params.row.taskId}
+              </Typography>
+              {showCopy && (
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    size="small"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await navigator.clipboard.writeText(params.row.taskId)
+                      showMessage('Copied Task ID')
+                    }}
+                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
+                  >
+                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          )
+        },
       },
       {
         field: 'status',
         headerName: 'Task status',
         flex: 1,
         minWidth: 160,
+        align: 'center',
+        headerAlign: 'center',
         renderCell: (params) => {
           const meta = statusMetadata[params.row.status]
           return (
             <Chip
-              label={`${meta.label} (${params.row.status})`}
+              label={params.row.status}
               size="small"
+              variant="outlined"
               sx={{
-                bgcolor: meta.bg,
+                borderColor: meta.color,
                 color: meta.color,
                 fontWeight: 600,
               }}
@@ -98,29 +128,83 @@ const TaskManagementPage = () => {
         field: 'workId',
         headerName: 'Work ID',
         flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
-            {params.row.workId}
-          </Typography>
-        ),
+        minWidth: 160,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const [showCopy, setShowCopy] = useState(false)
+          return (
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
+              onMouseEnter={() => setShowCopy(true)}
+              onMouseLeave={() => setShowCopy(false)}
+            >
+              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+                {params.row.workId}
+              </Typography>
+              {showCopy && (
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    size="small"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await navigator.clipboard.writeText(params.row.workId)
+                      showMessage('Copied Work ID')
+                    }}
+                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
+                  >
+                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          )
+        },
       },
       {
         field: 'resourceId',
         headerName: 'Resource ID',
         flex: 0.9,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
-            {params.row.resourceId}
-          </Typography>
-        ),
+        minWidth: 140,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const [showCopy, setShowCopy] = useState(false)
+          return (
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
+              onMouseEnter={() => setShowCopy(true)}
+              onMouseLeave={() => setShowCopy(false)}
+            >
+              <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
+                {params.row.resourceId}
+              </Typography>
+              {showCopy && (
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    size="small"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await navigator.clipboard.writeText(params.row.resourceId)
+                      showMessage('Copied Resource ID')
+                    }}
+                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
+                  >
+                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          )
+        },
       },
       {
         field: 'resourceName',
         headerName: 'Resource name',
-        flex: 1,
-        minWidth: 180,
+        flex: 1.2,
+        minWidth: 160,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" color={params.row.resourceName ? 'text.primary' : 'text.secondary'} noWrap>
             {params.row.resourceName || '—'}
@@ -130,8 +214,10 @@ const TaskManagementPage = () => {
       {
         field: 'division',
         headerName: 'Division',
-        flex: 1,
-        minWidth: 160,
+        flex: 1.1,
+        minWidth: 180,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Chip
             label={params.row.division}
@@ -150,6 +236,8 @@ const TaskManagementPage = () => {
         headerName: 'Domain',
         flex: 1,
         minWidth: 140,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={600} noWrap>
             {params.row.domainId}
@@ -161,6 +249,8 @@ const TaskManagementPage = () => {
         headerName: 'Response code',
         flex: 1,
         minWidth: 150,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={600} noWrap>
             {params.row.responseCode}
@@ -172,6 +262,8 @@ const TaskManagementPage = () => {
         headerName: 'Primary skill',
         flex: 0.9,
         minWidth: 140,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={600} noWrap>
             {params.row.primarySkill}
@@ -181,10 +273,12 @@ const TaskManagementPage = () => {
       {
         field: 'capabilities',
         headerName: 'Capabilities',
-        flex: 1.1,
-        minWidth: 200,
+        flex: 1.3,
+        minWidth: 220,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
-          <Stack direction="row" gap={0.5} flexWrap="wrap">
+          <Stack direction="row" gap={0.5} flexWrap="wrap" alignItems="center">
             {params.row.capabilities.length === 0 ? (
               <Typography variant="body2" color="text.secondary">
                 —
@@ -211,17 +305,32 @@ const TaskManagementPage = () => {
         headerName: 'Impact score',
         flex: 0.8,
         minWidth: 130,
-        renderCell: (params) => (
-          <Typography variant="body2" fontWeight={600} color="primary.main" noWrap>
-            {params.row.impactScore}
-          </Typography>
-        ),
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const score = params.row.impactScore
+          let color: string
+          if (score >= 500) {
+            color = tokens.state.error  // Red
+          } else if (score >= 300) {
+            color = tokens.state.warning  // Amber
+          } else {
+            color = tokens.success.main  // Green accent
+          }
+          return (
+            <Typography variant="body2" fontWeight={600} color={color} noWrap>
+              {params.row.impactScore}
+            </Typography>
+          )
+        },
       },
       {
         field: 'commitType',
         headerName: 'Commit type',
         flex: 1,
         minWidth: 150,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={500} color="text.secondary">
             {commitTypeLabels[params.row.commitType] ?? params.row.commitType}
@@ -233,6 +342,8 @@ const TaskManagementPage = () => {
         headerName: 'Commit date',
         flex: 1.1,
         minWidth: 200,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={500} color="text.secondary">
             {commitDateFormatter.format(new Date(params.row.commitDate))}
@@ -244,6 +355,8 @@ const TaskManagementPage = () => {
         headerName: 'Last update (alt)',
         flex: 1,
         minWidth: 180,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" color="text.secondary" noWrap>
             {dateFormatter.format(new Date(params.row.updatedAt))}
@@ -255,6 +368,8 @@ const TaskManagementPage = () => {
         headerName: 'Linked task',
         flex: 1,
         minWidth: 140,
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={500} color="text.secondary">
             {linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}
@@ -266,11 +381,37 @@ const TaskManagementPage = () => {
         headerName: 'Post code',
         flex: 0.8,
         minWidth: 130,
-        renderCell: (params) => (
-          <Typography variant="body2" fontWeight={600} noWrap>
-            {params.row.postCode}
-          </Typography>
-        ),
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const [showCopy, setShowCopy] = useState(false)
+          return (
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%' }}
+              onMouseEnter={() => setShowCopy(true)}
+              onMouseLeave={() => setShowCopy(false)}
+            >
+              <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1 }}>
+                {params.row.postCode}
+              </Typography>
+              {showCopy && (
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    size="small"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      await navigator.clipboard.writeText(params.row.postCode)
+                      showMessage('Copied Post Code')
+                    }}
+                    sx={{ p: 0.25, opacity: 0.7, '&:hover': { opacity: 1 } }}
+                  >
+                    <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          )
+        },
       },
     ],
     [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels, tokens.success.main],
