@@ -414,9 +414,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       className="mui4panel-handle-block"
                       sx={{
                         width: '12px',
-                        height: '5%',
-                        minHeight: '32px',
-                        maxHeight: '64px',
+                        height: '20%',
+                        minHeight: '80px',
+                        maxHeight: '120px',
                         backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c)
                           ? theme.palette.primary.main
                           : theme.palette.divider,
@@ -472,9 +472,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       className="mui4panel-handle-block"
                       sx={{
                         height: '12px',
-                        width: '5%',
-                        minWidth: '32px',
-                        maxWidth: '64px',
+                        width: '20%',
+                        minWidth: '80px',
+                        maxWidth: '120px',
                         backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r)
                           ? theme.palette.primary.main
                           : theme.palette.divider,
