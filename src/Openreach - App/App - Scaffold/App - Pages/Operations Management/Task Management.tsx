@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -104,23 +105,30 @@ const TaskManagementPage = () => {
       {
         field: 'status',
         headerName: 'Task status',
-        flex: 1,
-        minWidth: 160,
+        flex: 1.2,
+        minWidth: 200,
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => {
           const meta = statusMetadata[params.row.status]
           return (
-            <Chip
-              label={params.row.status}
-              size="small"
-              variant="outlined"
-              sx={{
-                borderColor: meta.color,
-                color: meta.color,
-                fontWeight: 600,
-              }}
-            />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'center' }}>
+              <Chip
+                label={params.row.status}
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderColor: meta.color,
+                  color: meta.color,
+                  fontWeight: 700,
+                  minWidth: 48,
+                }}
+              />
+              <ArrowForwardIcon sx={{ fontSize: 14, color: theme.palette.text.secondary, opacity: 0.5 }} />
+              <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+                {meta.label}
+              </Typography>
+            </Box>
           )
         },
       },
