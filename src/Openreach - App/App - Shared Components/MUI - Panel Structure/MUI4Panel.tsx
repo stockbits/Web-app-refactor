@@ -30,6 +30,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const [colSizes, setColSizes] = useState([50, 50]); // percentages
   // isResizing: { type: 'row'|'col', index: number } | null
   const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number } | null>(null);
+  const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
@@ -403,6 +404,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     }}
                     tabIndex={0}
                     onPointerDown={handlePointerDown('col', c)}
+                    onMouseEnter={() => setHoveredHandle({ type: 'col', index: c })}
+                    onMouseLeave={() => setHoveredHandle(null)}
                   >
                     <Box
                       className="mui4panel-handle-block"
@@ -411,21 +414,18 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                         height: '5%',
                         minHeight: '32px',
                         maxHeight: '64px',
-                        backgroundColor: theme.palette.divider,
+                        backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c)
+                          ? theme.palette.primary.main
+                          : theme.palette.divider,
                         borderRadius: 2,
-                        opacity: 0,
+                        opacity: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c) ? 1 : 0,
                         transition: 'background 0.2s, opacity 0.2s',
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        boxShadow: 0,
-                        '&:hover, &:focus, .mui4panel-handle-block-active': {
-                          backgroundColor: theme.palette.primary.main,
-                          opacity: 1,
-                          boxShadow: theme.shadows[2],
-                        },
-                        pointerEvents: 'auto',
+                        boxShadow: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c) ? theme.shadows[2] : 0,
+                        pointerEvents: 'none',
                       }}
                     />
                   </Box>
@@ -462,6 +462,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     }}
                     tabIndex={0}
                     onPointerDown={handlePointerDown('row', r)}
+                    onMouseEnter={() => setHoveredHandle({ type: 'row', index: r })}
+                    onMouseLeave={() => setHoveredHandle(null)}
                   >
                     <Box
                       className="mui4panel-handle-block"
@@ -470,21 +472,18 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                         width: '5%',
                         minWidth: '32px',
                         maxWidth: '64px',
-                        backgroundColor: theme.palette.divider,
+                        backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r)
+                          ? theme.palette.primary.main
+                          : theme.palette.divider,
                         borderRadius: 2,
-                        opacity: 0,
+                        opacity: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0,
                         transition: 'background 0.2s, opacity 0.2s',
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        boxShadow: 0,
-                        '&:hover, &:focus, .mui4panel-handle-block-active': {
-                          backgroundColor: theme.palette.primary.main,
-                          opacity: 1,
-                          boxShadow: theme.shadows[2],
-                        },
-                        pointerEvents: 'auto',
+                        boxShadow: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r) ? theme.shadows[2] : 0,
+                        pointerEvents: 'none',
                       }}
                     />
                   </Box>
