@@ -107,8 +107,8 @@ const TaskManagementPage = () => {
         headerName: 'Task status',
         flex: 1.3,
         minWidth: 220,
-        align: 'center',
-        headerAlign: 'center',
+        align: 'left',
+        headerAlign: 'left',
         renderCell: (params) => {
           const meta = statusMetadata[params.row.status]
           return (
