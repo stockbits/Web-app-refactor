@@ -501,6 +501,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               spiderfyOnMaxZoom={false}
               showCoverageOnHover={false}
               zoomToBoundsOnClick={true}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               iconCreateFunction={(cluster: any) => {
                 const count = cluster.getChildCount();
                 return L.divIcon({
