@@ -5,7 +5,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import L from 'leaflet';
 
@@ -22,13 +22,19 @@ interface LiveMapProps {
   isDocked?: boolean;
   isExpanded?: boolean;
   minimized?: boolean;
+  layoutKey?: number;
 }
 
-export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveMapProps = {}) {
+export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
-  const [mapLayer, setMapLayer] = useState<MapLayerType>('roadmap');
+  
+  // Persist map layer selection in localStorage
+  const [mapLayer, setMapLayer] = useState<MapLayerType>(() => {
+    const saved = localStorage.getItem('liveMapLayer');
+    return (saved as MapLayerType) || 'roadmap';
+  });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   // Fix for default markers in react-leaflet
@@ -83,6 +89,22 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
     return labels[mapLayer];
   };
 
+  // Component to handle map resize when layout changes
+  function MapResizeHandler({ layoutKey }: { layoutKey: number }) {
+    const map = useMap();
+    
+    useEffect(() => {
+      // Trigger resize after a short delay to ensure DOM has updated
+      const timer = setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }, [layoutKey, map]);
+    
+    return null;
+  }
+
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
@@ -104,6 +126,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
 
   const handleLayerSelect = (layer: MapLayerType) => {
     setMapLayer(layer);
+    localStorage.setItem('liveMapLayer', layer);
     handleMenuClose();
   };
 
@@ -320,11 +343,12 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           center={[54.5, -2.5]} // Center of UK
           zoom={6}
           style={{ height: '100%', width: '100%' }}
-          key={mapLayer} // Force remount when layer changes for better performance
+          key={mapLayer} // Force remount only when layer changes
           attributionControl={false}
           zoomControl={true}
           preferCanvas={true}
         >
+            <MapResizeHandler layoutKey={layoutKey} />
             <TileLayer
               url={tileConfig.url}
               maxZoom={19}

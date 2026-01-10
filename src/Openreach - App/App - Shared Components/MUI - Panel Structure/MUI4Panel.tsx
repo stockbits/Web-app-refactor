@@ -33,6 +33,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   const containerRef = useRef<HTMLDivElement>(null);
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
+  const [layoutKey, setLayoutKey] = useState(0);
+
+  // Trigger layout key update when panels are docked/undocked
+  useEffect(() => {
+    setLayoutKey(prev => prev + 1);
+  }, [dockedPanels.length]);
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -363,7 +369,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                   onExpand: () => handleExpandPanel(panel.id),
                   onCollapse: handleCollapsePanel,
                   isDocked: isPanelDocked(panel.id),
-                  isExpanded: false
+                  isExpanded: false,
+                  layoutKey: layoutKey
                 })}
               </Box>
             );
