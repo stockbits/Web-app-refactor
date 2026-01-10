@@ -167,11 +167,11 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 16 }} />;
+        return <SatelliteAltIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
       case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 16 }} />;
+        return <TerrainIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
       default:
-        return <MapIcon sx={{ fontSize: 16 }} />;
+        return <MapIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
     }
   };
 
@@ -230,24 +230,26 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           <Button
               size="small"
               onClick={handleMenuOpen}
-              endIcon={<KeyboardArrowDownIcon />}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 20 }} />}
               sx={{
                 textTransform: 'none',
                 color: theme.palette.text.primary,
                 backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
                 border: `1px solid ${theme.palette.divider}`,
-                px: 1.5,
-                py: 0.5,
+                px: 1.75,
+                py: 0.75,
+                ml: 0.5,
+                minHeight: 32,
                 fontSize: '0.875rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.5,
+                gap: 0.75,
                 '&:hover': {
                   backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
                 }
               }}
             >
-              <Stack direction="row" spacing={0.5} alignItems="center">
+              <Stack direction="row" spacing={0.75} alignItems="center">
                 {getMapLayerIcon()}
                 <Typography variant="caption" sx={{ fontWeight: 500 }}>
                   {getMapLayerLabel()}
@@ -277,7 +279,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <MapIcon sx={{ fontSize: 18, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <MapIcon sx={{ fontSize: 20, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
                   <Typography variant="body2">Road Map</Typography>
                 </Stack>
               </MenuItem>
@@ -293,7 +295,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <SatelliteAltIcon sx={{ fontSize: 18, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <SatelliteAltIcon sx={{ fontSize: 20, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
                   <Typography variant="body2">Satellite</Typography>
                 </Stack>
               </MenuItem>
@@ -309,7 +311,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <TerrainIcon sx={{ fontSize: 18, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
+                  <TerrainIcon sx={{ fontSize: 20, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
                   <Typography variant="body2">Terrain</Typography>
                 </Stack>
               </MenuItem>
