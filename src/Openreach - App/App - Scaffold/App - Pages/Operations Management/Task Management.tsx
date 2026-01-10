@@ -115,11 +115,11 @@ const TaskManagementPage = () => {
             <Chip
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: meta.color }}>
                     {params.row.status}
                   </Typography>
-                  <ArrowForwardIcon sx={{ fontSize: 14 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <ArrowForwardIcon sx={{ fontSize: 14, color: meta.color }} />
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: meta.color }}>
                     {meta.label}
                   </Typography>
                 </Box>
@@ -131,6 +131,7 @@ const TaskManagementPage = () => {
                 color: meta.color,
                 '& .MuiChip-label': {
                   px: 1.5,
+                  color: meta.color,
                 },
               }}
             />
