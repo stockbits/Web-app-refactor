@@ -444,7 +444,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="appointment" 
                 size={24}
-                color="#D97706"
+                color="#5488C7"
               />
               <Typography variant="body2">Appointment</Typography>
             </Stack>
@@ -452,7 +452,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="startBy" 
                 size={24}
-                color="#43B072"
+                color="#D97706"
               />
               <Typography variant="body2">Start By</Typography>
             </Stack>
@@ -460,7 +460,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               <TaskIcon 
                 variant="completeBy" 
                 size={24}
-                color="#5488C7"
+                color="#43B072"
               />
               <Typography variant="body2">Complete By</Typography>
             </Stack>

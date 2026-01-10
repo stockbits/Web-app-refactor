@@ -16,16 +16,16 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
   const getColors = () => {
     if (isDark) {
       return {
-        appointment: '#D97706',
-        startBy: '#43B072',
-        completeBy: '#5488C7',
-        failedSLA: '#DC2626',
+        appointment: '#6B99D8',
+        startBy: '#FBBF24',
+        completeBy: '#52BE84',
+        failedSLA: '#FB7185',
       }
     }
     return {
-      appointment: '#D97706',
-      startBy: '#43B072',
-      completeBy: '#5488C7',
+      appointment: '#5488C7',
+      startBy: '#D97706',
+      completeBy: '#43B072',
       failedSLA: '#DC2626',
     }
   }
