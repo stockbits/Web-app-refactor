@@ -39,11 +39,29 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  // Create custom icon helper
+  // Create custom icon helper with theme colors
   const createTaskMarkerIcon = (variant: TaskIconVariant) => {
+    // Get colors from theme context before rendering to static markup
+    const colors = isDark ? {
+      appointment: theme.openreach.darkTokens.state.info,
+      startBy: theme.openreach.darkTokens.state.warning,
+      completeBy: theme.openreach.darkTokens.state.success,
+      failedSLA: theme.openreach.darkTokens.state.error,
+    } : {
+      appointment: theme.openreach.lightTokens.state.info,
+      startBy: theme.openreach.lightTokens.state.warning,
+      completeBy: theme.openreach.lightTokens.state.success,
+      failedSLA: theme.openreach.lightTokens.state.error,
+    };
+    
     const iconHtml = renderToStaticMarkup(
       <div style={{ width: '32px', height: '32px', position: 'relative' }}>
-        <TaskIcon variant={variant} size={32} />
+        <TaskIcon 
+          variant={variant} 
+          size={32} 
+          color={colors[variant]}
+          backgroundColor={theme.palette.background.paper}
+        />
       </div>
     );
     

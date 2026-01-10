@@ -6,32 +6,35 @@ export type TaskIconVariant = 'appointment' | 'startBy' | 'completeBy' | 'failed
 interface TaskIconProps {
   variant: TaskIconVariant
   size?: number
+  color?: string
+  backgroundColor?: string
 }
 
-export function TaskIcon({ variant, size = 32 }: TaskIconProps) {
+export function TaskIcon({ variant, size = 32, color, backgroundColor }: TaskIconProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
 
-  // Color mapping based on theme tokens
+  // Color mapping based on theme tokens (only used if color not provided)
   const getColors = () => {
     if (isDark) {
       return {
-        appointment: theme.openreach.darkTokens.state.info,      // Blazing Blue
-        startBy: theme.openreach.darkTokens.state.warning,       // Warning orange
-        completeBy: theme.openreach.darkTokens.state.success,    // Go Green
-        failedSLA: theme.openreach.darkTokens.state.error,       // Error red
+        appointment: theme.openreach?.darkTokens?.state?.info ?? '#6B99D8',
+        startBy: theme.openreach?.darkTokens?.state?.warning ?? '#FBBF24',
+        completeBy: theme.openreach?.darkTokens?.state?.success ?? '#52BE84',
+        failedSLA: theme.openreach?.darkTokens?.state?.error ?? '#FB7185',
       }
     }
     return {
-      appointment: theme.openreach.lightTokens.state.info,     // Blazing Blue
-      startBy: theme.openreach.lightTokens.state.warning,      // Warning orange
-      completeBy: theme.openreach.lightTokens.state.success,   // Go Green
-      failedSLA: theme.openreach.lightTokens.state.error,      // Error red
+      appointment: theme.openreach?.lightTokens?.state?.info ?? '#5488C7',
+      startBy: theme.openreach?.lightTokens?.state?.warning ?? '#D97706',
+      completeBy: theme.openreach?.lightTokens?.state?.success ?? '#43B072',
+      failedSLA: theme.openreach?.lightTokens?.state?.error ?? '#DC2626',
     }
   }
 
   const colors = getColors()
-  const fillColor = colors[variant]
+  const fillColor = color ?? colors[variant]
+  const bgColor = backgroundColor ?? theme.palette?.background?.paper ?? '#FFFFFF'
 
   return (
     <div style={{ position: 'relative', width: size, height: size, display: 'inline-block' }}>
@@ -64,7 +67,7 @@ export function TaskIcon({ variant, size = 32 }: TaskIconProps) {
           cx="12"
           cy="10"
           r="4.5"
-          fill={theme.palette.background.paper}
+          fill={bgColor}
         />
         {/* Colored inner circle */}
         <circle
