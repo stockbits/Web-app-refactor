@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button, Paper } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -8,6 +8,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { useEffect, useState } from 'react';
 import L from 'leaflet';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -37,16 +39,22 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  // Fix for default markers in react-leaflet
-  useEffect(() => {
-    const iconDefault = L.Icon.Default.prototype as unknown as Record<string, unknown>;
-    delete iconDefault._getIconUrl;
-    L.Icon.Default.mergeOptions({
-      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  // Create custom icon helper
+  const createTaskMarkerIcon = (variant: TaskIconVariant) => {
+    const iconHtml = renderToStaticMarkup(
+      <div style={{ width: '32px', height: '32px', position: 'relative' }}>
+        <TaskIcon variant={variant} size={32} />
+      </div>
+    );
+    
+    return L.divIcon({
+      html: iconHtml,
+      className: 'custom-task-icon',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32],
     });
-  }, []);
+  };
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -328,6 +336,7 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
         sx={{
           flex: 1,
           backgroundColor: theme.palette.background.paper,
+          position: 'relative',
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
           },
@@ -336,9 +345,50 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
           },
           '& .leaflet-container': {
             background: 'transparent',
+          },
+          '& .custom-task-icon': {
+            background: 'none',
+            border: 'none',
           }
         }}
       >
+        {/* Task Icon Legend */}
+        <Paper
+          elevation={3}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+            zIndex: 1000,
+            p: 2,
+            minWidth: 200,
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
+            Task Status
+          </Typography>
+          <Stack spacing={1}>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <TaskIcon variant="appointment" size={24} />
+              <Typography variant="body2">Appointment</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <TaskIcon variant="startBy" size={24} />
+              <Typography variant="body2">Start By</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <TaskIcon variant="completeBy" size={24} />
+              <Typography variant="body2">Complete By</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center">
+              <TaskIcon variant="failedSLA" size={24} />
+              <Typography variant="body2">Failed SLA</Typography>
+            </Stack>
+          </Stack>
+        </Paper>
+
         <MapContainer
           center={[54.5, -2.5]} // Center of UK
           zoom={6}
@@ -356,69 +406,69 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
               opacity={1}
               className="smooth-tiles"
             />
-            {/* Sample markers for Openreach locations */}
-            <Marker position={[51.5074, -0.1278]}>
+            {/* Sample task markers with different statuses */}
+            <Marker position={[51.5074, -0.1278]} icon={createTaskMarkerIcon('appointment')}>
               <Popup>
-                <Box sx={{ p: 0.5, minWidth: 140 }}>
+                <Box sx={{ p: 0.5, minWidth: 160 }}>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
                     London Central
                   </Typography>
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Chip label="12 tasks" size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    <Chip label="8 engineers" size="small" sx={{ height: 20, fontSize: '0.7rem' }} color="primary" />
-                  </Stack>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                    Task ID: TSK-001234
+                  </Typography>
+                  <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
                 </Box>
               </Popup>
             </Marker>
-            <Marker position={[53.4808, -2.2426]}>
+            <Marker position={[53.4808, -2.2426]} icon={createTaskMarkerIcon('startBy')}>
               <Popup>
-                <Box sx={{ p: 0.5, minWidth: 140 }}>
+                <Box sx={{ p: 0.5, minWidth: 160 }}>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
                     Manchester
                   </Typography>
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Chip label="6 tasks" size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    <Chip label="4 engineers" size="small" sx={{ height: 20, fontSize: '0.7rem' }} color="primary" />
-                  </Stack>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                    Task ID: TSK-002456
+                  </Typography>
+                  <Chip label="Start By 14:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.warning : theme.openreach.lightTokens.state.warning, color: '#fff' }} />
                 </Box>
               </Popup>
             </Marker>
-            <Marker position={[52.4862, -1.8904]}>
+            <Marker position={[52.4862, -1.8904]} icon={createTaskMarkerIcon('completeBy')}>
               <Popup>
-                <Box sx={{ p: 0.5, minWidth: 140 }}>
+                <Box sx={{ p: 0.5, minWidth: 160 }}>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
                     Birmingham
                   </Typography>
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Chip label="9 tasks" size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    <Chip label="6 engineers" size="small" sx={{ height: 20, fontSize: '0.7rem' }} color="primary" />
-                  </Stack>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                    Task ID: TSK-003789
+                  </Typography>
+                  <Chip label="Complete By 17:00" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.success : theme.openreach.lightTokens.state.success, color: '#fff' }} />
                 </Box>
               </Popup>
             </Marker>
-            <Marker position={[55.9533, -3.1883]}>
+            <Marker position={[55.9533, -3.1883]} icon={createTaskMarkerIcon('failedSLA')}>
               <Popup>
-                <Box sx={{ p: 0.5, minWidth: 140 }}>
+                <Box sx={{ p: 0.5, minWidth: 160 }}>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
                     Edinburgh
                   </Typography>
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Chip label="4 tasks" size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    <Chip label="3 engineers" size="small" sx={{ height: 20, fontSize: '0.7rem' }} color="primary" />
-                  </Stack>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                    Task ID: TSK-004012
+                  </Typography>
+                  <Chip label="Failed SLA" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.error : theme.openreach.lightTokens.state.error, color: '#fff' }} />
                 </Box>
               </Popup>
             </Marker>
-            <Marker position={[50.8225, -0.1372]}>
+            <Marker position={[50.8225, -0.1372]} icon={createTaskMarkerIcon('appointment')}>
               <Popup>
-                <Box sx={{ p: 0.5, minWidth: 140 }}>
+                <Box sx={{ p: 0.5, minWidth: 160 }}>
                   <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
                     Brighton
                   </Typography>
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Chip label="7 tasks" size="small" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    <Chip label="5 engineers" size="small" sx={{ height: 20, fontSize: '0.7rem' }} color="primary" />
-                  </Stack>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                    Task ID: TSK-005345
+                  </Typography>
+                  <Chip label="Appointment" size="small" sx={{ height: 20, fontSize: '0.7rem', backgroundColor: isDark ? theme.openreach.darkTokens.state.info : theme.openreach.lightTokens.state.info, color: '#fff' }} />
                 </Box>
               </Popup>
             </Marker>
