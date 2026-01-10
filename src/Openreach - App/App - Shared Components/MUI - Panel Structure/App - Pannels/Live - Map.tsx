@@ -324,10 +324,10 @@ export default function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDock
                 sx={{
                   p: 0.5,
                   border: `1px solid ${theme.palette.divider}`,
-                  backgroundColor: showLegend ? theme.openreach.energyAccent : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  backgroundColor: showLegend ? theme.openreach.energyAccent : 'transparent',
                   color: showLegend ? theme.openreach.brand.white : theme.openreach.energyAccent,
                   '&:hover': {
-                    backgroundColor: showLegend ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected),
+                    backgroundColor: showLegend ? theme.openreach.coreBlock : (isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.1)'),
                     boxShadow: theme.shadows[1],
                   },
                 }}
