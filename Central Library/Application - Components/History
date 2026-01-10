@@ -7,6 +7,62 @@ App Module History:
 - Full scan captured every place we lean on MUI primitives plus the bespoke glue we provide to consumers.
 - Use this as the single reference when deciding whether to add new shared components or extend existing ones.
 
+Compact MUI inventory (components + customization)
+- Theme ([src/theme.ts](src/theme.ts))
+	- MUI: createTheme, ThemeOptions, CssBaseline styleOverrides
+	- Custom: brand tokens, typography defaults, scrollbar styling
+- Suspense fallback ([src/App.tsx](src/App.tsx))
+	- MUI: Stack, Typography
+	- Custom: loader copy, global lazy loading
+- Landing overview ([src/Openreach - App/App - Scaffold/App - Landing Overview.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/App%20-%20Landing%20Overview.tsx))
+	- MUI: Stack, Box, Typography, Paper, Chip, IconButton, Popover
+	- Custom: info popover, responsive cards, chip cloud
+- Top banner ([src/Openreach - App/App - Scaffold/App - Top Banner.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/App%20-%20Top%20Banner.tsx))
+	- MUI: AppBar, Toolbar, Stack, IconButton, Avatar, Menu, MenuItem, Typography
+	- Custom: gradient chrome, avatar menu, action slot
+- Side navigation ([src/Openreach - App/App - Scaffold/App - Side Nav.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/App%20-%20Side%20Nav.tsx))
+	- MUI: Drawer, Paper, Stack, List, ListItemButton, ListItemIcon, ListItemText, InputBase, IconButton, Tooltip, Chip, Divider, Typography
+	- Custom: search tree with badges, build footer, responsive brand theming
+- Bread crumb ([src/Openreach - App/App - Scaffold/App - Bread Crumb.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/App%20-%20Bread%20Crumb.tsx))
+	- MUI: Box, Typography
+	- Custom: separators, truncation
+- Theme toggle ([src/Openreach - App/App - Scaffold/ThemeToggleButton.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/ThemeToggleButton.tsx))
+	- MUI: IconButton
+	- Custom: keyframe animation
+- Shared table shell ([src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Table/MUI%20Table%20-%20Table%20Shell.tsx))
+	- MUI: Box, Stack, Typography, Switch, DataGrid, GridToolbarQuickFilter
+	- Custom: density toggle, quick filter toolbar, empty state; sort icon color, ripple off, autosizeOnMount
+- Task filter + date window ([src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Table/MUI%20Table%20-%20Task%20Filter%20Component.tsx))
+	- MUI: Paper, Stack, Box, TextField, Autocomplete, Chip, Button, Divider, OutlinedInput, InputAdornment, IconButton, Popover, Tabs; LocalizationProvider, StaticDatePicker
+	- Custom: Apply/Clear flow, bulk-select, exact-match vs trio validation; status `CODE → friendly`, tuned grid ratios, system-anchored date shortcuts
+- Panel: Live People ([src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - People.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Panel%20Structure/App%20-%20Pannels/Live%20-%20People.tsx))
+	- MUI: AppBar, Toolbar, Stack, Typography, Tooltip, IconButton, Box
+	- Custom: fullscreen toggle/chrome
+- Panel: Live Task ([src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - Task.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Panel%20Structure/App%20-%20Pannels/Live%20-%20Task.tsx))
+	- MUI: AppBar, Toolbar, Stack, Typography, Tooltip, IconButton, Box
+	- Custom: fullscreen toggle/chrome
+- Panel: Live Gantt ([src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - Gantt.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Panel%20Structure/App%20-%20Pannels/Live%20-%20Gantt.tsx))
+	- MUI: AppBar, Toolbar, Stack, Typography, Tooltip, IconButton, Box
+	- Custom: fullscreen toggle/chrome
+- Panel: Live Map ([src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - Map.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/MUI%20-%20Panel%20Structure/App%20-%20Pannels/Live%20-%20Map.tsx))
+	- MUI: AppBar, Toolbar, Stack, Typography, Tooltip, IconButton, Box, Chip, Menu, MenuItem, Button
+	- Custom: layer controls, panel chrome
+- Page container ([src/Openreach - App/App - Shared Components/Page Container/Page Container.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/Page%20Container/Page%20Container.tsx))
+	- MUI: Stack
+	- Custom: spacing, max-width
+- Section wrapper ([src/Openreach - App/App - Shared Components/Page Container/Section Wrapper.tsx](src/Openreach%20-%20App/App%20-%20Shared%20Components/Page%20Container/Section%20Wrapper.tsx))
+	- MUI: Paper, Stack, Typography
+	- Custom: section chrome, paddings
+- Task management ([src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx](src/Openreach%20-%20App/App%20-%20Scaffold/App%20-%20Pages/Operations%20Management/Task%20Management.tsx))
+	- MUI: Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography
+	- Custom: integrates table + filter, chip palettes, copy helper, exact-match token set
+- Selection helper ([Central Library/Application - Logic/Selection Logic](Central%20Library/Application%20-%20Logic/Selection%20Logic))
+	- MUI: DataGrid types (`GridRowSelectionModel`, `GridCallbackDetails`)
+	- Custom: keyboard-aware selection manager
+- Admin pages (Domain/Resource/Schedule/System/User)
+	- MUI: Box, Typography
+	- Custom: placeholders (pending detailed views)
+
 Theme + tokens (central-app/app/src/theme.ts)
 - MUI primitives: `createTheme`, `ThemeOptions`, `MuiCssBaseline` styleOverrides.
 - Custom work: Openreach brand palette exposed via `theme.openreach`, typography defaults aligned to Inter, and scrollbar styling that matches fibre accents.
@@ -26,6 +82,7 @@ Side navigation (central-app/app/src/Openreach - App/App - Scaffold/App - Side N
 Shared MUI table shell (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx)
 - MUI primitives: `Paper`, `Stack`, `Typography`, `Switch`, `Box`, `DataGrid`, `GridToolbarQuickFilter`, `GridPagination`, `GridFooterContainer`. Table height responsive to viewport, single internal scroll, and margin added for visual separation (all via MUI standard props/styles).
 - Custom work: Density toggle context, guarded header checkbox interaction, optional quick filter toolbar, configurable empty state slot.
+ - 2026-01-10 update: DataGrid `sx` refinements remove the light-mode halo behind sort icons, align sort icon color to brand (`theme.palette.primary.main`), and suppress ripple in header action areas. Enabled `autosizeOnMount` with `autosizeOptions` (include headers, exclude outliers) and preserved single-scroll container.
 
 Selection helper (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Selection Logic.ts)
 - MUI primitives: `GridRowSelectionModel`, `GridCallbackDetails` from `@mui/x-data-grid`.
@@ -38,6 +95,7 @@ Selection helper documentation (Central Library/Application - Logic/Selection Lo
 Task filter + date window (central-app/app/src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Task Filter Component.tsx)
 - MUI primitives: `Paper`, `Stack`, `Box`, `TextField`, `FormControl`, `InputLabel`, `Select`, `MenuItem`, `Checkbox`, `Chip`, `Button`, `Divider`, `OutlinedInput`, `InputAdornment`, `IconButton`, `Popover`, `List`, `ListItemButton`, `ListItemText`, `ListSubheader`, `ToggleButton`, `ToggleButtonGroup`, `StaticDatePicker`, `LocalizationProvider`.
 - Custom work: Keyword + multiselect filters feeding a draft query state, contextual shortcut list for the date popover (week and quarter jumps), preserved time controls, deferred Apply/Clear workflow, and bulk-select inputs with select/clear icon logic documented in `Central Library/Application - Logic/Input Icon - Logic`. Validation now enforces mutually exclusive search flows (exact-match global query vs. Division/Domain/Status trio), trims input before submission, surfaces inline helper text, and keeps the previous dataset visible when the form is cleared.
+ - 2026-01-10 update: Status options now render as `CODE → friendly` using `TASK_STATUS_LABELS`. Grid layout ratios tuned (`2.2fr 1.4fr 2.4fr 2fr 1fr`) for the simple tab. Bulk-select defaults to "select" when nothing is chosen so the control is always available. Date shortcuts for forward/back ranges are anchored to the current system date to ensure predictable windows.
 
 Task management reference page (central-app/app/src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx)
 - MUI primitives: `Stack`, `Box`, `Typography`, `Chip` paired with the shared table shell.
