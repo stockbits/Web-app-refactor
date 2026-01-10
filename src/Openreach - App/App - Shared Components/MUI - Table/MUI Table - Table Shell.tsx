@@ -80,14 +80,35 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         }}
       >
         <DataGrid
-          sx={{
+          sx={(theme) => ({
             width: '100%',
             height: '100%',
             '& .MuiDataGrid-cell': {
               display: 'flex',
               alignItems: 'center',
             },
-          }}
+            // Remove light-mode circle behind sort icon and align color with brand
+            '& .MuiDataGrid-iconButtonContainer': {
+              backgroundColor: 'transparent !important',
+            },
+            '& .MuiDataGrid-iconButtonContainer .MuiButtonBase-root': {
+              backgroundColor: 'transparent !important',
+              borderRadius: 0,
+              padding: 0,
+              '&:hover': { backgroundColor: 'transparent !important' },
+            },
+            '& .MuiDataGrid-iconButtonContainer .MuiIconButton-root': {
+              backgroundColor: 'transparent !important',
+              '&:hover': { backgroundColor: 'transparent !important' },
+            },
+            '& .MuiDataGrid-iconButtonContainer .MuiTouchRipple-root': {
+              display: 'none',
+            },
+            '& .MuiDataGrid-sortIcon': {
+              marginLeft: 0.5,
+              color: theme.palette.primary.main,
+            },
+          })}
           apiRef={apiRef}
           rows={rows}
           columns={columns}

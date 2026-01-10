@@ -107,7 +107,11 @@ const TaskTableQueryConfig = ({
     [domainOptions],
   )
   const statusSelectOptions = useMemo(
-    () => buildLabeledOptions(statusOptions, (value) => STATUS_OPTION_LABELS[value] ?? value),
+    () =>
+      statusOptions.map((value) => ({
+        value,
+        label: `${value} → ${STATUS_OPTION_LABELS[value] ?? value}`,
+      })),
     [statusOptions],
   )
   const capabilitySelectOptions = useMemo(
@@ -309,8 +313,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '2fr 2fr 2fr 2fr 1fr',
-                lg: '2fr 2fr 2fr 2fr 1fr',
+                md: '2.2fr 1.4fr 2.4fr 2fr 1fr',
+                lg: '2.2fr 1.4fr 2.4fr 2fr 1fr',
               },
             }}
           >
@@ -932,8 +936,10 @@ const BulkSelectableMultiSelect = <TValue extends string>({
   const showBulkSelect = options.length > 0
   const isBulkActionDisabled = bulkMatchCount === 0 || bulkAlreadySelected
   const isAllSelected = options.length > 0 && value.length === options.length
-  const shouldShowSelectAllIcon = actionMode === 'select' && showBulkSelect && bulkMatchCount > 0 && !isBulkActionDisabled
-  const shouldShowClearIcon = actionMode === 'clear' && value.length > 0
+  // Ensure the bulk-select control is always available when nothing is selected
+  const effectiveActionMode = value.length === 0 ? 'select' : actionMode
+  const shouldShowSelectAllIcon = effectiveActionMode === 'select' && showBulkSelect && bulkMatchCount > 0 && !isBulkActionDisabled
+  const shouldShowClearIcon = effectiveActionMode === 'clear' && value.length > 0
 
   const handleBulkSelect = () => {
     if (isBulkActionDisabled) {

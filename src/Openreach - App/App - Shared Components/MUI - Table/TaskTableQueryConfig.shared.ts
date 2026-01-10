@@ -1,4 +1,4 @@
-import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
+import { TASK_STATUS_LABELS, type TaskSkillCode, type TaskTableRow } from '../../App - Data Tables/Task - Table';
 
 export type TaskTableQueryState = {
   searchTerm: string;
@@ -35,10 +35,4 @@ export const TASK_FILTER_TABS: Array<{ value: TaskFilterTab; label: string }> = 
 
 export const DEFAULT_STATUSES: TaskTableRow['status'][] = ['ACT', 'AWI', 'ISS', 'EXC', 'COM'];
 
-export const STATUS_OPTION_LABELS: Record<TaskTableRow['status'], string> = {
-  ACT: 'ACT',
-  AWI: 'AWI',
-  ISS: 'ISS',
-  EXC: 'EXC',
-  COM: 'COM',
-};
+export const STATUS_OPTION_LABELS: Record<TaskTableRow['status'], string> = TASK_STATUS_LABELS;
