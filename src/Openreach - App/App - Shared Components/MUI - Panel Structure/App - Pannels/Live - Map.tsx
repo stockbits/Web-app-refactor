@@ -179,7 +179,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
-  const taskColors = isDark ? theme.openreach?.darkTokens?.mapTaskColors : theme.openreach?.lightTokens?.mapTaskColors;
+  const taskColors = theme.openreach?.darkTokens?.mapTaskColors; // Always use dark mode colors for task icons
   
   // Map commit types to icon variants
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
