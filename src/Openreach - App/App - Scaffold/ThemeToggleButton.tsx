@@ -38,9 +38,9 @@ export const ThemeToggleButton = () => {
       title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDarkMode ? (
-        <LightModeIcon sx={{ fontSize: 22 }} />
+        <LightModeIcon sx={{ fontSize: 32 }} />
       ) : (
-        <DarkModeIcon sx={{ fontSize: 22 }} />
+        <DarkModeIcon sx={{ fontSize: 32 }} />
       )}
     </IconButton>
   )

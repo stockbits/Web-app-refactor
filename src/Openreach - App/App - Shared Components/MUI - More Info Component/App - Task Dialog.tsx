@@ -307,7 +307,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                     minRows={2}
                   />
                   <Stack direction="row" justifyContent="flex-end">
-                    <Button onClick={() => addNote('field')} size="small" variant="contained" disabled={!fieldNoteDraft.trim()}>
+                    <Button onClick={() => addNote('field')} size="small" variant="contained" color="primary" disabled={!fieldNoteDraft.trim()}>
                       Add note
                     </Button>
                   </Stack>
@@ -359,7 +359,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                     minRows={2}
                   />
                   <Stack direction="row" justifyContent="flex-end">
-                    <Button onClick={() => addNote('progress')} size="small" variant="contained" color="secondary" disabled={!progressNoteDraft.trim()}>
+                    <Button onClick={() => addNote('progress')} size="small" variant="contained" color="primary" disabled={!progressNoteDraft.trim()}>
                       Add note
                     </Button>
                   </Stack>

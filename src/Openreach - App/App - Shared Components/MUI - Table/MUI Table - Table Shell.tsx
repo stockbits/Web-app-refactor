@@ -69,24 +69,13 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   )
 
   return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          overflow: 'hidden',
+    <DataGrid
+      sx={(theme) => ({
+        width: '100%',
+        '& .MuiDataGrid-cell': {
           display: 'flex',
-          flexDirection: 'column'
-        }}
-      >
-        <DataGrid
-          sx={(theme) => ({
-            width: '100%',
-            height: '100%',
-            '& .MuiDataGrid-cell': {
-              display: 'flex',
-              alignItems: 'center',
-            },
+          alignItems: 'center',
+        },
             // Footer: gently increase height and breathing room
             '& .MuiDataGrid-footerContainer': {
               borderTop: `1px solid ${theme.palette.divider}`,
@@ -100,22 +89,25 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
-              borderRight: `1px solid ${theme.palette.divider} !important`,
-              boxShadow: `2px 0 3px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.06)'} !important`,
+              borderRight: `1.5px solid ${theme.palette.divider} !important`,
+              boxShadow: `1px 0 2px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.03)'} !important`,
+              transition: 'box-shadow 0.2s, border-color 0.2s',
             },
             '& .MuiDataGrid-cell.action-col': {
               position: 'sticky !important',
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
-              borderRight: `1px solid ${theme.palette.divider} !important`,
+              borderRight: `1.5px solid ${theme.palette.divider} !important`,
+              boxShadow: 'none !important',
             },
             '& .MuiDataGrid-columnHeader.action-col': {
               position: 'sticky !important',
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
-              borderRight: `1px solid ${theme.palette.divider} !important`,
+              borderRight: `1.5px solid ${theme.palette.divider} !important`,
+              boxShadow: 'none !important',
             },
             '& .MuiDataGrid-columnHeader.action-col .MuiDataGrid-columnSeparator': {
               display: 'none',
@@ -142,40 +134,30 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               color: theme.palette.primary.main,
             },
           })}
-          apiRef={apiRef}
-          rows={rows}
-          columns={columns}
-          getRowId={getRowId}
-          density={densityMode}
-          loading={loading}
-          hideFooter={hideFooter}
-          disableVirtualization
-          pagination
-          pageSizeOptions={resolvedPageSizeOptions}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          disableRowSelectionOnClick={false}
-          autoHeight={false}
-          autosizeOnMount
-          autosizeOptions={{
-            columns: columns.filter(col => col.field !== 'actions').map(col => col.field),
-            includeHeaders: true,
-            includeOutliers: false,
-          }}
-          slots={{
-            toolbar: enableQuickFilter
-              ? () => (
-                  <QuickFilterToolbar
-                    densityMode={densityMode}
-                    onToggleDensity={handleDensityToggle}
-                  />
-                )
-              : undefined,
-            noRowsOverlay: NoRowsOverlay,
-          }}
-        />
-      </Box>
-    </Box>
+      apiRef={apiRef}
+      rows={rows}
+      columns={columns}
+      getRowId={getRowId}
+      density={densityMode}
+      loading={loading}
+      hideFooter={hideFooter}
+      pagination
+      pageSizeOptions={resolvedPageSizeOptions}
+      paginationModel={paginationModel}
+      onPaginationModelChange={setPaginationModel}
+      disableRowSelectionOnClick={false}
+      slots={{
+        toolbar: enableQuickFilter
+          ? () => (
+              <QuickFilterToolbar
+                densityMode={densityMode}
+                onToggleDensity={handleDensityToggle}
+              />
+            )
+          : undefined,
+        noRowsOverlay: NoRowsOverlay,
+      }}
+    />
   )
 }
 

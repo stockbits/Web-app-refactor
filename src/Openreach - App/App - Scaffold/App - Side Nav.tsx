@@ -285,7 +285,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
-          backgroundColor: palette.supportingBlock,
+          backgroundColor: theme.openreach.brandColors.networkNavy,
           boxShadow: 'none',
           display: 'flex',
           alignItems: 'stretch',
@@ -297,13 +297,13 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
         },
       }}
     >
-      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%' }}>
+      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%', bgcolor: theme.openreach.brandColors.networkNavy }}>
         <Paper
           component="nav"
           elevation={0}
           sx={{
             width: '100%',
-            bgcolor: '#142032',
+            bgcolor: theme.openreach.brandColors.networkNavy,
             color: '#FFFFFF',
             borderRadius: 0,
             border: 'none',
@@ -530,7 +530,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 px: 2,
                 display: 'flex',
                 justifyContent: 'center',
-                bgcolor: palette.supportingBlock,
+                bgcolor: theme.openreach.brandColors.networkNavy,
               }}
             >
               <ThemeToggleButton />
@@ -546,7 +546,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   bottom: 0,
                   left: 0,
                   width: '100%',
-                  bgcolor: palette.supportingBlock,
+                  bgcolor: theme.openreach.brandColors.networkNavy,
                   zIndex: 2,
                 }}
               >

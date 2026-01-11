@@ -45,7 +45,6 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5 }: TaskDock
           {visibleItems.map((item) => (
             <Chip
               key={item.id}
-              icon={item.icon as React.ReactElement}
               label={
                 <Typography variant="caption" fontWeight={700} noWrap>
                   {item.title}
