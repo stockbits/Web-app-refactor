@@ -662,14 +662,15 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                   width: 24,
                   height: 24,
                   borderRadius: '50%',
-                  backgroundColor: theme.openreach.brand.primary,
-                  border: '2px solid #000000',
+                  backgroundColor: theme.openreach.energyAccent,
+                  border: '2px solid rgba(255, 255, 255, 0.9)',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: 'white' }}>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 700, color: 'white' }}>
                   5
                 </Typography>
               </Box>
@@ -714,22 +715,28 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               iconCreateFunction={(cluster: any) => {
                 const count = cluster.getChildCount();
+                // Scale size based on cluster count
+                const size = count < 10 ? 36 : count < 100 ? 44 : 52;
+                const fontSize = count < 10 ? '13px' : count < 100 ? '15px' : '17px';
+                
                 return L.divIcon({
                   html: `<div style="
-                    background: ${theme.openreach.brand.primary};
+                    background: ${theme.openreach.energyAccent};
                     color: white;
-                    border: 2px solid #000000;
+                    border: 2px solid rgba(255, 255, 255, 0.9);
                     border-radius: 50%;
-                    width: 40px;
-                    height: 40px;
+                    width: ${size}px;
+                    height: ${size}px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-weight: 600;
-                    font-size: 14px;
+                    font-weight: 700;
+                    font-size: ${fontSize};
+                    box-shadow: 0 3px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1);
+                    transition: transform 0.2s ease;
                   ">${count}</div>`,
                   className: 'custom-cluster-icon',
-                  iconSize: L.point(40, 40, true),
+                  iconSize: L.point(size, size, true),
                 });
               }}
             >
