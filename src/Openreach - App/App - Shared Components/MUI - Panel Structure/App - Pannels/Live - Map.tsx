@@ -224,7 +224,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     return (saved as MapLayerType) || 'roadmap';
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [clickedMarkerId, setClickedMarkerId] = useState<string | null>(null);
+  const [clickedMarkerIds, setClickedMarkerIds] = useState<string[]>([]);
   const ignoreNextMapClickRef = useRef(false); // Prevent map click from closing popup right after marker double-tap
   const [currentZoom, setCurrentZoom] = useState(6); // Track current zoom level
   
@@ -240,20 +240,13 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   });
 
   // Clear clicked marker after a short delay
-  const clickedMarkerIdRef = useRef(clickedMarkerId);
-  clickedMarkerIdRef.current = clickedMarkerId;
+  const clickedMarkerIdsRef = useRef(clickedMarkerIds);
+  clickedMarkerIdsRef.current = clickedMarkerIds;
 
-  useEffect(() => {
-    if (clickedMarkerIdRef.current) {
-      const timer = setTimeout(() => {
-        setClickedMarkerId(null);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // Note: Removed auto-clear functionality to preserve multi-selections
 
   // Create memoized marker icons with visual feedback
-  const createMarkerIcon = useCallback((variant: TaskIconVariant, isClicked: boolean) => {
+  const createMarkerIcon = useCallback((variant: TaskIconVariant, isSelected: boolean) => {
     const colorMap: Record<TaskIconVariant, string> = {
       appointment: taskColors?.appointment || TASK_ICON_COLORS.appointment,
       startBy: taskColors?.startBy || TASK_ICON_COLORS.startBy,
@@ -267,7 +260,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         width: '40px', 
         height: '40px', 
         position: 'relative',
-        filter: isClicked ? `brightness(1.3) drop-shadow(0 0 8px ${alpha(theme.palette.error.main, 0.6)})` : 'none',
+        filter: isSelected ? `brightness(1.3) drop-shadow(0 0 8px ${alpha(theme.palette.error.main, 0.6)})` : 'none',
         transition: 'filter 0.2s ease-in-out'
       }}>
         <TaskIcon 
@@ -275,7 +268,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           size={40} 
           color={colorMap[variant]}
         />
-        {isClicked && (
+        {isSelected && (
           <div style={{
             position: 'absolute',
             top: '-2px',
@@ -304,11 +297,12 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     const icons: Record<string, L.DivIcon> = {};
     TASK_TABLE_ROWS.forEach((task) => {
       const variant = getIconVariant(task.commitType);
-      const key = `${task.taskId}-${clickedMarkerId === task.taskId}`;
-      icons[key] = createMarkerIcon(variant, clickedMarkerId === task.taskId);
+      const isSelected = clickedMarkerIds.includes(task.taskId);
+      const key = `${task.taskId}-${isSelected}`;
+      icons[key] = createMarkerIcon(variant, isSelected);
     });
     return icons;
-  }, [createMarkerIcon, clickedMarkerId]);
+  }, [createMarkerIcon, clickedMarkerIds]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -662,7 +656,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               {/* Render markers from task data */}
               {TASK_TABLE_ROWS.map((task: typeof TASK_TABLE_ROWS[0]) => {
                 const variant = getIconVariant(task.commitType);
-                const iconKey = `${task.taskId}-${clickedMarkerId === task.taskId}`;
+                const isSelected = clickedMarkerIds.includes(task.taskId);
+                const iconKey = `${task.taskId}-${isSelected}`;
 
                 return (
                   <Marker 
@@ -674,13 +669,41 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                         // Prevent default popup on single click and show visual feedback
                         e.originalEvent.preventDefault();
                         e.originalEvent.stopPropagation();
-                        setClickedMarkerId(task.taskId);
+                        
+                        // Check if CTRL key is held for multi-selection
+                        const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                        
+                        if (isCtrlPressed) {
+                          // Multi-select: toggle this marker in the selection
+                          setClickedMarkerIds(prev => 
+                            prev.includes(task.taskId) 
+                              ? prev.filter(id => id !== task.taskId) // Remove if already selected
+                              : [...prev, task.taskId] // Add if not selected
+                          );
+                        } else {
+                          // Single select: replace selection with just this marker
+                          setClickedMarkerIds([task.taskId]);
+                        }
                       },
                       mousedown: (e) => {
                         // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
                         e.originalEvent.preventDefault();
                         e.originalEvent.stopPropagation();
-                        setClickedMarkerId(task.taskId);
+                        
+                        // Check if CTRL key is held for multi-selection
+                        const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                        
+                        if (isCtrlPressed) {
+                          // Multi-select: toggle this marker in the selection
+                          setClickedMarkerIds(prev => 
+                            prev.includes(task.taskId) 
+                              ? prev.filter(id => id !== task.taskId) // Remove if already selected
+                              : [...prev, task.taskId] // Add if not selected
+                          );
+                        } else {
+                          // Single select: replace selection with just this marker
+                          setClickedMarkerIds([task.taskId]);
+                        }
                       },
                       dblclick: () => {
                         // Prevent map click handler from closing the popup after this interaction
