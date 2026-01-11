@@ -97,16 +97,16 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
       elevation={2}
       sx={{
         position: 'absolute',
-        top: 16,
+        top: 70,
         left: 10,
         zIndex: 1000,
         backgroundColor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
-        p: 1,
+        p: 0.75,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 1,
+        gap: 0.75,
       }}
     >
       <IconButton
@@ -114,8 +114,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomIn}
         disabled={currentZoom >= maxZoom}
         sx={{
-          width: 28,
-          height: 28,
+          width: 26,
+          height: 26,
           color: theme.openreach.energyAccent,
           '&:hover': {
             backgroundColor: theme.palette.action.hover,
@@ -125,7 +125,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <AddIcon sx={{ fontSize: 18 }} />
+        <AddIcon sx={{ fontSize: 16 }} />
       </IconButton>
       
       <Slider
@@ -136,17 +136,17 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         max={maxZoom}
         step={1}
         sx={{
-          height: 100,
+          height: 90,
           color: theme.openreach.energyAccent,
           '& .MuiSlider-thumb': {
-            width: 14,
-            height: 14,
+            width: 12,
+            height: 12,
           },
           '& .MuiSlider-track': {
-            width: 3,
+            width: 2,
           },
           '& .MuiSlider-rail': {
-            width: 3,
+            width: 2,
           }
         }}
       />
@@ -156,8 +156,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomOut}
         disabled={currentZoom <= minZoom}
         sx={{
-          width: 28,
-          height: 28,
+          width: 26,
+          height: 26,
           color: theme.openreach.energyAccent,
           '&:hover': {
             backgroundColor: theme.palette.action.hover,
@@ -167,7 +167,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <RemoveIcon sx={{ fontSize: 18 }} />
+        <RemoveIcon sx={{ fontSize: 16 }} />
       </IconButton>
     </Paper>
   );
@@ -522,7 +522,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           elevation={2}
           sx={{
             position: 'absolute',
-            top: 180,
+            top: 16,
             left: 10,
             zIndex: 1000,
             backgroundColor: theme.palette.background.paper,
