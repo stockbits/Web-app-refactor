@@ -129,7 +129,8 @@ const TaskManagementPage = ({
         headerAlign: 'left',
         disableColumnMenu: true,
         resizable: false,
-        className: 'action-col',
+        cellClassName: 'action-col',
+        headerClassName: 'action-col',
         renderCell: (params) => (
           (void params,
           <Stack direction="row" spacing={0.5} alignItems="center">

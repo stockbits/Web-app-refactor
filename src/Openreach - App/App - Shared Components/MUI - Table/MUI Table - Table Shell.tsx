@@ -138,6 +138,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           density={densityMode}
           loading={loading}
           hideFooter={hideFooter}
+          disableVirtualization
           pagination
           pageSizeOptions={resolvedPageSizeOptions}
           paginationModel={paginationModel}
