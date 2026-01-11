@@ -7,6 +7,7 @@ import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import LegendToggleIcon from "@mui/icons-material/LegendToggle";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+// Using inline SVG for Task Group shield to control fill/outline
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
@@ -14,12 +15,14 @@ import { memo } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
+import { TASK_ICON_COLORS } from '../../../../App - Central Theme/Icon-Colors';
 import { TASK_TABLE_ROWS, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import { alpha } from '@mui/material/styles';
 
 type MapLayerType = 'roadmap' | 'satellite' | 'terrain' | 'hybrid';
 
@@ -265,18 +268,26 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
 
   // Create memoized marker icons with visual feedback
   const createMarkerIcon = useCallback((variant: TaskIconVariant, isClicked: boolean) => {
+    const colorMap: Record<TaskIconVariant, string> = {
+      appointment: taskColors?.appointment || TASK_ICON_COLORS.appointment,
+      startBy: taskColors?.startBy || TASK_ICON_COLORS.startBy,
+      completeBy: taskColors?.completeBy || TASK_ICON_COLORS.completeBy,
+      failedSLA: taskColors?.failedSLA || TASK_ICON_COLORS.failedSLA,
+      taskGroup: taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup,
+    };
+    
     const iconHtml = renderToStaticMarkup(
       <div style={{ 
         width: '40px', 
         height: '40px', 
         position: 'relative',
-        filter: isClicked ? 'brightness(1.3) drop-shadow(0 0 8px rgba(220, 38, 38, 0.6))' : 'none',
+        filter: isClicked ? `brightness(1.3) drop-shadow(0 0 8px ${alpha(theme.palette.error.main, 0.6)})` : 'none',
         transition: 'filter 0.2s ease-in-out'
       }}>
         <TaskIcon 
           variant={variant} 
           size={40} 
-          color={taskColors[variant]}
+          color={colorMap[variant]}
         />
         {isClicked && (
           <div style={{
@@ -285,7 +296,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             left: '-2px',
             right: '-2px',
             bottom: '-2px',
-            border: '2px solid #DC2626',
+            border: `2px solid ${theme.palette.error.main}`,
             borderRadius: '4px',
             pointerEvents: 'none'
           }} />
@@ -300,7 +311,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
       iconAnchor: [20, 40],
       popupAnchor: [0, -40],
     });
-  }, [taskColors]);
+  }, [taskColors, theme]);
 
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
@@ -596,7 +607,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                 backgroundColor: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'transparent',
                 color: mapLayer === 'satellite' ? theme.openreach.brand.white : theme.palette.text.primary,
                 '&:hover': {
-                  backgroundColor: mapLayer === 'satellite' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  backgroundColor: mapLayer === 'satellite' ? theme.openreach.coreBlock : (isDark ? alpha(theme.palette.common.white, 0.1) : theme.palette.action.hover),
                 }
               }}
             >
@@ -612,7 +623,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                 backgroundColor: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'transparent',
                 color: mapLayer === 'terrain' ? theme.openreach.brand.white : theme.palette.text.primary,
                 '&:hover': {
-                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? alpha(theme.palette.common.white, 0.1) : theme.palette.action.hover),
                 }
               }}
             >
@@ -627,7 +638,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         {/* Task Icon Legend */}
         {showLegend && (
         <Paper
-          elevation={3}
+          elevation={0}
           sx={{
             position: 'absolute',
             top: 16,
@@ -636,64 +647,69 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             p: 2,
             minWidth: 200,
             backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
+            border: `2px solid ${theme.palette.divider}`,
+            outline: `1px solid ${theme.palette.divider}`,
           }}
         >
-          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1.5 }}>
+          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, letterSpacing: '0.3px' }}>
             Task Status
           </Typography>
-          <Stack spacing={1}>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon 
-                variant="appointment" 
-                size={24}
-                color={taskColors.appointment}
-              />
-              <Typography variant="body2">Appointment</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon 
-                variant="startBy" 
-                size={24}
-                color={taskColors.startBy}
-              />
-              <Typography variant="body2">Start By</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon 
-                variant="completeBy" 
-                size={24}
-                color={taskColors.completeBy}
-              />
-              <Typography variant="body2">Complete By</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <TaskIcon 
-                variant="failedSLA" 
-                size={24}
-                color={taskColors.failedSLA}
-              />
-              <Typography variant="body2">Failed SLA</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box
-                sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  backgroundColor: theme.openreach.energyAccent,
-                  border: '3px solid white',
-                  outline: '2px solid rgba(0,0,0,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 700, color: 'white' }}>
-                  5
-                </Typography>
+          <Stack spacing={1.2}>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                {taskColors && (
+                  <TaskIcon 
+                    variant="appointment" 
+                    size={28}
+                    color={taskColors.appointment}
+                  />
+                )}
               </Box>
-              <Typography variant="body2">Cluster Task</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Appointment</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                {taskColors && (
+                  <TaskIcon 
+                    variant="startBy" 
+                    size={28}
+                    color={taskColors.startBy}
+                  />
+                )}
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Start By</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                {taskColors && (
+                  <TaskIcon 
+                    variant="completeBy" 
+                    size={28}
+                    color={taskColors.completeBy}
+                  />
+                )}
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Complete By</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                {taskColors && (
+                  <TaskIcon 
+                    variant="failedSLA" 
+                    size={28}
+                    color={taskColors.failedSLA}
+                  />
+                )}
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 28 }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ paintOrder: 'stroke fill' }}>
+                  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill={taskColors?.taskGroup || theme.openreach.energyAccent} stroke={theme.openreach.coreBlock} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+                </svg>
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Task Group</Typography>
             </Stack>
           </Stack>
         </Paper>
@@ -736,24 +752,20 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                 const count = cluster.getChildCount();
                 // Scale size based on cluster count
                 const size = count < 10 ? 36 : count < 100 ? 44 : 52;
-                const fontSize = count < 10 ? '13px' : count < 100 ? '15px' : '17px';
-                
+
+                // Inline SVG for GppMaybe shield with white exclamation
+                const shieldFill = taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup;
+                const borderColor = theme.openreach?.coreBlock || theme.palette.common.black;
+                const svgSize = Math.round(size * 0.75);
+                const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">`
+                  + `
+                  <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="paint-order:stroke fill">
+                    <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="${shieldFill}" stroke="${borderColor}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+                  </svg>
+                </div>`;
+
                 return L.divIcon({
-                  html: `<div style="
-                    background: ${theme.openreach.energyAccent};
-                    color: white;
-                    border: 3px solid white;
-                    border-radius: 50%;
-                    width: ${size}px;
-                    height: ${size}px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: ${fontSize};
-                    outline: 2px solid rgba(0,0,0,0.2);
-                    transition: transform 0.2s ease;
-                  ">${count}</div>`,
+                  html: iconHtml,
                   className: 'custom-cluster-icon',
                   iconSize: L.point(size, size, true),
                 });
@@ -808,7 +820,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                               <Chip
                                 label={variantLabel}
                                 size="small"
-                                sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors.appointment : variant === 'startBy' ? taskColors.startBy : variant === 'completeBy' ? taskColors.completeBy : taskColors.failedSLA, color: '#fff' }}
+                                sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors?.appointment : variant === 'startBy' ? taskColors?.startBy : variant === 'completeBy' ? taskColors?.completeBy : variant === 'taskGroup' ? taskColors?.taskGroup : taskColors?.failedSLA, color: theme.palette.common.white }}
                               />
                             </Box>
                           ),

@@ -1,5 +1,6 @@
 import { createTheme } from "@mui/material/styles";
 import type {} from '@mui/x-data-grid/themeAugmentation';
+import { TASK_ICON_COLORS } from './Icon-Colors';
 
 /**
  * Central Theme Configuration
@@ -92,10 +93,11 @@ const lightTokens = {
     inactive: "#C9CBCE",
   },
   mapTaskColors: {
-    appointment: "#D97706",
-    startBy: "#43B072",
-    completeBy: "#5488C7",
-    failedSLA: "#50535A",
+    appointment: TASK_ICON_COLORS.appointment,
+    startBy: TASK_ICON_COLORS.startBy,
+    completeBy: TASK_ICON_COLORS.completeBy,
+    failedSLA: TASK_ICON_COLORS.failedSLA,
+    taskGroup: TASK_ICON_COLORS.taskGroup,
   },
   table: {
     headerBg: "#F3F4F7",
@@ -179,10 +181,11 @@ const darkTokens = {
     inactive: "rgba(255,255,255,0.2)",
   },
   mapTaskColors: {
-    appointment: "#FBBF24",
-    startBy: "#52BE84",
-    completeBy: "#6B99D8",
-    failedSLA: "#50535A",
+    appointment: TASK_ICON_COLORS.appointment,
+    startBy: TASK_ICON_COLORS.startBy,
+    completeBy: TASK_ICON_COLORS.completeBy,
+    failedSLA: TASK_ICON_COLORS.failedSLA,
+    taskGroup: TASK_ICON_COLORS.taskGroup,
   },
   table: {
     headerBg: "#252F40",

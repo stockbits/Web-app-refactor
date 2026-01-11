@@ -506,7 +506,7 @@ function App() {
                       return 'appointment' as const;
                   }
                 })();
-                return { id, title, icon: <TaskIcon variant={variant} size={18} /> };
+  return { id, title, icon: <TaskIcon variant={variant} size={28} /> };
               })}
               onClick={(id) => {
                 const item = taskDockItems.find((it) => it.id === id);
