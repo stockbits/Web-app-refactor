@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Popover, Tooltip } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import LegendToggleIcon from '@mui/icons-material/LegendToggle'
+import HelpIcon from '@mui/icons-material/Help'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
@@ -87,7 +87,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 }
               }}
             >
-              <LegendToggleIcon />
+              <HelpIcon />
             </IconButton>
           </Tooltip>
           
