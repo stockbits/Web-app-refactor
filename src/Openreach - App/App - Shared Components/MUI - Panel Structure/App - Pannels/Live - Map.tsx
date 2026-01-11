@@ -238,11 +238,11 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
+        return <SatelliteAltIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
       case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
+        return <TerrainIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
       default:
-        return <MapIcon sx={{ fontSize: 20, color: theme.openreach.energyAccent }} />;
+        return <MapIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
     }
   };
 
@@ -408,8 +408,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           elevation={2}
           sx={{
             position: 'absolute',
-            top: 16,
-            left: 16,
+            top: 90,
+            left: 10,
             zIndex: 1000,
             backgroundColor: theme.palette.background.paper,
             border: `1px solid ${theme.palette.divider}`,
@@ -418,25 +418,25 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           <Button
             size="small"
             onClick={handleMenuOpen}
-            endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+            endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 16 }} />}
             sx={{
               textTransform: 'none',
               color: theme.palette.text.primary,
-              px: 1.5,
-              py: 0.75,
-              minHeight: 36,
-              fontSize: '0.875rem',
+              px: 1,
+              py: 0.5,
+              minHeight: 28,
+              fontSize: '0.75rem',
               display: 'flex',
               alignItems: 'center',
-              gap: 0.75,
+              gap: 0.5,
               '&:hover': {
                 backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.palette.action.hover,
               }
             }}
           >
-            <Stack direction="row" spacing={0.75} alignItems="center">
+            <Stack direction="row" spacing={0.5} alignItems="center">
               {getMapLayerIcon()}
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ fontWeight: 500 }}>
                 {getMapLayerLabel()}
               </Typography>
             </Stack>
