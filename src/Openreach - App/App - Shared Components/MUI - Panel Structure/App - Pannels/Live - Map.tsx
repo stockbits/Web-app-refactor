@@ -1,10 +1,9 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button, Paper, Slider } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Paper, Slider } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LegendToggleIcon from "@mui/icons-material/LegendToggle";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -355,11 +354,11 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
+        return <SatelliteAltIcon sx={{ fontSize: 20, color: 'inherit' }} />;
       case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
+        return <TerrainIcon sx={{ fontSize: 20, color: 'inherit' }} />;
       default:
-        return <MapIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />;
+        return <MapIcon sx={{ fontSize: 20, color: 'inherit' }} />;
     }
   };
 
@@ -521,54 +520,40 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         }}
       >
         {/* Map Layer Controls - Overlay on map */}
-        <Paper
-          elevation={2}
-          sx={{
-            position: 'absolute',
-            top: 16,
-            left: 10,
-            zIndex: 1000,
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <Button
+        <Tooltip title={`Map Type: ${getMapLayerLabel()}`} placement="right">
+          <IconButton
             size="small"
             onClick={handleMenuOpen}
-            endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 16 }} />}
             sx={{
-              textTransform: 'none',
-              color: theme.palette.text.primary,
-              px: 1,
-              py: 0.5,
-              minHeight: 28,
-              fontSize: '0.75rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
+              position: 'absolute',
+              top: 16,
+              left: 10,
+              zIndex: 1000,
+              width: 34,
+              height: 34,
+              backgroundColor: theme.palette.background.paper,
+              border: `2px solid ${theme.palette.divider}`,
+              color: theme.openreach.energyAccent,
               '&:hover': {
-                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.palette.action.hover,
-              }
-            }}
-          >
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              {getMapLayerIcon()}
-              <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                {getMapLayerLabel()}
-              </Typography>
-            </Stack>
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            PaperProps={{
-              sx: {
                 backgroundColor: theme.palette.background.paper,
-                border: `1px solid ${theme.palette.divider}`,
+                borderColor: theme.openreach.energyAccent,
               }
             }}
           >
+            {getMapLayerIcon()}
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+          PaperProps={{
+            sx: {
+              backgroundColor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
+            }
+          }}
+        >
             <MenuItem
               onClick={() => handleLayerSelect('roadmap')}
               selected={mapLayer === 'roadmap'}
@@ -618,7 +603,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               </Stack>
             </MenuItem>
           </Menu>
-        </Paper>
+
 
         {/* Task Icon Legend */}
         {showLegend && (
