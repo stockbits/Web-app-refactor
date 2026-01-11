@@ -407,7 +407,7 @@ const TaskTableQueryConfig = ({
           </Box>
         )}
 
-        <Divider sx={{ my: 0.5 }} light />
+        <Divider sx={{ my: 2 }} light />
 
         {validationError && (
           <Typography
@@ -430,7 +430,7 @@ const TaskTableQueryConfig = ({
           spacing={2}
           justifyContent="space-between"
           alignItems="center"
-          sx={{ pt: 0.5, mb: 3 }}
+          sx={{ pt: 1.5, pb: 2 }}
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
             {hasRows && (onCopyHtml || onExportCsv) && (
