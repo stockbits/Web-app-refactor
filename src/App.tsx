@@ -491,7 +491,7 @@ function App() {
           )}
 
           {/* Global task dock below breadcrumb */}
-          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 1 }}>
+          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0 }}>
             <TaskDockBar
               items={taskDockItems.map(({ id, title, commitType }) => {
                 const variant = (() => {
@@ -524,7 +524,7 @@ function App() {
 
           <Box 
             className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}
-            sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}
+            sx={{ p: { xs: 1, sm: 1.5, md: 2 }, pt: activePage ? { xs: 0, sm: 0, md: 0 } : undefined }}
           >
             {showWelcome ? (
               <Box>

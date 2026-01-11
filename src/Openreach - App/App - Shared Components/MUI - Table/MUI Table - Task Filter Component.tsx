@@ -430,7 +430,7 @@ const TaskTableQueryConfig = ({
           spacing={2}
           justifyContent="space-between"
           alignItems="center"
-          sx={{ pt: 0.5 }}
+          sx={{ pt: 0.5, mb: 3 }}
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
             {hasRows && (onCopyHtml || onExportCsv) && (
