@@ -273,23 +273,25 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               </Typography>
               <Chip size="small" label={loading ? '…' : `${fieldNotes.length}`} sx={{ ml: 'auto' }} />
             </Stack>
-            <Stack spacing={0.75}>
-              {loading ? (
-                <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-              ) : fieldNotes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">No notes</Typography>
-              ) : (
-                fieldNotes.slice(0, 3).map((note) => (
-                  <Stack key={note.id} spacing={0.25}>
-                    <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {note.author} • {formatDate(note.createdAt)}
-                    </Typography>
-                  </Stack>
-                ))
-              )}
+            <Stack spacing={1.25}>
+              <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                {loading ? (
+                  <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
+                ) : fieldNotes.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">No notes</Typography>
+                ) : (
+                  fieldNotes.map((note) => (
+                    <Stack key={note.id} spacing={0.25}>
+                      <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {note.author} • {formatDate(note.createdAt)}
+                      </Typography>
+                    </Stack>
+                  ))
+                )}
+              </Stack>
               {onAddNote && !loading && (
-                <Stack spacing={0.5} mt={1.25}>
+                <Stack spacing={0.5}>
                   <TextField
                     value={fieldNoteDraft}
                     onChange={(e) => setFieldNoteDraft(e.target.value)}
@@ -323,23 +325,25 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               </Typography>
               <Chip size="small" label={loading ? '…' : `${progressNotes.length}`} sx={{ ml: 'auto' }} />
             </Stack>
-            <Stack spacing={0.75}>
-              {loading ? (
-                <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-              ) : progressNotes.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">No notes</Typography>
-              ) : (
-                progressNotes.slice(0, 3).map((note) => (
-                  <Stack key={note.id} spacing={0.25}>
-                    <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {note.author} • {formatDate(note.createdAt)}
-                    </Typography>
-                  </Stack>
-                ))
-              )}
+            <Stack spacing={1.25}>
+              <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                {loading ? (
+                  <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
+                ) : progressNotes.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">No notes</Typography>
+                ) : (
+                  progressNotes.map((note) => (
+                    <Stack key={note.id} spacing={0.25}>
+                      <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {note.author} • {formatDate(note.createdAt)}
+                      </Typography>
+                    </Stack>
+                  ))
+                )}
+              </Stack>
               {onAddNote && !loading && (
-                <Stack spacing={0.5} mt={1.25}>
+                <Stack spacing={0.5}>
                   <TextField
                     value={progressNoteDraft}
                     onChange={(e) => setProgressNoteDraft(e.target.value)}
