@@ -74,8 +74,14 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
   }, [task?.commitType])
 
   const capabilityLabel = useMemo(() => (task?.capabilities ?? []).join(', '), [task?.capabilities])
-  const fieldNotes = task?.fieldNotes ?? []
-  const progressNotes = task?.progressNotes ?? []
+  const fieldNotesList = useMemo(() => {
+    const notes = task?.fieldNotes ?? []
+    return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }, [task?.fieldNotes])
+  const progressNotesList = useMemo(() => {
+    const notes = task?.progressNotes ?? []
+    return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  }, [task?.progressNotes])
 
   const addNote = (type: 'field' | 'progress') => {
     const text = type === 'field' ? fieldNoteDraft.trim() : progressNoteDraft.trim()
@@ -271,16 +277,16 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               <Typography variant="subtitle2" fontWeight={700}>
                 Field notes
               </Typography>
-              <Chip size="small" label={loading ? '…' : `${fieldNotes.length}`} sx={{ ml: 'auto' }} />
+              <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} sx={{ ml: 'auto' }} />
             </Stack>
             <Stack spacing={1.25}>
               <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
                 {loading ? (
                   <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-                ) : fieldNotes.length === 0 ? (
+                ) : fieldNotesList.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">No notes</Typography>
                 ) : (
-                  fieldNotes.map((note) => (
+                  fieldNotesList.map((note) => (
                     <Stack key={note.id} spacing={0.25}>
                       <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -323,16 +329,16 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               <Typography variant="subtitle2" fontWeight={700}>
                 Progress notes
               </Typography>
-              <Chip size="small" label={loading ? '…' : `${progressNotes.length}`} sx={{ ml: 'auto' }} />
+              <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} sx={{ ml: 'auto' }} />
             </Stack>
             <Stack spacing={1.25}>
               <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
                 {loading ? (
                   <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-                ) : progressNotes.length === 0 ? (
+                ) : progressNotesList.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">No notes</Typography>
                 ) : (
-                  progressNotes.map((note) => (
+                  progressNotesList.map((note) => (
                     <Stack key={note.id} spacing={0.25}>
                       <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
                       <Typography variant="caption" color="text.secondary">

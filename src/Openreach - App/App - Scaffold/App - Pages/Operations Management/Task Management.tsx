@@ -55,8 +55,8 @@ const TaskManagementPage = ({
       }
       setDialogTask((prev) => {
         if (!prev) return prev
-        const fieldNotes = type === 'field' ? [...(prev.fieldNotes ?? []), nextNote] : prev.fieldNotes
-        const progressNotes = type === 'progress' ? [...(prev.progressNotes ?? []), nextNote] : prev.progressNotes
+        const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes
+        const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes
         return { ...prev, fieldNotes, progressNotes }
       })
       showMessage(type === 'field' ? 'Added field note' : 'Added progress note')
