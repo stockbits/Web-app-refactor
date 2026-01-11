@@ -1,4 +1,4 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button, Paper } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Button, Paper, Slider } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -6,6 +6,8 @@ import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LegendToggleIcon from "@mui/icons-material/LegendToggle";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
@@ -60,6 +62,117 @@ function MapClickHandler({ popupState, setPopupState, ignoreNextMapClickRef }: M
   return null;
 }
 
+// Custom MUI Zoom Control Component
+interface ZoomControlProps {
+  onZoomChange: (zoom: number) => void;
+  currentZoom: number;
+  minZoom?: number;
+  maxZoom?: number;
+}
+
+function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: ZoomControlProps) {
+  const theme = useTheme();
+  const map = useMap();
+
+  const handleZoomChange = (_event: Event, value: number | number[]) => {
+    const zoom = value as number;
+    map.setZoom(zoom);
+    onZoomChange(zoom);
+  };
+
+  const handleZoomIn = () => {
+    const newZoom = Math.min(currentZoom + 1, maxZoom);
+    map.setZoom(newZoom);
+    onZoomChange(newZoom);
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(currentZoom - 1, minZoom);
+    map.setZoom(newZoom);
+    onZoomChange(newZoom);
+  };
+
+  return (
+    <Paper
+      elevation={2}
+      sx={{
+        position: 'absolute',
+        top: 16,
+        left: 10,
+        zIndex: 1000,
+        backgroundColor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        p: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 1,
+      }}
+    >
+      <IconButton
+        size="small"
+        onClick={handleZoomIn}
+        disabled={currentZoom >= maxZoom}
+        sx={{
+          width: 28,
+          height: 28,
+          color: theme.openreach.energyAccent,
+          '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+          },
+          '&.Mui-disabled': {
+            color: theme.palette.action.disabled,
+          }
+        }}
+      >
+        <AddIcon sx={{ fontSize: 18 }} />
+      </IconButton>
+      
+      <Slider
+        orientation="vertical"
+        value={currentZoom}
+        onChange={handleZoomChange}
+        min={minZoom}
+        max={maxZoom}
+        step={1}
+        sx={{
+          height: 100,
+          color: theme.openreach.energyAccent,
+          '& .MuiSlider-thumb': {
+            width: 14,
+            height: 14,
+          },
+          '& .MuiSlider-track': {
+            width: 3,
+          },
+          '& .MuiSlider-rail': {
+            width: 3,
+          }
+        }}
+      />
+      
+      <IconButton
+        size="small"
+        onClick={handleZoomOut}
+        disabled={currentZoom <= minZoom}
+        sx={{
+          width: 28,
+          height: 28,
+          color: theme.openreach.energyAccent,
+          '&:hover': {
+            backgroundColor: theme.palette.action.hover,
+          },
+          '&.Mui-disabled': {
+            color: theme.palette.action.disabled,
+          }
+        }}
+      >
+        <RemoveIcon sx={{ fontSize: 18 }} />
+      </IconButton>
+    </Paper>
+  );
+}
+
 export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -94,6 +207,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   });
   const [clickedMarkerId, setClickedMarkerId] = useState<string | null>(null);
   const ignoreNextMapClickRef = useRef(false); // Prevent map click from closing popup right after marker double-tap
+  const [currentZoom, setCurrentZoom] = useState(6); // Track current zoom level
   
   // Single popup state - stays open until explicitly closed
   const [popupState, setPopupState] = useState<{
@@ -408,7 +522,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           elevation={2}
           sx={{
             position: 'absolute',
-            top: 90,
+            top: 180,
             left: 10,
             zIndex: 1000,
             backgroundColor: theme.palette.background.paper,
@@ -583,9 +697,10 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           style={{ height: '100%', width: '100%' }}
           key={mapLayer} // Force remount only when layer changes
           attributionControl={false}
-          zoomControl={true}
+          zoomControl={false}
           preferCanvas={true}
         >
+            <ZoomControl onZoomChange={setCurrentZoom} currentZoom={currentZoom} minZoom={1} maxZoom={18} />
             <MapResizeHandler layoutKey={layoutKey} />
             <TileLayer
               url={tileConfig.url}
