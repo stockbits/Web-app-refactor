@@ -73,6 +73,21 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
   const theme = useTheme();
   const map = useMap();
 
+  // Sync slider with map zoom changes (from mouse wheel, double-click, etc.)
+  useEffect(() => {
+    const handleZoomEnd = () => {
+      const newZoom = map.getZoom();
+      if (newZoom !== currentZoom) {
+        onZoomChange(newZoom);
+      }
+    };
+
+    map.on('zoomend', handleZoomEnd);
+    return () => {
+      map.off('zoomend', handleZoomEnd);
+    };
+  }, [map, currentZoom, onZoomChange]);
+
   const handleZoomChange = (_event: Event, value: number | number[]) => {
     const zoom = value as number;
     map.setZoom(zoom);
@@ -113,10 +128,11 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           height: 28,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
-          color: theme.openreach.energyAccent,
+          color: theme.palette.info.main,
+          transition: 'all 0.2s ease',
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
-            borderColor: theme.openreach.energyAccent,
+            borderColor: theme.palette.info.main,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
@@ -135,13 +151,15 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         step={1}
         sx={{
           height: 100,
-          color: theme.openreach.energyAccent,
+          color: theme.palette.info.main,
           '& .MuiSlider-thumb': {
             width: 14,
             height: 14,
+            transition: 'all 0.2s ease',
           },
           '& .MuiSlider-track': {
             width: 3,
+            transition: 'all 0.2s ease',
           },
           '& .MuiSlider-rail': {
             width: 3,
@@ -159,10 +177,11 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           height: 28,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
-          color: theme.openreach.energyAccent,
+          color: theme.palette.info.main,
+          transition: 'all 0.2s ease',
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
-            borderColor: theme.openreach.energyAccent,
+            borderColor: theme.palette.info.main,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
