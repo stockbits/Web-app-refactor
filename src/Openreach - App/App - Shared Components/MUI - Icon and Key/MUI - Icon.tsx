@@ -1,5 +1,4 @@
 import { useTheme } from '@mui/material'
-import { MAP_TASK_COLORS } from '../../../constants/mapColors'
 
 export type TaskIconVariant = 'appointment' | 'startBy' | 'completeBy' | 'failedSLA'
 
@@ -13,12 +12,8 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
 
-  // Color mapping based on theme tokens (only used if color not provided)
-  const getColors = () => {
-    return isDark ? MAP_TASK_COLORS.dark : MAP_TASK_COLORS.light;
-  }
-
-  const colors = getColors()
+  // Get colors from theme
+  const colors = isDark ? theme.openreach.darkTokens.mapTaskColors : theme.openreach.lightTokens.mapTaskColors
   const fillColor = color ?? colors[variant]
 
   return (

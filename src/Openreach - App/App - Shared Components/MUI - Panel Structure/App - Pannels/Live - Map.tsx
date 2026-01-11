@@ -13,7 +13,6 @@ import { memo } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
-import { MAP_TASK_COLORS } from '../../../../constants/mapColors'
 import { TASK_TABLE_ROWS, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 
 // Import Leaflet CSS
@@ -65,7 +64,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
-  const taskColors = isDark ? MAP_TASK_COLORS.dark : MAP_TASK_COLORS.light;
+  const taskColors = isDark ? theme.openreach.darkTokens.mapTaskColors : theme.openreach.lightTokens.mapTaskColors;
   
   // Map commit types to icon variants
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {

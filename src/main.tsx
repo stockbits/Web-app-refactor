@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { CssBaseline } from '@mui/material'
 import App from './App.tsx'
-import { ThemeToggleProvider } from './ThemeContext'
+import { ThemeToggleProvider } from './App - Central Theme/ThemeContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

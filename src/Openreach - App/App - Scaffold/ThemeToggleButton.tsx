@@ -1,7 +1,7 @@
 import { IconButton, keyframes } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
-import { useThemeMode } from '../../ThemeContext'
+import { useThemeMode } from '../../App - Central Theme/ThemeContext'
 import { useState } from 'react'
 
 const spin = keyframes`

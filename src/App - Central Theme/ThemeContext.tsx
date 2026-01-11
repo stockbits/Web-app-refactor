@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
-import { appTheme, createDarkTheme } from './theme'
+import { lightTheme, darkTheme } from './index'
 
 interface ThemeContextType {
   isDarkMode: boolean
@@ -22,7 +22,7 @@ export const ThemeToggleProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [isDarkMode, setIsDarkMode] = useState(false)
 
   const theme = useMemo(() => {
-    return isDarkMode ? createDarkTheme() : appTheme
+    return isDarkMode ? darkTheme : lightTheme
   }, [isDarkMode])
 
   const toggleTheme = () => {
