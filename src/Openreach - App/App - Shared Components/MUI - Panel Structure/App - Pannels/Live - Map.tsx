@@ -93,20 +93,16 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
   };
 
   return (
-    <Paper
-      elevation={2}
+    <Box
       sx={{
         position: 'absolute',
         top: 70,
         left: 10,
         zIndex: 1000,
-        backgroundColor: theme.palette.background.paper,
-        border: `1px solid ${theme.palette.divider}`,
-        p: 0.75,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 0.75,
+        gap: 0.5,
       }}
     >
       <IconButton
@@ -114,18 +110,21 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomIn}
         disabled={currentZoom >= maxZoom}
         sx={{
-          width: 26,
-          height: 26,
+          width: 28,
+          height: 28,
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           color: theme.openreach.energyAccent,
           '&:hover': {
-            backgroundColor: theme.palette.action.hover,
+            backgroundColor: theme.palette.background.paper,
+            borderColor: theme.openreach.energyAccent,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
           }
         }}
       >
-        <AddIcon sx={{ fontSize: 16 }} />
+        <AddIcon sx={{ fontSize: 18 }} />
       </IconButton>
       
       <Slider
@@ -136,17 +135,18 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         max={maxZoom}
         step={1}
         sx={{
-          height: 90,
+          height: 100,
           color: theme.openreach.energyAccent,
           '& .MuiSlider-thumb': {
-            width: 12,
-            height: 12,
+            width: 14,
+            height: 14,
           },
           '& .MuiSlider-track': {
-            width: 2,
+            width: 3,
           },
           '& .MuiSlider-rail': {
-            width: 2,
+            width: 3,
+            opacity: 0.3,
           }
         }}
       />
@@ -156,20 +156,23 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomOut}
         disabled={currentZoom <= minZoom}
         sx={{
-          width: 26,
-          height: 26,
+          width: 28,
+          height: 28,
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
           color: theme.openreach.energyAccent,
           '&:hover': {
-            backgroundColor: theme.palette.action.hover,
+            backgroundColor: theme.palette.background.paper,
+            borderColor: theme.openreach.energyAccent,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
           }
         }}
       >
-        <RemoveIcon sx={{ fontSize: 16 }} />
+        <RemoveIcon sx={{ fontSize: 18 }} />
       </IconButton>
-    </Paper>
+    </Box>
   );
 }
 
