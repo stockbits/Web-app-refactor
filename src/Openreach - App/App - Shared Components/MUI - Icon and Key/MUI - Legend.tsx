@@ -32,7 +32,7 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
             color: 'text.primary'
           }}
         >
-          Task Status
+          Legend Key Menu
         </Typography>
       )}
       <Stack spacing={isCompact ? 0.8 : 1.2} direction={isCompact ? 'row' : 'column'}>

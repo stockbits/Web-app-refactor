@@ -76,7 +76,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             }}
           />
           
-          <Tooltip title="Task Status Legend">
+          <Tooltip title="Legend Key Menu">
             <IconButton
               size="small"
               onClick={(e) => setLegendAnchorEl(e.currentTarget)}
