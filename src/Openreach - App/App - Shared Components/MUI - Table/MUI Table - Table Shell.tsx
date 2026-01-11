@@ -87,12 +87,13 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               display: 'flex',
               alignItems: 'center',
             },
-            // Hide native scrollbar UI on the grid scroller to avoid footer scroll look
-            '& .MuiDataGrid-virtualScroller': {
-              scrollbarWidth: 'none',
+            // Footer: gently increase height and breathing room
+            '& .MuiDataGrid-footerContainer': {
+              borderTop: `1px solid ${theme.palette.divider}`,
+              overflow: 'hidden !important',
             },
-            '& .MuiDataGrid-virtualScroller::-webkit-scrollbar': {
-              display: 'none',
+            '& .MuiTablePagination-root': {
+              overflow: 'hidden',
             },
             '& .action-col': {
               position: 'sticky !important',
@@ -154,7 +155,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           disableRowSelectionOnClick={false}
-          autoHeight
+          autoHeight={false}
           autosizeOnMount
           autosizeOptions={{
             columns: columns.filter(col => col.field !== 'actions').map(col => col.field),
