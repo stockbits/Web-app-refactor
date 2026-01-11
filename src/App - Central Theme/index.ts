@@ -395,6 +395,32 @@ export const lightTheme = createTheme({
           backgroundColor: lightTokens.table.headerBg,
           color: lightTokens.table.headerText,
           fontWeight: 600,
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontWeight: 600,
+          },
+          '& .MuiDataGrid-sortIcon': {
+            color: lightTokens.table.headerText,
+            opacity: 0.6,
+            '&:hover': {
+              opacity: 1,
+            },
+          },
+          '& .MuiDataGrid-iconButtonContainer': {
+            '& .MuiIconButton-root': {
+              color: lightTokens.table.headerText,
+              backgroundColor: 'transparent !important',
+              '&:hover': {
+                backgroundColor: 'transparent !important',
+                color: lightTokens.primary.main,
+              },
+              '& .MuiTouchRipple-root': {
+                display: 'none',
+              },
+            },
+          },
+        },
+        columnSeparator: {
+          color: lightTokens.table.border,
         },
         footerContainer: {
           backgroundColor: lightTokens.table.footerBg,
@@ -594,6 +620,32 @@ export const darkTheme = createTheme({
           backgroundColor: darkTokens.table.headerBg,
           color: darkTokens.table.headerText,
           fontWeight: 600,
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontWeight: 600,
+          },
+          '& .MuiDataGrid-sortIcon': {
+            color: darkTokens.table.headerText,
+            opacity: 0.6,
+            '&:hover': {
+              opacity: 1,
+            },
+          },
+          '& .MuiDataGrid-iconButtonContainer': {
+            '& .MuiIconButton-root': {
+              color: darkTokens.table.headerText,
+              backgroundColor: 'transparent !important',
+              '&:hover': {
+                backgroundColor: 'transparent !important',
+                color: darkTokens.primary.main,
+              },
+              '& .MuiTouchRipple-root': {
+                display: 'none',
+              },
+            },
+          },
+        },
+        columnSeparator: {
+          color: darkTokens.table.border,
         },
         footerContainer: {
           backgroundColor: darkTokens.table.footerBg,

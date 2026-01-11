@@ -38,13 +38,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   emptyState,
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
-
   const [densityMode, setDensityMode] = useState(density)
-  
   const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
   const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
-  
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: resolvedInitialPageSize,
     page: 0,
@@ -70,70 +67,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
   return (
     <DataGrid
-      sx={(theme) => ({
+      sx={{
         width: '100%',
-        '& .MuiDataGrid-cell': {
-          display: 'flex',
-          alignItems: 'center',
-        },
-            // Footer: gently increase height and breathing room
-            '& .MuiDataGrid-footerContainer': {
-              borderTop: `1px solid ${theme.palette.divider}`,
-              overflow: 'hidden !important',
-            },
-            '& .MuiTablePagination-root': {
-              overflow: 'hidden',
-            },
-            '& .action-col': {
-              position: 'sticky !important',
-              left: '0 !important',
-              backgroundColor: `${theme.palette.background.paper} !important`,
-              zIndex: '10 !important',
-              borderRight: `1.5px solid ${theme.palette.divider} !important`,
-              boxShadow: `1px 0 2px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.10)' : 'rgba(0,0,0,0.03)'} !important`,
-              transition: 'box-shadow 0.2s, border-color 0.2s',
-            },
-            '& .MuiDataGrid-cell.action-col': {
-              position: 'sticky !important',
-              left: '0 !important',
-              backgroundColor: `${theme.palette.background.paper} !important`,
-              zIndex: '10 !important',
-              borderRight: `1.5px solid ${theme.palette.divider} !important`,
-              boxShadow: 'none !important',
-            },
-            '& .MuiDataGrid-columnHeader.action-col': {
-              position: 'sticky !important',
-              left: '0 !important',
-              backgroundColor: `${theme.palette.background.paper} !important`,
-              zIndex: '10 !important',
-              borderRight: `1.5px solid ${theme.palette.divider} !important`,
-              boxShadow: 'none !important',
-            },
-            '& .MuiDataGrid-columnHeader.action-col .MuiDataGrid-columnSeparator': {
-              display: 'none',
-            },
-            // Remove light-mode circle behind sort icon and align color with brand
-            '& .MuiDataGrid-iconButtonContainer': {
-              backgroundColor: 'transparent !important',
-            },
-            '& .MuiDataGrid-iconButtonContainer .MuiButtonBase-root': {
-              backgroundColor: 'transparent !important',
-              borderRadius: 0,
-              padding: 0,
-              '&:hover': { backgroundColor: 'transparent !important' },
-            },
-            '& .MuiDataGrid-iconButtonContainer .MuiIconButton-root': {
-              backgroundColor: 'transparent !important',
-              '&:hover': { backgroundColor: 'transparent !important' },
-            },
-            '& .MuiDataGrid-iconButtonContainer .MuiTouchRipple-root': {
-              display: 'none',
-            },
-            '& .MuiDataGrid-sortIcon': {
-              marginLeft: 0.5,
-              color: theme.palette.primary.main,
-            },
-          })}
+      }}
       apiRef={apiRef}
       rows={rows}
       columns={columns}

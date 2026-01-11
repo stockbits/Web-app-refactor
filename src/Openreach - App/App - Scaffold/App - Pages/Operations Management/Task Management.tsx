@@ -152,7 +152,6 @@ const TaskManagementPage = ({
         cellClassName: 'action-col',
         headerClassName: 'action-col',
         renderCell: (params) => (
-          (void params,
           <Stack direction="row" spacing={0.5} alignItems="center">
             <Tooltip title="Call">
               <IconButton
@@ -178,24 +177,6 @@ const TaskManagementPage = ({
                 <AssignmentRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
-          </Stack>)
-        ),
-      },
-      // Task ID
-      {
-        field: 'taskId',
-        headerName: 'Task ID',
-        flex: 0.9,
-        minWidth: 150,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
-          >
-            <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
-              {params.row.taskId}
-            </Typography>
             <Tooltip title="Copy to clipboard">
               <IconButton
                 size="small"
@@ -210,7 +191,7 @@ const TaskManagementPage = ({
                 <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
               </IconButton>
             </Tooltip>
-          </Box>
+          </Stack>
         ),
       },
       // Work ID
@@ -222,9 +203,7 @@ const TaskManagementPage = ({
         align: 'left',
         headerAlign: 'left',
         renderCell: (params) => (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}>
             <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
               {params.row.workId}
             </Typography>
@@ -299,9 +278,7 @@ const TaskManagementPage = ({
         align: 'left',
         headerAlign: 'left',
         renderCell: (params) => (
-          <Box
-            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, width: '100%', '&:hover .copy-button': { opacity: 1 } }}>
             <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
               {params.row.resourceId}
             </Typography>
@@ -578,45 +555,17 @@ const TaskManagementPage = ({
     showMessage('Exported CSV for current table')
   }, [buildCsv, filteredRows.length, showMessage])
 
-  const buildHtmlTable = useCallback(() => {
-    const headerRow = columns
-      .map((col) => `<th style="text-align:left; padding:6px 8px;">${col.headerName ?? col.field}</th>`)
-      .join('')
-    const bodyRows = filteredRows
-      .map((row) => {
-        const cells = columns
-          .map((col) => {
-            const text = getCellText(row, col.field)
-            if (!text) return '<td style="padding:6px 8px;"></td>'
-            const escaped = text
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-            return `<td style="padding:6px 8px;">${escaped}</td>`
-          })
-          .join('')
-        return `<tr>${cells}</tr>`
-      })
-      .join('')
-
-    return `<table style="border-collapse:collapse; width:100%;">` +
-      `<thead><tr>${headerRow}</tr></thead>` +
-      `<tbody>${bodyRows}</tbody></table>`
-  }, [columns, filteredRows, getCellText])
-
   const handleCopyHtml = useCallback(async () => {
-    if (!filteredRows.length) {
-      showMessage('No rows to copy', 'error')
-      return
-    }
     try {
-      const html = buildHtmlTable()
+      const headerRow = columns.map((col) => `<th style="text-align:left; padding:6px 8px;">${col.headerName ?? col.field}</th>`).join('')
+      const bodyRows = filteredRows.map((row) => `<tr>${columns.map((col) => `<td style="padding:6px 8px;">${getCellText(row, col.field)}</td>`).join('')}</tr>`).join('')
+      const html = `<table><thead><tr>${headerRow}</tr></thead><tbody>${bodyRows}</tbody></table>`
       await navigator.clipboard.writeText(html)
       showMessage('Copied full table (HTML) to clipboard')
     } catch {
       showMessage('Copy failed. Please allow clipboard access.', 'error')
     }
-  }, [buildHtmlTable, filteredRows.length, showMessage])
+  }, [columns, filteredRows, getCellText, showMessage])
 
   const handleApplyQuery = (nextQuery: TaskTableQueryState) => {
     setActiveQuery(nextQuery)
