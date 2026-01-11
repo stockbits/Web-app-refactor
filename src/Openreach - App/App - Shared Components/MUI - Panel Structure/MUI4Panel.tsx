@@ -387,7 +387,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       left: `${((colSizes.slice(0, c+1).reduce((a,b)=>a+b,0))/100)*100}%`,
                       top: `${(rowSizes.slice(0, r).reduce((a,b)=>a+b,0)/100)*100}%`,
                       height: `${rowSizes[r]}%`,
-                      width: '24px', // hit area
+                      width: '8px', // MUI standard hit area
                       zIndex: 1000,
                       transform: 'translateX(-50%)',
                       pointerEvents: 'auto',
@@ -406,10 +406,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     <Box
                       className="mui4panel-handle-block"
                       sx={{
-                        width: '12px',
+                        width: '4px', // MUI standard visible handle
                         height: '20%',
-                        minHeight: '80px',
-                        maxHeight: '120px',
+                        minHeight: '32px',
+                        maxHeight: '100%',
                         backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c)
                           ? theme.palette.primary.main
                           : theme.palette.divider,
@@ -445,7 +445,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                       top: `${(rowSizes.slice(0, r+1).reduce((a,b)=>a+b,0)/100)*100}%`,
                       left: `${(colSizes.slice(0, c).reduce((a,b)=>a+b,0)/100)*100}%`,
                       width: `${colSizes[c]}%`,
-                      height: '24px', // hit area
+                      height: '8px', // MUI standard hit area
                       zIndex: 1000,
                       transform: 'translateY(-50%)',
                       pointerEvents: 'auto',
@@ -464,10 +464,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
                     <Box
                       className="mui4panel-handle-block"
                       sx={{
-                        height: '12px',
+                        height: '4px', // MUI standard visible handle
                         width: '20%',
-                        minWidth: '80px',
-                        maxWidth: '120px',
+                        minWidth: '32px',
+                        maxWidth: '100%',
                         backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r)
                           ? theme.palette.primary.main
                           : theme.palette.divider,
