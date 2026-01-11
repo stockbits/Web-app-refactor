@@ -697,13 +697,13 @@ function App() {
                     >
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
-                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as any)} />
+                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
                           ) : activePage?.cardName === 'Task Management' ? (
                             <ActivePageComponent {...({
                               restoreTaskId,
                               onRestoreHandled: () => setRestoreTaskId(null),
                               onAddTaskDockItem: handleAddTaskDockItem,
-                            } as any)} />
+                            } as Record<string, unknown>)} />
                           ) : (
                             <ActivePageComponent />
                           )}

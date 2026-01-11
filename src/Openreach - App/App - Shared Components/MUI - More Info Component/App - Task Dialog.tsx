@@ -363,8 +363,15 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
       <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
         {actions}
         {onMinimize && (
-          <Button onClick={onMinimize} color="primary" variant="contained">
-            Minimise to dock
+          <Button
+            onClick={() => {
+              onMinimize()
+              onClose()
+            }}
+            color="primary"
+            variant="contained"
+          >
+            Minimise Task
           </Button>
         )}
         <Button

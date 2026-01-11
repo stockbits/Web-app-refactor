@@ -708,12 +708,15 @@ const TaskManagementPage = ({
         open={dialogOpen}
         onClose={closeTaskDialog}
         task={dialogTask ?? undefined}
-        onMinimize={dialogTask ? () => onAddTaskDockItem?.({
-          id: dialogTask.taskId,
-          title: dialogTask.taskId,
-          commitType: dialogTask.commitType,
-          task: dialogTask,
-        }) : undefined}
+        onMinimize={dialogTask ? () => {
+          onAddTaskDockItem?.({
+            id: dialogTask.taskId,
+            title: dialogTask.taskId,
+            commitType: dialogTask.commitType,
+            task: dialogTask,
+          })
+          closeTaskDialog()
+        } : undefined}
       />
     </Paper>
   )
