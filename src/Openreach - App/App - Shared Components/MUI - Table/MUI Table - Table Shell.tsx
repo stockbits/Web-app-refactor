@@ -87,6 +87,28 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               display: 'flex',
               alignItems: 'center',
             },
+            '& .action-col': {
+              position: 'sticky !important',
+              left: '0 !important',
+              backgroundColor: `${theme.palette.background.paper} !important`,
+              zIndex: '10 !important',
+              boxShadow: `2px 0 4px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'} !important`,
+            },
+            '& .MuiDataGrid-cell.action-col': {
+              position: 'sticky !important',
+              left: '0 !important',
+              backgroundColor: `${theme.palette.background.paper} !important`,
+              zIndex: '10 !important',
+            },
+            '& .MuiDataGrid-columnHeader.action-col': {
+              position: 'sticky !important',
+              left: '0 !important',
+              backgroundColor: `${theme.palette.background.paper} !important`,
+              zIndex: '10 !important',
+            },
+            '& .MuiDataGrid-columnHeader.action-col .MuiDataGrid-columnSeparator': {
+              display: 'none',
+            },
             // Remove light-mode circle behind sort icon and align color with brand
             '& .MuiDataGrid-iconButtonContainer': {
               backgroundColor: 'transparent !important',
@@ -120,12 +142,11 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           pageSizeOptions={resolvedPageSizeOptions}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          checkboxSelection
           disableRowSelectionOnClick={false}
           autoHeight={false}
           autosizeOnMount
           autosizeOptions={{
-            columns: columns.map(col => col.field),
+            columns: columns.filter(col => col.field !== 'actions').map(col => col.field),
             includeHeaders: true,
             includeOutliers: false,
           }}

@@ -31,6 +31,15 @@ export interface TaskTableRow {
   taskLatitude: number
   taskLongitude: number
   updatedAt: string
+  fieldNotes?: TaskNote[]
+  progressNotes?: TaskNote[]
+}
+
+export type TaskNote = {
+  id: string
+  author: string
+  createdAt: string
+  text: string
 }
 
 export const TASK_TABLE_ROWS: TaskTableRow[] = [
@@ -53,6 +62,12 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
     taskLatitude: 51.7144,
     taskLongitude: -3.4437,
     updatedAt: '2026-01-03T08:15:00Z',
+    fieldNotes: [
+      { id: 'N-001', author: 'JD', createdAt: '2026-01-03T08:10:00Z', text: 'Customer reported intermittent connectivity. Checked ONT LEDs.' },
+    ],
+    progressNotes: [
+      { id: 'P-001', author: 'DL', createdAt: '2026-01-03T08:12:00Z', text: 'Assigned to Delta Team. ETA 30 mins.' },
+    ],
   },
   {
     taskId: 'RG-TH049118',
@@ -73,6 +88,13 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
     taskLatitude: 51.7156,
     taskLongitude: -3.4425,
     updatedAt: '2026-01-03T06:45:00Z',
+    fieldNotes: [
+      { id: 'N-002', author: 'AM', createdAt: '2026-01-03T06:30:00Z', text: 'Cabinet access limited due to roadworks.' },
+      { id: 'N-003', author: 'AM', createdAt: '2026-01-03T06:40:00Z', text: 'Temporary signage placed; proceed with caution.' },
+    ],
+    progressNotes: [
+      { id: 'P-002', author: 'AM', createdAt: '2026-01-03T06:42:00Z', text: 'Awaiting permit confirmation.' },
+    ],
   },
   {
     taskId: 'RG-TR598201',

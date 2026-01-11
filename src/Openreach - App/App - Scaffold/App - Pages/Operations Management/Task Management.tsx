@@ -1,13 +1,15 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import CallRoundedIcon from '@mui/icons-material/CallRounded'
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
+import AppTaskDialog from '../../../App - Shared Components/MUI - More Info Component/App - Task Dialog'
 
 const TaskManagementPage = () => {
   const theme = useTheme()
@@ -21,6 +23,17 @@ const TaskManagementPage = () => {
 
   const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
     setSnackbar({ open: true, message, severity })
+  }, [])
+
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null)
+  const openTaskDialog = useCallback((task: TaskTableRow) => {
+    setDialogTask(task)
+    setDialogOpen(true)
+  }, [])
+  const closeTaskDialog = useCallback(() => {
+    setDialogOpen(false)
+    setDialogTask(null)
   }, [])
   
   const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = useMemo(
@@ -65,6 +78,16 @@ const TaskManagementPage = () => {
     [],
   )
 
+  const commitTypeColors: Record<TaskTableRow['commitType'], string> = useMemo(
+    () => ({
+      APPOINTMENT: tokens.mapTaskColors.appointment,
+      'START BY': tokens.mapTaskColors.startBy,
+      'COMPLETE BY': tokens.mapTaskColors.completeBy,
+      TAIL: tokens.mapTaskColors.failedSLA,
+    }),
+    [tokens.mapTaskColors],
+  )
+
   const linkedTaskLabels: Record<TaskTableRow['linkedTask'], string> = useMemo(
     () => ({
       Y: 'Yes',
@@ -75,6 +98,50 @@ const TaskManagementPage = () => {
 
   const columns: GridColDef<TaskTableRow>[] = useMemo(
     () => [
+      // Actions (sticky): quick actions (Call, Task)
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        width: 112,
+        minWidth: 96,
+        sortable: false,
+        filterable: false,
+        align: 'left',
+        headerAlign: 'left',
+        disableColumnMenu: true,
+        resizable: false,
+        className: 'action-col',
+        renderCell: (params) => (
+          (void params,
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Tooltip title="Call">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  showMessage('Call action')
+                }}
+                sx={{ p: 0.25 }}
+              >
+                <CallRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Task">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openTaskDialog(params.row)
+                }}
+                sx={{ p: 0.25 }}
+              >
+                <AssignmentRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Tooltip>
+          </Stack>)
+        ),
+      },
+      // Task ID
       {
         field: 'taskId',
         headerName: 'Task ID',
@@ -106,42 +173,7 @@ const TaskManagementPage = () => {
           </Box>
         ),
       },
-      {
-        field: 'status',
-        headerName: 'Task status',
-        flex: 1.3,
-        minWidth: 220,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => {
-          const meta = statusMetadata[params.row.status]
-          return (
-            <Chip
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: meta.color }}>
-                    {params.row.status}
-                  </Typography>
-                  <ArrowForwardIcon sx={{ fontSize: 14, color: meta.color }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: meta.color }}>
-                    {meta.label}
-                  </Typography>
-                </Box>
-              }
-              size="small"
-              variant="outlined"
-              sx={{
-                borderColor: meta.color,
-                color: meta.color,
-                '& .MuiChip-label': {
-                  px: 1.5,
-                  color: meta.color,
-                },
-              }}
-            />
-          )
-        },
-      },
+      // Work ID
       {
         field: 'workId',
         headerName: 'Work ID',
@@ -173,6 +205,52 @@ const TaskManagementPage = () => {
           </Box>
         ),
       },
+      // Task Status
+      {
+        field: 'status',
+        headerName: 'Task Status',
+        flex: 1.3,
+        minWidth: 220,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const meta = statusMetadata[params.row.status]
+          return (
+            <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>
+              {`${params.row.status} → ${meta.label}`}
+            </Typography>
+          )
+        },
+      },
+      // Commit Date
+      {
+        field: 'commitDate',
+        headerName: 'Commit Date',
+        flex: 1.1,
+        minWidth: 200,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => (
+          <Typography variant="body2" fontWeight={500} color="text.secondary">
+            {commitDateFormatter.format(new Date(params.row.commitDate))}
+          </Typography>
+        ),
+      },
+      // Commit Type
+      {
+        field: 'commitType',
+        headerName: 'Commit Type',
+        flex: 1,
+        minWidth: 150,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => (
+          <Typography variant="body2" fontWeight={600} sx={{ color: commitTypeColors[params.row.commitType] }}>
+            {commitTypeLabels[params.row.commitType] ?? params.row.commitType}
+          </Typography>
+        ),
+      },
+      // Resource ID
       {
         field: 'resourceId',
         headerName: 'Resource ID',
@@ -204,6 +282,32 @@ const TaskManagementPage = () => {
           </Box>
         ),
       },
+      // Impact Score
+      {
+        field: 'impactScore',
+        headerName: 'Impact score',
+        flex: 0.8,
+        minWidth: 130,
+        align: 'left',
+        headerAlign: 'left',
+        renderCell: (params) => {
+          const score = params.row.impactScore
+          let color: string
+          if (score >= 500) {
+            color = tokens.state.error  // Red
+          } else if (score >= 300) {
+            color = tokens.state.warning  // Amber
+          } else {
+            color = tokens.success.main  // Green accent
+          }
+          return (
+            <Typography variant="body2" fontWeight={600} color={color} noWrap>
+              {params.row.impactScore}
+            </Typography>
+          )
+        },
+      },
+      // Remaining columns (unchanged order)
       {
         field: 'resourceName',
         headerName: 'Resource name',
@@ -215,26 +319,6 @@ const TaskManagementPage = () => {
           <Typography variant="body2" color={params.row.resourceName ? 'text.primary' : 'text.secondary'} noWrap>
             {params.row.resourceName || '—'}
           </Typography>
-        ),
-      },
-      {
-        field: 'division',
-        headerName: 'Division',
-        flex: 1.1,
-        minWidth: 180,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => (
-          <Chip
-            label={params.row.division}
-            size="small"
-            variant="outlined"
-            sx={{ 
-              fontWeight: 600,
-              borderColor: tokens.success.main,
-              color: tokens.success.main,
-            }}
-          />
         ),
       },
       {
@@ -307,56 +391,6 @@ const TaskManagementPage = () => {
         ),
       },
       {
-        field: 'impactScore',
-        headerName: 'Impact score',
-        flex: 0.8,
-        minWidth: 130,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => {
-          const score = params.row.impactScore
-          let color: string
-          if (score >= 500) {
-            color = tokens.state.error  // Red
-          } else if (score >= 300) {
-            color = tokens.state.warning  // Amber
-          } else {
-            color = tokens.success.main  // Green accent
-          }
-          return (
-            <Typography variant="body2" fontWeight={600} color={color} noWrap>
-              {params.row.impactScore}
-            </Typography>
-          )
-        },
-      },
-      {
-        field: 'commitType',
-        headerName: 'Commit type',
-        flex: 1,
-        minWidth: 150,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => (
-          <Typography variant="body2" fontWeight={500} color="text.secondary">
-            {commitTypeLabels[params.row.commitType] ?? params.row.commitType}
-          </Typography>
-        ),
-      },
-      {
-        field: 'commitDate',
-        headerName: 'Commit date',
-        flex: 1.1,
-        minWidth: 200,
-        align: 'left',
-        headerAlign: 'left',
-        renderCell: (params) => (
-          <Typography variant="body2" fontWeight={500} color="text.secondary">
-            {commitDateFormatter.format(new Date(params.row.commitDate))}
-          </Typography>
-        ),
-      },
-      {
         field: 'updatedAt',
         headerName: 'Last update (alt)',
         flex: 1,
@@ -414,7 +448,7 @@ const TaskManagementPage = () => {
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage, openTaskDialog, theme.palette.text],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
@@ -650,6 +684,8 @@ const TaskManagementPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <AppTaskDialog open={dialogOpen} onClose={closeTaskDialog} task={dialogTask ?? undefined} />
     </Paper>
   )
 }

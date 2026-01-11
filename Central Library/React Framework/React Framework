@@ -15,3 +15,6 @@ Installed Stack Snapshot (central-app, Jan 2026):
 - Runtime deps: React 19.2, React DOM 19.2, @mui/material 7.3, @mui/icons-material 7.3, @mui/x-data-grid 8.23, @emotion/react 11.14, @emotion/styled 11.14.
 - Tooling deps: Vite 7.2, TypeScript 5.9, @vitejs/plugin-react 5.1, eslint 9.39 with React Hooks/Refresh plugins, types for React/Node, globals, typescript-eslint.
 - Project scaffold: Runtime code lives in /central-app/src, while the tooling stack (package.json, Vite, tsconfig, node_modules) stays isolated in /central-app/app. The app folder keeps a local src symlink back to the top-level directory, and the repo root exposes node_modules as a symlink to /central-app/app/node_modules so npm scripts (run from /central-app/app) operate normally without cluttering the root.
+
+UI Patterns:
+- Docked Dialog (Task): Minimal MUI implementation using chips. See src/Openreach - App/App - Shared Components/MUI - More Info Component/TaskDockBar.tsx and its integration in Operations Management/Task Management page. Limit dock to five items; clicking chip restores dialog; delete removes.

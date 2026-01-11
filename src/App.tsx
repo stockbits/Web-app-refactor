@@ -30,6 +30,9 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
+import TaskDockBar from "./Openreach - App/App - Shared Components/MUI - More Info Component/TaskDockBar";
+import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
+import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 
 interface MenuCardTile {
   name: string;
@@ -369,6 +372,8 @@ function App() {
     cardName: string;
   } | null>(null);
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
+  const [taskDockItems, setTaskDockItems] = useState<{ id: string; title: string; icon?: React.ReactNode; subtitle?: string; task: unknown }[]>([]);
+  const [restoreTaskId, setRestoreTaskId] = useState<string | null>(null);
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
   const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
@@ -448,6 +453,24 @@ function App() {
           ) : (
             <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
           )}
+
+          {/* Global task dock below breadcrumb */}
+          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 1 }}>
+            <TaskDockBar
+              items={taskDockItems.map(({ id, title, icon }) => ({ id, title, icon }))}
+              onClick={(id) => {
+                const item = taskDockItems.find((it) => it.id === id);
+                if (!item) return;
+                // Navigate to Task Management and set restore id
+                setSelectedMenuId("operations-management");
+                setShowWelcome(false);
+                setActivePage({ menuLabel: "Operations Management", cardName: "Task Management" });
+                setRestoreTaskId(id);
+              }}
+              onRemove={(id) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+              maxItems={5}
+            />
+          </Box>
 
           <Box 
             className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}
@@ -624,8 +647,36 @@ function App() {
                     >
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
-                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as any)} />
+                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
+                          ) : activePage?.cardName === 'Task Management' ? (
+                            <ActivePageComponent {...({
+                              restoreTaskId,
+                              onRestoreHandled: () => setRestoreTaskId(null),
+                              onAddTaskDockItem: (item: { id: string; title: string; commitType?: TaskCommitType; task: unknown }) => {
+                                const variant = (() => {
+                                  switch (item.commitType) {
+                                    case 'START BY':
+                                      return 'startBy' as const;
+                                    case 'COMPLETE BY':
+                                      return 'completeBy' as const;
+                                    case 'TAIL':
+                                      return 'failedSLA' as const;
+                                    default:
+                                      return 'appointment' as const;
+                                  }
+                                })();
+                                setTaskDockItems((prev) => {
+                                  if (prev.some((p) => p.id === item.id)) return prev;
+                                  const nextItem = {
+                                    id: item.id,
+                                    title: item.title,
+                                    icon: <TaskIcon variant={variant} size={18} />,
+                                    task: item.task,
+                                  };
+                                  return [nextItem, ...prev].slice(0, 5);
+                                });
+                              },
+                            } as Record<string, unknown>)} />
                           ) : (
                             <ActivePageComponent />
                           )}
