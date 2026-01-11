@@ -11,12 +11,8 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
-  List,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
+  Modal,
   OutlinedInput,
-  Popover,
   Stack,
   Tab,
   Tabs,
@@ -47,6 +43,7 @@ interface TaskTableQueryConfigProps {
   statusOptions?: TaskTableRow['status'][]
   capabilityOptions?: TaskSkillCode[]
   responseCodeOptions?: TaskTableRow['responseCode'][]
+  commitTypeOptions?: TaskTableRow['commitType'][]
   exactSearchValues?: string[]
   initialQuery?: TaskTableQueryState
   defaultQuery?: TaskTableQueryState
@@ -62,6 +59,7 @@ const TaskTableQueryConfig = ({
   statusOptions = DEFAULT_STATUSES,
   capabilityOptions = [],
   responseCodeOptions = [],
+  commitTypeOptions = [],
   exactSearchValues = [],
   initialQuery,
   defaultQuery,
@@ -121,6 +119,10 @@ const TaskTableQueryConfig = ({
   const responseCodeSelectOptions = useMemo(
     () => buildLabeledOptions(responseCodeOptions, (value) => value),
     [responseCodeOptions],
+  )
+  const commitTypeSelectOptions = useMemo(
+    () => buildLabeledOptions(commitTypeOptions, (value) => value),
+    [commitTypeOptions],
   )
 
   const handleTabChange = (_event: SyntheticEvent, nextTab: TaskFilterTab) => {
@@ -189,6 +191,15 @@ const TaskTableQueryConfig = ({
     }))
     setValidationError(null)
   }
+
+  const handleCommitTypesChange = (value: TaskTableRow['commitType'][]) => {
+    setDraftQuery((prev) => ({
+      ...prev,
+      commitTypes: value,
+    }))
+    setValidationError(null)
+  }
+
   const handleImpactValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value.replace(/\D/g, '').slice(0, 3)
     const val = raw === '' ? null : Number(raw)
@@ -403,6 +414,12 @@ const TaskTableQueryConfig = ({
               options={responseCodeSelectOptions}
               value={draftQuery.responseCodes}
               onChange={handleResponseCodesChange}
+            />
+            <BulkSelectableMultiSelect
+              label="Commit types"
+              options={commitTypeSelectOptions}
+              value={draftQuery.commitTypes}
+              onChange={handleCommitTypesChange}
             />
           </Box>
         )}
@@ -626,82 +643,194 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
           }
         />
 
-        <Popover
+        <Modal
           open={open}
-          anchorEl={anchorEl}
           onClose={handleClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          PaperProps={{ sx: { p: 2, borderRadius: 0, maxWidth: 720, bgcolor: 'background.paper' } }}
+          disablePortal={false}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
         >
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="stretch">
-            <List
-              dense
-              subheader={<ListSubheader component="div">Shortcuts</ListSubheader>}
-              sx={{ minWidth: 200, bgcolor: 'background.paper', borderRadius: 0 }}
-            >
-              {shortcuts.map((shortcut) => (
-                <ListItemButton key={shortcut.label} onClick={handleShortcut(shortcut.resolveRange)}>
-                  <ListItemText primary={shortcut.label} secondary={shortcut.hint} primaryTypographyProps={{ fontWeight: 600 }} />
-                </ListItemButton>
-              ))}
-            </List>
-            <Stack spacing={2} flexGrow={1}>
-              <ToggleButtonGroup
-                value={activeField}
-                exclusive
-                onChange={(_event, next) => {
-                  if (next) setActiveField(next)
-                }}
-                size="small"
-              >
-                <ToggleButton value="start">Start date</ToggleButton>
-                <ToggleButton value="end">End date</ToggleButton>
-              </ToggleButtonGroup>
-              <StaticDatePicker
-                displayStaticWrapperAs="desktop"
-                value={draftRange[activeField]}
-                onChange={handleDateChange}
-                // Hide the internal OK/CANCEL action bar — we use our own buttons below
-                slots={{ actionBar: () => null }}
-                // Defensive: also set slotProps/slotProps for different MUI X versions
-                slotProps={{ actionBar: { sx: { display: 'none' } } }}
-              />
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label="Start time"
-                  type="time"
-                  value={formatTimeInput(draftRange.start)}
-                  onChange={handleTimeChange('start')}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                  fullWidth
-                  variant="outlined"
+          <Box sx={{ 
+            p: 3, 
+            borderRadius: 2, 
+            maxWidth: 720, 
+            bgcolor: 'background.paper', 
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            outline: 'none',
+          }}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="stretch">
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                Select Dates & Times
+              </Typography>
+              <Stack spacing={3}>
+                <ToggleButtonGroup
+                  value={activeField}
+                  exclusive
+                  onChange={(_event, next) => {
+                    if (next) setActiveField(next)
+                  }}
                   size="small"
-                />
-                <TextField
-                  label="End time"
-                  type="time"
-                  value={formatTimeInput(draftRange.end)}
-                  onChange={handleTimeChange('end')}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                  fullWidth
-                  variant="outlined"
-                  size="small"
-                />
+                  sx={{
+                    '& .MuiToggleButton-root': {
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      borderRadius: 1,
+                      px: 2,
+                      '&.Mui-selected': {
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                        '&:hover': {
+                          bgcolor: 'primary.dark',
+                        },
+                      },
+                    },
+                  }}
+                >
+                  <ToggleButton value="start">Start date</ToggleButton>
+                  <ToggleButton value="end">End date</ToggleButton>
+                </ToggleButtonGroup>
+                <Box sx={{ 
+                  '& .MuiPickersCalendarHeader-root': {
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                  },
+                  '& .MuiDayCalendar-root': {
+                    width: '100%',
+                  },
+                }}>
+                  <StaticDatePicker
+                    displayStaticWrapperAs="desktop"
+                    value={draftRange[activeField]}
+                    onChange={handleDateChange}
+                    // Hide the internal OK/CANCEL action bar — we use our own buttons below
+                    slots={{ actionBar: () => null }}
+                    // Defensive: also set slotProps/slotProps for different MUI X versions
+                    slotProps={{ actionBar: { sx: { display: 'none' } } }}
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                    Time Range
+                  </Typography>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                    <TextField
+                      label="Start time"
+                      type="time"
+                      value={formatTimeInput(draftRange.start)}
+                      onChange={handleTimeChange('start')}
+                      onFocus={() => setActiveField('start')}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ step: 300 }}
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                        },
+                      }}
+                    />
+                    <TextField
+                      label="End time"
+                      type="time"
+                      value={formatTimeInput(draftRange.end)}
+                      onChange={handleTimeChange('end')}
+                      onFocus={() => setActiveField('end')}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ step: 300 }}
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                        },
+                      }}
+                    />
+                  </Stack>
+                </Box>
               </Stack>
-            </Stack>
+            </Box>
+            <Box sx={{ minWidth: 220 }}>
+              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                Quick Select
+              </Typography>
+              <Stack spacing={1}>
+                {shortcuts.map((shortcut) => (
+                  <Button
+                    key={shortcut.label}
+                    variant="outlined"
+                    size="small"
+                    onClick={handleShortcut(shortcut.resolveRange)}
+                    sx={{
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      borderRadius: 1,
+                      py: 1,
+                      px: 2,
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      textTransform: 'none',
+                      borderColor: 'divider',
+                      color: 'text.primary',
+                      '&:hover': {
+                        borderColor: 'primary.main',
+                        bgcolor: 'primary.main',
+                        color: 'primary.contrastText',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      },
+                      transition: 'all 0.2s ease-in-out',
+                    }}
+                  >
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'inherit', lineHeight: 1.2 }}>
+                        {shortcut.label}
+                      </Typography>
+                      {shortcut.hint && (
+                        <Typography variant="caption" sx={{ opacity: 0.7, lineHeight: 1.2, display: 'block', mt: 0.25 }}>
+                          {shortcut.hint}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Button>
+                ))}
+              </Stack>
+            </Box>
           </Stack>
-          <Stack direction="row" justifyContent="flex-end" spacing={1} mt={2}>
-            <Button color="inherit" onClick={handleClear}>
+          <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3} pt={2} borderTop={1} borderColor="divider">
+            <Button 
+              color="inherit" 
+              onClick={handleClear}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 500,
+                borderRadius: 1,
+                px: 3,
+              }}
+            >
               Clear
             </Button>
-            <Button variant="contained" onClick={handleApplySelection}>
-              Apply
+            <Button 
+              variant="contained" 
+              onClick={handleApplySelection}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                borderRadius: 1,
+                px: 3,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              }}
+            >
+              Apply Selection
             </Button>
           </Stack>
-        </Popover>
+          </Box>
+        </Modal>
       </LocalizationProvider>
     </Box>
   )
@@ -1112,3 +1241,6 @@ const BulkSelectableMultiSelect = <TValue extends string>({
 }
 
 export default TaskTableQueryConfig
+
+export { BulkSelectableMultiSelect, TaskDateWindowField }
+export type { LabeledOption, DateRangeValue }

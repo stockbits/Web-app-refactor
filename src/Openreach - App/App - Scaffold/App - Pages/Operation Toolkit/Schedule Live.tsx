@@ -6,6 +6,7 @@ import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel S
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
+import AppSearchTool from './App - Search Tool'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -22,6 +23,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [globalSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [legendAnchorEl, setLegendAnchorEl] = useState<HTMLElement | null>(null)
+  const [searchToolOpen, setSearchToolOpen] = useState(false)
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -81,7 +83,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           <Tooltip title="Search Tool">
             <Button
               size="small"
-              onClick={() => {}}
+              onClick={() => setSearchToolOpen(true)}
               variant="contained"
               sx={{
                 backgroundColor: theme.palette.primary.main,
@@ -146,6 +148,17 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           onDockedPanelsChange={onDockedPanelsChange}
         />
       </Box>
+
+      <AppSearchTool
+        open={searchToolOpen}
+        onClose={() => setSearchToolOpen(false)}
+        currentSearchTerm={searchInput}
+        onSearch={(filters) => {
+          // TODO: Implement search logic with filters and current searchInput
+          console.log('Search filters:', filters)
+          console.log('Current search term:', searchInput)
+        }}
+      />
     </Box>
   )
 }

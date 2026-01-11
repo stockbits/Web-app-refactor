@@ -486,6 +486,11 @@ const TaskManagementPage = ({
     [],
   )
 
+  const commitTypeOptions = useMemo(
+    () => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.commitType))).sort((a, b) => a.localeCompare(b)),
+    [],
+  )
+
   const exactSearchValues = useMemo(() => {
     const tokens = new Set<string>()
     TASK_TABLE_ROWS.forEach((row) => {
@@ -591,6 +596,7 @@ const TaskManagementPage = ({
           domainOptions={domainOptions}
           capabilityOptions={capabilityOptions}
           responseCodeOptions={responseCodeOptions}
+          commitTypeOptions={commitTypeOptions}
           exactSearchValues={exactSearchValues}
           onApply={handleApplyQuery}
           hasRows={filteredRows.length > 0}
@@ -741,6 +747,10 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
     }
 
     if (query.responseCodes.length && !query.responseCodes.includes(row.responseCode)) {
+      return false
+    }
+
+    if (query.commitTypes.length && !query.commitTypes.includes(row.commitType)) {
       return false
     }
 

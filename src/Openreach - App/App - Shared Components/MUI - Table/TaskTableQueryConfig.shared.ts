@@ -7,6 +7,7 @@ export type TaskTableQueryState = {
   statuses: TaskTableRow['status'][];
   capabilities: TaskSkillCode[];
   responseCodes: TaskTableRow['responseCode'][];
+  commitTypes: TaskTableRow['commitType'][];
   updatedFrom: string | null;
   updatedTo: string | null;
   impactOperator?: 'gt' | 'lt' | 'eq' | null;
@@ -20,6 +21,7 @@ export const buildDefaultTaskTableQuery = (): TaskTableQueryState => ({
   statuses: [],
   capabilities: [],
   responseCodes: [],
+  commitTypes: [],
   updatedFrom: null,
   updatedTo: null,
   impactOperator: null,
