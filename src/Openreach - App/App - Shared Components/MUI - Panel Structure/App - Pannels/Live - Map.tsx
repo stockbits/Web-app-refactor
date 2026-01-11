@@ -1,10 +1,9 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Paper, Slider } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip, Menu, MenuItem, Slider } from "@mui/material";
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
-import LegendToggleIcon from "@mui/icons-material/LegendToggle";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 // Using inline SVG for Task Group shield to control fill/outline
@@ -225,10 +224,6 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     return (saved as MapLayerType) || 'roadmap';
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [showLegend, setShowLegendState] = useState(() => {
-    const saved = localStorage.getItem('liveMapShowLegend');
-    return saved ? JSON.parse(saved) : false;
-  });
   const [clickedMarkerId, setClickedMarkerId] = useState<string | null>(null);
   const ignoreNextMapClickRef = useRef(false); // Prevent map click from closing popup right after marker double-tap
   const [currentZoom, setCurrentZoom] = useState(6); // Track current zoom level
@@ -243,15 +238,6 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     position: null,
     content: null,
   });
-
-  // Persist legend visibility to localStorage
-  const setShowLegend = (value: boolean | ((prev: boolean) => boolean)) => {
-    setShowLegendState((prev: boolean) => {
-      const newValue = typeof value === 'function' ? value(prev) : value;
-      localStorage.setItem('liveMapShowLegend', JSON.stringify(newValue));
-      return newValue;
-    });
-  };
 
   // Clear clicked marker after a short delay
   const clickedMarkerIdRef = useRef(clickedMarkerId);
@@ -445,24 +431,6 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         <Toolbar variant="dense" sx={{ justifyContent: 'flex-end' }}>
           {/* Right side actions */}
           <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
-            <Tooltip title={showLegend ? "Hide legend" : "Show legend"}>
-              <IconButton
-                size="small"
-                onClick={() => setShowLegend(!showLegend)}
-                sx={{
-                  p: 0.5,
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  color: theme.openreach.energyAccent,
-                  '&:hover': {
-                    backgroundColor: 'transparent',
-                    boxShadow: 'none',
-                  },
-                }}
-              >
-                <LegendToggleIcon sx={{ fontSize: 20, color: 'inherit' }} />
-              </IconButton>
-            </Tooltip>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
@@ -634,86 +602,6 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             </MenuItem>
           </Menu>
 
-
-        {/* Task Icon Legend */}
-        {showLegend && (
-        <Paper
-          elevation={0}
-          sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-            zIndex: 1000,
-            p: 2,
-            minWidth: 200,
-            backgroundColor: theme.palette.background.paper,
-            border: `2px solid ${theme.palette.divider}`,
-            outline: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, letterSpacing: '0.3px' }}>
-            Task Status
-          </Typography>
-          <Stack spacing={1.2}>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
-                {taskColors && (
-                  <TaskIcon 
-                    variant="appointment" 
-                    size={28}
-                    color={taskColors.appointment}
-                  />
-                )}
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Appointment</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
-                {taskColors && (
-                  <TaskIcon 
-                    variant="startBy" 
-                    size={28}
-                    color={taskColors.startBy}
-                  />
-                )}
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Start By</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
-                {taskColors && (
-                  <TaskIcon 
-                    variant="completeBy" 
-                    size={28}
-                    color={taskColors.completeBy}
-                  />
-                )}
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Complete By</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
-                {taskColors && (
-                  <TaskIcon 
-                    variant="failedSLA" 
-                    size={28}
-                    color={taskColors.failedSLA}
-                  />
-                )}
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA</Typography>
-            </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 28 }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ paintOrder: 'stroke fill' }}>
-                  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill={taskColors?.taskGroup || theme.openreach.energyAccent} stroke={theme.openreach.coreBlock} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                </svg>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Task Group</Typography>
-            </Stack>
-          </Stack>
-        </Paper>
-        )}
 
         <MapContainer
           center={[54.5, -2.5]} // Center of UK

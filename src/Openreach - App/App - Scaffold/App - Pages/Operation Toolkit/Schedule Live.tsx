@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Popover, Tooltip } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import LegendToggleIcon from '@mui/icons-material/LegendToggle'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -18,6 +20,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch, setGlobalSearch] = useState('')
+  const [legendAnchorEl, setLegendAnchorEl] = useState<HTMLElement | null>(null)
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -72,6 +75,48 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
               startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
             }}
           />
+          
+          <Tooltip title="Task Status Legend">
+            <IconButton
+              size="small"
+              onClick={(e) => setLegendAnchorEl(e.currentTarget)}
+              sx={{
+                color: theme.openreach.energyAccent,
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover,
+                }
+              }}
+            >
+              <LegendToggleIcon />
+            </IconButton>
+          </Tooltip>
+          
+          <Popover
+            open={Boolean(legendAnchorEl)}
+            anchorEl={legendAnchorEl}
+            onClose={() => setLegendAnchorEl(null)}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            slotProps={{
+              paper: {
+                sx: {
+                  p: 2,
+                  mt: 1,
+                  minWidth: 200,
+                  border: `2px solid ${theme.palette.divider}`,
+                  outline: `1px solid ${theme.palette.divider}`,
+                }
+              }
+            }}
+          >
+            <TaskStatusLegend variant="full" showTitle />
+          </Popover>
         </Stack>
       </Box>
 
