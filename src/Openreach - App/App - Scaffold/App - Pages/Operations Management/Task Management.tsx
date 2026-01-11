@@ -8,7 +8,7 @@ import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Tab
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
-import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType, type TaskNote } from '../../../App - Data Tables/Task - Table'
 import AppTaskDialog from '../../../App - Shared Components/MUI - More Info Component/App - Task Dialog'
 
 const TaskManagementPage = ({
@@ -43,6 +43,26 @@ const TaskManagementPage = ({
     setDialogOpen(false)
     setDialogTask(null)
   }, [])
+
+  const handleAddNote = useCallback(
+    (type: 'field' | 'progress', text: string) => {
+      if (!dialogTask) return
+      const nextNote: TaskNote = {
+        id: `${type}-${Date.now()}`,
+        author: 'You',
+        createdAt: new Date().toISOString(),
+        text,
+      }
+      setDialogTask((prev) => {
+        if (!prev) return prev
+        const fieldNotes = type === 'field' ? [...(prev.fieldNotes ?? []), nextNote] : prev.fieldNotes
+        const progressNotes = type === 'progress' ? [...(prev.progressNotes ?? []), nextNote] : prev.progressNotes
+        return { ...prev, fieldNotes, progressNotes }
+      })
+      showMessage(type === 'field' ? 'Added field note' : 'Added progress note')
+    },
+    [dialogTask, showMessage],
+  )
 
   // Restore dialog when triggered from Recent Tasks dock
   useEffect(() => {
@@ -709,6 +729,7 @@ const TaskManagementPage = ({
         open={dialogOpen}
         onClose={closeTaskDialog}
         task={dialogTask ?? undefined}
+        onAddNote={handleAddNote}
         onMinimize={dialogTask ? () => {
           onAddTaskDockItem?.({
             id: dialogTask.taskId,
