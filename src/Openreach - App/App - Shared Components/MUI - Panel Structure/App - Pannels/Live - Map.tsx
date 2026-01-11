@@ -296,99 +296,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           }
         }}
       >
-        <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
-          {/* Left side - Map type dropdown */}
-          <Button
-              size="small"
-              onClick={handleMenuOpen}
-              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 20 }} />}
-              sx={{
-                textTransform: 'none',
-                color: theme.palette.text.primary,
-                backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover,
-                border: `1px solid ${theme.palette.divider}`,
-                px: 1.75,
-                py: 0.50,
-                ml: 0.5,
-                minHeight: 30,
-                fontSize: '0.875rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75,
-                '&:hover': {
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : theme.palette.action.selected,
-                }
-              }}
-            >
-              <Stack direction="row" spacing={0.75} alignItems="center">
-                {getMapLayerIcon()}
-                <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                  {getMapLayerLabel()}
-                </Typography>
-              </Stack>
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              PaperProps={{
-                sx: {
-                  backgroundColor: headerBg,
-                  border: `1px solid ${theme.palette.divider}`,
-                }
-              }}
-            >
-              <MenuItem
-                onClick={() => handleLayerSelect('roadmap')}
-                selected={mapLayer === 'roadmap'}
-                sx={{
-                  backgroundColor: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'transparent',
-                  color: mapLayer === 'roadmap' ? theme.openreach.brand.white : theme.palette.text.primary,
-                  '&:hover': {
-                    backgroundColor: mapLayer === 'roadmap' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <MapIcon sx={{ fontSize: 20, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
-                  <Typography variant="body2">Road Map</Typography>
-                </Stack>
-              </MenuItem>
-              <MenuItem
-                onClick={() => handleLayerSelect('satellite')}
-                selected={mapLayer === 'satellite'}
-                sx={{
-                  backgroundColor: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'transparent',
-                  color: mapLayer === 'satellite' ? theme.openreach.brand.white : theme.palette.text.primary,
-                  '&:hover': {
-                    backgroundColor: mapLayer === 'satellite' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <SatelliteAltIcon sx={{ fontSize: 20, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
-                  <Typography variant="body2">Satellite</Typography>
-                </Stack>
-              </MenuItem>
-              <MenuItem
-                onClick={() => handleLayerSelect('terrain')}
-                selected={mapLayer === 'terrain'}
-                sx={{
-                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'transparent',
-                  color: mapLayer === 'terrain' ? theme.openreach.brand.white : theme.palette.text.primary,
-                  '&:hover': {
-                    backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                  <TerrainIcon sx={{ fontSize: 20, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
-                  <Typography variant="body2">Terrain</Typography>
-                </Stack>
-              </MenuItem>
-            </Menu>
-
-          {/* Right side for secondary actions */}
+        <Toolbar variant="dense" sx={{ justifyContent: 'flex-end' }}>
+          {/* Right side actions */}
           <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
             <Tooltip title={showLegend ? "Hide legend" : "Show legend"}>
               <IconButton
@@ -494,6 +403,106 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           }
         }}
       >
+        {/* Map Layer Controls - Overlay on map */}
+        <Paper
+          elevation={2}
+          sx={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            zIndex: 1000,
+            backgroundColor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Button
+            size="small"
+            onClick={handleMenuOpen}
+            endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              textTransform: 'none',
+              color: theme.palette.text.primary,
+              px: 1.5,
+              py: 0.75,
+              minHeight: 36,
+              fontSize: '0.875rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75,
+              '&:hover': {
+                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.palette.action.hover,
+              }
+            }}
+          >
+            <Stack direction="row" spacing={0.75} alignItems="center">
+              {getMapLayerIcon()}
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {getMapLayerLabel()}
+              </Typography>
+            </Stack>
+          </Button>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+              }
+            }}
+          >
+            <MenuItem
+              onClick={() => handleLayerSelect('roadmap')}
+              selected={mapLayer === 'roadmap'}
+              sx={{
+                backgroundColor: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'roadmap' ? theme.openreach.brand.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: mapLayer === 'roadmap' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                <MapIcon sx={{ fontSize: 20, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Road Map</Typography>
+              </Stack>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleLayerSelect('satellite')}
+              selected={mapLayer === 'satellite'}
+              sx={{
+                backgroundColor: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'satellite' ? theme.openreach.brand.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: mapLayer === 'satellite' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                <SatelliteAltIcon sx={{ fontSize: 20, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Satellite</Typography>
+              </Stack>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleLayerSelect('terrain')}
+              selected={mapLayer === 'terrain'}
+              sx={{
+                backgroundColor: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'terrain' ? theme.openreach.brand.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                <TerrainIcon sx={{ fontSize: 20, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Terrain</Typography>
+              </Stack>
+            </MenuItem>
+          </Menu>
+        </Paper>
+
         {/* Task Icon Legend */}
         {showLegend && (
         <Paper
