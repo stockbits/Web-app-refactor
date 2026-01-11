@@ -138,13 +138,11 @@ const TaskTableQueryConfig = ({
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newSearchValue = event.target.value
     const hasSearchValue = newSearchValue.trim().length > 0
-    
+
     setDraftQuery((prev) => ({
       ...prev,
       searchTerm: newSearchValue,
-      // Auto-clear division, domain, and status filters when user enters a global search
-      divisions: hasSearchValue ? [] : prev.divisions,
-      domains: hasSearchValue ? [] : prev.domains,
+      // Mutual exclusivity: if global search entered, clear status selection only
       statuses: hasSearchValue ? [] : prev.statuses,
     }))
     setValidationError(null)
@@ -154,6 +152,8 @@ const TaskTableQueryConfig = ({
     setDraftQuery((prev) => ({
       ...prev,
       statuses: value,
+      // Mutual exclusivity: if user selects any status, clear global search
+      searchTerm: value.length > 0 ? '' : prev.searchTerm,
     }))
     setValidationError(null)
   }
@@ -205,39 +205,27 @@ const TaskTableQueryConfig = ({
   }
 
   const handleApply = () => {
-      setHasQueried(true)
+    setHasQueried(true)
     const trimmedSearch = draftQuery.searchTerm.trim()
     const hasGlobalSearch = trimmedSearch.length > 0
-    const hasDivisionSelection = draftQuery.divisions.length > 0
-    const hasDomainSelection = draftQuery.domains.length > 0
     const hasStatusSelection = draftQuery.statuses.length > 0
-    const hasCompleteFilterSet = hasDivisionSelection && hasDomainSelection && hasStatusSelection
-    const hasAnySimpleFilter = hasDivisionSelection || hasDomainSelection || hasStatusSelection
 
-    if (!hasGlobalSearch) {
-      if (!hasCompleteFilterSet) {
-        setValidationError('Select at least one Division, Domain, and Status when no global search is provided.')
-        return
-      }
-    } else {
-      if (hasAnySimpleFilter) {
-        setValidationError('Clear Division, Domain, and Status when using global search.')
-        return
-      }
-
-      if (exactSearchSet && !exactSearchSet.has(trimmedSearch.toLowerCase())) {
-        setValidationError('Global search must exactly match a Task ID, Work ID, or Resource ID.')
-        return
-      }
+    // New validation: require either a global search OR a status selection.
+    // Division and Domain can coexist with either; they are optional.
+    if (!hasGlobalSearch && !hasStatusSelection) {
+      setValidationError('Enter a global search or select at least one Status.')
+      return
     }
 
-    const nextQuery =
-      hasGlobalSearch && trimmedSearch !== draftQuery.searchTerm
-        ? {
-            ...draftQuery,
-            searchTerm: trimmedSearch,
-          }
-        : draftQuery
+    // If global search is present, enforce exact match when exact set provided.
+    if (hasGlobalSearch && exactSearchSet && !exactSearchSet.has(trimmedSearch.toLowerCase())) {
+      setValidationError('Global search must exactly match a Task ID, Work ID, or Resource ID.')
+      return
+    }
+
+    const nextQuery = hasGlobalSearch && trimmedSearch !== draftQuery.searchTerm
+      ? { ...draftQuery, searchTerm: trimmedSearch }
+      : draftQuery
 
     setDraftQuery(nextQuery)
     setValidationError(null)
