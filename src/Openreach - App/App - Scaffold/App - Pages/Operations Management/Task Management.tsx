@@ -626,7 +626,7 @@ const TaskManagementPage = ({
   return (
     <Paper
       sx={{
-        boxShadow: theme.shadows[10],
+        boxShadow: 'none',
         bgcolor: 'background.paper',
         display: 'flex',
         flexDirection: 'column',
@@ -634,7 +634,7 @@ const TaskManagementPage = ({
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ px: 3, pt: 3, pb: 0 }}>
         <TaskTableQueryConfig
           initialQuery={activeQuery}
           defaultQuery={defaultQuery}
@@ -650,7 +650,7 @@ const TaskManagementPage = ({
         />
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0, maxHeight: '65vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', px: 3, borderRadius: 0 }}>
+      <Box sx={{ flex: 1, minHeight: 0, maxHeight: '65vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', px: 3, pb: 3, borderRadius: 0 }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
