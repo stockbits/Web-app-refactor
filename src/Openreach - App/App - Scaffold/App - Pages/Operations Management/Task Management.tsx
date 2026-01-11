@@ -141,7 +141,7 @@ const TaskManagementPage = ({
                   e.stopPropagation()
                   showMessage('Call action')
                 }}
-                sx={{ p: 0.25 }}
+                sx={{ p: 0.25, color: 'text.secondary' }}
               >
                 <CallRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
@@ -153,7 +153,7 @@ const TaskManagementPage = ({
                   e.stopPropagation()
                   openTaskDialog(params.row)
                 }}
-                sx={{ p: 0.25 }}
+                sx={{ p: 0.25, color: 'text.secondary' }}
               >
                 <AssignmentRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>

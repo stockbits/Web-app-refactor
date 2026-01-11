@@ -92,19 +92,22 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
-              boxShadow: `2px 0 4px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)'} !important`,
+              borderRight: `1px solid ${theme.palette.divider} !important`,
+              boxShadow: `2px 0 3px ${theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.06)'} !important`,
             },
             '& .MuiDataGrid-cell.action-col': {
               position: 'sticky !important',
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
+              borderRight: `1px solid ${theme.palette.divider} !important`,
             },
             '& .MuiDataGrid-columnHeader.action-col': {
               position: 'sticky !important',
               left: '0 !important',
               backgroundColor: `${theme.palette.background.paper} !important`,
               zIndex: '10 !important',
+              borderRight: `1px solid ${theme.palette.divider} !important`,
             },
             '& .MuiDataGrid-columnHeader.action-col .MuiDataGrid-columnSeparator': {
               display: 'none',
