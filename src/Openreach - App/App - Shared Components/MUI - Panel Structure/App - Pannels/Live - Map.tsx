@@ -663,8 +663,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                   height: 24,
                   borderRadius: '50%',
                   backgroundColor: theme.openreach.energyAccent,
-                  border: '2px solid rgba(255, 255, 255, 0.9)',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+                  border: '3px solid white',
+                  outline: '2px solid rgba(0,0,0,0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -723,7 +723,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                   html: `<div style="
                     background: ${theme.openreach.energyAccent};
                     color: white;
-                    border: 2px solid rgba(255, 255, 255, 0.9);
+                    border: 3px solid white;
                     border-radius: 50%;
                     width: ${size}px;
                     height: ${size}px;
@@ -732,7 +732,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                     justify-content: center;
                     font-weight: 700;
                     font-size: ${fontSize};
-                    box-shadow: 0 3px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.1);
+                    outline: 2px solid rgba(0,0,0,0.2);
                     transition: transform 0.2s ease;
                   ">${count}</div>`,
                   className: 'custom-cluster-icon',
