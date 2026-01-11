@@ -121,8 +121,8 @@ const TaskManagementPage = ({
       {
         field: 'actions',
         headerName: 'Actions',
-        width: 112,
-        minWidth: 96,
+        width: 90,
+        minWidth: 80,
         sortable: false,
         filterable: false,
         align: 'left',
