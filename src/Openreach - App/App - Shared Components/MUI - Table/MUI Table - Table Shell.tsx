@@ -87,6 +87,13 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               display: 'flex',
               alignItems: 'center',
             },
+            // Hide native scrollbar UI on the grid scroller to avoid footer scroll look
+            '& .MuiDataGrid-virtualScroller': {
+              scrollbarWidth: 'none',
+            },
+            '& .MuiDataGrid-virtualScroller::-webkit-scrollbar': {
+              display: 'none',
+            },
             '& .action-col': {
               position: 'sticky !important',
               left: '0 !important',
