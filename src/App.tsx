@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState } from "react";
+import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from "react";
 import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
@@ -372,7 +372,43 @@ function App() {
     cardName: string;
   } | null>(null);
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
-  const [taskDockItems, setTaskDockItems] = useState<{ id: string; title: string; icon?: React.ReactNode; subtitle?: string; task: unknown }[]>([]);
+  const [taskDockItems, setTaskDockItems] = useState<{ id: string; title: string; commitType?: TaskCommitType }[]>([]);
+
+  // Persist recent tasks dock in localStorage (id, title, commitType)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('recentTasksDock');
+      if (saved) {
+        const parsed = JSON.parse(saved) as { id: string; title: string; commitType?: TaskCommitType }[];
+        if (Array.isArray(parsed)) {
+          setTimeout(() => setTaskDockItems(parsed.slice(0, 5)), 0);
+        }
+      }
+    } catch {
+      // ignore load errors
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const minimal = taskDockItems.map(({ id, title, commitType }) => ({ id, title, commitType }));
+      localStorage.setItem('recentTasksDock', JSON.stringify(minimal));
+    } catch {
+      // ignore save errors
+    }
+  }, [taskDockItems]);
+
+  const handleAddTaskDockItem = useCallback((item: { id: string; title: string; commitType?: TaskCommitType; task?: unknown }) => {
+    setTaskDockItems((prev) => {
+      if (prev.some((p) => p.id === item.id)) return prev;
+      const nextItem = {
+        id: item.id,
+        title: item.title,
+        commitType: item.commitType,
+      };
+      return [nextItem, ...prev].slice(0, 5);
+    });
+  }, []);
   const [restoreTaskId, setRestoreTaskId] = useState<string | null>(null);
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
@@ -457,7 +493,21 @@ function App() {
           {/* Global task dock below breadcrumb */}
           <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 1 }}>
             <TaskDockBar
-              items={taskDockItems.map(({ id, title, icon }) => ({ id, title, icon }))}
+              items={taskDockItems.map(({ id, title, commitType }) => {
+                const variant = (() => {
+                  switch (commitType) {
+                    case 'START BY':
+                      return 'startBy' as const;
+                    case 'COMPLETE BY':
+                      return 'completeBy' as const;
+                    case 'TAIL':
+                      return 'failedSLA' as const;
+                    default:
+                      return 'appointment' as const;
+                  }
+                })();
+                return { id, title, icon: <TaskIcon variant={variant} size={18} /> };
+              })}
               onClick={(id) => {
                 const item = taskDockItems.find((it) => it.id === id);
                 if (!item) return;
@@ -647,36 +697,13 @@ function App() {
                     >
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
-                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
+                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as any)} />
                           ) : activePage?.cardName === 'Task Management' ? (
                             <ActivePageComponent {...({
                               restoreTaskId,
                               onRestoreHandled: () => setRestoreTaskId(null),
-                              onAddTaskDockItem: (item: { id: string; title: string; commitType?: TaskCommitType; task: unknown }) => {
-                                const variant = (() => {
-                                  switch (item.commitType) {
-                                    case 'START BY':
-                                      return 'startBy' as const;
-                                    case 'COMPLETE BY':
-                                      return 'completeBy' as const;
-                                    case 'TAIL':
-                                      return 'failedSLA' as const;
-                                    default:
-                                      return 'appointment' as const;
-                                  }
-                                })();
-                                setTaskDockItems((prev) => {
-                                  if (prev.some((p) => p.id === item.id)) return prev;
-                                  const nextItem = {
-                                    id: item.id,
-                                    title: item.title,
-                                    icon: <TaskIcon variant={variant} size={18} />,
-                                    task: item.task,
-                                  };
-                                  return [nextItem, ...prev].slice(0, 5);
-                                });
-                              },
-                            } as Record<string, unknown>)} />
+                              onAddTaskDockItem: handleAddTaskDockItem,
+                            } as any)} />
                           ) : (
                             <ActivePageComponent />
                           )}

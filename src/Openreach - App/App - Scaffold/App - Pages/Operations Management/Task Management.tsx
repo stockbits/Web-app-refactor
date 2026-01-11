@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
@@ -8,10 +8,18 @@ import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Tab
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
-import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
 import AppTaskDialog from '../../../App - Shared Components/MUI - More Info Component/App - Task Dialog'
 
-const TaskManagementPage = () => {
+const TaskManagementPage = ({
+  restoreTaskId,
+  onRestoreHandled,
+  onAddTaskDockItem,
+}: {
+  restoreTaskId?: string
+  onRestoreHandled?: () => void
+  onAddTaskDockItem?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: unknown }) => void
+}) => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
 
@@ -35,6 +43,17 @@ const TaskManagementPage = () => {
     setDialogOpen(false)
     setDialogTask(null)
   }, [])
+
+  // Restore dialog when triggered from Recent Tasks dock
+  useEffect(() => {
+    if (!restoreTaskId) return
+    const found = TASK_TABLE_ROWS.find((row) => row.taskId === restoreTaskId)
+    if (found) {
+      // Defer to avoid synchronous state update within effect
+      setTimeout(() => openTaskDialog(found), 0)
+    }
+    onRestoreHandled?.()
+  }, [restoreTaskId, openTaskDialog, onRestoreHandled])
   
   const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = useMemo(
     () => ({
@@ -685,7 +704,17 @@ const TaskManagementPage = () => {
         </Alert>
       </Snackbar>
 
-      <AppTaskDialog open={dialogOpen} onClose={closeTaskDialog} task={dialogTask ?? undefined} />
+      <AppTaskDialog
+        open={dialogOpen}
+        onClose={closeTaskDialog}
+        task={dialogTask ?? undefined}
+        onMinimize={dialogTask ? () => onAddTaskDockItem?.({
+          id: dialogTask.taskId,
+          title: dialogTask.taskId,
+          commitType: dialogTask.commitType,
+          task: dialogTask,
+        }) : undefined}
+      />
     </Paper>
   )
 }
