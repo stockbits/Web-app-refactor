@@ -21,7 +21,7 @@ const TaskManagementPage = ({
   onAddTaskDockItem?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: unknown }) => void
 }) => {
   const theme = useTheme()
-  const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -75,15 +75,15 @@ const TaskManagementPage = ({
     onRestoreHandled?.()
   }, [restoreTaskId, openTaskDialog, onRestoreHandled])
   
-  const statusMetadata: Record<TaskTableRow['status'], { color: string; bg: string; label: string }> = useMemo(
+  const statusMetadata: Record<TaskTableRow['status'], { label: string }> = useMemo(
     () => ({
-      ACT: { label: TASK_STATUS_LABELS.ACT, ...tokens.taskStatus.ACT },
-      AWI: { label: TASK_STATUS_LABELS.AWI, ...tokens.taskStatus.AWI },
-      ISS: { label: TASK_STATUS_LABELS.ISS, ...tokens.taskStatus.ISS },
-      EXC: { label: TASK_STATUS_LABELS.EXC, ...tokens.taskStatus.EXC },
-      COM: { label: TASK_STATUS_LABELS.COM, ...tokens.taskStatus.COM },
+      ACT: { label: TASK_STATUS_LABELS.ACT },
+      AWI: { label: TASK_STATUS_LABELS.AWI },
+      ISS: { label: TASK_STATUS_LABELS.ISS },
+      EXC: { label: TASK_STATUS_LABELS.EXC },
+      COM: { label: TASK_STATUS_LABELS.COM },
     }),
-    [tokens.taskStatus],
+    [],
   )
 
   const dateFormatter = useMemo(

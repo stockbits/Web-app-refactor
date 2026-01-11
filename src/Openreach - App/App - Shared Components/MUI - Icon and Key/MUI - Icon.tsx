@@ -13,7 +13,7 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
   const isDark = theme.palette.mode === 'dark'
 
   // Get colors from theme
-  const colors = isDark ? theme.openreach.darkTokens.mapTaskColors : theme.openreach.lightTokens.mapTaskColors
+  const colors = isDark ? theme.openreach?.darkTokens?.mapTaskColors : theme.openreach?.lightTokens?.mapTaskColors
   const fillColor = color ?? colors[variant]
 
   return (

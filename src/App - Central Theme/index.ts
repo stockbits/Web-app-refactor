@@ -91,13 +91,6 @@ const lightTokens = {
     tertiary: brandColors.blazingBlue,
     inactive: "#C9CBCE",
   },
-  taskStatus: {
-    ACT: { color: brandColors.blazingBlue, bg: "rgba(84,136,199,0.15)" },
-    AWI: { color: "#D97706", bg: "rgba(217,119,6,0.12)" },
-    ISS: { color: "#DC2626", bg: "rgba(220,38,38,0.12)" },
-    EXC: { color: "#7C3AED", bg: "rgba(124,58,237,0.12)" },
-    COM: { color: brandColors.goGreen, bg: "rgba(67,176,114,0.15)" },
-  },
   mapTaskColors: {
     appointment: "#D97706",
     startBy: "#43B072",
@@ -184,13 +177,6 @@ const darkTokens = {
     secondary: "#6B99D8",
     tertiary: "rgba(255,255,255,0.35)",
     inactive: "rgba(255,255,255,0.2)",
-  },
-  taskStatus: {
-    ACT: { color: "#6B99D8", bg: "rgba(107,153,216,0.25)" },
-    AWI: { color: "#FBBF24", bg: "rgba(251,191,36,0.2)" },
-    ISS: { color: "#FB7185", bg: "rgba(251,113,133,0.2)" },
-    EXC: { color: "#D8B4FE", bg: "rgba(216,180,254,0.2)" },
-    COM: { color: "#52BE84", bg: "rgba(82,190,132,0.25)" },
   },
   mapTaskColors: {
     appointment: "#FBBF24",

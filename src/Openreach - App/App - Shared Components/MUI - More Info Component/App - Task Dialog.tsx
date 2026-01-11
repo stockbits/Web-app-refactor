@@ -53,7 +53,7 @@ const formatDate = (value?: string) => {
 
 export function AppTaskDialog({ open, onClose, task, loading = false, actions, onMinimize, onAddNote }: AppTaskDialogProps) {
   const theme = useTheme()
-  const modeTokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+  const modeTokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
 
   const [fieldNoteDraft, setFieldNoteDraft] = useState('')
   const [progressNoteDraft, setProgressNoteDraft] = useState('')

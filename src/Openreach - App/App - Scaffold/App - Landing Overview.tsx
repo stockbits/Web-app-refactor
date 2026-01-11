@@ -15,7 +15,7 @@ export interface LandingOverviewProps {
 
 export const LandingOverview = ({ groups }: LandingOverviewProps) => {
   const theme = useTheme()
-  const tokens = theme.palette.mode === 'dark' ? theme.openreach.darkTokens : theme.openreach.lightTokens
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
 
   return (
     <Stack gap={2.5}>

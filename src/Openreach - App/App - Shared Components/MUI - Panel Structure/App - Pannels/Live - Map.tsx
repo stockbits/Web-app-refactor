@@ -63,8 +63,8 @@ function MapClickHandler({ popupState, setPopupState, ignoreNextMapClickRef }: M
 export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
-  const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
-  const taskColors = isDark ? theme.openreach.darkTokens.mapTaskColors : theme.openreach.lightTokens.mapTaskColors;
+  const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
+  const taskColors = isDark ? theme.openreach?.darkTokens?.mapTaskColors : theme.openreach?.lightTokens?.mapTaskColors;
   
   // Map commit types to icon variants
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
