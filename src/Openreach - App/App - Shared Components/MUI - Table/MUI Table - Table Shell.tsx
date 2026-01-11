@@ -147,7 +147,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           disableRowSelectionOnClick={false}
-          autoHeight={false}
+          autoHeight
           autosizeOnMount
           autosizeOptions={{
             columns: columns.filter(col => col.field !== 'actions').map(col => col.field),
