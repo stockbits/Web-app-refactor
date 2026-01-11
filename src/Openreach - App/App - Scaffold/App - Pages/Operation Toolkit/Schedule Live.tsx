@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Popover, Tooltip } from '@mui/material'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
-import HelpIcon from '@mui/icons-material/Help'
+import { useState, useMemo, useRef } from 'react'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Popover, Tooltip, Button } from '@mui/material'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
@@ -17,9 +16,11 @@ interface ScheduleLivePageProps {
 
 const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleLivePageProps = {}) => {
   const theme = useTheme()
+  const searchRef = useRef<HTMLInputElement>(null)
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
-  const [globalSearch, setGlobalSearch] = useState('')
+  const [globalSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const [legendAnchorEl, setLegendAnchorEl] = useState<HTMLElement | null>(null)
 
   // Extract unique divisions and domains from DB data
@@ -30,6 +31,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const domainOptions = useMemo(() => 
     Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.domainId))).sort((a, b) => a.localeCompare(b)), 
   [])
+
+  // TODO: Use globalSearch for filtering
+  console.log('Global search applied:', globalSearch)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -69,12 +73,27 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             size="small"
             sx={{ flex: 1, maxWidth: 400 }}
             placeholder="Global search..."
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
-            InputProps={{
-              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.primary', fontSize: 20 }} />,
-            }}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            inputRef={searchRef}
           />
+          
+          <Tooltip title="Search Tool">
+            <Button
+              size="small"
+              onClick={() => {}}
+              variant="contained"
+              sx={{
+                backgroundColor: theme.palette.primary.main,
+                color: theme.palette.primary.contrastText,
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.dark,
+                }
+              }}
+            >
+              Search Tool
+            </Button>
+          </Tooltip>
           
           <Tooltip title="Legend Key Menu">
             <IconButton
@@ -87,7 +106,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 }
               }}
             >
-              <HelpIcon />
+              <VpnKeyIcon />
             </IconButton>
           </Tooltip>
           

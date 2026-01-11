@@ -21,9 +21,10 @@ export interface DockedPanel {
 export interface MUI4PanelProps {
   onDockedPanelsChange?: (panels: DockedPanel[]) => void;
   dockedPanels?: DockedPanel[];
+  globalSearch?: string;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], globalSearch = '' }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
 
@@ -39,13 +40,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [] }: M
   // Get list of visible panels (not docked)
   const visiblePanels = useMemo(() => {
     const panels = [
-      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
-      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" /> } },
-      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" /> } },
+      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, globalSearch } },
+      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, globalSearch } },
+      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" />, globalSearch } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, globalSearch } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels]);
+  }, [dockedPanels, globalSearch]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {

@@ -11,14 +11,18 @@ interface LiveTaskProps {
   isDocked?: boolean;
   isExpanded?: boolean;
   minimized?: boolean;
+  globalSearch?: string;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, globalSearch = '' }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
   const bodyIconColor = theme.openreach.energyAccent;
   const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
+
+  // TODO: Use globalSearch for filtering tasks
+  console.log('Global search:', globalSearch);
 
   if (minimized) {
     return (
