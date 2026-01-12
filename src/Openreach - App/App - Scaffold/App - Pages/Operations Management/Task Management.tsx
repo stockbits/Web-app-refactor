@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -163,18 +162,6 @@ const TaskManagementPage = ({
                 sx={{ p: 0.25, color: 'text.secondary' }}
               >
                 <CallRoundedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Task">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  openTaskDialog(params.row)
-                }}
-                sx={{ p: 0.25, color: 'text.secondary' }}
-              >
-                <AssignmentRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
             <Tooltip title="Copy to clipboard">
@@ -616,6 +603,9 @@ const TaskManagementPage = ({
             hideFooter={false}
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
+            onCellDoubleClick={(params, _event) => {
+              openTaskDialog(params.row)
+            }}
           />
         ) : (
           <Box

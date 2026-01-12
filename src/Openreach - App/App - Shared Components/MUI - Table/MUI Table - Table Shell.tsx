@@ -8,6 +8,8 @@ import {
   type GridPaginationModel,
   type GridRowId,
   type GridValidRowModel,
+  type MuiEvent,
+  type GridCellParams,
 } from '@mui/x-data-grid'
 
 interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
@@ -23,6 +25,8 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
+  onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
+  onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
@@ -36,6 +40,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   pageSizeOptions,
   initialPageSize = 16,
   emptyState,
+  onCellClick,
+  onCellDoubleClick,
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
   const [densityMode, setDensityMode] = useState(density)
@@ -82,6 +88,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       paginationModel={paginationModel}
       onPaginationModelChange={setPaginationModel}
       disableRowSelectionOnClick={false}
+      onCellClick={onCellClick}
+      onCellDoubleClick={onCellDoubleClick}
       slots={{
         toolbar: enableQuickFilter
           ? () => (
