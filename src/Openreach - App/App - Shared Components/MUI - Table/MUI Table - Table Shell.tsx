@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography } from '@mui/material'
+import { Box, Stack, Switch, Typography, Menu, MenuItem } from '@mui/material'
 import {
   DataGrid,
   GridToolbarQuickFilter,
@@ -53,6 +53,35 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     page: 0,
   })
 
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    value: string;
+  } | null>(null)
+
+  const handleCellClick = useCallback((params: GridCellParams, event: MuiEvent<React.MouseEvent>) => {
+    if (event.button === 2) { // Right-click
+      event.preventDefault()
+      setContextMenu({
+        mouseX: event.clientX - 2,
+        mouseY: event.clientY - 4,
+        value: params.value != null ? String(params.value) : '',
+      })
+    } else if (onCellClick) {
+      onCellClick(params, event)
+    }
+  }, [onCellClick])
+
+  const handleCloseContextMenu = () => setContextMenu(null)
+
+  const handleCopyValue = async () => {
+    if (contextMenu?.value) {
+      await navigator.clipboard.writeText(contextMenu.value)
+    }
+    setContextMenu(null)
+  }
+
   useEffect(() => {
     setDensityMode(density)
   }, [density])
@@ -72,36 +101,67 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   )
 
   return (
-    <DataGrid
-      sx={{
-        width: '100%',
-      }}
-      apiRef={apiRef}
-      rows={rows}
-      columns={columns}
-      getRowId={getRowId}
-      density={densityMode}
-      loading={loading}
-      hideFooter={hideFooter}
-      pagination
-      pageSizeOptions={resolvedPageSizeOptions}
-      paginationModel={paginationModel}
-      onPaginationModelChange={setPaginationModel}
-      disableRowSelectionOnClick={false}
-      onCellClick={onCellClick}
-      onCellDoubleClick={onCellDoubleClick}
-      slots={{
-        toolbar: enableQuickFilter
-          ? () => (
-              <QuickFilterToolbar
-                densityMode={densityMode}
-                onToggleDensity={handleDensityToggle}
-              />
-            )
-          : undefined,
-        noRowsOverlay: NoRowsOverlay,
-      }}
-    />
+    <>
+      <DataGrid
+        sx={{
+          width: '100%',
+          '& .action-col': {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          },
+          '& [data-field="actions"]': {
+            position: 'sticky',
+            right: 0,
+            backgroundColor: 'background.paper',
+            zIndex: 1,
+          },
+        }}
+        apiRef={apiRef}
+        rows={rows}
+        columns={columns}
+        getRowId={getRowId}
+        density={densityMode}
+        loading={loading}
+        hideFooter={hideFooter}
+        pagination
+        pageSizeOptions={resolvedPageSizeOptions}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        disableRowSelectionOnClick={false}
+        onCellClick={handleCellClick}
+        onCellDoubleClick={onCellDoubleClick}
+        slots={{
+          toolbar: enableQuickFilter
+            ? () => (
+                <QuickFilterToolbar
+                  densityMode={densityMode}
+                  onToggleDensity={handleDensityToggle}
+                />
+              )
+            : undefined,
+          noRowsOverlay: NoRowsOverlay,
+        }}
+      />
+      <Menu
+        open={!!contextMenu}
+        onClose={handleCloseContextMenu}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem disabled sx={{ fontSize: 13, opacity: 0.7 }}>
+          Copy value
+        </MenuItem>
+        <MenuItem onClick={handleCopyValue} sx={{ fontFamily: 'monospace', fontSize: 15 }}>
+          {contextMenu?.value || '(empty)'}
+        </MenuItem>
+      </Menu>
+    </>
   )
 }
 

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
 import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
@@ -136,49 +135,18 @@ const TaskManagementPage = ({
 
   const columns: GridColDef<TaskTableRow>[] = useMemo(
     () => [
-      // Actions (sticky): quick actions (Call, Task)
+      // Task ID
       {
-        field: 'actions',
-        headerName: 'Actions',
-        width: 90,
-        minWidth: 80,
-        sortable: false,
-        filterable: false,
+        field: 'taskId',
+        headerName: 'Task ID',
+        flex: 1.1,
+        minWidth: 160,
         align: 'left',
         headerAlign: 'left',
-        disableColumnMenu: true,
-        resizable: false,
-        cellClassName: 'action-col',
-        headerClassName: 'action-col',
         renderCell: (params) => (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <Tooltip title="Call">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  showMessage('Call action')
-                }}
-                sx={{ p: 0.25, color: 'text.secondary' }}
-              >
-                <CallRoundedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Copy to clipboard">
-              <IconButton
-                size="small"
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  await navigator.clipboard.writeText(params.row.taskId)
-                  showMessage('Copied Task ID')
-                }}
-                className="copy-button"
-                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
-              >
-                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </Tooltip>
-          </Stack>
+          <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+            {params.row.taskId}
+          </Typography>
         ),
       },
       // Work ID
@@ -194,20 +162,6 @@ const TaskManagementPage = ({
             <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
               {params.row.workId}
             </Typography>
-            <Tooltip title="Copy to clipboard">
-              <IconButton
-                size="small"
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  await navigator.clipboard.writeText(params.row.workId)
-                  showMessage('Copied Work ID')
-                }}
-                className="copy-button"
-                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
-              >
-                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </Tooltip>
           </Box>
         ),
       },
@@ -269,20 +223,6 @@ const TaskManagementPage = ({
             <Typography variant="body2" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap sx={{ flex: 1 }}>
               {params.row.resourceId}
             </Typography>
-            <Tooltip title="Copy to clipboard">
-              <IconButton
-                size="small"
-                onClick={async (e) => {
-                  e.stopPropagation()
-                  await navigator.clipboard.writeText(params.row.resourceId)
-                  showMessage('Copied Resource ID')
-                }}
-                className="copy-button"
-                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
-              >
-                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-            </Tooltip>
           </Box>
         ),
       },
@@ -311,7 +251,7 @@ const TaskManagementPage = ({
           )
         },
       },
-      // Remaining columns (unchanged order)
+      // Resource Name
       {
         field: 'resourceName',
         headerName: 'Resource name',
@@ -325,6 +265,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Domain
       {
         field: 'domainId',
         headerName: 'Domain',
@@ -338,6 +279,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Response Code
       {
         field: 'responseCode',
         headerName: 'Response code',
@@ -351,6 +293,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Primary Skill
       {
         field: 'primarySkill',
         headerName: 'Primary skill',
@@ -364,6 +307,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Capabilities
       {
         field: 'capabilities',
         headerName: 'Capabilities',
@@ -394,6 +338,7 @@ const TaskManagementPage = ({
           </Stack>
         ),
       },
+      // Last update
       {
         field: 'updatedAt',
         headerName: 'Last update (alt)',
@@ -407,6 +352,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Linked Task
       {
         field: 'linkedTask',
         headerName: 'Linked task',
@@ -420,6 +366,7 @@ const TaskManagementPage = ({
           </Typography>
         ),
       },
+      // Post code
       {
         field: 'postCode',
         headerName: 'Post code',
@@ -434,21 +381,38 @@ const TaskManagementPage = ({
             <Typography variant="body2" fontWeight={600} noWrap sx={{ flex: 1 }}>
               {params.row.postCode}
             </Typography>
-            <Tooltip title="Copy to clipboard">
+          </Box>
+        ),
+      },
+      // Actions (sticky): quick actions (Call, Task)
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        width: 90,
+        minWidth: 80,
+        sortable: false,
+        filterable: false,
+        align: 'center',
+        headerAlign: 'center',
+        disableColumnMenu: true,
+        resizable: false,
+        cellClassName: 'action-col',
+        headerClassName: 'action-col',
+        renderCell: (_params) => (
+          <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" width="100%">
+            <Tooltip title="Call">
               <IconButton
                 size="small"
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation()
-                  await navigator.clipboard.writeText(params.row.postCode)
-                  showMessage('Copied Post Code')
+                  showMessage('Call action')
                 }}
-                className="copy-button"
-                sx={{ p: 0.25, opacity: 0, transition: 'opacity 0.2s', '&:hover': { opacity: 1 } }}
+                sx={{ p: 0.25, color: 'text.secondary' }}
               >
-                <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
+                <CallRoundedIcon sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
-          </Box>
+          </Stack>
         ),
       },
     ],
