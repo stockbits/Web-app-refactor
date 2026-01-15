@@ -135,6 +135,45 @@ const TaskManagementPage = ({
 
   const columns: GridColDef<TaskTableRow>[] = useMemo(
     () => [
+      // Actions (sticky): quick actions (Call, Task)
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        width: 90,
+        minWidth: 80,
+        sortable: false,
+        filterable: false,
+        align: 'center',
+        headerAlign: 'center',
+        disableColumnMenu: true,
+        resizable: false,
+        cellClassName: 'action-col',
+        headerClassName: 'action-col',
+        renderCell: (_params) => (
+          <Tooltip title="Call">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation()
+                showMessage('Call action')
+              }}
+              sx={{
+                py: 0.5,
+                px: 0.5,
+                color: 'text.secondary',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <CallRoundedIcon />
+            </IconButton>
+          </Tooltip>
+        ),
+      },
       // Task ID
       {
         field: 'taskId',
@@ -382,37 +421,6 @@ const TaskManagementPage = ({
               {params.row.postCode}
             </Typography>
           </Box>
-        ),
-      },
-      // Actions (sticky): quick actions (Call, Task)
-      {
-        field: 'actions',
-        headerName: 'Actions',
-        width: 90,
-        minWidth: 80,
-        sortable: false,
-        filterable: false,
-        align: 'center',
-        headerAlign: 'center',
-        disableColumnMenu: true,
-        resizable: false,
-        cellClassName: 'action-col',
-        headerClassName: 'action-col',
-        renderCell: (_params) => (
-          <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="center" width="100%">
-            <Tooltip title="Call">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  showMessage('Call action')
-                }}
-                sx={{ p: 0.25, color: 'text.secondary' }}
-              >
-                <CallRoundedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Tooltip>
-          </Stack>
         ),
       },
     ],

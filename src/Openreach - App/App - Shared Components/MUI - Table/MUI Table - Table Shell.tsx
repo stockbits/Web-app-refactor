@@ -105,17 +105,20 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       <DataGrid
         sx={{
           width: '100%',
+          '& .MuiDataGrid-cell': {
+            display: 'flex',
+            alignItems: 'center',
+          },
           '& .action-col': {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             height: '100%',
           },
-          '& [data-field="actions"]': {
-            position: 'sticky',
-            right: 0,
-            backgroundColor: 'background.paper',
-            zIndex: 1,
+          '& .action-col.MuiDataGrid-cell:focus-within': {
+            outline: 'none',
+            boxShadow: 'none',
+            border: 'none',
           },
         }}
         apiRef={apiRef}
