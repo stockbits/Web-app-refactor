@@ -39,6 +39,7 @@ export const MinimizedTaskProvider = ({ children }: { children: ReactNode }) => 
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useMinimizedTasks = () => {
   const ctx = useContext(MinimizedTaskContext);
   if (!ctx) throw new Error('useMinimizedTasks must be used within MinimizedTaskProvider');

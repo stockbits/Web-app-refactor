@@ -30,9 +30,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
 
   // Use dockedPanels.length as layout key to trigger re-renders when panels are docked/undocked
   const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
-  // isResizing: { type: 'row'|'col', index: number } | null
-  const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number } | null>(null);
-  const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number } | null>(null);
+  // isResizing: { type: 'row'|'col', index: number, rowIndex?: number } | null
+  const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
+  const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
@@ -74,18 +74,11 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
     };
   }, [visiblePanels]);
 
-  // Update row and column sizes when grid layout changes
-  useEffect(() => {
-    setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows));
-  }, [gridLayout.rows]);
-
-  useEffect(() => {
-    setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols));
-  }, [gridLayout.cols]);
-
-  // Initialize grid sizes state
+  // Initialize grid sizes state - separate column sizes for each row
   const [rowSizes, setRowSizes] = useState<number[]>(() => Array(gridLayout.rows).fill(100 / gridLayout.rows));
-  const [colSizes, setColSizes] = useState<number[]>(() => Array(gridLayout.cols).fill(100 / gridLayout.cols));
+  const [colSizes, setColSizes] = useState<number[][]>(() => 
+    Array(gridLayout.rows).fill(null).map(() => Array(gridLayout.cols).fill(100 / gridLayout.cols))
+  );
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -104,108 +97,82 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
     setExpandedPanelId(panelId);
   };
 
+  // Unified resize calculation function for smoother performance
+  const calculateResize = useCallback((type: 'row' | 'col', index: number, clientX: number, clientY: number, rowIndex?: number) => {
+    if (!containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const dimension = type === 'row' ? rect.height : rect.width;
+    const position = type === 'row' ? y : x;
+
+    const pct = Math.max(5, Math.min(95, (position / dimension) * 100));
+
+    if (type === 'row') {
+      setRowSizes(currentSizes => {
+        let newSizes = [...currentSizes];
+
+        if (currentSizes.length === 2) {
+          newSizes = [pct, 100 - pct];
+        } else {
+          const sumBefore = currentSizes.slice(0, index).reduce((a, b) => a + b, 0);
+          const before = Math.max(5, Math.min(95, pct - sumBefore));
+          const after = currentSizes[index] + currentSizes[index + 1] - before;
+          newSizes[index] = before;
+          newSizes[index + 1] = Math.max(5, after);
+        }
+
+        return newSizes;
+      });
+    } else {
+      // Column resize - now per row
+      setColSizes(currentSizes => {
+        const newSizes = currentSizes.map(row => [...row]);
+        
+        if (rowIndex !== undefined && newSizes[rowIndex]) {
+          const currentRowSizes = newSizes[rowIndex];
+          
+          if (currentRowSizes.length === 2) {
+            newSizes[rowIndex] = [pct, 100 - pct];
+          } else {
+            const sumBefore = currentRowSizes.slice(0, index).reduce((a, b) => a + b, 0);
+            const before = Math.max(5, Math.min(95, pct - sumBefore));
+            const after = currentRowSizes[index] + currentRowSizes[index + 1] - before;
+            newSizes[rowIndex][index] = before;
+            newSizes[rowIndex][index + 1] = Math.max(5, after);
+          }
+        }
+
+        return newSizes;
+      });
+    }
+  }, []);
 
   // Pointer event handler for resize handles
-  const handlePointerDown = (type: 'row' | 'col', index: number) => (e: React.PointerEvent) => {
-    setIsResizing({ type, index });
+  const handlePointerDown = (type: 'row' | 'col', index: number, rowIndex?: number) => (e: React.PointerEvent) => {
+    setIsResizing({ type, index, rowIndex });
     e.preventDefault();
-    // Add pointermove and pointerup listeners
+
     const moveHandler = (ev: PointerEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = ev.clientX - rect.left;
-      const y = ev.clientY - rect.top;
-      const width = rect.width;
-      const height = rect.height;
-      if (type === 'row') {
-        setRowSizes(currentSizes => {
-          const total = currentSizes.reduce((a, b) => a + b, 0);
-          const pct = (y / height) * 100;
-          let newSizes = [...currentSizes];
-          let before = Math.max(10, Math.min(90, pct));
-          let after = total - before;
-          if (currentSizes.length === 2) {
-            newSizes = [before, after];
-          } else {
-            const sumBefore = currentSizes.slice(0, index).reduce((a, b) => a + b, 0);
-            before = Math.max(10, Math.min(90, pct - sumBefore));
-            after = currentSizes[index+1] + currentSizes[index] - before;
-            newSizes[index] = before;
-            newSizes[index+1] = after;
-          }
-          return newSizes;
-        });
-      } else if (type === 'col') {
-        setColSizes(currentSizes => {
-          const total = currentSizes.reduce((a, b) => a + b, 0);
-          const pct = (x / width) * 100;
-          let newSizes = [...currentSizes];
-          let before = Math.max(10, Math.min(90, pct));
-          let after = total - before;
-          if (currentSizes.length === 2) {
-            newSizes = [before, after];
-          } else {
-            const sumBefore = currentSizes.slice(0, index).reduce((a, b) => a + b, 0);
-            before = Math.max(10, Math.min(90, pct - sumBefore));
-            after = currentSizes[index+1] + currentSizes[index] - before;
-            newSizes[index] = before;
-            newSizes[index+1] = after;
-          }
-          return newSizes;
-        });
-      }
+      calculateResize(type, index, ev.clientX, ev.clientY, rowIndex);
     };
+
     const upHandler = () => {
       setIsResizing(null);
       window.removeEventListener('pointermove', moveHandler);
       window.removeEventListener('pointerup', upHandler);
     };
+
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
   };
 
   // Mouse event handlers
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const width = rect.width;
-    const height = rect.height;
-    if (isResizing.type === 'row') {
-      const total = rowSizes.reduce((a, b) => a + b, 0);
-      const pct = (y / height) * 100;
-      let newSizes = [...rowSizes];
-      let before = Math.max(10, Math.min(90, pct));
-      let after = total - before;
-      if (rowSizes.length === 2) {
-        newSizes = [before, after];
-      } else {
-        const sumBefore = rowSizes.slice(0, isResizing.index).reduce((a, b) => a + b, 0);
-        before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = rowSizes[isResizing.index+1] + rowSizes[isResizing.index] - before;
-        newSizes[isResizing.index] = before;
-        newSizes[isResizing.index+1] = after;
-      }
-      setRowSizes(newSizes);
-    } else if (isResizing.type === 'col') {
-      const total = colSizes.reduce((a, b) => a + b, 0);
-      const pct = (x / width) * 100;
-      let newSizes = [...colSizes];
-      let before = Math.max(10, Math.min(90, pct));
-      let after = total - before;
-      if (colSizes.length === 2) {
-        newSizes = [before, after];
-      } else {
-        const sumBefore = colSizes.slice(0, isResizing.index).reduce((a, b) => a + b, 0);
-        before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = colSizes[isResizing.index+1] + colSizes[isResizing.index] - before;
-        newSizes[isResizing.index] = before;
-        newSizes[isResizing.index+1] = after;
-      }
-      setColSizes(newSizes);
-    }
-  }, [isResizing, rowSizes, colSizes]);
+    if (!isResizing) return;
+    calculateResize(isResizing.type, isResizing.index, e.clientX, e.clientY, isResizing.rowIndex);
+  }, [isResizing, calculateResize]);
 
   const handleMouseUp = useCallback(() => {
     setIsResizing(null);
@@ -221,48 +188,11 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
 
   // Touch event handlers
   const handleTouchMove = useCallback((e: TouchEvent) => {
-      e.preventDefault();
-    if (!isResizing || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    e.preventDefault();
+    if (!isResizing) return;
     const touch = e.touches[0];
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    if (isResizing.type === 'row') {
-      const total = rowSizes.reduce((a, b) => a + b, 0);
-      const pct = (y / rect.height) * 100;
-      let newSizes = [...rowSizes];
-      let before = Math.max(10, Math.min(90, pct));
-      let after = total - before;
-      if (rowSizes.length === 2) {
-        newSizes = [before, after];
-      } else {
-        const idx = isResizing.index;
-        const sumBefore = rowSizes.slice(0, idx).reduce((a, b) => a + b, 0);
-        before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = rowSizes[idx+1] + rowSizes[idx] - before;
-        newSizes[idx] = before;
-        newSizes[idx+1] = after;
-      }
-      setRowSizes(newSizes);
-    } else if (isResizing.type === 'col') {
-      const total = colSizes.reduce((a, b) => a + b, 0);
-      const pct = (x / rect.width) * 100;
-      let newSizes = [...colSizes];
-      let before = Math.max(10, Math.min(90, pct));
-      let after = total - before;
-      if (colSizes.length === 2) {
-        newSizes = [before, after];
-      } else {
-        const idx = isResizing.index;
-        const sumBefore = colSizes.slice(0, idx).reduce((a, b) => a + b, 0);
-        before = Math.max(10, Math.min(90, pct - sumBefore));
-        after = colSizes[idx+1] + colSizes[idx] - before;
-        newSizes[idx] = before;
-        newSizes[idx+1] = after;
-      }
-      setColSizes(newSizes);
-    }
-  }, [isResizing, rowSizes, colSizes]);
+    calculateResize(isResizing.type, isResizing.index, touch.clientX, touch.clientY, isResizing.rowIndex);
+  }, [isResizing, calculateResize]);
 
   const handleTouchEnd = useCallback(() => {
     setIsResizing(null);
@@ -331,13 +261,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
           All panels are docked to the top banner
         </Box>
       ) : (
-        // Dynamic grid layout based on number of visible panels
+        // Dynamic layout using absolute positioning for independent per-row column sizing
         <Box sx={{
           height: '100%',
-          display: 'grid',
-          gridTemplateRows: rowSizes.slice(0, gridLayout.rows).map(s => `${s}%`).join(' '),
-          gridTemplateColumns: colSizes.slice(0, gridLayout.cols).map(s => `${s}%`).join(' '),
-          gap: 0,
           position: 'relative',
           pointerEvents: isResizing ? 'none' : 'auto',
           '& > *': {
@@ -345,24 +271,39 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
           },
         }}>
           {visiblePanels.map((panel) => {
-            // Find all grid cells this panel should occupy
-            const starts: Array<[number, number]> = [];
+            // Find the position of this panel in the grid
+            let rowIndex = -1;
+            let colIndex = -1;
             for (let r = 0; r < gridLayout.rows; r++) {
               for (let c = 0; c < gridLayout.cols; c++) {
                 if (gridLayout.areas[r] && gridLayout.areas[r][c] === panel.id) {
-                  starts.push([r, c]);
+                  rowIndex = r;
+                  colIndex = c;
+                  break;
                 }
               }
+              if (rowIndex !== -1) break;
             }
-            if (starts.length === 0) return null;
-            // Calculate the minimal bounding box for this panel
-            const minRow = Math.min(...starts.map(([r]) => r));
-            const maxRow = Math.max(...starts.map(([r]) => r));
-            const minCol = Math.min(...starts.map(([,c]) => c));
-            const maxCol = Math.max(...starts.map(([,c]) => c));
-            const area = `${minRow+1} / ${minCol+1} / ${maxRow+2} / ${maxCol+2}`;
+            
+            if (rowIndex === -1 || colIndex === -1) return null;
+
+            // Calculate position and size
+            const rowStart = rowSizes.slice(0, rowIndex).reduce((a, b) => a + b, 0);
+            const rowHeight = rowSizes[rowIndex];
+            const colStart = colSizes[rowIndex]?.slice(0, colIndex).reduce((a, b) => a + b, 0) || (colIndex * (100 / gridLayout.cols));
+            const colWidth = colSizes[rowIndex]?.[colIndex] || (100 / gridLayout.cols);
+
             return (
-              <Box key={panel.id} sx={{ gridArea: area, overflow: 'hidden', height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box key={panel.id} sx={{ 
+                position: 'absolute',
+                top: `${rowStart}%`,
+                left: `${colStart}%`,
+                width: `${colWidth}%`,
+                height: `${rowHeight}%`,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {React.createElement(panel.component as unknown as React.ComponentType<any>, {
                   onDock: () => handleDockPanel({
@@ -384,54 +325,65 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
             );
           })}
 
-          {/* Chunky vertical handles: 5% of panel height, centered, fade in on hover/focus */}
-          {[...Array(gridLayout.cols - 1)].map((_, c) => {
-            return gridLayout.areas.map((row, r) => {
+          {/* Vertical handles: one per row, positioned within each row */}
+          {gridLayout.areas.map((row, r) => {
+            return [...Array(gridLayout.cols - 1)].map((_, c) => {
               const leftPanel = row && row[c];
               const rightPanel = row && row[c+1];
               if (leftPanel && rightPanel && leftPanel !== rightPanel) {
+                const rowStart = rowSizes.slice(0, r).reduce((a, b) => a + b, 0);
+                const rowHeight = rowSizes[r];
+                const colStart = colSizes[r]?.slice(0, c+1).reduce((a, b) => a + b, 0) || ((c+1) * (100 / gridLayout.cols));
+
                 return (
                   <Box
                     key={`vhandle-${r}-${c}`}
                     sx={{
                       position: 'absolute',
-                      left: `${((colSizes.slice(0, c+1).reduce((a,b)=>a+b,0))/100)*100}%`,
-                      top: `${(rowSizes.slice(0, r).reduce((a,b)=>a+b,0)/100)*100}%`,
-                      height: `${rowSizes[r]}%`,
-                      width: '8px', // MUI standard hit area
+                      left: `${colStart}%`,
+                      top: `${rowStart}%`,
+                      height: `${rowHeight}%`,
+                      width: '8px',
                       zIndex: 1000,
                       transform: 'translateX(-50%)',
                       pointerEvents: 'auto',
                       background: 'none',
-                      cursor: (isResizing?.type === 'col' && isResizing?.index === c) ? 'grabbing' : 'grab',
+                      cursor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 'grabbing' : 'grab',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                     tabIndex={0}
-                    onPointerDown={handlePointerDown('col', c)}
-                    onDoubleClick={() => setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols))}
-                    onMouseEnter={() => setHoveredHandle({ type: 'col', index: c })}
+                    onPointerDown={handlePointerDown('col', c, r)}
+                    onDoubleClick={() => setColSizes(current => {
+                      const newSizes = [...current];
+                      newSizes[r] = Array(gridLayout.cols).fill(100 / gridLayout.cols);
+                      return newSizes;
+                    })}
+                    onMouseEnter={() => setHoveredHandle({ type: 'col', index: c, rowIndex: r })}
                     onMouseLeave={() => setHoveredHandle(null)}
                   >
                     <Box
                       className="mui4panel-handle-block"
                       sx={{
-                        width: '4px', // MUI standard visible handle
+                        width: '4px',
                         height: '20%',
                         minHeight: '32px',
                         maxHeight: '100%',
-                        backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c)
+                        backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
+                                        (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
                           ? theme.palette.primary.main
                           : theme.palette.divider,
                         borderRadius: 2,
-                        opacity: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c) ? 1 : 0,
+                        opacity: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
+                                (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 1 : 0,
                         transition: 'background 0.2s, opacity 0.2s',
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        boxShadow: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c) || (isResizing?.type === 'col' && isResizing?.index === c) ? theme.shadows[2] : 0,
+                        boxShadow: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
+                                  (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? theme.shadows[2] : 0,
                         pointerEvents: 'none',
                       }}
                     />
@@ -442,62 +394,60 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
             });
           })}
 
-          {/* Chunky horizontal handles: 5% of panel width, centered, fade in on hover/focus */}
+          {/* Horizontal handles: positioned between rows */}
           {[...Array(gridLayout.rows - 1)].map((_, r) => {
-            return gridLayout.areas[0].map((_, c) => {
-              const topPanel = gridLayout.areas[r] && gridLayout.areas[r][c];
-              const bottomPanel = gridLayout.areas[r+1] && gridLayout.areas[r+1][c];
-              if (topPanel && bottomPanel && topPanel !== bottomPanel) {
-                return (
-                  <Box
-                    key={`hhandle-${r}-${c}`}
-                    sx={{
-                      position: 'absolute',
-                      top: `${(rowSizes.slice(0, r+1).reduce((a,b)=>a+b,0)/100)*100}%`,
-                      left: `${(colSizes.slice(0, c).reduce((a,b)=>a+b,0)/100)*100}%`,
-                      width: `${colSizes[c]}%`,
-                      height: '8px', // MUI standard hit area
-                      zIndex: 1000,
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'auto',
-                      background: 'none',
-                      cursor: (isResizing?.type === 'row' && isResizing?.index === r) ? 'grabbing' : 'grab',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                    tabIndex={0}
-                    onPointerDown={handlePointerDown('row', r)}
-                    onDoubleClick={() => setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows))}
-                    onMouseEnter={() => setHoveredHandle({ type: 'row', index: r })}
-                    onMouseLeave={() => setHoveredHandle(null)}
-                  >
-                    <Box
-                      className="mui4panel-handle-block"
-                      sx={{
-                        height: '4px', // MUI standard visible handle
-                        width: '20%',
-                        minWidth: '32px',
-                        maxWidth: '100%',
-                        backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r)
-                          ? theme.palette.primary.main
-                          : theme.palette.divider,
-                        borderRadius: 2,
-                        opacity: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0,
-                        transition: 'background 0.2s, opacity 0.2s',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        boxShadow: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || (isResizing?.type === 'row' && isResizing?.index === r) ? theme.shadows[2] : 0,
-                        pointerEvents: 'none',
-                      }}
-                    />
-                  </Box>
-                );
-              }
-              return null;
-            });
+            const rowStart = rowSizes.slice(0, r+1).reduce((a, b) => a + b, 0);
+            
+            return (
+              <Box
+                key={`hhandle-${r}`}
+                sx={{
+                  position: 'absolute',
+                  top: `${rowStart}%`,
+                  left: 0,
+                  width: '100%',
+                  height: '8px',
+                  zIndex: 1000,
+                  transform: 'translateY(-50%)',
+                  pointerEvents: 'auto',
+                  background: 'none',
+                  cursor: (isResizing?.type === 'row' && isResizing?.index === r) ? 'grabbing' : 'grab',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                tabIndex={0}
+                onPointerDown={handlePointerDown('row', r)}
+                onDoubleClick={() => setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows))}
+                onMouseEnter={() => setHoveredHandle({ type: 'row', index: r })}
+                onMouseLeave={() => setHoveredHandle(null)}
+              >
+                <Box
+                  className="mui4panel-handle-block"
+                  sx={{
+                    height: '4px',
+                    width: '20%',
+                    minWidth: '32px',
+                    maxWidth: '100%',
+                    backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
+                                    (isResizing?.type === 'row' && isResizing?.index === r)
+                      ? theme.palette.primary.main
+                      : theme.palette.divider,
+                    borderRadius: 2,
+                    opacity: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
+                            (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0,
+                    transition: 'background 0.2s, opacity 0.2s',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    boxShadow: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
+                              (isResizing?.type === 'row' && isResizing?.index === r) ? theme.shadows[2] : 0,
+                    pointerEvents: 'none',
+                  }}
+                />
+              </Box>
+            );
           })}
         </Box>
       )}

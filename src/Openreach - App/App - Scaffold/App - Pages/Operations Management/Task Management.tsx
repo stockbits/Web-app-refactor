@@ -149,7 +149,7 @@ const TaskManagementPage = ({
         resizable: false,
         cellClassName: 'action-col',
         headerClassName: 'action-col',
-        renderCell: (_params) => (
+        renderCell: () => (
           <Tooltip title="Call">
             <IconButton
               size="small"
@@ -424,7 +424,7 @@ const TaskManagementPage = ({
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage, openTaskDialog, theme.palette.text],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage, theme.palette.text],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
@@ -575,7 +575,7 @@ const TaskManagementPage = ({
             hideFooter={false}
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
-            onCellDoubleClick={(params, _event) => {
+            onCellDoubleClick={(params) => {
               openTaskDialog(params.row)
             }}
           />
