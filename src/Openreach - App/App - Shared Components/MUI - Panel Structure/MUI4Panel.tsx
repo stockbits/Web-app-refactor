@@ -74,6 +74,15 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
     };
   }, [visiblePanels]);
 
+  // Update row and column sizes when grid layout changes
+  useEffect(() => {
+    setRowSizes(Array(gridLayout.rows).fill(100 / gridLayout.rows));
+  }, [gridLayout.rows]);
+
+  useEffect(() => {
+    setColSizes(Array(gridLayout.cols).fill(100 / gridLayout.cols));
+  }, [gridLayout.cols]);
+
   // Initialize grid sizes state
   const [rowSizes, setRowSizes] = useState<number[]>(() => Array(gridLayout.rows).fill(100 / gridLayout.rows));
   const [colSizes, setColSizes] = useState<number[]>(() => Array(gridLayout.cols).fill(100 / gridLayout.cols));
@@ -353,7 +362,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
             const maxCol = Math.max(...starts.map(([,c]) => c));
             const area = `${minRow+1} / ${minCol+1} / ${maxRow+2} / ${maxCol+2}`;
             return (
-              <Box key={panel.id} sx={{ gridArea: area, overflow: 'hidden' }}>
+              <Box key={panel.id} sx={{ gridArea: area, overflow: 'hidden', height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {React.createElement(panel.component as unknown as React.ComponentType<any>, {
                   onDock: () => handleDockPanel({
@@ -368,7 +377,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
                   onCollapse: handleCollapsePanel,
                   isDocked: isPanelDocked(panel.id),
                   isExpanded: false,
-                  layoutKey: layoutKey
+                  layoutKey: layoutKey,
+                  style: { height: '100%', width: '100%', display: 'flex', flexDirection: 'column' },
                 })}
               </Box>
             );

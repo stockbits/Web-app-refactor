@@ -120,7 +120,7 @@ export const OpenreachTopBanner = ({
             <MenuRoundedIcon />
           </IconButton>
 
-          <Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: { xs: 32, md: 40 } }}>
             <Typography variant="h5" fontWeight={700} letterSpacing={0.4}>
               {title}
             </Typography>
@@ -138,14 +138,21 @@ export const OpenreachTopBanner = ({
           alignItems="center"
           sx={{ flexShrink: 0, justifyContent: 'flex-end' }}
         >
-          {/* Docked Panels - 2x2 Grid */}
+          {/* Docked Panels - Responsive Grid */}
           {dockedPanels.length > 0 && (
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(120px, 1fr))',
-                gap: 0.75,
-                alignItems: 'center',
+                gridTemplateColumns: '1fr',
+                gridTemplateRows: `repeat(${dockedPanels.length}, auto)`,
+                gap: 0.5,
+                alignItems: 'stretch',
+                justifyItems: 'stretch',
+                width: 'auto',
+                maxWidth: '200px',
+                minWidth: 0,
+                maxHeight: { xs: 160, md: 200 },
+                overflow: 'hidden',
               }}
             >
               {dockedPanels.map((panel) => (
@@ -157,6 +164,8 @@ export const OpenreachTopBanner = ({
                   deleteIcon={<CloseRoundedIcon />}
                   size="small"
                   sx={{
+                    minWidth: 0,
+                    flex: 1,
                     bgcolor: alpha(theme.palette.background.paper, 0.9),
                     color: theme.palette.text.primary,
                     border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,

@@ -112,13 +112,14 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={{
         position: 'absolute',
-        top: 70,
+        top: 44,
         left: 10,
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 0.5,
+        gap: 0.25,
+        maxWidth: 24,
       }}
     >
       <IconButton
@@ -126,8 +127,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomIn}
         disabled={currentZoom >= maxZoom}
         sx={{
-          width: 28,
-          height: 28,
+          width: 24,
+          height: 24,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
           color: theme.palette.info.main,
@@ -141,7 +142,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <AddIcon sx={{ fontSize: 18 }} />
+        <AddIcon sx={{ fontSize: 12 }} />
       </IconButton>
       
       <Slider
@@ -152,19 +153,19 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         max={maxZoom}
         step={1}
         sx={{
-          height: 100,
+          height: 60,
           color: theme.palette.info.main,
           '& .MuiSlider-thumb': {
-            width: 14,
-            height: 14,
+            width: 10,
+            height: 10,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-track': {
-            width: 3,
+            width: 1.5,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-rail': {
-            width: 3,
+            width: 1.5,
             opacity: 0.3,
           }
         }}
@@ -175,8 +176,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomOut}
         disabled={currentZoom <= minZoom}
         sx={{
-          width: 28,
-          height: 28,
+          width: 24,
+          height: 24,
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
           color: theme.palette.info.main,
@@ -190,7 +191,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <RemoveIcon sx={{ fontSize: 18 }} />
+        <RemoveIcon sx={{ fontSize: 12 }} />
       </IconButton>
     </Box>
   );
@@ -254,18 +255,18 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
       failedSLA: taskColors?.failedSLA || TASK_ICON_COLORS.failedSLA,
       taskGroup: taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup,
     };
-    
+    const markerSize = 32;
     const iconHtml = renderToStaticMarkup(
       <div style={{ 
-        width: '40px', 
-        height: '40px', 
+        width: `${markerSize}px`, 
+        height: `${markerSize}px`, 
         position: 'relative',
         filter: isSelected ? `brightness(1.3) drop-shadow(0 0 8px ${alpha(theme.palette.error.main, 0.6)})` : 'none',
         transition: 'filter 0.2s ease-in-out'
       }}>
         <TaskIcon 
           variant={variant} 
-          size={40} 
+          size={markerSize} 
           color={colorMap[variant]}
         />
         {isSelected && (
@@ -286,9 +287,9 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     return L.divIcon({
       html: iconHtml,
       className: 'custom-task-icon',
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -40],
+      iconSize: [markerSize, markerSize],
+      iconAnchor: [markerSize / 2, markerSize],
+      popupAnchor: [0, -markerSize],
     });
   }, [taskColors, theme]);
 
@@ -364,11 +365,11 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 20, color: 'inherit' }} />;
+        return <SatelliteAltIcon sx={{ fontSize: 12, color: 'inherit' }} />;
       case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 20, color: 'inherit' }} />;
+        return <TerrainIcon sx={{ fontSize: 12, color: 'inherit' }} />;
       default:
-        return <MapIcon sx={{ fontSize: 20, color: 'inherit' }} />;
+        return <MapIcon sx={{ fontSize: 12, color: 'inherit' }} />;
     }
   };
 
@@ -498,16 +499,22 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           position: 'relative',
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
+            willChange: 'transform', // hardware acceleration
           },
           '& .leaflet-tile': {
             border: 'none !important',
+            boxShadow: 'none',
+            backgroundColor: 'transparent',
+            willChange: 'transform', // hardware acceleration
           },
           '& .leaflet-container': {
             background: 'transparent',
+            willChange: 'transform', // hardware acceleration
           },
           '& .custom-task-icon': {
             background: 'none',
             border: 'none',
+            pointerEvents: 'auto',
           }
         }}
       >
@@ -521,8 +528,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               top: 16,
               left: 10,
               zIndex: 1000,
-              width: 34,
-              height: 34,
+              width: 24,
+              height: 24,
               backgroundColor: theme.palette.background.paper,
               border: `2px solid ${theme.palette.divider}`,
               color: theme.openreach.energyAccent,

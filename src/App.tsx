@@ -4,7 +4,6 @@ import "./App.css";
 import {
   Box,
   CardActionArea,
-  CircularProgress,
   IconButton,
   Paper,
   Popover,
@@ -12,6 +11,7 @@ import {
   Typography,
   Tooltip,
   useTheme,
+  CircularProgress,
 } from "@mui/material";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import BuildCircleRoundedIcon from "@mui/icons-material/BuildCircleRounded";
