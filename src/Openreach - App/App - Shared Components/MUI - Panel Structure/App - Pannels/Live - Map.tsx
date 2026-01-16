@@ -142,7 +142,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <AddIcon sx={{ fontSize: 12 }} />
+        <AddIcon fontSize="small" />
       </IconButton>
       
       <Slider
@@ -191,7 +191,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
           }
         }}
       >
-        <RemoveIcon sx={{ fontSize: 12 }} />
+        <RemoveIcon fontSize="small" />
       </IconButton>
     </Box>
   );
