@@ -519,6 +519,7 @@ function App() {
               }}
               onRemove={(id) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
               maxItems={5}
+              defaultCollapsed={true}
             />
           </Box>
 
