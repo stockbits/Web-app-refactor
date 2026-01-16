@@ -409,7 +409,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             startIcon={<MinimizeRoundedIcon />}
             sx={{ minWidth: 140 }}
           >
-            Minimise Task
+            Minimise
           </Button>
         )}
         <Button

@@ -427,9 +427,13 @@ function App() {
   }, []);
 
   const closeTaskDialog = useCallback(() => {
+    // If the dialog task is currently docked, remove it from dock when closing
+    if (dialogTask) {
+      setTaskDockItems((prev) => prev.filter((item) => item.id !== dialogTask.taskId));
+    }
     setDialogOpen(false);
     setDialogTask(null);
-  }, []);
+  }, [dialogTask]);
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
