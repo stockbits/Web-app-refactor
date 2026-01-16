@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
 import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
@@ -155,24 +155,15 @@ const TaskManagementPage = ({
         cellClassName: 'action-col',
         headerClassName: 'action-col',
         renderCell: () => (
-          <Tooltip title="Call">
-            <IconButton
-              disableRipple={true}
-              onClick={(e) => {
-                e.stopPropagation()
-                showMessage('Call action')
-              }}
-              sx={{
-                height: '100%',
-                width: '100%',
-                '&:active': {
-                  transform: 'none',
-                },
-              }}
-            >
-              <CallRoundedIcon />
-            </IconButton>
-          </Tooltip>
+          <IconButton
+            disableRipple={true}
+            onClick={(e) => {
+              e.stopPropagation()
+              showMessage('Call action')
+            }}
+          >
+            <CallRoundedIcon />
+          </IconButton>
         ),
       },
       // Task ID
