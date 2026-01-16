@@ -1,5 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Chip,
   Dialog,
@@ -248,137 +251,147 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             </Box>
           </Stack>
 
-          <Box
+          <Accordion
+            defaultExpanded={false}
             sx={{
-              p: 2,
               borderRadius: 2,
               bgcolor: theme.palette.background.paper,
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+              '&:before': { display: 'none' },
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25} justifyContent="space-between">
-              <Stack direction="row" spacing={1} alignItems="center">
-                <StickyNote2RoundedIcon fontSize="small" color="primary" />
-                <Typography variant="subtitle2" fontWeight={700}>
-                  Field notes
-                </Typography>
+            <AccordionSummary>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" width="100%">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <StickyNote2RoundedIcon fontSize="small" color="primary" />
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Field notes
+                  </Typography>
+                </Stack>
+                <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined" />
               </Stack>
-              <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined" />
-            </Stack>
-            <Stack spacing={1.25}>
-              <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
-                {loading ? (
-                  <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-                ) : fieldNotesList.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 3 }}>
-                    <StickyNote2RoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      No field notes yet
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled">
-                      Add notes to track field activities
-                    </Typography>
-                  </Box>
-                ) : (
-                  fieldNotesList.map((note) => (
-                    <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
-                      <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
-                        {note.text}
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={1.25}>
+                <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                  {loading ? (
+                    <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
+                  ) : fieldNotesList.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 3 }}>
+                      <StickyNote2RoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        No field notes yet
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {note.author} • {formatDate(note.createdAt)}
+                      <Typography variant="caption" color="text.disabled">
+                        Add notes to track field activities
                       </Typography>
                     </Box>
-                  ))
+                  ) : (
+                    fieldNotesList.map((note) => (
+                      <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
+                        <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                          {note.text}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {note.author} • {formatDate(note.createdAt)}
+                        </Typography>
+                      </Box>
+                    ))
+                  )}
+                </Stack>
+                {onAddNote && !loading && (
+                  <Stack spacing={0.5}>
+                    <TextField
+                      value={fieldNoteDraft}
+                      onChange={(e) => setFieldNoteDraft(e.target.value)}
+                      placeholder="Add a field note..."
+                      size="small"
+                      multiline
+                      minRows={2}
+                      fullWidth
+                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
+                    />
+                    <Stack direction="row" justifyContent="flex-end">
+                      <Button onClick={() => addNote('field')} size="small" variant="contained" color="primary" disabled={!fieldNoteDraft.trim()}>
+                        Add note
+                      </Button>
+                    </Stack>
+                  </Stack>
                 )}
               </Stack>
-              {onAddNote && !loading && (
-                <Stack spacing={0.5}>
-                  <TextField
-                    value={fieldNoteDraft}
-                    onChange={(e) => setFieldNoteDraft(e.target.value)}
-                    placeholder="Add a field note..."
-                    size="small"
-                    multiline
-                    minRows={2}
-                    fullWidth
-                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
-                  />
-                  <Stack direction="row" justifyContent="flex-end">
-                    <Button onClick={() => addNote('field')} size="small" variant="contained" color="primary" disabled={!fieldNoteDraft.trim()}>
-                      Add note
-                    </Button>
-                  </Stack>
-                </Stack>
-              )}
-            </Stack>
-          </Box>
+            </AccordionDetails>
+          </Accordion>
 
-          <Box
+          <Accordion
+            defaultExpanded={false}
             sx={{
-              p: 2,
               borderRadius: 2,
               bgcolor: theme.palette.background.paper,
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+              '&:before': { display: 'none' },
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25} justifyContent="space-between">
-              <Stack direction="row" spacing={1} alignItems="center">
-                <TimelineRoundedIcon fontSize="small" color="primary" />
-                <Typography variant="subtitle2" fontWeight={700}>
-                  Progress notes
-                </Typography>
+            <AccordionSummary>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" width="100%">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <TimelineRoundedIcon fontSize="small" color="primary" />
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Progress notes
+                  </Typography>
+                </Stack>
+                <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined" />
               </Stack>
-              <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined" />
-            </Stack>
-            <Stack spacing={1.25}>
-              <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
-                {loading ? (
-                  <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
-                ) : progressNotesList.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 3 }}>
-                    <TimelineRoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary">
-                      No progress notes yet
-                    </Typography>
-                    <Typography variant="caption" color="text.disabled">
-                      Track task progress and updates
-                    </Typography>
-                  </Box>
-                ) : (
-                  progressNotesList.map((note) => (
-                    <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
-                      <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
-                        {note.text}
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack spacing={1.25}>
+                <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                  {loading ? (
+                    <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
+                  ) : progressNotesList.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 3 }}>
+                      <TimelineRoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        No progress notes yet
                       </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {note.author} • {formatDate(note.createdAt)}
+                      <Typography variant="caption" color="text.disabled">
+                        Track task progress and updates
                       </Typography>
                     </Box>
-                  ))
+                  ) : (
+                    progressNotesList.map((note) => (
+                      <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
+                        <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                          {note.text}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {note.author} • {formatDate(note.createdAt)}
+                        </Typography>
+                      </Box>
+                    ))
+                  )}
+                </Stack>
+                {onAddNote && !loading && (
+                  <Stack spacing={0.5}>
+                    <TextField
+                      value={progressNoteDraft}
+                      onChange={(e) => setProgressNoteDraft(e.target.value)}
+                      placeholder="Add a progress note..."
+                      size="small"
+                      multiline
+                      minRows={2}
+                      fullWidth
+                      sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
+                    />
+                    <Stack direction="row" justifyContent="flex-end">
+                      <Button onClick={() => addNote('progress')} size="small" variant="contained" color="primary" disabled={!progressNoteDraft.trim()}>
+                        Add note
+                      </Button>
+                    </Stack>
+                  </Stack>
                 )}
               </Stack>
-              {onAddNote && !loading && (
-                <Stack spacing={0.5}>
-                  <TextField
-                    value={progressNoteDraft}
-                    onChange={(e) => setProgressNoteDraft(e.target.value)}
-                    placeholder="Add a progress note..."
-                    size="small"
-                    multiline
-                    minRows={2}
-                    fullWidth
-                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
-                  />
-                  <Stack direction="row" justifyContent="flex-end">
-                    <Button onClick={() => addNote('progress')} size="small" variant="contained" color="primary" disabled={!progressNoteDraft.trim()}>
-                      Add note
-                    </Button>
-                  </Stack>
-                </Stack>
-              )}
-            </Stack>
-          </Box>
+            </AccordionDetails>
+          </Accordion>
         </Stack>
       </DialogContent>
 
