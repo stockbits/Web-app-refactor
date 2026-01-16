@@ -1,9 +1,13 @@
 import { useState, useMemo, useRef } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent } from '@mui/material'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import SearchIcon from '@mui/icons-material/Search'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import AppSearchTool from './App - Search Tool'
+import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -19,6 +23,8 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
+  const [searchToolOpen, setSearchToolOpen] = useState(false)
+  const [legendOpen, setLegendOpen] = useState(false)
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -78,6 +84,16 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           </Stack>
           
           <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Search Tool">
+              <IconButton onClick={() => setSearchToolOpen(true)}>
+                <SearchIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Legend Key Menu">
+              <IconButton onClick={() => setLegendOpen(true)}>
+                <VpnKeyIcon />
+              </IconButton>
+            </Tooltip>
             {/* Docked Panel Icons */}
             {dockedPanels.map((panel) => (
               <Tooltip key={panel.id} title={panel.title}>
@@ -109,6 +125,13 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           onDockedPanelsChange={onDockedPanelsChange}
         />
       </Box>
+      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} />
+      <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Legend Key Menu</DialogTitle>
+        <DialogContent>
+          <TaskStatusLegend variant="full" />
+        </DialogContent>
+      </Dialog>
     </Box>
   )
 }

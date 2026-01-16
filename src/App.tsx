@@ -508,10 +508,6 @@ function App() {
               userName="Jordan Davies"
               userRole="Delivery Lead"
               onMenuClick={openNav}
-              dockedPanels={dockedPanels}
-              onUndockPanel={(panelId) => {
-                setDockedPanels(prev => prev.filter(p => p.id !== panelId));
-              }}
             />
           </Box>
 
