@@ -165,12 +165,6 @@ const TaskManagementPage = ({
               sx={{
                 height: '100%',
                 width: '100%',
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                },
-                '&:focus': {
-                  outline: 'none',
-                },
               }}
             >
               <CallRoundedIcon />
