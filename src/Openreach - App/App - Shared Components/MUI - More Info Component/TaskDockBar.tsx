@@ -28,10 +28,6 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, clickable 
     <Paper
       elevation={0}
       sx={{
-        position: 'sticky',
-        bottom: 0,
-        left: 0,
-        right: 0,
         borderTop: `1px solid ${theme.palette.divider}`,
         bgcolor: theme.palette.background.paper,
       }}
