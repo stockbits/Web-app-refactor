@@ -577,7 +577,8 @@ const TaskManagementPage = ({
             getRowId={(row) => row.taskId}
             density="compact"
             enableQuickFilter
-            hideFooter={false}
+            hideFooter={true}
+            enablePagination={false}
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
             onCellDoubleClick={(params) => {

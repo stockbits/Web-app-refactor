@@ -21,6 +21,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   density?: 'compact' | 'standard' | 'comfortable'
   loading?: boolean
   hideFooter?: boolean
+  enablePagination?: boolean
   enableQuickFilter?: boolean
   pageSizeOptions?: number[]
   initialPageSize?: number
@@ -39,6 +40,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   density = 'compact',
   loading,
   hideFooter = false,
+  enablePagination = true,
   enableQuickFilter = false,
   pageSizeOptions,
   initialPageSize = 16,
@@ -156,6 +158,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       >
         <DataGrid
         sx={{
+          height: '100%',
           width: '100%',
           '& .MuiDataGrid-cell': {
             display: 'flex',
@@ -180,10 +183,13 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         density={densityMode}
         loading={loading}
         hideFooter={hideFooter}
-        pagination
-        pageSizeOptions={resolvedPageSizeOptions}
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
+        autoHeight={false}
+        {...(enablePagination && {
+          pagination: true as const,
+          pageSizeOptions: resolvedPageSizeOptions,
+          paginationModel,
+          onPaginationModelChange: setPaginationModel,
+        })}
         disableRowSelectionOnClick={false}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
