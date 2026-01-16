@@ -174,7 +174,7 @@ const TaskManagementPage = ({
                 },
               }}
             >
-              <CallRoundedIcon sx={{ fontSize: 'small' }} />
+              <CallRoundedIcon />
             </IconButton>
           </Tooltip>
         ),
