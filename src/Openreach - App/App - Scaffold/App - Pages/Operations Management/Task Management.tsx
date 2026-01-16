@@ -165,6 +165,9 @@ const TaskManagementPage = ({
               sx={{
                 height: '100%',
                 width: '100%',
+                '&:active': {
+                  transform: 'none',
+                },
               }}
             >
               <CallRoundedIcon />
