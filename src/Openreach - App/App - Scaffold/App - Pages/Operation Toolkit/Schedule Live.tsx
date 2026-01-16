@@ -1,10 +1,9 @@
 import { useState, useMemo, useRef } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Button } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip } from '@mui/material'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
-import AppSearchTool from './App - Search Tool'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -20,7 +19,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [searchToolOpen, setSearchToolOpen] = useState(false)
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -77,23 +75,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
               onChange={(e) => setSearchInput(e.target.value)}
               inputRef={searchRef}
             />
-            
-            <Tooltip title="Search Tool">
-              <Button
-                size="small"
-                onClick={() => setSearchToolOpen(true)}
-                variant="contained"
-                sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.dark,
-                  }
-                }}
-              >
-                Search Tool
-              </Button>
-            </Tooltip>
           </Stack>
           
           <Stack direction="row" spacing={1} alignItems="center">
@@ -128,17 +109,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           onDockedPanelsChange={onDockedPanelsChange}
         />
       </Box>
-
-      <AppSearchTool
-        open={searchToolOpen}
-        onClose={() => setSearchToolOpen(false)}
-        currentSearchTerm={searchInput}
-        onSearch={(filters) => {
-          // TODO: Implement search logic with filters and current searchInput
-          console.log('Search filters:', filters)
-          console.log('Current search term:', searchInput)
-        }}
-      />
     </Box>
   )
 }
