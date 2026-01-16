@@ -81,9 +81,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
               onChange={(e) => setSearchInput(e.target.value)}
               inputRef={searchRef}
             />
-          </Stack>
-          
-          <Stack direction="row" spacing={1} alignItems="center">
+
             <Tooltip title="Search Tool">
               <IconButton onClick={() => setSearchToolOpen(true)}>
                 <SearchIcon />
@@ -94,6 +92,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 <VpnKeyIcon />
               </IconButton>
             </Tooltip>
+          </Stack>
+          
+          <Stack direction="row" spacing={1} alignItems="center">
             {/* Docked Panel Icons */}
             {dockedPanels.map((panel) => (
               <Tooltip key={panel.id} title={panel.title}>
