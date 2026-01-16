@@ -24,7 +24,7 @@ import RoomRoundedIcon from '@mui/icons-material/RoomRounded'
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
 import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded'
 import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded'
-import MinimizeRoundedIcon from '@mui/icons-material/MinimizeRounded'
+import CallToActionRoundedIcon from '@mui/icons-material/CallToActionRounded'
 import { TaskIcon, type TaskIconVariant } from '../MUI - Icon and Key/MUI - Icon'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
@@ -406,7 +406,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             }}
             variant="outlined"
             color="primary"
-            startIcon={<MinimizeRoundedIcon />}
+            startIcon={<CallToActionRoundedIcon />}
             sx={{ minWidth: 140 }}
           >
             Minimise

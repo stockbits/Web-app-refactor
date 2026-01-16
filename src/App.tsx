@@ -767,7 +767,7 @@ function App() {
         onMinimize={dialogTask ? () => {
           handleAddTaskDockItem({
             id: dialogTask.taskId,
-            title: dialogTask.taskId,
+            title: `Task ${dialogTask.taskId.split('-').pop() || dialogTask.taskId}`,
             commitType: dialogTask.commitType,
             task: dialogTask,
           });
