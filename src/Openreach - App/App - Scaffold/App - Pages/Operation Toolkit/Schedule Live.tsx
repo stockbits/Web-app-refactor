@@ -1,11 +1,9 @@
 import { useState, useMemo, useRef } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Popover, Tooltip, Button } from '@mui/material'
-import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Button } from '@mui/material'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
-import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 import AppSearchTool from './App - Search Tool'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
@@ -22,7 +20,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [globalSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
-  const [legendAnchorEl, setLegendAnchorEl] = useState<HTMLElement | null>(null)
   const [searchToolOpen, setSearchToolOpen] = useState(false)
 
   // Extract unique divisions and domains from DB data
@@ -97,54 +94,31 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 Search Tool
               </Button>
             </Tooltip>
-            
-            <Tooltip title="Legend Key Menu">
-              <IconButton
-                size="small"
-                onClick={(e) => setLegendAnchorEl(e.currentTarget)}
-                sx={{
-                  color: theme.openreach.energyAccent,
-                  '&:hover': {
-                    backgroundColor: theme.palette.action.hover,
-                  }
-                }}
-              >
-                <VpnKeyIcon />
-              </IconButton>
-            </Tooltip>
           </Stack>
           
           <Stack direction="row" spacing={1} alignItems="center">
-            {/* Docked Panel Icons removed */}
+            {/* Docked Panel Icons */}
+            {dockedPanels.map((panel) => (
+              <Tooltip key={panel.id} title={panel.title}>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    // Undock the panel
+                    onDockedPanelsChange?.(dockedPanels.filter(p => p.id !== panel.id))
+                  }}
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    }
+                  }}
+                >
+                  {panel.icon}
+                </IconButton>
+              </Tooltip>
+            ))}
           </Stack>
         </Stack>
-        
-        <Popover
-          open={Boolean(legendAnchorEl)}
-          anchorEl={legendAnchorEl}
-          onClose={() => setLegendAnchorEl(null)}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          slotProps={{
-            paper: {
-              sx: {
-                p: 2,
-                mt: 1,
-                minWidth: 200,
-                border: `2px solid ${theme.palette.divider}`,
-                outline: `1px solid ${theme.palette.divider}`,
-              }
-            }
-          }}
-        >
-          <TaskStatusLegend variant="full" showTitle />
-        </Popover>
       </Box>
 
       {/* Panel Grid */}
