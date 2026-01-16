@@ -27,6 +27,9 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   emptyState?: ReactNode
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
+  onCellTouchStart?: (params: GridCellParams<T>, event: React.TouchEvent) => void
+  onCellTouchEnd?: (params: GridCellParams<T>, event: React.TouchEvent) => void
+  onCellTouchMove?: (params: GridCellParams<T>, event: React.TouchEvent) => void
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
@@ -42,6 +45,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   emptyState,
   onCellClick,
   onCellDoubleClick,
+  onCellTouchStart,
+  onCellTouchEnd,
+  onCellTouchMove,
 }: SharedMuiTableProps<T>) {
   const apiRef = useGridApiRef()
   const [densityMode, setDensityMode] = useState(density)
@@ -102,7 +108,53 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
 
   return (
     <>
-      <DataGrid
+      <Box
+        onTouchStart={onCellTouchStart ? (e) => {
+          // Handle touch start on table level
+          const target = e.target as HTMLElement
+          const cell = target.closest('.MuiDataGrid-cell')
+          if (cell) {
+            const rowId = cell.getAttribute('data-rowindex')
+            const colField = cell.getAttribute('data-field')
+            if (rowId && colField) {
+              const row = rows[parseInt(rowId)]
+              if (row) {
+                onCellTouchStart({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
+              }
+            }
+          }
+        } : undefined}
+        onTouchEnd={onCellTouchEnd ? (e) => {
+          const target = e.target as HTMLElement
+          const cell = target.closest('.MuiDataGrid-cell')
+          if (cell) {
+            const rowId = cell.getAttribute('data-rowindex')
+            const colField = cell.getAttribute('data-field')
+            if (rowId && colField) {
+              const row = rows[parseInt(rowId)]
+              if (row) {
+                onCellTouchEnd({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
+              }
+            }
+          }
+        } : undefined}
+        onTouchMove={onCellTouchMove ? (e) => {
+          const target = e.target as HTMLElement
+          const cell = target.closest('.MuiDataGrid-cell')
+          if (cell) {
+            const rowId = cell.getAttribute('data-rowindex')
+            const colField = cell.getAttribute('data-field')
+            if (rowId && colField) {
+              const row = rows[parseInt(rowId)]
+              if (row) {
+                onCellTouchMove({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
+              }
+            }
+          }
+        } : undefined}
+        sx={{ width: '100%' }}
+      >
+        <DataGrid
         sx={{
           width: '100%',
           '& .MuiDataGrid-cell': {
@@ -147,6 +199,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           noRowsOverlay: NoRowsOverlay,
         }}
       />
+      </Box>
       <Menu
         open={!!contextMenu}
         onClose={handleCloseContextMenu}

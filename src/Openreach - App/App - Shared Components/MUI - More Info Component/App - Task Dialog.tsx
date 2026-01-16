@@ -17,11 +17,11 @@ import {
 } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
-import PublicRoundedIcon from '@mui/icons-material/PublicRounded'
 import RoomRoundedIcon from '@mui/icons-material/RoomRounded'
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
 import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded'
 import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded'
+import MinimizeRoundedIcon from '@mui/icons-material/MinimizeRounded'
 import { TaskIcon, type TaskIconVariant } from '../MUI - Icon and Key/MUI - Icon'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
@@ -73,7 +73,6 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
     }
   }, [task?.commitType])
 
-  const capabilityLabel = useMemo(() => (task?.capabilities ?? []).join(', '), [task?.capabilities])
   const fieldNotesList = useMemo(() => {
     const notes = task?.fieldNotes ?? []
     return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -98,11 +97,11 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" aria-labelledby="task-dialog-title">
-      <DialogTitle id="task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 6 }}>
+      <DialogTitle id="task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 6, pb: 1 }}>
         <Stack direction="row" spacing={1.5} alignItems="center" flex={1} minWidth={0}>
-          <TaskIcon variant={dialogIconVariant} size={28} />
-          <Stack spacing={0.25} minWidth={0}>
-            <Typography variant="subtitle1" fontWeight={700} noWrap>
+          <TaskIcon variant={dialogIconVariant} size={32} />
+          <Stack spacing={0.25} minWidth={0} flex={1}>
+            <Typography variant="h6" fontWeight={700} noWrap>
               {task?.taskId ?? 'Task details'}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center" divider={<Divider flexItem orientation="vertical" />}>
@@ -114,7 +113,6 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               </Typography>
             </Stack>
           </Stack>
-          {/* Status pill intentionally removed */}
         </Stack>
         <IconButton
           aria-label="Close dialog"
@@ -136,78 +134,116 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
         </IconButton>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ bgcolor: theme.palette.background.default }}>
-        <Stack spacing={2.5}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems="flex-start">
-            <Box
-              sx={{
-                flex: 1,
-                p: 2,
-                borderRadius: 2,
-                bgcolor: theme.palette.background.paper,
-                border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
-              }}
-            >
-              <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-                <AccessTimeRoundedIcon fontSize="small" />
-                <Typography variant="subtitle2" fontWeight={700}>
-                  Schedule
-                </Typography>
-              </Stack>
-              <Stack spacing={0.5}>
-                <Typography variant="body2" color="text.secondary">
-                  Commit type
-                </Typography>
-                <Typography variant="body1" fontWeight={600}>
-                  {loading ? renderSkeleton(120) : task?.commitType ?? '—'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Commit date
-                </Typography>
-                <Typography variant="body1" fontWeight={600}>
-                  {loading ? renderSkeleton(160) : formatDate(task?.commitDate)}
-                </Typography>
-              </Stack>
-            </Box>
+      <DialogContent dividers sx={{ bgcolor: theme.palette.background.default, p: 0 }}>
+        <Stack spacing={0}>
+          <Stack spacing={2.5} sx={{ p: 3 }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems="flex-start">
+              <Box
+                sx={{
+                  flex: 1,
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: theme.palette.background.paper,
+                  border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
+                  <AccessTimeRoundedIcon fontSize="small" color="primary" />
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Schedule
+                  </Typography>
+                </Stack>
+                <Stack spacing={1}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" mb={0.5}>
+                      Commit type
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {loading ? renderSkeleton(120) : task?.commitType ?? '—'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" mb={0.5}>
+                      Commit date
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {loading ? renderSkeleton(160) : formatDate(task?.commitDate)}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              <Box
+                sx={{
+                  flex: 1,
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: theme.palette.background.paper,
+                  border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
+                  <RoomRoundedIcon fontSize="small" color="primary" />
+                  <Typography variant="subtitle2" fontWeight={700}>
+                    Location
+                  </Typography>
+                </Stack>
+                <Stack spacing={1}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" mb={0.5}>
+                      Postcode
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {loading ? renderSkeleton(120) : task?.postCode ?? '—'}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" mb={0.5}>
+                      Coordinates
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {loading
+                        ? renderSkeleton(140)
+                        : task
+                        ? `Lat ${task.taskLatitude.toFixed(4)}, Lon ${task.taskLongitude.toFixed(4)}`
+                        : '—'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+            </Stack>
 
             <Box
               sx={{
-                flex: 1,
                 p: 2,
                 borderRadius: 2,
                 bgcolor: theme.palette.background.paper,
                 border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
               }}
             >
-              <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-                <PublicRoundedIcon fontSize="small" />
+              <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
+                <PersonRoundedIcon fontSize="small" color="primary" />
                 <Typography variant="subtitle2" fontWeight={700}>
-                  Task metadata
+                  Assigned team
                 </Typography>
               </Stack>
-              <Stack spacing={0.5}>
-                <Typography variant="body2" color="text.secondary">
-                  Response / priority
-                </Typography>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {loading ? (
-                    <>
-                      {renderSkeleton(80)}
-                      {renderSkeleton(60)}
-                    </>
-                  ) : (
-                    <>
-                      <Chip size="small" label={task?.responseCode ?? '—'} />
-                      <Chip size="small" label={`Impact ${task?.impactScore ?? '—'}`} />
-                    </>
-                  )}
-                </Stack>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Skills
-                </Typography>
-                <Typography variant="body1" fontWeight={600}>
-                  {loading ? renderSkeleton(200) : capabilityLabel || '—'}
-                </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} divider={<Divider flexItem orientation="vertical" />}>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" mb={0.5}>
+                    Resource
+                  </Typography>
+                  <Typography variant="body1" fontWeight={700}>
+                    {loading ? renderSkeleton(160) : task?.resourceName || 'Unassigned'}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" mb={0.5}>
+                    Division
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {loading ? renderSkeleton(120) : task?.division ?? '—'}
+                  </Typography>
+                </Box>
               </Stack>
             </Box>
           </Stack>
@@ -220,79 +256,39 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-              <RoomRoundedIcon fontSize="small" />
-              <Typography variant="subtitle2" fontWeight={700}>
-                Location
-              </Typography>
-            </Stack>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} divider={<Divider flexItem orientation="vertical" />}>
-              <Typography variant="body1" fontWeight={600}>
-                {loading ? renderSkeleton(120) : task?.postCode ?? '—'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {loading
-                  ? renderSkeleton(140)
-                  : task
-                  ? `Lat ${task.taskLatitude.toFixed(4)}, Lon ${task.taskLongitude.toFixed(4)}`
-                  : '—'}
-              </Typography>
-            </Stack>
-          </Box>
-
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: theme.palette.background.paper,
-              border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-              <PersonRoundedIcon fontSize="small" />
-              <Typography variant="subtitle2" fontWeight={700}>
-                Assigned team
-              </Typography>
-            </Stack>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} divider={<Divider flexItem orientation="vertical" />}>
-              <Typography variant="body1" fontWeight={700}>
-                {loading ? renderSkeleton(160) : task?.resourceName || 'Unassigned'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {loading ? renderSkeleton(120) : task?.division ?? '—'}
-              </Typography>
-            </Stack>
-          </Box>
-
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              bgcolor: theme.palette.background.paper,
-              border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
-            }}
-          >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-              <StickyNote2RoundedIcon fontSize="small" />
-              <Typography variant="subtitle2" fontWeight={700}>
-                Field notes
-              </Typography>
-              <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} sx={{ ml: 'auto' }} />
+            <Stack direction="row" spacing={1} alignItems="center" mb={1.25} justifyContent="space-between">
+              <Stack direction="row" spacing={1} alignItems="center">
+                <StickyNote2RoundedIcon fontSize="small" color="primary" />
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Field notes
+                </Typography>
+              </Stack>
+              <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined" />
             </Stack>
             <Stack spacing={1.25}>
               <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
                 {loading ? (
                   <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
                 ) : fieldNotesList.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">No notes</Typography>
+                  <Box sx={{ textAlign: 'center', py: 3 }}>
+                    <StickyNote2RoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      No field notes yet
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled">
+                      Add notes to track field activities
+                    </Typography>
+                  </Box>
                 ) : (
                   fieldNotesList.map((note) => (
-                    <Stack key={note.id} spacing={0.25}>
-                      <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
+                    <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
+                      <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                        {note.text}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {note.author} • {formatDate(note.createdAt)}
                       </Typography>
-                    </Stack>
+                    </Box>
                   ))
                 )}
               </Stack>
@@ -301,10 +297,12 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                   <TextField
                     value={fieldNoteDraft}
                     onChange={(e) => setFieldNoteDraft(e.target.value)}
-                    placeholder="Add a field note"
+                    placeholder="Add a field note..."
                     size="small"
                     multiline
                     minRows={2}
+                    fullWidth
+                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
                   />
                   <Stack direction="row" justifyContent="flex-end">
                     <Button onClick={() => addNote('field')} size="small" variant="contained" color="primary" disabled={!fieldNoteDraft.trim()}>
@@ -324,27 +322,39 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
             }}
           >
-            <Stack direction="row" spacing={1} alignItems="center" mb={1.25}>
-              <TimelineRoundedIcon fontSize="small" />
-              <Typography variant="subtitle2" fontWeight={700}>
-                Progress notes
-              </Typography>
-              <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} sx={{ ml: 'auto' }} />
+            <Stack direction="row" spacing={1} alignItems="center" mb={1.25} justifyContent="space-between">
+              <Stack direction="row" spacing={1} alignItems="center">
+                <TimelineRoundedIcon fontSize="small" color="primary" />
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Progress notes
+                </Typography>
+              </Stack>
+              <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined" />
             </Stack>
             <Stack spacing={1.25}>
               <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
                 {loading ? (
                   <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
                 ) : progressNotesList.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">No notes</Typography>
+                  <Box sx={{ textAlign: 'center', py: 3 }}>
+                    <TimelineRoundedIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                    <Typography variant="body2" color="text.secondary">
+                      No progress notes yet
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled">
+                      Track task progress and updates
+                    </Typography>
+                  </Box>
                 ) : (
                   progressNotesList.map((note) => (
-                    <Stack key={note.id} spacing={0.25}>
-                      <Typography variant="body2" fontWeight={600}>{note.text}</Typography>
+                    <Box key={note.id} sx={{ p: 1.5, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
+                      <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                        {note.text}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
                         {note.author} • {formatDate(note.createdAt)}
                       </Typography>
-                    </Stack>
+                    </Box>
                   ))
                 )}
               </Stack>
@@ -353,10 +363,12 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                   <TextField
                     value={progressNoteDraft}
                     onChange={(e) => setProgressNoteDraft(e.target.value)}
-                    placeholder="Add a progress note"
+                    placeholder="Add a progress note..."
                     size="small"
                     multiline
                     minRows={2}
+                    fullWidth
+                    sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
                   />
                   <Stack direction="row" justifyContent="flex-end">
                     <Button onClick={() => addNote('progress')} size="small" variant="contained" color="primary" disabled={!progressNoteDraft.trim()}>
@@ -370,32 +382,28 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
+      <DialogActions sx={{ px: 3, py: 2.5, gap: 1.5, bgcolor: theme.palette.background.paper, borderTop: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}` }}>
         {actions}
+        <Box sx={{ flex: 1 }} />
         {onMinimize && (
           <Button
             onClick={() => {
               onMinimize()
               onClose()
             }}
+            variant="outlined"
             color="primary"
-            variant="contained"
+            startIcon={<MinimizeRoundedIcon />}
+            sx={{ minWidth: 140 }}
           >
             Minimise Task
           </Button>
         )}
         <Button
           onClick={onClose}
-          color="secondary"
-          variant="outlined"
-          sx={{
-            color: theme.palette.mode === 'dark' ? theme.palette.text.primary : undefined,
-            borderColor: theme.palette.text.secondary,
-            '&:hover': {
-              borderColor: theme.palette.text.primary,
-              bgcolor: theme.palette.action.hover,
-            },
-          }}
+          variant="contained"
+          color="primary"
+          sx={{ minWidth: 100 }}
         >
           Close
         </Button>

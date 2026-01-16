@@ -1,22 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 import CallRoundedIcon from '@mui/icons-material/CallRounded'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
-import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType, type TaskNote } from '../../../App - Data Tables/Task - Table'
-import AppTaskDialog from '../../../App - Shared Components/MUI - More Info Component/App - Task Dialog'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
 
 const TaskManagementPage = ({
-  restoreTaskId,
-  onRestoreHandled,
-  onAddTaskDockItem,
+  openTaskDialog,
 }: {
-  restoreTaskId?: string
-  onRestoreHandled?: () => void
-  onAddTaskDockItem?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: unknown }) => void
+  openTaskDialog?: (task: TaskTableRow) => void
 }) => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
@@ -31,48 +26,58 @@ const TaskManagementPage = ({
     setSnackbar({ open: true, message, severity })
   }, [])
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null)
-  const openTaskDialog = useCallback((task: TaskTableRow) => {
-    setDialogTask(task)
-    setDialogOpen(true)
-  }, [])
-  const closeTaskDialog = useCallback(() => {
-    setDialogOpen(false)
-    setDialogTask(null)
-  }, [])
+  // Touch and hold functionality
+  const [touchTimer, setTouchTimer] = useState<number | null>(null)
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null)
+  const touchTargetRef = useRef<TaskTableRow | null>(null)
 
-  const handleAddNote = useCallback(
-    (type: 'field' | 'progress', text: string) => {
-      if (!dialogTask) return
-      const nextNote: TaskNote = {
-        id: `${type}-${Date.now()}`,
-        author: 'You',
-        createdAt: new Date().toISOString(),
-        text,
-      }
-      setDialogTask((prev) => {
-        if (!prev) return prev
-        const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes
-        const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes
-        return { ...prev, fieldNotes, progressNotes }
-      })
-      showMessage(type === 'field' ? 'Added field note' : 'Added progress note')
-    },
-    [dialogTask, showMessage],
-  )
+  const handleTouchStart = useCallback((params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
+    const touch = event.touches[0]
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY })
+    touchTargetRef.current = params.row
 
-  // Restore dialog when triggered from Recent Tasks dock
-  useEffect(() => {
-    if (!restoreTaskId) return
-    const found = TASK_TABLE_ROWS.find((row) => row.taskId === restoreTaskId)
-    if (found) {
-      // Defer to avoid synchronous state update within effect
-      setTimeout(() => openTaskDialog(found), 0)
+    // Start timer for long press (500ms)
+    const timer = window.setTimeout(() => {
+      openTaskDialog?.(params.row)
+      setTouchTimer(null)
+    }, 500)
+    setTouchTimer(timer)
+  }, [openTaskDialog])
+
+  const handleTouchEnd = useCallback(() => {
+    if (touchTimer) {
+      clearTimeout(touchTimer)
+      setTouchTimer(null)
     }
-    onRestoreHandled?.()
-  }, [restoreTaskId, openTaskDialog, onRestoreHandled])
-  
+    setTouchStartPos(null)
+    touchTargetRef.current = null
+  }, [touchTimer])
+
+  const handleTouchMove = useCallback((_params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
+    if (!touchStartPos || !touchTimer) return
+
+    const touch = event.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchStartPos.x)
+    const deltaY = Math.abs(touch.clientY - touchStartPos.y)
+
+    // Cancel long press if user moves finger more than 10px
+    if (deltaX > 10 || deltaY > 10) {
+      clearTimeout(touchTimer)
+      setTouchTimer(null)
+      setTouchStartPos(null)
+      touchTargetRef.current = null
+    }
+  }, [touchStartPos, touchTimer])
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (touchTimer) {
+        clearTimeout(touchTimer)
+      }
+    }
+  }, [touchTimer])
+
   const statusMetadata: Record<TaskTableRow['status'], { label: string }> = useMemo(
     () => ({
       ACT: { label: TASK_STATUS_LABELS.ACT },
@@ -576,8 +581,11 @@ const TaskManagementPage = ({
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
             onCellDoubleClick={(params) => {
-              openTaskDialog(params.row)
+              openTaskDialog?.(params.row)
             }}
+            onCellTouchStart={handleTouchStart}
+            onCellTouchEnd={handleTouchEnd}
+            onCellTouchMove={handleTouchMove}
           />
         ) : (
           <Box
@@ -641,22 +649,6 @@ const TaskManagementPage = ({
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      <AppTaskDialog
-        open={dialogOpen}
-        onClose={closeTaskDialog}
-        task={dialogTask ?? undefined}
-        onAddNote={handleAddNote}
-        onMinimize={dialogTask ? () => {
-          onAddTaskDockItem?.({
-            id: dialogTask.taskId,
-            title: dialogTask.taskId,
-            commitType: dialogTask.commitType,
-            task: dialogTask,
-          })
-          closeTaskDialog()
-        } : undefined}
-      />
     </Paper>
   )
 }

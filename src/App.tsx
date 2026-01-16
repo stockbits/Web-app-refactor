@@ -33,6 +33,9 @@ import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Ban
 import TaskDockBar from "./Openreach - App/App - Shared Components/MUI - More Info Component/TaskDockBar";
 import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
+import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
+import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
+import { TASK_TABLE_ROWS } from "./Openreach - App/App - Data Tables/Task - Table";
 
 interface MenuCardTile {
   name: string;
@@ -409,9 +412,45 @@ function App() {
       return [nextItem, ...prev].slice(0, 5);
     });
   }, []);
-  const [restoreTaskId, setRestoreTaskId] = useState<string | null>(null);
+
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
+
+  // Global task dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null);
+
+  // Global task dialog functions
+  const openTaskDialog = useCallback((task: TaskTableRow) => {
+    setDialogTask(task);
+    setDialogOpen(true);
+  }, []);
+
+  const closeTaskDialog = useCallback(() => {
+    setDialogOpen(false);
+    setDialogTask(null);
+  }, []);
+
+  const handleAddNote = useCallback(
+    (type: 'field' | 'progress', text: string) => {
+      if (!dialogTask) return;
+      const nextNote: TaskNote = {
+        id: `${type}-${Date.now()}`,
+        author: 'You',
+        createdAt: new Date().toISOString(),
+        text,
+      };
+      setDialogTask((prev) => {
+        if (!prev) return prev;
+        const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes;
+        const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes;
+        return { ...prev, fieldNotes, progressNotes };
+      });
+      // Could add a snackbar message here if needed
+    },
+    [dialogTask],
+  );
+
   const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
   const landingInfoOpen = Boolean(landingInfoAnchor);
 
@@ -490,37 +529,40 @@ function App() {
             <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
           )}
 
-          {/* Global task dock below breadcrumb */}
-          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0 }}>
-            <TaskDockBar
-              items={taskDockItems.map(({ id, title, commitType }) => {
-                const variant = (() => {
-                  switch (commitType) {
-                    case 'START BY':
-                      return 'startBy' as const;
-                    case 'COMPLETE BY':
-                      return 'completeBy' as const;
-                    case 'TAIL':
-                      return 'failedSLA' as const;
-                    default:
-                      return 'appointment' as const;
+          {/* Global task dock below breadcrumb - always reserve space */}
+          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0, height: '36px', display: 'flex', alignItems: 'flex-end' }}>
+            {taskDockItems.length > 0 && (
+              <TaskDockBar
+                items={taskDockItems.map(({ id, title, commitType }) => {
+                  const variant = (() => {
+                    switch (commitType) {
+                      case 'START BY':
+                        return 'startBy' as const;
+                      case 'COMPLETE BY':
+                        return 'completeBy' as const;
+                      case 'TAIL':
+                        return 'failedSLA' as const;
+                      default:
+                        return 'appointment' as const;
+                    }
+                  })();
+                  return { id, title, icon: <TaskIcon variant={variant} size={28} /> };
+                })}
+                onClick={(id) => {
+                  const item = taskDockItems.find((it) => it.id === id);
+                  if (!item) return;
+
+                  // Find the full task data and open dialog
+                  const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+                  if (task) {
+                    openTaskDialog(task);
                   }
-                })();
-  return { id, title, icon: <TaskIcon variant={variant} size={28} /> };
-              })}
-              onClick={(id) => {
-                const item = taskDockItems.find((it) => it.id === id);
-                if (!item) return;
-                // Navigate to Task Management and set restore id
-                setSelectedMenuId("operations-management");
-                setShowWelcome(false);
-                setActivePage({ menuLabel: "Operations Management", cardName: "Task Management" });
-                setRestoreTaskId(id);
-              }}
-              onRemove={(id) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-              maxItems={5}
-              defaultCollapsed={true}
-            />
+                }}
+                onRemove={(id) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+                maxItems={5}
+                clickable={true}
+              />
+            )}
           </Box>
 
           <Box 
@@ -701,9 +743,7 @@ function App() {
                             <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
                           ) : activePage?.cardName === 'Task Management' ? (
                             <ActivePageComponent {...({
-                              restoreTaskId,
-                              onRestoreHandled: () => setRestoreTaskId(null),
-                              onAddTaskDockItem: handleAddTaskDockItem,
+                              openTaskDialog,
                             } as Record<string, unknown>)} />
                           ) : (
                             <ActivePageComponent />
@@ -717,6 +757,23 @@ function App() {
           </Box>
         </Stack>
       </Box>
+
+      {/* Global task dialog */}
+      <AppTaskDialog
+        open={dialogOpen}
+        onClose={closeTaskDialog}
+        task={dialogTask ?? undefined}
+        onAddNote={handleAddNote}
+        onMinimize={dialogTask ? () => {
+          handleAddTaskDockItem({
+            id: dialogTask.taskId,
+            title: dialogTask.taskId,
+            commitType: dialogTask.commitType,
+            task: dialogTask,
+          });
+          closeTaskDialog();
+        } : undefined}
+      />
     </>
   );
 }

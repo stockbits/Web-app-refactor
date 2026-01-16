@@ -1,10 +1,7 @@
 import { alpha } from '@mui/material/styles'
-import { Box, Chip, Collapse, IconButton, Paper, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Chip, Paper, Stack, Typography, useTheme } from '@mui/material'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import type { ReactNode } from 'react'
-import { useState } from 'react'
 
 export interface TaskDockItem {
   id: string
@@ -18,12 +15,11 @@ export interface TaskDockBarProps {
   onClick?: (id: string) => void
   onRemove?: (id: string) => void
   maxItems?: number
-  defaultCollapsed?: boolean
+  clickable?: boolean
 }
 
-export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, defaultCollapsed = true }: TaskDockBarProps) {
+export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, clickable = true }: TaskDockBarProps) {
   const theme = useTheme()
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
   const visibleItems = items.slice(0, maxItems)
 
   if (visibleItems.length === 0) return null
@@ -38,10 +34,8 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, defaultCol
         right: 0,
         borderTop: `1px solid ${theme.palette.divider}`,
         bgcolor: theme.palette.background.paper,
-        transition: 'all 0.2s ease-in-out',
       }}
     >
-      {/* Collapsed Header */}
       <Box
         sx={{
           px: 2,
@@ -49,12 +43,7 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, defaultCol
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          cursor: 'pointer',
-          '&:hover': {
-            bgcolor: alpha(theme.palette.action.hover, 0.1),
-          },
         }}
-        onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <Stack direction="row" alignItems="center" gap={1.5} flex={1}>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
@@ -69,15 +58,34 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, defaultCol
                     {item.title}
                   </Typography>
                 }
+                onClick={clickable && onClick ? () => onClick(item.id) : undefined}
+                onDelete={onRemove ? () => onRemove(item.id) : undefined}
+                deleteIcon={<CloseRoundedIcon />}
                 size="small"
                 sx={{
                   height: '20px',
-                  bgcolor: alpha(theme.palette.background.default, 0.9),
-                  color: theme.palette.text.primary,
+                  bgcolor: clickable 
+                    ? alpha(theme.palette.background.default, 0.9)
+                    : alpha(theme.palette.action.disabledBackground, 0.5),
+                  color: clickable 
+                    ? theme.palette.text.primary
+                    : theme.palette.text.disabled,
                   border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                   '& .MuiChip-label': {
                     px: 0.5,
                   },
+                  '& .MuiChip-deleteIcon': {
+                    color: theme.palette.text.secondary,
+                    fontSize: '12px',
+                    '&:hover': {
+                      color: theme.palette.text.primary,
+                    },
+                  },
+                  '&:hover': clickable ? {
+                    bgcolor: theme.palette.background.default,
+                  } : undefined,
+                  cursor: clickable && onClick ? 'pointer' : 'default',
+                  opacity: clickable ? 1 : 0.6,
                 }}
               />
             ))}
@@ -88,47 +96,7 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, defaultCol
             )}
           </Box>
         </Stack>
-        <IconButton size="small" sx={{ p: 0.25 }}>
-          {isCollapsed ? <KeyboardArrowUpIcon fontSize="small" /> : <KeyboardArrowDownIcon fontSize="small" />}
-        </IconButton>
       </Box>
-
-      {/* Expanded Content */}
-      <Collapse in={!isCollapsed}>
-        <Box sx={{ px: 2, pb: 1 }}>
-          <Box sx={{ display: 'grid', gridAutoFlow: 'column', gap: 0.75, overflowX: 'auto', pb: 0.5 }}>
-            {visibleItems.map((item) => (
-              <Chip
-                key={item.id}
-                label={
-                  <Typography variant="caption" fontWeight={700} noWrap>
-                    {item.title}
-                  </Typography>
-                }
-                onClick={onClick ? () => onClick(item.id) : undefined}
-                onDelete={onRemove ? () => onRemove(item.id) : undefined}
-                deleteIcon={<CloseRoundedIcon />}
-                size="small"
-                sx={{
-                  bgcolor: alpha(theme.palette.background.default, 0.9),
-                  color: theme.palette.text.primary,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                  '& .MuiChip-deleteIcon': {
-                    color: theme.palette.text.secondary,
-                    '&:hover': {
-                      color: theme.palette.text.primary,
-                    },
-                  },
-                  '&:hover': {
-                    bgcolor: theme.palette.background.default,
-                  },
-                  flexShrink: 0,
-                }}
-              />
-            ))}
-          </Box>
-        </Box>
-      </Collapse>
     </Paper>
   )
 }
