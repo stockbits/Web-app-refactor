@@ -158,6 +158,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       >
         <DataGrid
         sx={{
+          height: '100%',
           width: '100%',
           '& .MuiDataGrid-cell': {
             display: 'flex',
@@ -182,6 +183,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         density={densityMode}
         loading={loading}
         hideFooter={hideFooter}
+        autoHeight={false}
         {...(enablePagination && {
           pagination: true as const,
           pageSizeOptions: resolvedPageSizeOptions,

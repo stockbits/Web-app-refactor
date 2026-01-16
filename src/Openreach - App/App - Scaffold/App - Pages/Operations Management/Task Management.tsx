@@ -569,7 +569,7 @@ const TaskManagementPage = ({
         />
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 0, maxHeight: '64vh', display: 'flex', flexDirection: 'column', overflow: 'auto', px: 3, pt: 1, pb: 3 }}>
+      <Box sx={{ flex: 1, minHeight: 0, maxHeight: '60vh', display: 'flex', flexDirection: 'column', overflow: 'auto', px: 3, pt: 1, pb: 3 }}>
         {hasAppliedQuery ? (
           <SharedMuiTable<TaskTableRow>
             columns={columns}
@@ -577,8 +577,8 @@ const TaskManagementPage = ({
             getRowId={(row) => row.taskId}
             density="compact"
             enableQuickFilter
-            hideFooter={false}
-            enablePagination={true}
+            hideFooter={true}
+            enablePagination={false}
             initialPageSize={30}
             pageSizeOptions={[30, 50, 100]}
             onCellDoubleClick={(params) => {
