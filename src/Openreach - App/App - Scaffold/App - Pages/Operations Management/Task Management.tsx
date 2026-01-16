@@ -158,6 +158,7 @@ const TaskManagementPage = ({
           <Tooltip title="Call">
             <IconButton
               size="small"
+              disableRipple={true}
               onClick={(e) => {
                 e.stopPropagation()
                 showMessage('Call action')
