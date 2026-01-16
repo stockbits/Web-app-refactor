@@ -273,7 +273,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             </AccordionSummary>
             <AccordionDetails>
               <Stack spacing={1.25}>
-                <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                <Stack spacing={0.75} sx={{ height: 220, overflowY: 'auto', pr: 0.5 }}>
                   {loading ? (
                     <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
                   ) : fieldNotesList.length === 0 ? (
@@ -344,7 +344,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             </AccordionSummary>
             <AccordionDetails>
               <Stack spacing={1.25}>
-                <Stack spacing={0.75} sx={{ maxHeight: 220, overflowY: 'auto', pr: 0.5 }}>
+                <Stack spacing={0.75} sx={{ height: 220, overflowY: 'auto', pr: 0.5 }}>
                   {loading ? (
                     <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
                   ) : progressNotesList.length === 0 ? (
