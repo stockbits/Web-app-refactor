@@ -642,15 +642,18 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                 // Scale size based on cluster count
                 const size = count < 10 ? 36 : count < 100 ? 44 : 52;
 
-                // Inline SVG for GppMaybe shield with white exclamation
+                // Inline SVG for GppMaybe shield with white count text
                 const shieldFill = taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup;
                 const borderColor = theme.openreach?.coreBlock || theme.palette.common.black;
+                const textColor = theme.palette.common.white;
                 const svgSize = Math.round(size * 0.75);
-                const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;">`
+                const fontSize = Math.max(10, Math.round(svgSize * 0.4)); // Scale font size with icon
+                const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative;">`
                   + `
                   <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="paint-order:stroke fill">
                     <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="${shieldFill}" stroke="${borderColor}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
                   </svg>
+                  <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:${textColor};font-size:${fontSize}px;font-weight:600;font-family:${theme.typography.fontFamily};line-height:1;">${count}</span>
                 </div>`;
 
                 return L.divIcon({
