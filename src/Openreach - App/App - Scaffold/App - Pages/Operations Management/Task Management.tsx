@@ -157,19 +157,14 @@ const TaskManagementPage = ({
         renderCell: () => (
           <Tooltip title="Call">
             <IconButton
-              size="small"
               disableRipple={true}
               onClick={(e) => {
                 e.stopPropagation()
                 showMessage('Call action')
               }}
               sx={{
-                py: 0,
-                px: 0,
-                color: 'text.secondary',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                height: '100%',
+                width: '100%',
                 '&:hover': {
                   backgroundColor: 'action.hover',
                 },
