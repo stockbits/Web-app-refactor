@@ -48,97 +48,122 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
           bgcolor: 'background.paper',
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Autocomplete
-            size="small"
-            sx={{ minWidth: 200 }}
-            options={divisionOptions}
-            value={selectedDivision}
-            onChange={(_, newValue) => setSelectedDivision(newValue)}
-            renderInput={(params) => (
-              <TextField {...params} label="Division" placeholder="Select division" />
-            )}
-          />
-          
-          <Autocomplete
-            size="small"
-            sx={{ minWidth: 150 }}
-            options={domainOptions}
-            value={selectedDomain}
-            onChange={(_, newValue) => setSelectedDomain(newValue)}
-            renderInput={(params) => (
-              <TextField {...params} label="Domain" placeholder="Select domain" />
-            )}
-          />
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Autocomplete
+              size="small"
+              sx={{ minWidth: 200 }}
+              options={divisionOptions}
+              value={selectedDivision}
+              onChange={(_, newValue) => setSelectedDivision(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Division" placeholder="Select division" />
+              )}
+            />
+            
+            <Autocomplete
+              size="small"
+              sx={{ minWidth: 150 }}
+              options={domainOptions}
+              value={selectedDomain}
+              onChange={(_, newValue) => setSelectedDomain(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Domain" placeholder="Select domain" />
+              )}
+            />
 
-          <TextField
-            size="small"
-            sx={{ flex: 1, maxWidth: 400 }}
-            placeholder="Global search..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            inputRef={searchRef}
-          />
-          
-          <Tooltip title="Search Tool">
-            <Button
+            <TextField
               size="small"
-              onClick={() => setSearchToolOpen(true)}
-              variant="contained"
-              sx={{
-                backgroundColor: theme.palette.primary.main,
-                color: theme.palette.primary.contrastText,
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                }
-              }}
-            >
-              Search Tool
-            </Button>
-          </Tooltip>
+              sx={{ flex: 1, maxWidth: 400 }}
+              placeholder="Global search..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              inputRef={searchRef}
+            />
+          </Stack>
           
-          <Tooltip title="Legend Key Menu">
-            <IconButton
-              size="small"
-              onClick={(e) => setLegendAnchorEl(e.currentTarget)}
-              sx={{
-                color: theme.openreach.energyAccent,
-                '&:hover': {
-                  backgroundColor: theme.palette.action.hover,
-                }
-              }}
-            >
-              <VpnKeyIcon />
-            </IconButton>
-          </Tooltip>
-          
-          <Popover
-            open={Boolean(legendAnchorEl)}
-            anchorEl={legendAnchorEl}
-            onClose={() => setLegendAnchorEl(null)}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            slotProps={{
-              paper: {
-                sx: {
-                  p: 2,
-                  mt: 1,
-                  minWidth: 200,
-                  border: `2px solid ${theme.palette.divider}`,
-                  outline: `1px solid ${theme.palette.divider}`,
-                }
-              }
-            }}
-          >
-            <TaskStatusLegend variant="full" showTitle />
-          </Popover>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Tooltip title="Search Tool">
+              <Button
+                size="small"
+                onClick={() => setSearchToolOpen(true)}
+                variant="contained"
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.dark,
+                  }
+                }}
+              >
+                Search Tool
+              </Button>
+            </Tooltip>
+            
+            <Tooltip title="Legend Key Menu">
+              <IconButton
+                size="small"
+                onClick={(e) => setLegendAnchorEl(e.currentTarget)}
+                sx={{
+                  color: theme.openreach.energyAccent,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                  }
+                }}
+              >
+                <VpnKeyIcon />
+              </IconButton>
+            </Tooltip>
+
+            {/* Docked Panel Icons */}
+            {dockedPanels.map((panel) => (
+              <Tooltip key={panel.id} title={panel.title}>
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    // Undock the panel
+                    onDockedPanelsChange?.(dockedPanels.filter(p => p.id !== panel.id))
+                  }}
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    }
+                  }}
+                >
+                  {panel.icon}
+                </IconButton>
+              </Tooltip>
+            ))}
+          </Stack>
         </Stack>
+        
+        <Popover
+          open={Boolean(legendAnchorEl)}
+          anchorEl={legendAnchorEl}
+          onClose={() => setLegendAnchorEl(null)}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          slotProps={{
+            paper: {
+              sx: {
+                p: 2,
+                mt: 1,
+                minWidth: 200,
+                border: `2px solid ${theme.palette.divider}`,
+                outline: `1px solid ${theme.palette.divider}`,
+              }
+            }
+          }}
+        >
+          <TaskStatusLegend variant="full" showTitle />
+        </Popover>
       </Box>
 
       {/* Panel Grid */}
