@@ -164,14 +164,17 @@ const TaskManagementPage = ({
                 showMessage('Call action')
               }}
               sx={{
-                py: 0.5,
-                px: 0.5,
+                py: 0,
+                px: 0,
                 color: 'text.secondary',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 '&:hover': {
                   backgroundColor: 'action.hover',
+                },
+                '&:focus': {
+                  outline: 'none',
                 },
               }}
             >
