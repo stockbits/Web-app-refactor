@@ -158,7 +158,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       >
         <DataGrid
         sx={{
-          height: '60vh',
+          height: '70vh',
           width: '100%',
           '& .MuiDataGrid-cell': {
             display: 'flex',
