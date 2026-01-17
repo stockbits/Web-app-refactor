@@ -212,7 +212,7 @@ const TaskManagementPage = ({
           const meta = statusMetadata[params.row.status]
           return (
             <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>
-              {`${params.row.status} → ${meta.label}`}
+              {meta.label}
             </Typography>
           )
         },
