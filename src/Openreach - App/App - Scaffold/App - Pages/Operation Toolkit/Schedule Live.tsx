@@ -130,7 +130,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
         <DialogContent>
-          <TaskStatusLegend variant="full" />
+          <TaskStatusLegend variant="full" showTitle={false} />
         </DialogContent>
       </Dialog>
     </Box>

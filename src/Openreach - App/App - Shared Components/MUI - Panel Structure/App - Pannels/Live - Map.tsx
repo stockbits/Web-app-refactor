@@ -110,18 +110,23 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
 
   return (
     <Box
-      sx={{
+      sx={theme => ({
         position: 'absolute',
-        top: '50%',
-        left: 16,
-        transform: 'translateY(-50%)',
+        // Ensure controls never clip at the top, even at 100% zoom
+        top: `max(${theme.spacing(10)}, 56px)`, // 56px is a safe minimum for most toolbars
+        left: theme.spacing(2),
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 1.2,
+        gap: { xs: 1, sm: 1.5 },
         maxWidth: 48,
-      }}
+        [theme.breakpoints.down('sm')]: {
+          left: theme.spacing(1),
+          gap: 1,
+          top: `max(${theme.spacing(7)}, 32px)`, // More margin for small screens
+        },
+      })}
     >
       <IconButton
         size="medium"
@@ -531,10 +536,10 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           <IconButton
             size="medium"
             onClick={handleMenuOpen}
-            sx={{
+            sx={theme => ({
               position: 'absolute',
-              top: 24,
-              left: 16,
+              top: theme.spacing(2),
+              left: theme.spacing(2),
               zIndex: 1001,
               width: 44,
               height: 44,
@@ -545,8 +550,12 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               '&:hover': {
                 backgroundColor: theme.palette.background.paper,
                 borderColor: theme.openreach.coreBlock,
-              }
-            }}
+              },
+              [theme.breakpoints.down('sm')]: {
+                top: theme.spacing(1),
+                left: theme.spacing(1),
+              },
+            })}
             aria-label="Map type"
           >
             {getMapLayerIcon()}
@@ -623,7 +632,24 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           zoomControl={false}
           preferCanvas={true}
         >
-            <ZoomControl onZoomChange={setCurrentZoom} currentZoom={currentZoom} minZoom={1} maxZoom={18} />
+            {/* Position ZoomControl below the map type button */}
+            <ZoomControl 
+              onZoomChange={setCurrentZoom} 
+              currentZoom={currentZoom} 
+              minZoom={1} 
+              maxZoom={18} 
+              // @ts-ignore
+              sx={theme => ({
+                position: 'absolute',
+                top: theme.spacing(8), // below the map type button
+                left: theme.spacing(2),
+                zIndex: 1001,
+                [theme.breakpoints.down('sm')]: {
+                  top: theme.spacing(5),
+                  left: theme.spacing(1),
+                },
+              })}
+            />
             <MapResizeHandler layoutKey={layoutKey} />
             <TileLayer
               url={tileConfig.url}
