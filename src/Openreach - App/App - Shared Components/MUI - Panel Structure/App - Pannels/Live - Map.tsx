@@ -112,39 +112,42 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={{
         position: 'absolute',
-        top: 44,
-        left: 10,
+        top: '50%',
+        left: 16,
+        transform: 'translateY(-50%)',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 0.25,
-        maxWidth: 24,
+        gap: 1.2,
+        maxWidth: 48,
       }}
     >
       <IconButton
-        size="small"
+        size="medium"
         onClick={handleZoomIn}
         disabled={currentZoom >= maxZoom}
         sx={{
-          width: 24,
-          height: 24,
+          width: 44,
+          height: 44,
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          color: theme.palette.info.main,
-          transition: 'all 0.2s ease',
+          border: `2px solid ${theme.openreach.energyAccent}`,
+          color: theme.openreach.energyAccent,
+          boxShadow: 1,
+          mb: 0.5,
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
-            borderColor: theme.palette.info.main,
+            borderColor: theme.openreach.coreBlock,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
+            borderColor: theme.palette.action.disabled,
           }
         }}
+        aria-label="Zoom in"
       >
-        <AddIcon fontSize="small" />
+        <AddIcon fontSize="medium" />
       </IconButton>
-      
       <Slider
         orientation="vertical"
         value={currentZoom}
@@ -154,44 +157,49 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         step={1}
         sx={{
           height: 60,
-          color: theme.palette.info.main,
+          color: theme.openreach.energyAccent,
           '& .MuiSlider-thumb': {
-            width: 10,
-            height: 10,
+            width: 12,
+            height: 12,
+            backgroundColor: theme.openreach.energyAccent,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-track': {
-            width: 1.5,
+            width: 2,
+            backgroundColor: theme.openreach.energyAccent,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-rail': {
-            width: 1.5,
-            opacity: 0.3,
+            width: 2,
+            opacity: 0.2,
+            backgroundColor: theme.openreach.energyAccent,
           }
         }}
       />
-      
       <IconButton
-        size="small"
+        size="medium"
         onClick={handleZoomOut}
         disabled={currentZoom <= minZoom}
         sx={{
-          width: 24,
-          height: 24,
+          width: 44,
+          height: 44,
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
-          color: theme.palette.info.main,
-          transition: 'all 0.2s ease',
+          border: `2px solid ${theme.openreach.energyAccent}`,
+          color: theme.openreach.energyAccent,
+          boxShadow: 1,
+          mt: 0.5,
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
-            borderColor: theme.palette.info.main,
+            borderColor: theme.openreach.coreBlock,
           },
           '&.Mui-disabled': {
             color: theme.palette.action.disabled,
+            borderColor: theme.palette.action.disabled,
           }
         }}
+        aria-label="Zoom out"
       >
-        <RemoveIcon fontSize="small" />
+        <RemoveIcon fontSize="medium" />
       </IconButton>
     </Box>
   );
@@ -365,11 +373,11 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   const getMapLayerIcon = () => {
     switch (mapLayer) {
       case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 12, color: 'inherit' }} />;
+        return <SatelliteAltIcon sx={{ fontSize: 24, color: 'inherit' }} />;
       case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 12, color: 'inherit' }} />;
+        return <TerrainIcon sx={{ fontSize: 24, color: 'inherit' }} />;
       default:
-        return <MapIcon sx={{ fontSize: 12, color: 'inherit' }} />;
+        return <MapIcon sx={{ fontSize: 24, color: 'inherit' }} />;
     }
   };
 
@@ -390,7 +398,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   if (minimized) {
     return (
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <MapIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />
+        <MapIcon sx={{ fontSize: 24, color: theme.openreach.energyAccent }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Minimized content */}
         </Box>
@@ -465,7 +473,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                     },
                   }}
                 >
-                  <OpenInFullIcon sx={{ fontSize: 20, color: 'inherit' }} />
+                  <OpenInFullIcon sx={{ fontSize: 24, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -485,7 +493,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                     },
                   }}
                 >
-                  <CloseFullscreenIcon sx={{ fontSize: 20, color: 'inherit' }} />
+                  <CloseFullscreenIcon sx={{ fontSize: 24, color: 'inherit' }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -521,23 +529,25 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         {/* Map Layer Controls - Overlay on map */}
         <Tooltip title={`Map Type: ${getMapLayerLabel()}`} placement="right">
           <IconButton
-            size="small"
+            size="medium"
             onClick={handleMenuOpen}
             sx={{
               position: 'absolute',
-              top: 16,
-              left: 10,
-              zIndex: 1000,
-              width: 24,
-              height: 24,
+              top: 24,
+              left: 16,
+              zIndex: 1001,
+              width: 44,
+              height: 44,
               backgroundColor: theme.palette.background.paper,
-              border: `2px solid ${theme.palette.divider}`,
+              border: `2px solid ${theme.openreach.energyAccent}`,
               color: theme.openreach.energyAccent,
+              boxShadow: 1,
               '&:hover': {
                 backgroundColor: theme.palette.background.paper,
-                borderColor: theme.openreach.energyAccent,
+                borderColor: theme.openreach.coreBlock,
               }
             }}
+            aria-label="Map type"
           >
             {getMapLayerIcon()}
           </IconButton>
@@ -565,7 +575,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <MapIcon sx={{ fontSize: 20, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
+                <MapIcon sx={{ fontSize: 24, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
                 <Typography variant="body2">Road Map</Typography>
               </Stack>
             </MenuItem>
@@ -581,7 +591,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <SatelliteAltIcon sx={{ fontSize: 20, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
+                <SatelliteAltIcon sx={{ fontSize: 24, color: mapLayer === 'satellite' ? theme.openreach.energyAccent : 'inherit' }} />
                 <Typography variant="body2">Satellite</Typography>
               </Stack>
             </MenuItem>
@@ -597,7 +607,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <TerrainIcon sx={{ fontSize: 20, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
+                <TerrainIcon sx={{ fontSize: 24, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
                 <Typography variant="body2">Terrain</Typography>
               </Stack>
             </MenuItem>

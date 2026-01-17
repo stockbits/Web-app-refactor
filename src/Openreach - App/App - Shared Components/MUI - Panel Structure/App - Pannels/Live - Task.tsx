@@ -18,7 +18,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
-  const bodyIconColor = theme.openreach.energyAccent;
+  const iconColor = theme.openreach.energyAccent;
+  const bodyIconColor = iconColor;
   const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
 
   // TODO: Use globalSearch for filtering tasks
@@ -27,7 +28,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   if (minimized) {
     return (
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ChecklistIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />
+        <ChecklistIcon sx={{ fontSize: 20, color: iconColor }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Minimized content */}
         </Box>
@@ -71,22 +72,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                 size="small"
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
-                  p: 0.5,
+                  p: 0.75,
                   border: 'none',
                   backgroundColor: 'transparent',
-                  color: theme.openreach.energyAccent,
+                  color: iconColor,
                   '&:hover': {
                     backgroundColor: 'transparent',
                     boxShadow: 'none',
                   },
                 }}
+                aria-label={isDocked ? "Undock panel" : "Dock panel"}
               >
-                <ChecklistIcon
-                  sx={{
-                    fontSize: 20,
-                    color: theme.openreach.energyAccent,
-                  }}
-                />
+                <ChecklistIcon sx={{ fontSize: 20, color: iconColor }} />
               </IconButton>
             </Tooltip>
             {!isExpanded && (
@@ -95,17 +92,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   size="small"
                   onClick={onExpand}
                   sx={{
-                    p: 0.5,
+                    p: 0.75,
                     border: 'none',
                     backgroundColor: 'transparent',
-                    color: theme.openreach.energyAccent,
+                    color: iconColor,
                     '&:hover': {
                       backgroundColor: 'transparent',
                       boxShadow: 'none',
                     },
                   }}
+                  aria-label="Expand to full screen"
                 >
-                  <OpenInFullIcon sx={{ fontSize: 20, color: 'inherit' }} />
+                  <OpenInFullIcon sx={{ fontSize: 20, color: iconColor }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -115,17 +113,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   size="small"
                   onClick={onCollapse}
                   sx={{
-                    p: 0.5,
+                    p: 0.75,
                     border: 'none',
                     backgroundColor: 'transparent',
-                    color: theme.openreach.energyAccent,
+                    color: iconColor,
                     '&:hover': {
                       backgroundColor: 'transparent',
                       boxShadow: 'none',
                     },
                   }}
+                  aria-label="Collapse to normal view"
                 >
-                  <CloseFullscreenIcon sx={{ fontSize: 20, color: 'inherit' }} />
+                  <CloseFullscreenIcon sx={{ fontSize: 20, color: iconColor }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -142,7 +141,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         }}
       >
         <Box sx={{ textAlign: 'center' }}>
-          <ChecklistIcon sx={{ fontSize: 48, color: bodyIconColor, mb: 2 }} />
+          <ChecklistIcon sx={{ fontSize: 40, color: bodyIconColor, mb: 2 }} />
           <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
             Active Tasks
           </Typography>
