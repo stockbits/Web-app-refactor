@@ -1,4 +1,3 @@
-import { alpha } from '@mui/material/styles'
 import { Box, Chip, Paper, Stack, Typography, useTheme } from '@mui/material'
 import type { ReactNode } from 'react'
 
@@ -19,8 +18,8 @@ export interface TaskDockBarProps {
 
 export function TaskDockBar({ items, onClick, onDelete, maxItems = 5, clickable = true }: TaskDockBarProps) {
   const theme = useTheme()
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
   const visibleItems = items.slice(0, maxItems)
-  const altBg = theme.palette.mode === 'light' ? '#E8EAF0' : '#252F40'
 
   if (visibleItems.length === 0) return null
 
@@ -58,21 +57,16 @@ export function TaskDockBar({ items, onClick, onDelete, maxItems = 5, clickable 
                 onClick={clickable && onClick ? () => onClick(item.id) : undefined}
                 onDelete={onDelete ? () => onDelete(item.id) : undefined}
                 size="small"
+                variant="outlined"
                 sx={{
+                  borderColor: tokens?.state.info || '#5488C7',
+                  color: tokens?.state.info || '#5488C7',
+                  backgroundColor: tokens?.background.alt || '#F3F4F7',
+                  fontWeight: 500,
                   height: '20px',
-                  bgcolor: clickable 
-                    ? altBg
-                    : alpha(theme.palette.action.disabledBackground, 0.5),
-                  color: clickable 
-                    ? theme.palette.text.primary
-                    : theme.palette.text.disabled,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                   '& .MuiChip-label': {
                     px: 0.5,
                   },
-                  '&:hover': clickable ? {
-                    bgcolor: theme.palette.background.default,
-                  } : undefined,
                   cursor: clickable && onClick ? 'pointer' : 'default',
                   opacity: clickable ? 1 : 0.6,
                 }}

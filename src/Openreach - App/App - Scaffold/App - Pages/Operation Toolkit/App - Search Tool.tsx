@@ -11,6 +11,7 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
+  useTheme,
 } from '@mui/material'
 import { TASK_TABLE_ROWS, TASK_STATUS_LABELS } from '../../../App - Data Tables/Task - Table'
 import type { TaskSkillCode, TaskStatusCode, TaskResponseCode, TaskCommitType } from '../../../App - Data Tables/Task - Table'
@@ -35,6 +36,7 @@ interface SearchFilters {
 }
 
 const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, currentSearchTerm = '' }) => {
+  const theme = useTheme()
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatusCode[]>([])
   const [selectedCapabilities, setSelectedCapabilities] = useState<TaskSkillCode[]>([])
   const [selectedResponseCodes, setSelectedResponseCodes] = useState<TaskResponseCode[]>([])
@@ -245,7 +247,12 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
         </DialogContent>
         <DialogActions>
           {hasActiveFilters && (
-            <Button onClick={handleClear} color="secondary">
+            <Button 
+              onClick={handleClear} 
+              sx={{ 
+                color: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.secondary.main 
+              }}
+            >
               Clear
             </Button>
           )}

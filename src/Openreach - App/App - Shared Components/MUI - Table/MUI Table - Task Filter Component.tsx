@@ -21,6 +21,7 @@ import {
   ToggleButtonGroup,
   Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material'
 import { createFilterOptions, type AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import type { SxProps, Theme } from '@mui/material/styles'
@@ -1010,6 +1011,8 @@ const BulkSelectableMultiSelect = <TValue extends string>({
   value,
   onChange,
 }: BulkSelectableMultiSelectProps<TValue>) => {
+  const theme = useTheme();
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
   const [inputValue, setInputValue] = useState('')
   const [actionMode, setActionMode] = useState<'select' | 'clear'>('select')
 
@@ -1148,6 +1151,12 @@ const BulkSelectableMultiSelect = <TValue extends string>({
               label="All selected"
               variant="outlined"
               title="All selected"
+              sx={{
+                borderColor: tokens?.state.info || '#5488C7',
+                color: tokens?.state.info || '#5488C7',
+                backgroundColor: tokens?.background.alt || '#F3F4F7',
+                fontWeight: 500,
+              }}
               onDelete={(event) => {
                 event.preventDefault()
                 event.stopPropagation()
@@ -1171,13 +1180,26 @@ const BulkSelectableMultiSelect = <TValue extends string>({
             }}
           >
             {visibleTags.map((option, index) => (
-              <Chip {...getTagProps({ index })} key={option.value} label={option.label} size="small" />
+              <Chip {...getTagProps({ index })} key={option.value} label={option.label} size="small"
+                sx={{
+                  borderColor: tokens?.state.info || '#5488C7',
+                  color: tokens?.state.info || '#5488C7',
+                  backgroundColor: tokens?.background.alt || '#F3F4F7',
+                  fontWeight: 500,
+                }}
+              />
             ))}
             {hiddenCount > 0 && (
               <Chip
                 size="small"
                 label={`+${hiddenCount} more`}
                 variant="outlined"
+                sx={{
+                  borderColor: tokens?.state.info || '#5488C7',
+                  color: tokens?.state.info || '#5488C7',
+                  backgroundColor: tokens?.background.alt || '#F3F4F7',
+                  fontWeight: 500,
+                }}
                 onMouseDown={(event) => {
                   event.preventDefault()
                   event.stopPropagation()

@@ -268,7 +268,14 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                     Field notes
                   </Typography>
                 </Stack>
-                <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined" />
+                <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined"
+                  sx={{
+                    borderColor: modeTokens?.state.info || '#5488C7',
+                    color: modeTokens?.state.info || '#5488C7',
+                    backgroundColor: modeTokens?.background.alt || '#F3F4F7',
+                    fontWeight: 500,
+                  }}
+                />
               </Stack>
             </AccordionSummary>
             <AccordionDetails>
@@ -339,7 +346,14 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
                     Progress notes
                   </Typography>
                 </Stack>
-                <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined" />
+                <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined"
+                  sx={{
+                    borderColor: modeTokens?.state.info || '#5488C7',
+                    color: modeTokens?.state.info || '#5488C7',
+                    backgroundColor: modeTokens?.background.alt || '#F3F4F7',
+                    fontWeight: 500,
+                  }}
+                />
               </Stack>
             </AccordionSummary>
             <AccordionDetails>

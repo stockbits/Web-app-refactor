@@ -251,8 +251,10 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           variant="outlined"
           sx={{
             height: 22,
-            borderColor: alpha(isLightMode ? theme.palette.divider : palette.fibreThreads, 0.3),
-            color: alpha(isLightMode ? theme.palette.text.primary : palette.fibreThreads, 0.85),
+            borderColor: isLightMode ? theme.openreach?.lightTokens?.state.info : theme.openreach?.darkTokens?.state.info,
+            color: isLightMode ? theme.openreach?.lightTokens?.state.info : theme.openreach?.darkTokens?.state.info,
+            backgroundColor: isLightMode ? theme.openreach?.lightTokens?.background.alt : theme.openreach?.darkTokens?.background.alt,
+            fontWeight: 500,
             '& .MuiChip-label': {
               px: 0.75,
               fontSize: '0.65rem',
@@ -442,9 +444,10 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                           size="small"
                           sx={{
                             ml: 1,
-                            bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.16),
-                            color: isLightMode ? theme.palette.primary.main : palette.energyAccent,
-                            border: `1px solid ${alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.4)}`,
+                            borderColor: isLightMode ? theme.openreach?.lightTokens?.state.info : theme.openreach?.darkTokens?.state.info,
+                            color: isLightMode ? theme.openreach?.lightTokens?.state.info : theme.openreach?.darkTokens?.state.info,
+                            backgroundColor: isLightMode ? theme.openreach?.lightTokens?.background.alt : theme.openreach?.darkTokens?.background.alt,
+                            fontWeight: 500,
                           }}
                         />
                       )}

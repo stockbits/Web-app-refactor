@@ -61,7 +61,7 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
           <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
             <Typography
               variant="overline"
-              sx={theme => getTextStyles(theme, theme.openreach.energyAccent)}
+              sx={theme => getTextStyles(theme)}
               component="span"
             >
               <Box component="span" sx={{ color: 'inherit', fontWeight: 400 }}>{'\u2022'}</Box>

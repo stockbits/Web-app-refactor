@@ -19,7 +19,6 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
 
   return (
     <Stack gap={2.5}>
-
       <Box
         sx={{
           display: 'grid',
@@ -82,8 +81,9 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     size="small"
                     variant="outlined"
                     sx={{
-                      borderColor: tokens.success.main,
-                      color: tokens.success.main,
+                      borderColor: tokens.state.info,
+                      color: tokens.state.info,
+                      backgroundColor: tokens.background.alt,
                       fontWeight: 500,
                     }}
                   />

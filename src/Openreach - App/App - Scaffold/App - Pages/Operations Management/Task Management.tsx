@@ -364,8 +364,10 @@ const TaskManagementPage = ({
                   size="small" 
                   variant="outlined"
                   sx={{
-                    borderColor: tokens.success.main,
-                    color: tokens.success.main,
+                    borderColor: tokens.state.info,
+                    color: tokens.state.info,
+                    backgroundColor: tokens.background.alt,
+                    fontWeight: 500,
                   }}
                 />
               ))
@@ -420,7 +422,7 @@ const TaskManagementPage = ({
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, showMessage, theme.palette.text],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, theme.palette.text, openCallout],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
