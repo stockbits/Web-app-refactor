@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from "react";
+import { Suspense, lazy, useMemo, useState, useCallback } from "react";
 import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
@@ -31,11 +31,9 @@ import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing 
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import TaskDockBar from "./Openreach - App/App - Shared Components/MUI - More Info Component/TaskDockBar";
-import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
-import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
-import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
-import { TASK_TABLE_ROWS } from "./Openreach - App/App - Data Tables/Task - Table";
+import type { TaskNote, TaskTableRow } from "./Openreach - App/App - Data Tables/Task - Table";
+import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
 
 interface MenuCardTile {
   name: string;
@@ -375,65 +373,23 @@ function App() {
     cardName: string;
   } | null>(null);
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
-  const [taskDockItems, setTaskDockItems] = useState<{ id: string; title: string; commitType?: TaskCommitType }[]>([]);
 
-  // Persist recent tasks dock in localStorage (id, title, commitType)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('recentTasksDock');
-      if (saved) {
-        const parsed = JSON.parse(saved) as { id: string; title: string; commitType?: TaskCommitType }[];
-        if (Array.isArray(parsed)) {
-          setTimeout(() => setTaskDockItems(parsed.slice(0, 5)), 0);
-        }
-      }
-    } catch {
-      // ignore load errors
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const minimal = taskDockItems.map(({ id, title, commitType }) => ({ id, title, commitType }));
-      localStorage.setItem('recentTasksDock', JSON.stringify(minimal));
-    } catch {
-      // ignore save errors
-    }
-  }, [taskDockItems]);
-
-  const handleAddTaskDockItem = useCallback((item: { id: string; title: string; commitType?: TaskCommitType; task?: unknown }) => {
-    setTaskDockItems((prev) => {
-      if (prev.some((p) => p.id === item.id)) return prev;
-      const nextItem = {
-        id: item.id,
-        title: item.title,
-        commitType: item.commitType,
-      };
-      return [nextItem, ...prev].slice(0, 5);
-    });
-  }, []);
-
-  const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
-  const menuInfoOpen = Boolean(menuInfoAnchor);
-
-  // Global task dialog state
+  // Global dialog state for minimized tasks
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null);
+  const { minimizedTasks, addMinimizedTask, removeMinimizedTask } = useMinimizedTasks();
 
-  // Global task dialog functions
-  const openTaskDialog = useCallback((task: TaskTableRow) => {
+  // Open dialog for a task
+  const openTaskDialog = (task: TaskTableRow) => {
     setDialogTask(task);
     setDialogOpen(true);
-  }, []);
-
-  const closeTaskDialog = useCallback(() => {
-    // If the dialog task is currently docked, remove it from dock when closing
-    if (dialogTask) {
-      setTaskDockItems((prev) => prev.filter((item) => item.id !== dialogTask.taskId));
-    }
+  };
+  // Close dialog and remove from minimized if present
+  const closeTaskDialog = () => {
+    if (dialogTask) removeMinimizedTask(dialogTask.taskId);
     setDialogOpen(false);
     setDialogTask(null);
-  }, [dialogTask]);
+  };
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
@@ -444,19 +400,22 @@ function App() {
         createdAt: new Date().toISOString(),
         text,
       };
-      setDialogTask((prev) => {
+      setDialogTask((prev: TaskTableRow | null) => {
         if (!prev) return prev;
         const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes;
         const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes;
         return { ...prev, fieldNotes, progressNotes };
       });
-      // Could add a snackbar message here if needed
     },
     [dialogTask],
   );
 
   const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
   const landingInfoOpen = Boolean(landingInfoAnchor);
+
+  // Add missing menu info anchor state for info popover
+  const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
+  const menuInfoOpen = Boolean(menuInfoAnchor);
 
   const openNav = () => setNavOpen(true);
   const closeNav = () => setNavOpen(false);
@@ -530,35 +489,23 @@ function App() {
           )}
 
           {/* Global task dock below breadcrumb - always reserve space */}
-          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0, height: '36px', display: 'flex', alignItems: 'flex-end' }}>
-            {taskDockItems.length > 0 && (
+          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0, height: '48px', display: 'flex', alignItems: 'flex-end' }}>
+            {minimizedTasks.length > 0 && (
               <TaskDockBar
-                items={taskDockItems.map(({ id, title, commitType }) => {
-                  const variant = (() => {
-                    switch (commitType) {
-                      case 'START BY':
-                        return 'startBy' as const;
-                      case 'COMPLETE BY':
-                        return 'completeBy' as const;
-                      case 'TAIL':
-                        return 'failedSLA' as const;
-                      default:
-                        return 'appointment' as const;
-                    }
-                  })();
-                  return { id, title, icon: <TaskIcon variant={variant} size={28} /> };
-                })}
+                items={minimizedTasks.map((task) => ({
+                  id: task.taskId,
+                  title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+                  task,
+                }))}
                 onClick={(id) => {
-                  const item = taskDockItems.find((it) => it.id === id);
-                  if (!item) return;
-
-                  // Find the full task data and open dialog
-                  const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+                  const task = minimizedTasks.find((t) => t.taskId === id);
                   if (task) {
                     openTaskDialog(task);
                   }
                 }}
-                onRemove={(id) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+                onDelete={(id) => {
+                  removeMinimizedTask(id);
+                }}
                 maxItems={5}
                 clickable={true}
               />
@@ -765,13 +712,8 @@ function App() {
         task={dialogTask ?? undefined}
         onAddNote={handleAddNote}
         onMinimize={dialogTask ? () => {
-          handleAddTaskDockItem({
-            id: dialogTask.taskId,
-            title: `Task ${dialogTask.taskId.split('-').pop() || dialogTask.taskId}`,
-            commitType: dialogTask.commitType,
-            task: dialogTask,
-          });
-          closeTaskDialog();
+          addMinimizedTask(dialogTask);
+          setDialogOpen(false);
         } : undefined}
       />
     </>

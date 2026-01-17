@@ -15,7 +15,7 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
 
   // Get colors from theme
   const colors = isDark ? theme.openreach?.darkTokens?.mapTaskColors : theme.openreach?.lightTokens?.mapTaskColors
-  const fillColor = color ?? colors[variant]
+  const fillColor = color ?? colors?.[variant] ?? '#43B072'
 
   return (
     <svg

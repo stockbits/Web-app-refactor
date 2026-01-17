@@ -1,6 +1,5 @@
 import { alpha } from '@mui/material/styles'
 import { Box, Chip, Paper, Stack, Typography, useTheme } from '@mui/material'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import type { ReactNode } from 'react'
 
 export interface TaskDockItem {
@@ -13,23 +12,25 @@ export interface TaskDockItem {
 export interface TaskDockBarProps {
   items: TaskDockItem[]
   onClick?: (id: string) => void
-  onRemove?: (id: string) => void
+  onDelete?: (id: string) => void // <-- add this
   maxItems?: number
   clickable?: boolean
 }
 
-export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, clickable = true }: TaskDockBarProps) {
+export function TaskDockBar({ items, onClick, onDelete, maxItems = 5, clickable = true }: TaskDockBarProps) {
   const theme = useTheme()
   const visibleItems = items.slice(0, maxItems)
+  const altBg = theme.palette.mode === 'light' ? '#E8EAF0' : '#252F40'
 
   if (visibleItems.length === 0) return null
 
   return (
     <Paper
-      elevation={0}
+      elevation={1}
       sx={{
         borderTop: `1px solid ${theme.palette.divider}`,
-        bgcolor: theme.palette.background.paper,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        bgcolor: theme.palette.background.default,
       }}
     >
       <Box
@@ -42,27 +43,25 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, clickable 
         }}
       >
         <Stack direction="row" alignItems="center" gap={1.5} flex={1}>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Typography variant="caption" sx={{ color: 'text.primary' }}>
             Recent tasks ({visibleItems.length})
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'nowrap', overflow: 'hidden' }}>
             {visibleItems.slice(0, 3).map((item) => (
               <Chip
                 key={item.id}
-                icon={item.icon as React.ReactElement}
                 label={
-                  <Typography variant="caption" fontWeight={600} noWrap sx={{ maxWidth: '80px' }}>
+                  <Typography variant="caption" fontWeight={600} noWrap>
                     {item.title}
                   </Typography>
                 }
                 onClick={clickable && onClick ? () => onClick(item.id) : undefined}
-                onDelete={onRemove ? () => onRemove(item.id) : undefined}
-                deleteIcon={<CloseRoundedIcon />}
+                onDelete={onDelete ? () => onDelete(item.id) : undefined}
                 size="small"
                 sx={{
                   height: '20px',
                   bgcolor: clickable 
-                    ? alpha(theme.palette.background.default, 0.9)
+                    ? altBg
                     : alpha(theme.palette.action.disabledBackground, 0.5),
                   color: clickable 
                     ? theme.palette.text.primary
@@ -70,13 +69,6 @@ export function TaskDockBar({ items, onClick, onRemove, maxItems = 5, clickable 
                   border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                   '& .MuiChip-label': {
                     px: 0.5,
-                  },
-                  '& .MuiChip-deleteIcon': {
-                    color: theme.palette.text.secondary,
-                    fontSize: '12px',
-                    '&:hover': {
-                      color: theme.palette.text.primary,
-                    },
                   },
                   '&:hover': clickable ? {
                     bgcolor: theme.palette.background.default,

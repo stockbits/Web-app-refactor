@@ -400,10 +400,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
         <Box sx={{ flex: 1 }} />
         {onMinimize && (
           <Button
-            onClick={() => {
-              onMinimize()
-              onClose()
-            }}
+            onClick={onMinimize}
             variant="outlined"
             color="primary"
             startIcon={<CallToActionRoundedIcon />}

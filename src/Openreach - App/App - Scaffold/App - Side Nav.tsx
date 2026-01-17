@@ -34,6 +34,7 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded'
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 import { ThemeToggleButton } from './ThemeToggleButton'
 import openreachLogo from '@central-logos/Openreach-Logo-White.png'
+import openreachLogoColor from '@central-logos/Openreach-Logo.jpeg'
 
 const CLIENT_BUILD = { label: 'Client build', date: '02.01.2026' }
 
@@ -207,6 +208,9 @@ const taskForceMenuGroups: TaskForceMenuGroup[] = [
 export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSlot, onSearch, onSelect }: OpenreachSideNavProps) => {
   const theme = useTheme()
   const palette = theme.openreach
+  const isLightMode = theme.palette.mode === 'light'
+  const navBg = isLightMode ? theme.palette.background.paper : theme.openreach.brandColors.networkNavy
+  const logoSrc = isLightMode ? openreachLogoColor : openreachLogo
   const items = useMemo(() => (navItems && navItems.length > 0 ? navItems : fallbackNavItems), [navItems])
   const [query, setQuery] = useState('')
   const trimmedQuery = query.trim()
@@ -247,8 +251,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           variant="outlined"
           sx={{
             height: 22,
-            borderColor: alpha(palette.fibreThreads, 0.3),
-            color: alpha(palette.fibreThreads, 0.85),
+            borderColor: alpha(isLightMode ? theme.palette.divider : palette.fibreThreads, 0.3),
+            color: alpha(isLightMode ? theme.palette.text.primary : palette.fibreThreads, 0.85),
             '& .MuiChip-label': {
               px: 0.75,
               fontSize: '0.65rem',
@@ -257,11 +261,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             },
           }}
         />
-        <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.7), fontWeight: 600 }}>
+        <Typography variant="caption" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7), fontWeight: 600 }}>
           {CLIENT_BUILD.date}
         </Typography>
       </Stack>
-      <Typography variant="caption" sx={{ color: alpha(palette.fibreThreads, 0.55) }}>
+      <Typography variant="caption" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.55) }}>
         Last sync · 06:00 UTC
       </Typography>
     </Stack>
@@ -285,7 +289,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       ModalProps={{ keepMounted: true }}
       PaperProps={{
         sx: {
-          backgroundColor: theme.openreach.brandColors.networkNavy,
+          backgroundColor: navBg,
           boxShadow: 'none',
           display: 'flex',
           alignItems: 'stretch',
@@ -297,14 +301,14 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
         },
       }}
     >
-      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%', bgcolor: theme.openreach.brandColors.networkNavy }}>
+      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%', bgcolor: navBg }}>
         <Paper
           component="nav"
           elevation={0}
           sx={{
             width: '100%',
-            bgcolor: theme.openreach.brandColors.networkNavy,
-            color: '#FFFFFF',
+            bgcolor: navBg,
+            color: isLightMode ? theme.palette.text.primary : '#FFFFFF',
             borderRadius: 0,
             border: 'none',
             boxShadow: 'none',
@@ -330,9 +334,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 ) : (
                   <Box
                     component="img"
-                    src={openreachLogo}
+                    src={logoSrc}
                     alt="Openreach brand mark"
-                    sx={{ width: 132, height: 'auto', display: 'block', filter: 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
+                    sx={{ width: 132, height: 'auto', display: 'block', filter: isLightMode ? 'none' : 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
                   />
                 )}
               </Box>
@@ -342,8 +346,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   aria-label="Close navigation"
                   onClick={onClose}
                   sx={{
-                    color: palette.energyAccent,
-                    '&:hover': { color: palette.energyAccent, opacity: 0.8 },
+                    color: isLightMode ? theme.palette.text.primary : palette.energyAccent,
+                    '&:hover': { color: isLightMode ? theme.palette.primary.main : palette.energyAccent, opacity: 0.8 },
                     alignSelf: 'center',
                     width: 40,
                     height: 40,
@@ -363,17 +367,17 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               onSubmit={submitSearch}
               alignItems="center"
               sx={{
-                bgcolor: alpha(palette.energyAccent, 0.12),
-                border: `1px solid ${alpha(palette.energyAccent, 0.35)}`,
-                boxShadow: `0 0 0 1px ${alpha(palette.energyAccent, 0.18)}`,
-                borderRadius: 999,
+                bgcolor: isLightMode ? theme.palette.background.paper : alpha(palette.energyAccent, 0.12),
+                border: `1px solid ${isLightMode ? theme.palette.divider : alpha(palette.energyAccent, 0.35)}`,
+                boxShadow: isLightMode ? `0 0 0 1px ${alpha(theme.palette.primary.main, 0.18)}` : `0 0 0 1px ${alpha(palette.energyAccent, 0.18)}`,
+                borderRadius: 1,
                 px: 2,
                 py: 0.5,
                 transition: 'border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease',
                 '&:focus-within': {
-                  borderColor: palette.energyAccent,
-                  boxShadow: `0 0 0 2px ${alpha(palette.energyAccent, 0.24)}`,
-                  bgcolor: alpha(palette.energyAccent, 0.16),
+                  borderColor: isLightMode ? theme.palette.primary.main : palette.energyAccent,
+                  boxShadow: isLightMode ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.24)}` : `0 0 0 2px ${alpha(palette.energyAccent, 0.24)}`,
+                  bgcolor: isLightMode ? theme.palette.background.paper : alpha(palette.energyAccent, 0.16),
                 },
               }}
             >
@@ -381,7 +385,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               <InputBase
                 placeholder="Search menu and tools"
                 value={query}
-                sx={{ ml: 1, color: palette.fibreThreads, width: '100%' }}
+                sx={{ ml: 1, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads, width: '100%' }}
                 onChange={(event) => setQuery(event.target.value)}
                 inputProps={{ 'aria-label': 'Search Openreach workspace' }}
               />
@@ -390,7 +394,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   aria-label="Clear search"
                   size="small"
                   onClick={() => setQuery('')}
-                  sx={{ color: palette.energyAccent, ml: 1 }}
+                  sx={{ color: isLightMode ? theme.palette.text.secondary : palette.energyAccent, ml: 1 }}
                 >
                   <ClearRoundedIcon fontSize="small" />
                 </IconButton>
@@ -412,9 +416,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         borderRadius: 0,
                         px: 1.5,
                         py: 1,
-                        color: palette.fibreThreads,
+                        color: isLightMode ? theme.palette.text.primary : palette.fibreThreads,
                         '&:hover': {
-                          bgcolor: alpha(palette.energyAccent, 0.16),
+                          bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.16),
                         },
                       }}
                     >
@@ -429,8 +433,8 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       <ListItemText
                         primary={item.label}
                         secondary={item.description}
-                        primaryTypographyProps={{ fontWeight: 600, color: palette.fibreThreads }}
-                        secondaryTypographyProps={{ color: alpha(palette.fibreThreads, 0.75) }}
+                        primaryTypographyProps={{ fontWeight: 600, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads }}
+                        secondaryTypographyProps={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.75) }}
                       />
                       {item.badge && (
                         <Chip
@@ -438,9 +442,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                           size="small"
                           sx={{
                             ml: 1,
-                            bgcolor: alpha(palette.energyAccent, 0.16),
-                            color: palette.energyAccent,
-                            border: `1px solid ${alpha(palette.energyAccent, 0.4)}`,
+                            bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.16),
+                            color: isLightMode ? theme.palette.primary.main : palette.energyAccent,
+                            border: `1px solid ${alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.4)}`,
                           }}
                         />
                       )}
@@ -452,7 +456,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               {showTreeResults && (
                 <Stack gap={2.5}>
                   {noMatches && (
-                    <Typography variant="body2" sx={{ color: alpha(palette.fibreThreads, 0.8) }}>
+                    <Typography variant="body2" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.8) }}>
                       No menus match “{trimmedQuery}”. Try another term.
                     </Typography>
                   )}
@@ -470,7 +474,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         >
                           {group.icon}
                         </Box>
-                        <Typography variant="subtitle2" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: palette.fibreThreads }}>
+                        <Typography variant="subtitle2" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads }}>
                           {group.label}
                         </Typography>
                       </Stack>
@@ -487,9 +491,9 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                               pr: 1.25,
                               py: 1,
                               alignItems: 'flex-start',
-                              color: palette.fibreThreads,
+                              color: isLightMode ? theme.palette.text.primary : palette.fibreThreads,
                               '&:hover': {
-                                bgcolor: alpha(palette.energyAccent, 0.14),
+                                bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.14),
                               },
                             }}
                           >
@@ -497,7 +501,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                               sx={{
                                 minWidth: 28,
                                 mt: 0.2,
-                                color: alpha(palette.fibreThreads, 0.7),
+                                color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7),
                               }}
                             >
                               <ChevronRightRoundedIcon fontSize="small" />
@@ -505,15 +509,15 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                             <ListItemText
                               primary={child.label}
                               secondary={child.description}
-                              primaryTypographyProps={{ fontWeight: 600, color: palette.fibreThreads }}
-                              secondaryTypographyProps={{ color: alpha(palette.fibreThreads, 0.7) }}
+                              primaryTypographyProps={{ fontWeight: 600, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads }}
+                              secondaryTypographyProps={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7) }}
                             />
                           </ListItemButton>
                         ))}
                       </List>
 
                       {index < filteredGroups.length - 1 && (
-                        <Divider sx={{ mt: 2, borderColor: alpha(palette.energyAccent, 0.22) }} />
+                        <Divider sx={{ mt: 2, borderColor: alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.22) }} />
                       )}
                     </Box>
                   ))}
@@ -530,7 +534,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 px: 2,
                 display: 'flex',
                 justifyContent: 'center',
-                bgcolor: theme.openreach.brandColors.networkNavy,
+                bgcolor: navBg,
               }}
             >
               <ThemeToggleButton />
@@ -546,11 +550,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                   bottom: 0,
                   left: 0,
                   width: '100%',
-                  bgcolor: theme.openreach.brandColors.networkNavy,
+                  bgcolor: navBg,
                   zIndex: 2,
                 }}
               >
-                <Divider sx={{ mb: 1, borderColor: alpha(palette.energyAccent, 0.2) }} />
+                <Divider sx={{ mb: 1, borderColor: alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.2) }} />
                 {footerContent}
               </Box>
             )}
