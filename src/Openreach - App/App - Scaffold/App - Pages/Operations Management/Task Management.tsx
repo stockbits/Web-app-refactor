@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
-import CallRoundedIcon from '@mui/icons-material/CallRounded'
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
+import CalloutCompodent from '../../../App - Shared Components/MUI - Callout MGT/Callout - Compodent'
+import { useCalloutMgt } from './useCalloutMgt'
 import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -13,6 +15,7 @@ const TaskManagementPage = ({
 }: {
   openTaskDialog?: (task: TaskTableRow) => void
 }) => {
+  const { callout, openCallout, closeCallout } = useCalloutMgt();
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
 
@@ -154,15 +157,16 @@ const TaskManagementPage = ({
         resizable: false,
         cellClassName: 'action-col',
         headerClassName: 'action-col',
-        renderCell: () => (
+        renderCell: (params) => (
           <IconButton
             disableRipple={true}
             onClick={(e) => {
-              e.stopPropagation()
-              showMessage('Call action')
+              e.stopPropagation();
+              openCallout(params.row.taskId);
             }}
+            sx={{ p: 0.5 }}
           >
-            <CallRoundedIcon />
+            <PhoneRoundedIcon sx={{ fontSize: 22 }} />
           </IconButton>
         ),
       },
@@ -529,115 +533,118 @@ const TaskManagementPage = ({
   }
 
   return (
-    <Paper
-      sx={{
-        boxShadow: 'none',
-        bgcolor: 'background.paper',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'auto',
-      }}
-    >
-      <Box sx={{ px: 3, pt: 3, pb: 1 }}>
-        <TaskTableQueryConfig
-          initialQuery={activeQuery}
-          defaultQuery={defaultQuery}
-          divisionOptions={divisionOptions}
-          domainOptions={domainOptions}
-          capabilityOptions={capabilityOptions}
-          responseCodeOptions={responseCodeOptions}
-          commitTypeOptions={commitTypeOptions}
-          exactSearchValues={exactSearchValues}
-          onApply={handleApplyQuery}
-          hasRows={filteredRows.length > 0}
-          onCopyHtml={handleCopyHtml}
-          onExportCsv={handleExportCsv}
-        />
-      </Box>
-
-      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: 3, pt: 1, pb: 3 }}>
-        {hasAppliedQuery ? (
-          <SharedMuiTable<TaskTableRow>
-            columns={columns}
-            rows={filteredRows}
-            getRowId={(row) => row.taskId}
-            density="compact"
-            enableQuickFilter
-            hideFooter={false}
-            enablePagination={true}
-            initialPageSize={30}
-            pageSizeOptions={[30, 50, 100]}
-            onCellDoubleClick={(params) => {
-              openTaskDialog?.(params.row)
-            }}
-            onCellTouchStart={handleTouchStart}
-            onCellTouchEnd={handleTouchEnd}
-            onCellTouchMove={handleTouchMove}
-          />
-        ) : (
-          <Box
-            sx={{
-              borderRadius: 2,
-              border: `2px dashed ${theme.palette.divider}`,
-              bgcolor: theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.02)'
-                : 'rgba(0, 0, 0, 0.02)',
-              p: 4,
-              m: 3,
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s ease-in-out',
-              '&:hover': {
-                borderColor: theme.palette.primary.main,
-                bgcolor: theme.palette.mode === 'dark'
-                  ? 'rgba(255, 255, 255, 0.04)'
-                  : 'rgba(0, 0, 0, 0.04)',
-              },
-            }}
-          >
-            <Typography
-              variant="h6"
-              gutterBottom
-              sx={{
-                fontWeight: 600,
-                color: theme.palette.text.primary,
-              }}
-            >
-              Run a query to load tasks
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.text.secondary,
-                maxWidth: '400px',
-              }}
-            >
-              Use the filters above to define your search, then hit Search to fetch matching rows.
-            </Typography>
-          </Box>
-        )}
-      </Box>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+    <>
+      <Paper
+        sx={{
+          boxShadow: 'none',
+          bgcolor: 'background.paper',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'auto',
+        }}
       >
-        <Alert
+        <Box sx={{ px: 3, pt: 3, pb: 1 }}>
+          <TaskTableQueryConfig
+            initialQuery={activeQuery}
+            defaultQuery={defaultQuery}
+            divisionOptions={divisionOptions}
+            domainOptions={domainOptions}
+            capabilityOptions={capabilityOptions}
+            responseCodeOptions={responseCodeOptions}
+            commitTypeOptions={commitTypeOptions}
+            exactSearchValues={exactSearchValues}
+            onApply={handleApplyQuery}
+            hasRows={filteredRows.length > 0}
+            onCopyHtml={handleCopyHtml}
+            onExportCsv={handleExportCsv}
+          />
+        </Box>
+
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: 3, pt: 1, pb: 3 }}>
+          {hasAppliedQuery ? (
+            <SharedMuiTable<TaskTableRow>
+              columns={columns}
+              rows={filteredRows}
+              getRowId={(row) => row.taskId}
+              density="compact"
+              enableQuickFilter
+              hideFooter={false}
+              enablePagination={true}
+              initialPageSize={30}
+              pageSizeOptions={[30, 50, 100]}
+              onCellDoubleClick={(params) => {
+                openTaskDialog?.(params.row)
+              }}
+              onCellTouchStart={handleTouchStart}
+              onCellTouchEnd={handleTouchEnd}
+              onCellTouchMove={handleTouchMove}
+            />
+          ) : (
+            <Box
+              sx={{
+                borderRadius: 2,
+                border: `2px dashed ${theme.palette.divider}`,
+                bgcolor: theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.02)'
+                  : 'rgba(0, 0, 0, 0.02)',
+                p: 4,
+                m: 3,
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  bgcolor: theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.04)'
+                    : 'rgba(0, 0, 0, 0.04)',
+                },
+              }}
+            >
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.text.primary,
+                }}
+              >
+                Run a query to load tasks
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  maxWidth: '400px',
+                }}
+              >
+                Use the filters above to define your search, then hit Search to fetch matching rows.
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
           onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Paper>
+          <Alert
+            onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Paper>
+      <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+    </>
   )
 }
 
