@@ -32,9 +32,9 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { TaskDockBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/TaskDockBar";
+import { TaskDockBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Bar";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
-import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/MultiTaskDialog";
+import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Multi Task Dialog";
 import type { TaskNote, TaskTableRow } from "./Openreach - App/App - Data Tables/Task - Table";
 import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
 

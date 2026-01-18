@@ -8,7 +8,7 @@ import {
   Box,
 } from '@mui/material'
 import CallToActionRoundedIcon from '@mui/icons-material/CallToActionRounded'
-import { TaskDetails } from './TaskDetails'
+import { TaskDetails } from './App - Task Details'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 export interface AppTaskDialogProps {

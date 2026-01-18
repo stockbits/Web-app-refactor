@@ -14,7 +14,7 @@ import {
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import CallToActionRoundedIcon from '@mui/icons-material/CallToActionRounded'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
-import { TaskDetails } from './TaskDetails'
+import { TaskDetails } from './App - Task Details'
 
 export interface MultiTaskDialogProps {
   open: boolean
