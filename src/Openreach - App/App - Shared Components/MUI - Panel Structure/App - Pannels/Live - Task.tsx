@@ -239,7 +239,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         </Toolbar>
       </AppBar>
       <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
-        {filteredRows.length > 0 && (
+        {filteredRows.length > 0 ? (
           <SharedMuiTable
             columns={columns}
             rows={filteredRows}
@@ -253,6 +253,13 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
               setTaskDialog({ open: true, task: params.row });
             }}
           />
+        ) : (
+          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
+            <ChecklistIcon sx={{ fontSize: 48, color: iconColor, opacity: 0.5 }} />
+            <Typography variant="body1" color="text.secondary" align="center">
+              Select Division, Domain, and Task Status from the search tool to view tasks
+            </Typography>
+          </Box>
         )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
