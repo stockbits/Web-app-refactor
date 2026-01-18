@@ -239,19 +239,21 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         </Toolbar>
       </AppBar>
       <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
-        <SharedMuiTable
-          columns={columns}
-          rows={filteredRows}
-          getRowId={(row) => row.taskId}
-          density="compact"
-          enablePagination={false}
-          enableQuickFilter
-          height={tableHeight}
-          apiRef={apiRef}
-          onCellDoubleClick={(params) => {
-            setTaskDialog({ open: true, task: params.row });
-          }}
-        />
+        {filteredRows.length > 0 && (
+          <SharedMuiTable
+            columns={columns}
+            rows={filteredRows}
+            getRowId={(row) => row.taskId}
+            density="compact"
+            enablePagination={false}
+            enableQuickFilter
+            height={tableHeight}
+            apiRef={apiRef}
+            onCellDoubleClick={(params) => {
+              setTaskDialog({ open: true, task: params.row });
+            }}
+          />
+        )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
       <AppTaskDialog
