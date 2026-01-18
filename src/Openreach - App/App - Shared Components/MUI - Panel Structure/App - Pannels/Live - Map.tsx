@@ -126,19 +126,26 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={theme => ({
         position: 'absolute',
-        // Center vertically on the left side
-        left: theme.spacing(2),
-        top: '50%',
-        transform: 'translateY(-50%)',
+        // Responsive positioning: center on larger screens, bottom-left on mobile
+        left: { xs: theme.spacing(1), sm: theme.spacing(2) },
+        top: { xs: 'auto', sm: '50%' },
+        bottom: { xs: theme.spacing(2), sm: 'auto' },
+        transform: { xs: 'none', sm: 'translateY(-50%)' },
         zIndex: 1000,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: { xs: 'row', sm: 'column' }, // Horizontal on mobile, vertical on larger screens
         alignItems: 'center',
         gap: { xs: 1, sm: 1.5 },
-        maxWidth: 48,
+        maxWidth: { xs: '100%', sm: 48 },
+        width: { xs: 'auto', sm: 'auto' },
+        // Ensure it doesn't overflow the container
+        right: { xs: theme.spacing(1), sm: 'auto' },
         [theme.breakpoints.down('sm')]: {
           left: theme.spacing(1),
-          gap: 1,
+          right: theme.spacing(1),
+          bottom: theme.spacing(1),
+          gap: 0.5,
+          justifyContent: 'center', // Center horizontally on mobile
         },
       })}
     >
@@ -147,13 +154,14 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomIn}
         disabled={currentZoom >= maxZoom}
         sx={{
-          width: 44,
-          height: 44,
+          width: { xs: 36, sm: 44 },
+          height: { xs: 36, sm: 44 },
           backgroundColor: theme.palette.background.paper,
           border: `2px solid ${theme.openreach.energyAccent}`,
           color: theme.openreach.energyAccent,
           boxShadow: 1,
-          mb: 0.5,
+          mb: { xs: 0, sm: 0.5 },
+          mr: { xs: 0.5, sm: 0 },
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
             borderColor: theme.openreach.coreBlock,
@@ -175,24 +183,27 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         max={maxZoom}
         step={1}
         sx={{
-          height: 60,
+          height: { xs: 40, sm: 60 }, // Shorter on mobile
+          width: { xs: 60, sm: 'auto' }, // Wider on mobile for horizontal layout
           color: theme.openreach.energyAccent,
           '& .MuiSlider-thumb': {
-            width: 12,
-            height: 12,
+            width: { xs: 10, sm: 12 },
+            height: { xs: 10, sm: 12 },
             backgroundColor: theme.openreach.energyAccent,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-track': {
-            width: 2,
+            width: { xs: 2, sm: 2 },
             backgroundColor: theme.openreach.energyAccent,
             transition: 'all 0.2s ease',
           },
           '& .MuiSlider-rail': {
-            width: 2,
+            width: { xs: 2, sm: 2 },
             opacity: 0.2,
             backgroundColor: theme.openreach.energyAccent,
-          }
+          },
+          // Hide slider on very small screens to prevent crowding
+          display: { xs: 'none', sm: 'block' },
         }}
       />
       <IconButton
@@ -200,13 +211,14 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         onClick={handleZoomOut}
         disabled={currentZoom <= minZoom}
         sx={{
-          width: 44,
-          height: 44,
+          width: { xs: 36, sm: 44 },
+          height: { xs: 36, sm: 44 },
           backgroundColor: theme.palette.background.paper,
           border: `2px solid ${theme.openreach.energyAccent}`,
           color: theme.openreach.energyAccent,
           boxShadow: 1,
-          mt: 0.5,
+          mt: { xs: 0, sm: 0.5 },
+          ml: { xs: 0.5, sm: 0 },
           '&:hover': {
             backgroundColor: theme.palette.background.paper,
             borderColor: theme.openreach.coreBlock,
@@ -329,7 +341,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   }, [taskColors, theme]);
 
   // Memoize cluster icon creation for better performance
-  const createClusterIcon = useCallback((cluster: any) => {
+  const createClusterIcon = useCallback((cluster: { getChildCount: () => number }) => {
     const count = cluster.getChildCount();
     // Scale size based on cluster count
     const size = count < 10 ? 36 : count < 100 ? 44 : 52;
@@ -578,18 +590,17 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           }
         }}
       >
-        {/* Map Layer Controls - Overlay on map */}
-        <Tooltip title={`Map Type: ${getMapLayerLabel()}`} placement="right">
+        <Tooltip title={`Map Type: ${getMapLayerLabel()}`} placement="left">
           <IconButton
             size="medium"
             onClick={handleMenuOpen}
             sx={theme => ({
               position: 'absolute',
-              top: theme.spacing(2),
-              right: theme.spacing(2),
+              top: { xs: theme.spacing(1), sm: theme.spacing(2) },
+              right: { xs: theme.spacing(1), sm: theme.spacing(2) },
               zIndex: 1001,
-              width: 44,
-              height: 44,
+              width: { xs: 36, sm: 44 },
+              height: { xs: 36, sm: 44 },
               backgroundColor: theme.palette.background.paper,
               border: `2px solid ${theme.openreach.energyAccent}`,
               color: theme.openreach.energyAccent,
@@ -722,7 +733,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                 animateAddingMarkers={false}
                 iconCreateFunction={createClusterIcon}
                 eventHandlers={{
-                  clustermouseover: (cluster: any) => {
+                  clustermouseover: (cluster: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; layer: { getChildCount: () => number; getBounds: () => { getCenter: () => unknown }; _customTooltip?: HTMLElement }; target: { _map: { latLngToContainerPoint: (latlng: unknown) => { x: number; y: number }; getContainer: () => HTMLElement } } }) => {
                     // Clear any existing tooltips before creating a new one
                     document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
                       if (tooltip.parentNode) {
@@ -783,7 +794,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     // Store reference for cleanup
                     cluster.layer._customTooltip = tooltip;
                   },
-                  clustermouseout: (cluster: any) => {
+                  clustermouseout: (cluster: { layer: { _customTooltip?: HTMLElement } }) => {
                     // Remove custom tooltip with fade-out animation
                     const tooltip = cluster.layer._customTooltip;
                     if (tooltip) {
@@ -800,7 +811,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                       delete cluster.layer._customTooltip;
                     }
                   },
-                  clusterclick: (cluster: any) => {
+                  clusterclick: (cluster: { layer: { _customTooltip?: HTMLElement; getBounds: () => { getCenter: () => unknown } }; target: { _map: { setView: (latlng: unknown, zoom: number) => void } } }) => {
                     // Clear any existing tooltip immediately on click
                     const tooltip = cluster.layer._customTooltip;
                     if (tooltip && tooltip.parentNode) {

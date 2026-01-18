@@ -47,6 +47,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
   const [impactValue, setImpactValue] = useState<number | null>(null)
 
   // Reset all filters when clearTrigger changes
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (clearTrigger > 0) {
       setSelectedStatuses([])

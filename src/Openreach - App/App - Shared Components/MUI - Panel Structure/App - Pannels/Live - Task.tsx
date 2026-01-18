@@ -5,7 +5,7 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
-import type { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef, GridCellParams } from '@mui/x-data-grid';
 import { TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
@@ -133,7 +133,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   }, [selectedTaskIds]);
 
   // Handle row clicks for task selection
-  const handleRowClick = useCallback((params: any, event: any) => {
+  const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
     // Check if CTRL key is held for multi-selection
     const isCtrlPressed = event.ctrlKey || event.metaKey;
     toggleTaskSelection(params.row.taskId, isCtrlPressed);

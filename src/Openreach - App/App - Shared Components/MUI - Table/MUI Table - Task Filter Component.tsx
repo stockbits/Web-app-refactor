@@ -633,11 +633,33 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
           fullWidth
           endAdornment={
             <InputAdornment position="end">
-              <IconButton size="small" onClick={handleOpen} aria-label="Edit date window">
-                <CalendarMonthRoundedIcon fontSize="small" />
+              <IconButton 
+                size="small" 
+                onClick={handleOpen} 
+                aria-label="Edit date window"
+                sx={{
+                  width: { xs: 40, sm: 32 }, // Larger touch target on mobile
+                  height: { xs: 40, sm: 32 },
+                }}
+              >
+                <CalendarMonthRoundedIcon 
+                  fontSize="small"
+                  sx={{
+                    fontSize: { xs: '1.25rem', sm: '1rem' }, // Larger icon on mobile
+                  }}
+                />
               </IconButton>
             </InputAdornment>
           }
+          sx={{
+            '& .MuiOutlinedInput-input': {
+              fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input text
+              py: { xs: 1.5, sm: 1 }, // More padding on mobile for touch
+            },
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 1,
+            },
+          }}
         />
 
         <Modal
@@ -649,22 +671,41 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 9999,
+            p: { xs: 1, sm: 2, md: 3 }, // Responsive padding
           }}
         >
           <Box sx={{ 
-            p: 3, 
-            borderRadius: 2, 
-            maxWidth: 720, 
+            p: { xs: 2, sm: 3 }, // Responsive padding inside modal
+            borderRadius: { xs: 1, sm: 2 }, // Smaller border radius on mobile
+            maxWidth: { xs: '95vw', sm: '90vw', md: 720 }, // Responsive max width
+            width: '100%', // Full width on mobile
+            maxHeight: { xs: '90vh', sm: '85vh' }, // Prevent overflow on small screens
+            overflow: 'auto', // Allow scrolling if needed
             bgcolor: 'background.paper', 
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             outline: 'none',
           }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} alignItems="stretch">
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+            <Stack 
+              direction={{ xs: 'column', md: 'row' }} 
+              spacing={{ xs: 2, sm: 3 }} // Responsive spacing
+              alignItems="stretch"
+            >
+            <Box sx={{ 
+              flex: 1,
+              minWidth: 0, // Allow shrinking
+            }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  mb: 2, 
+                  fontWeight: 600, 
+                  color: 'text.primary',
+                  fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive font size
+                }}
+              >
                 Select Dates & Times
               </Typography>
-              <Stack spacing={3}>
+              <Stack spacing={{ xs: 2, sm: 3 }}>
                 <ToggleButtonGroup
                   value={activeField}
                   exclusive
@@ -677,7 +718,8 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       textTransform: 'none',
                       fontWeight: 500,
                       borderRadius: 1,
-                      px: 2,
+                      px: { xs: 1.5, sm: 2 }, // Responsive padding
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive font size
                       '&.Mui-selected': {
                         bgcolor: 'primary.main',
                         color: 'primary.contrastText',
@@ -699,6 +741,12 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                   '& .MuiDayCalendar-root': {
                     width: '100%',
                   },
+                  '& .MuiPickersCalendarHeader-label': {
+                    fontSize: { xs: '1rem', sm: '1.125rem' }, // Responsive calendar header
+                  },
+                  '& .MuiPickersDay-root': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive day buttons
+                  },
                 }}>
                   <StaticDatePicker
                     displayStaticWrapperAs="desktop"
@@ -711,10 +759,21 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                   />
                 </Box>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+                  <Typography 
+                    variant="subtitle2" 
+                    sx={{ 
+                      mb: 2, 
+                      fontWeight: 600, 
+                      color: 'text.primary',
+                      fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive font size
+                    }}
+                  >
                     Time Range
                   </Typography>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <Stack 
+                    direction={{ xs: 'column', sm: 'row' }} 
+                    spacing={2}
+                  >
                     <TextField
                       label="Start time"
                       type="time"
@@ -729,6 +788,12 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           borderRadius: 1,
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive label size
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input size
                         },
                       }}
                     />
@@ -747,14 +812,31 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                         '& .MuiOutlinedInput-root': {
                           borderRadius: 1,
                         },
+                        '& .MuiInputLabel-root': {
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive label size
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input size
+                        },
                       }}
                     />
                   </Stack>
                 </Box>
               </Stack>
             </Box>
-            <Box sx={{ minWidth: 220 }}>
-              <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: 'text.primary' }}>
+            <Box sx={{ 
+              minWidth: { xs: '100%', sm: 220 }, // Full width on mobile, fixed on larger screens
+              mt: { xs: 2, md: 0 }, // Top margin on mobile when stacked
+            }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  mb: 2, 
+                  fontWeight: 600, 
+                  color: 'text.primary',
+                  fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive font size
+                }}
+              >
                 Quick Select
               </Typography>
               <Stack spacing={1}>
@@ -768,13 +850,14 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       justifyContent: 'flex-start',
                       textAlign: 'left',
                       borderRadius: 1,
-                      py: 1,
-                      px: 2,
-                      fontSize: '0.875rem',
+                      py: { xs: 1, sm: 1.5 }, // Responsive padding
+                      px: { xs: 1.5, sm: 2 }, // Responsive padding
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive font size
                       fontWeight: 500,
                       textTransform: 'none',
                       borderColor: 'divider',
                       color: 'text.primary',
+                      minHeight: { xs: 44, sm: 36 }, // Touch-friendly height on mobile
                       '&:hover': {
                         borderColor: 'primary.main',
                         bgcolor: 'primary.main',
@@ -784,12 +867,28 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       transition: 'all 0.2s ease-in-out',
                     }}
                   >
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 'inherit', lineHeight: 1.2 }}>
+                    <Box sx={{ width: '100%' }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 'inherit', 
+                          lineHeight: 1.2,
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive font size
+                        }}
+                      >
                         {shortcut.label}
                       </Typography>
                       {shortcut.hint && (
-                        <Typography variant="caption" sx={{ opacity: 0.7, lineHeight: 1.2, display: 'block', mt: 0.25 }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            opacity: 0.7, 
+                            lineHeight: 1.2, 
+                            display: 'block', 
+                            mt: 0.25,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' }, // Responsive font size
+                          }}
+                        >
                           {shortcut.hint}
                         </Typography>
                       )}
@@ -799,7 +898,21 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
               </Stack>
             </Box>
           </Stack>
-          <Stack direction="row" justifyContent="flex-end" spacing={2} mt={3} pt={2} borderTop={1} borderColor="divider">
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} // Stack buttons vertically on mobile
+            justifyContent="flex-end" 
+            spacing={2} 
+            mt={3} 
+            pt={2} 
+            borderTop={1} 
+            borderColor="divider"
+            sx={{
+              '& .MuiButton-root': {
+                width: { xs: '100%', sm: 'auto' }, // Full width buttons on mobile
+                minHeight: { xs: 44, sm: 36 }, // Touch-friendly height
+              },
+            }}
+          >
             <Button 
               color="inherit" 
               onClick={handleClear}

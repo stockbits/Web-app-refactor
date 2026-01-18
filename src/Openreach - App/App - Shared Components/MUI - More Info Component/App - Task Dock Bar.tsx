@@ -37,8 +37,6 @@ export const TaskDockBar = memo(function TaskDockBar({
   const tokens = useMemo(() => theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens, [theme.palette.mode, theme.openreach])
   const visibleItems = useMemo(() => items.slice(0, maxItems), [items, maxItems])
 
-  if (visibleItems.length === 0) return null
-
   const handleChipClick = useCallback((id: string) => {
     if (multiSelect && onSelectionChange) {
       const isSelected = selectedItems.includes(id)
@@ -56,6 +54,8 @@ export const TaskDockBar = memo(function TaskDockBar({
       onCompare(selectedItems)
     }
   }, [onCompare, selectedItems])
+
+  if (visibleItems.length === 0) return null
 
   return (
     <Paper

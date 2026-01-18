@@ -48,16 +48,29 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
       <Box 
         sx={{ 
           flexShrink: 0, 
-          p: 2, 
+          p: { xs: 1, sm: 2 }, 
           borderBottom: `1px solid ${theme.palette.divider}`,
           bgcolor: 'background.paper',
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={2} alignItems="center">
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={{ xs: 1, sm: 2 }} 
+          alignItems={{ xs: 'stretch', sm: 'center' }} 
+          justifyContent="space-between"
+        >
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={{ xs: 1, sm: 2 }} 
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            sx={{ flex: 1 }}
+          >
             <Autocomplete
               size="small"
-              sx={{ minWidth: 200 }}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 200 },
+                width: { xs: '100%', sm: 'auto' }
+              }}
               options={divisionOptions}
               value={selectedDivision}
               onChange={(_, newValue) => setSelectedDivision(newValue)}
@@ -68,7 +81,10 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             
             <Autocomplete
               size="small"
-              sx={{ minWidth: 150 }}
+              sx={{ 
+                minWidth: { xs: '100%', sm: 150 },
+                width: { xs: '100%', sm: 'auto' }
+              }}
               options={domainOptions}
               value={selectedDomain}
               onChange={(_, newValue) => setSelectedDomain(newValue)}
@@ -79,39 +95,54 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
 
             <TextField
               size="small"
-              sx={{ flex: 1, maxWidth: 400 }}
+              sx={{ 
+                flex: 1, 
+                maxWidth: { xs: 'none', sm: 400 },
+                minWidth: { xs: '100%', sm: 'auto' }
+              }}
               placeholder="Global search..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               inputRef={searchRef}
             />
 
-            <Tooltip title="Search Tool">
-              <IconButton onClick={() => setSearchToolOpen(true)}>
-                <SearchIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Clear All Filters & Selections">
-              <IconButton 
-                onClick={() => {
-                  clearSelection()
-                  setSearchFilters(null)
-                  setClearTrigger(prev => prev + 1)
-                  // TODO: Clear sorting in the task table
-                }}
-                disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
-              >
-                <ClearIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Legend Key Menu">
-              <IconButton onClick={() => setLegendOpen(true)}>
-                <VpnKeyIcon />
-              </IconButton>
-            </Tooltip>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
+              <Tooltip title="Search Tool">
+                <IconButton onClick={() => setSearchToolOpen(true)}>
+                  <SearchIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear All Filters & Selections">
+                <IconButton 
+                  onClick={() => {
+                    clearSelection()
+                    setSearchFilters(null)
+                    setClearTrigger(prev => prev + 1)
+                    // TODO: Clear sorting in the task table
+                  }}
+                  disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Legend Key Menu">
+                <IconButton onClick={() => setLegendOpen(true)}>
+                  <VpnKeyIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Stack>
           
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            alignItems="center"
+            sx={{ 
+              flexShrink: 0,
+              mt: { xs: 1, sm: 0 },
+              justifyContent: { xs: 'center', sm: 'flex-end' }
+            }}
+          >
             {/* Docked Panel Icons */}
             {dockedPanels.map((panel) => (
               <Tooltip key={panel.id} title={panel.title}>

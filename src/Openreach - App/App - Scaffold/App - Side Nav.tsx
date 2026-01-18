@@ -243,8 +243,17 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   const noMatches = showTreeResults && filteredGroups.length === 0
 
   const footerContent = footerSlot ?? (
-    <Stack gap={0.5} alignItems="stretch">
-      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} sx={{ width: '100%' }}>
+    <Stack gap={0.5} alignItems="stretch" sx={{ px: 2, pb: 1 }}>
+      <Stack 
+        direction="row" 
+        alignItems="center" 
+        justifyContent="space-between" 
+        gap={1} 
+        sx={{ 
+          width: '100%',
+          flexWrap: 'wrap', // Allow wrapping on very small screens
+        }}
+      >
         <Chip
           label={CLIENT_BUILD.label}
           size="small"
@@ -261,13 +270,30 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               textTransform: 'uppercase',
               letterSpacing: 0.5,
             },
+            flexShrink: 0, // Prevent chip from shrinking
           }}
         />
-        <Typography variant="caption" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7), fontWeight: 600 }}>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7), 
+            fontWeight: 600,
+            fontSize: '0.7rem', // Slightly larger for better readability
+            flexShrink: 0, // Prevent date from shrinking
+          }}
+        >
           {CLIENT_BUILD.date}
         </Typography>
       </Stack>
-      <Typography variant="caption" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.55) }}>
+      <Typography 
+        variant="caption" 
+        sx={{ 
+          color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.55),
+          fontSize: '0.7rem', // Slightly larger for better readability
+          lineHeight: 1.3, // Better line height
+          wordBreak: 'break-word', // Prevent overflow
+        }}
+      >
         Last sync · 06:00 UTC
       </Typography>
     </Stack>
@@ -300,10 +326,17 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
           maxHeight: '100vh',
           overflowY: 'auto',
           overscrollBehavior: 'contain',
+          maxWidth: '100vw', // Prevent overflow on small screens
         },
       }}
     >
-      <Box sx={{ width: { xs: 320, sm: 360 }, height: '100%', bgcolor: navBg }}>
+      <Box sx={{ 
+        width: { xs: '90vw', sm: 320, md: 360 }, // Responsive width: 90% of viewport on mobile, fixed on larger screens
+        maxWidth: { xs: 320, sm: 360 }, // Cap maximum width
+        height: '100%', 
+        bgcolor: navBg,
+        minWidth: 280, // Minimum width to prevent too narrow on very small screens
+      }}>
         <Paper
           component="nav"
           elevation={0}
@@ -328,7 +361,17 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
             },
           }}
         >
-          <Stack sx={{ p: 2, gap: 2, position: 'relative', zIndex: 1, height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <Stack sx={{ 
+            p: 2, 
+            gap: 2, 
+            position: 'relative', 
+            zIndex: 1, 
+            height: '100%', 
+            minHeight: 0, 
+            display: 'flex', 
+            flexDirection: 'column',
+            overflow: 'hidden', // Prevent any overflow from the stack itself
+          }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" gap={1} sx={{ minHeight: 48 }}>
               <Box sx={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
                 {headerSlot ? (
@@ -403,7 +446,13 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               )}
             </Stack>
 
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, minHeight: 0 }}>
+            <Box sx={{ 
+              flexGrow: 1, 
+              overflowY: 'auto', 
+              pr: 0.5, 
+              minHeight: 0,
+              pb: 2, // Add bottom padding to ensure content doesn't touch footer
+            }}>
               {!showTreeResults && (
                 <List component="div" disablePadding>
                   {items.map((item) => (
@@ -548,13 +597,16 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 sx={{
                   mt: 'auto',
                   pt: 1.75,
-                  pb: 'env(safe-area-inset-bottom, 0px)',
-                  position: 'sticky',
+                  pb: { xs: 'max(env(safe-area-inset-bottom, 16px), 16px)', sm: 'env(safe-area-inset-bottom, 0px)' }, // Ensure minimum padding on mobile
+                  pl: 'env(safe-area-inset-left, 0px)',
+                  pr: 'env(safe-area-inset-right, 0px)',
+                  position: 'relative', // Changed from sticky to relative for better mobile compatibility
                   bottom: 0,
                   left: 0,
                   width: '100%',
                   bgcolor: navBg,
                   zIndex: 2,
+                  flexShrink: 0, // Prevent footer from shrinking
                 }}
               >
                 <Divider sx={{ mb: 1, borderColor: alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.2) }} />

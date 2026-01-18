@@ -49,17 +49,20 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       return [];
     }
 
-    return TASK_TABLE_ROWS.filter(task => {
-      // Filter by division if selected
-      if (selectedDivision && task.division !== selectedDivision) {
-        return false;
-      }
+    let tasks = TASK_TABLE_ROWS;
 
-      // Filter by domain if selected
-      if (selectedDomain && task.domainId !== selectedDomain) {
-        return false;
-      }
+    // Filter by division if selected
+    if (selectedDivision) {
+      tasks = tasks.filter(task => task.division === selectedDivision);
+    }
 
+    // Filter by domain if selected
+    if (selectedDomain) {
+      tasks = tasks.filter(task => task.domainId === selectedDomain);
+    }
+
+    // Apply search filters
+    tasks = tasks.filter(task => {
       // Status filter
       if (searchFilters.statuses && searchFilters.statuses.length > 0) {
         if (!searchFilters.statuses.includes(task.status)) {
@@ -83,6 +86,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
 
       return true;
     });
+
+    return tasks;
   }, [selectedDivision, selectedDomain, searchFilters]);
 
   // Get list of visible panels (not docked)
@@ -94,7 +99,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks]);
+  }, [dockedPanels, filteredTasks, clearSorting]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {
@@ -348,7 +353,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                 left: `${colStart}%`,
                 width: `${colWidth}%`,
                 height: `${rowHeight}%`,
-                minHeight: panel.id === 'map' ? '300px' : 'auto',
+                minHeight: {
+                  xs: panel.id === 'map' ? '250px' : '200px',
+                  sm: panel.id === 'map' ? '300px' : 'auto'
+                },
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column'
@@ -399,7 +407,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                       pointerEvents: 'auto',
                       background: 'none',
                       cursor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 'grabbing' : 'grab',
-                      display: 'flex',
+                      display: { xs: 'none', sm: 'flex' },
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
@@ -462,7 +470,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                   pointerEvents: 'auto',
                   background: 'none',
                   cursor: (isResizing?.type === 'row' && isResizing?.index === r) ? 'grabbing' : 'grab',
-                  display: 'flex',
+                  display: { xs: 'none', sm: 'flex' },
                   justifyContent: 'center',
                   alignItems: 'center',
                 }}

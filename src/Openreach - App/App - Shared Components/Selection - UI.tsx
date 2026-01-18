@@ -17,6 +17,7 @@
  * 3. Use useTaskTableSelection in task table components
  * 4. Selected tasks will automatically sync between components
  */
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import type { TaskTableRow } from '../App - Data Tables/Task - Table';
 
@@ -145,9 +146,8 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     return selectedTasks.concat(unselectedTasks);
   }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
 
-  // Memoize context value with minimal dependencies to prevent unnecessary re-renders
-  // Only include primitive values and stable references in dependencies
-  const value = useMemo(() => ({
+  // Context value - let React Compiler optimize memoization
+  const value = {
     selectedTaskIds,
     isTaskSelected,
     toggleTaskSelection,
@@ -155,12 +155,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     selectTasks,
     getPrioritizedTasks,
     selectionSource
-  }), [
-    // Only include the actual state and computed values that change
-    selectedTaskIds,
-    selectionSource,
-    // Functions are stable due to useCallback, so no need to include them
-  ]);
+  };
 
   return (
     <SelectionUIContext.Provider value={value}>

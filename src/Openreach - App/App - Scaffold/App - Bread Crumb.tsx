@@ -29,7 +29,18 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 32, pl: 3, pt: 2.2, mb: 0.5, pr: 3 }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: { xs: 'column', sm: 'row' }, 
+      alignItems: { xs: 'flex-start', sm: 'center' }, 
+      justifyContent: 'space-between', 
+      minHeight: 32, 
+      pl: { xs: 2, sm: 3 }, 
+      pt: { xs: 1, sm: 2.2 }, 
+      mb: 0.5, 
+      pr: { xs: 2, sm: 3 },
+      gap: { xs: 1, sm: 0 }
+    }}>
       <Typography
         variant="overline"
         className="canvas-label"
@@ -60,7 +71,12 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
       </Typography>
       {accessSummary && (
         <>
-          <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            ml: { xs: 0, sm: 2 },
+            mt: { xs: 1, sm: 0 }
+          }}>
             <Typography
               variant="overline"
               sx={theme => getTextStyles(theme)}
@@ -74,7 +90,12 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
         </>
       )}
       {rightContent && (
-        <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          ml: { xs: 0, sm: 'auto' },
+          mt: { xs: 1, sm: 0 }
+        }}>
           {rightContent}
         </Box>
       )}
