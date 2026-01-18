@@ -6,6 +6,7 @@ import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import SettingsIcon from "@mui/icons-material/Settings";
 // Using inline SVG for Task Group shield to control fill/outline
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -376,14 +377,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   }
 
   const getMapLayerIcon = () => {
-    switch (mapLayer) {
-      case 'satellite':
-        return <SatelliteAltIcon sx={{ fontSize: 24, color: 'inherit' }} />;
-      case 'terrain':
-        return <TerrainIcon sx={{ fontSize: 24, color: 'inherit' }} />;
-      default:
-        return <MapIcon sx={{ fontSize: 24, color: 'inherit' }} />;
-    }
+    return <SettingsIcon sx={{ fontSize: 24, color: 'inherit' }} />;
   };
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
