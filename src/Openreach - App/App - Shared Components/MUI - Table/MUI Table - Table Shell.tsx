@@ -226,7 +226,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           paginationModel,
           onPaginationModelChange: setPaginationModel,
         })}
-        disableRowSelectionOnClick={false}
+        disableRowSelectionOnClick={true}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
         slots={{

@@ -87,8 +87,14 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
           return [...prev, taskId];
         }
       } else {
-        // Single select mode: replace selection
-        return isCurrentlySelected ? [] : [taskId];
+        // Single select mode: toggle this specific task (clear others, then add if not selected)
+        if (isCurrentlySelected) {
+          // If currently selected, deselect it (clear all)
+          return [];
+        } else {
+          // If not selected, select only this one
+          return [taskId];
+        }
       }
     });
     setSelectionSource(source);
