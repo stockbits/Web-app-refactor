@@ -300,6 +300,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
                 left: `${colStart}%`,
                 width: `${colWidth}%`,
                 height: `${rowHeight}%`,
+                minHeight: panel.id === 'map' ? '300px' : 'auto',
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column'
