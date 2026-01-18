@@ -323,7 +323,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     const textColor = theme.palette.common.white;
     const svgSize = Math.round(size * 0.75);
     const fontSize = Math.max(10, Math.round(svgSize * 0.4)); // Scale font size with icon
-    const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative;">`
+    const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative;transition:opacity 0.3s ease-out;">`
       + `
       <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="paint-order:stroke fill">
         <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="${shieldFill}" stroke="${borderColor}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
@@ -554,6 +554,12 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             background: 'none',
             border: 'none',
             pointerEvents: 'auto',
+          },
+          '& .custom-cluster-icon': {
+            background: 'none',
+            border: 'none',
+            pointerEvents: 'auto',
+            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
           }
         }}
       >
@@ -690,11 +696,13 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             {/* Clustered task markers - simplified visual */}
             <MarkerClusterGroup
               chunkedLoading
-              maxClusterRadius={200}
-              disableClusteringAtZoom={13}
+              maxClusterRadius={150}
+              disableClusteringAtZoom={15}
               spiderfyOnMaxZoom={false}
               showCoverageOnHover={false}
               zoomToBoundsOnClick={true}
+              animate={true}
+              animateAddingMarkers={false}
               iconCreateFunction={createClusterIcon}
             >
               {/* Render markers from task data */}
