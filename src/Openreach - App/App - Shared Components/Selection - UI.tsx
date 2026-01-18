@@ -1,5 +1,22 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import type { TaskTableRow } from '../App - Data Tables/Task - Table';
+/**
+ * Selection UI System for Map-Task Coordination
+ *
+ * This system enables seamless coordination between map selections and task table views.
+ * When users select tasks on the map (with optional CTRL multi-select), those tasks
+ * are automatically highlighted and prioritized in connected task table components.
+ *
+ * Key Features:
+ * - Single/multi-select support with CTRL key
+ * - Selected tasks appear at top of task tables regardless of current sort
+ * - Visual highlighting of selected tasks on map and in tables
+ * - Centralized state management with React Context
+ *
+ * Usage:
+ * 1. Wrap your app/page with SelectionUIProvider
+ * 2. Use useMapSelection in map components
+ * 3. Use useTaskTableSelection in task table components
+ * 4. Selected tasks will automatically sync between components
+ */
 
 interface SelectionUIContextType {
   selectedTaskIds: string[];
@@ -138,3 +155,29 @@ export const useTaskTableSelection = () => {
     toggleTaskSelection
   };
 };
+
+// Example usage in a Task Table component:
+/*
+import { useTaskTableSelection } from '../Selection - UI';
+
+function TaskTable({ tasks }: { tasks: TaskTableRow[] }) {
+  const { getPrioritizedTasks, selectedTaskIds, isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
+
+  // Get tasks with selected tasks prioritized (moved to top)
+  const displayTasks = getPrioritizedTasks(tasks);
+
+  return (
+    <div>
+      {displayTasks.map(task => (
+        <div
+          key={task.taskId}
+          className={isTaskSelected(task.taskId) ? 'selected' : ''}
+          onClick={() => toggleTaskSelection(task.taskId)}
+        >
+          {task.taskId} - {task.commitType}
+        </div>
+      ))}
+    </div>
+  );
+}
+*/
