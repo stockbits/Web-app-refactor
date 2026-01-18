@@ -112,10 +112,10 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={theme => ({
         position: 'absolute',
-        // Center horizontally at bottom
-        bottom: theme.spacing(2),
-        left: '50%',
-        transform: 'translateX(-50%)',
+        // Center vertically on the left side
+        left: theme.spacing(2),
+        top: '50%',
+        transform: 'translateY(-50%)',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
@@ -123,8 +123,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         gap: { xs: 1, sm: 1.5 },
         maxWidth: 48,
         [theme.breakpoints.down('sm')]: {
+          left: theme.spacing(1),
           gap: 1,
-          bottom: theme.spacing(1),
         },
       })}
     >
