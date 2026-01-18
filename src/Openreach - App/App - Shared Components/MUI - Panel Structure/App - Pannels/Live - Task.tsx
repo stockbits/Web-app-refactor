@@ -254,11 +254,11 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             }}
           />
         ) : (
-          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 1 }}>
-            <ChecklistIcon sx={{ fontSize: 48, color: iconColor, opacity: 0.5 }} />
-            <Typography variant="body1" color="text.secondary" align="center">
-              Select Division, Domain, and Task Status from the search tool to view tasks
-            </Typography>
+          <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ChecklistIcon sx={{ fontSize: 20, color: iconColor }} />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body2" color="text.secondary">Task Status</Typography>
+            </Box>
           </Box>
         )}
       </Box>
