@@ -439,9 +439,9 @@ function App() {
     setDialogOpen(true);
   }, []);
 
-  const closeTaskDialog = useCallback(() => {
-    // If the dialog task is currently docked, remove it from dock when closing
-    if (dialogTask) {
+  const closeTaskDialog = useCallback((keepInDock = false) => {
+    // If the dialog task is currently docked, remove it from dock when closing (unless keeping in dock)
+    if (dialogTask && !keepInDock) {
       setTaskDockItems((prev) => prev.filter((item) => item.id !== dialogTask.taskId));
     }
     setDialogOpen(false);
@@ -794,7 +794,7 @@ function App() {
             commitType: dialogTask.commitType,
             task: dialogTask,
           });
-          closeTaskDialog();
+          closeTaskDialog(true); // Keep task in dock when minimizing
         } : undefined}
       />
     </>
