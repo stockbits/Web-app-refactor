@@ -338,10 +338,12 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     });
   }, [taskColors?.taskGroup, theme.openreach?.coreBlock, theme.palette.common.black, theme.palette.common.white, theme.typography.fontFamily]);
 
+  // Create selected set for efficient lookups
+  const selectedSet = useMemo(() => new Set(clickedMarkerIds), [clickedMarkerIds]);
+
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};
-    const selectedSet = new Set(clickedMarkerIds); // Faster lookup than array.includes()
     tasksToDisplay.forEach((task) => {
       const variant = getIconVariant(task.commitType);
       const isSelected = selectedSet.has(task.taskId);
@@ -349,7 +351,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
       icons[key] = createMarkerIcon(variant, isSelected);
     });
     return icons;
-  }, [createMarkerIcon, clickedMarkerIds, tasksToDisplay]);
+  }, [createMarkerIcon, selectedSet, tasksToDisplay]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -693,42 +695,135 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               setPopupState={setPopupState}
               ignoreNextMapClickRef={ignoreNextMapClickRef}
             />
-            {/* Clustered task markers - simplified visual */}
-            <MarkerClusterGroup
-              chunkedLoading
-              maxClusterRadius={150}
-              disableClusteringAtZoom={15}
-              spiderfyOnMaxZoom={false}
-              showCoverageOnHover={false}
-              zoomToBoundsOnClick={true}
-              animate={true}
-              animateAddingMarkers={false}
-              iconCreateFunction={createClusterIcon}
-            >
-              {/* Render markers from task data */}
-              {tasksToDisplay.map((task: TaskTableRow) => {
+
+            {/* Render markers based on zoom level to prevent overlap */}
+            {currentZoom < 14 ? (
+              <MarkerClusterGroup
+                chunkedLoading
+                maxClusterRadius={150}
+                disableClusteringAtZoom={14}
+                spiderfyOnMaxZoom={false}
+                showCoverageOnHover={false}
+                zoomToBoundsOnClick={true}
+                animate={true}
+                animateAddingMarkers={false}
+                iconCreateFunction={createClusterIcon}
+              >
+                {/* Render markers from task data */}
+                {tasksToDisplay.map((task: TaskTableRow) => {
+                  const variant = getIconVariant(task.commitType);
+                  const isSelected = selectedSet.has(task.taskId);
+                  const iconKey = `${task.taskId}-${isSelected}`;
+
+                  return (
+                    <Marker
+                      key={task.taskId}
+                      position={[task.taskLatitude, task.taskLongitude]}
+                      icon={taskIcons[iconKey]}
+                      eventHandlers={{
+                        click: (e) => {
+                          // Prevent default popup on single click and show visual feedback
+                          e.originalEvent.preventDefault();
+                          e.originalEvent.stopPropagation();
+
+                          // Check if CTRL key is held for multi-selection
+                          const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+
+                          if (isCtrlPressed) {
+                            // Multi-select: toggle this marker in the selection
+                            setClickedMarkerIds(prev =>
+                              prev.includes(task.taskId)
+                                ? prev.filter(id => id !== task.taskId) // Remove if already selected
+                                : [...prev, task.taskId] // Add if not selected
+                            );
+                          } else {
+                            // Single select: replace selection with just this marker
+                            setClickedMarkerIds([task.taskId]);
+                          }
+                        },
+                        mousedown: (e) => {
+                          // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
+                          e.originalEvent.preventDefault();
+                          e.originalEvent.stopPropagation();
+
+                          // Check if CTRL key is held for multi-selection
+                          const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+
+                          if (isCtrlPressed) {
+                            // Multi-select: toggle this marker in the selection
+                            setClickedMarkerIds(prev =>
+                              prev.includes(task.taskId)
+                                ? prev.filter(id => id !== task.taskId) // Remove if already selected
+                                : [...prev, task.taskId] // Add if not selected
+                            );
+                          } else {
+                            // Single select: replace selection with just this marker
+                            setClickedMarkerIds([task.taskId]);
+                          }
+                        },
+                        dblclick: () => {
+                          // Prevent map click handler from closing the popup after this interaction
+                          ignoreNextMapClickRef.current = true;
+                          setTimeout(() => {
+                            ignoreNextMapClickRef.current = false;
+                          }, 250);
+
+                          // Update popup with new marker position and content
+                          const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
+                          setPopupState({
+                            isOpen: true,
+                            position: [task.taskLatitude, task.taskLongitude],
+                            content: (
+                              <Box sx={{ p: 0.5, minWidth: 200 }}>
+                                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                                  {task.resourceName || 'Unassigned'}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                                  Task ID: {task.taskId}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                                  {task.postCode}
+                                </Typography>
+                                <Chip
+                                  label={variantLabel}
+                                  size="small"
+                                  sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors?.appointment : variant === 'startBy' ? taskColors?.startBy : variant === 'completeBy' ? taskColors?.completeBy : variant === 'taskGroup' ? taskColors?.taskGroup : taskColors?.failedSLA, color: theme.palette.common.white }}
+                                />
+                              </Box>
+                            ),
+                          });
+                        }
+                      }}
+                    >
+                    </Marker>
+                  );
+                })}
+              </MarkerClusterGroup>
+            ) : (
+              /* Render individual markers without clustering at high zoom levels */
+              tasksToDisplay.map((task: TaskTableRow) => {
                 const variant = getIconVariant(task.commitType);
-                const isSelected = clickedMarkerIds.includes(task.taskId);
+                const isSelected = selectedSet.has(task.taskId);
                 const iconKey = `${task.taskId}-${isSelected}`;
 
                 return (
-                  <Marker 
-                    key={task.taskId} 
-                    position={[task.taskLatitude, task.taskLongitude]} 
+                  <Marker
+                    key={task.taskId}
+                    position={[task.taskLatitude, task.taskLongitude]}
                     icon={taskIcons[iconKey]}
                     eventHandlers={{
                       click: (e) => {
                         // Prevent default popup on single click and show visual feedback
                         e.originalEvent.preventDefault();
                         e.originalEvent.stopPropagation();
-                        
+
                         // Check if CTRL key is held for multi-selection
                         const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-                        
+
                         if (isCtrlPressed) {
                           // Multi-select: toggle this marker in the selection
-                          setClickedMarkerIds(prev => 
-                            prev.includes(task.taskId) 
+                          setClickedMarkerIds(prev =>
+                            prev.includes(task.taskId)
                               ? prev.filter(id => id !== task.taskId) // Remove if already selected
                               : [...prev, task.taskId] // Add if not selected
                           );
@@ -738,33 +833,27 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                         }
                       },
                       mousedown: (e) => {
-                        // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
                         e.originalEvent.preventDefault();
                         e.originalEvent.stopPropagation();
-                        
-                        // Check if CTRL key is held for multi-selection
+
                         const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-                        
+
                         if (isCtrlPressed) {
-                          // Multi-select: toggle this marker in the selection
-                          setClickedMarkerIds(prev => 
-                            prev.includes(task.taskId) 
-                              ? prev.filter(id => id !== task.taskId) // Remove if already selected
-                              : [...prev, task.taskId] // Add if not selected
+                          setClickedMarkerIds(prev =>
+                            prev.includes(task.taskId)
+                              ? prev.filter(id => id !== task.taskId)
+                              : [...prev, task.taskId]
                           );
                         } else {
-                          // Single select: replace selection with just this marker
                           setClickedMarkerIds([task.taskId]);
                         }
                       },
                       dblclick: () => {
-                        // Prevent map click handler from closing the popup after this interaction
                         ignoreNextMapClickRef.current = true;
                         setTimeout(() => {
                           ignoreNextMapClickRef.current = false;
                         }, 250);
 
-                        // Update popup with new marker position and content
                         const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
                         setPopupState({
                           isOpen: true,
@@ -793,8 +882,8 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                   >
                   </Marker>
                 );
-              })}
-            </MarkerClusterGroup>
+              })
+            )}
             
             {/* Single reusable popup - stays open until explicitly closed */}
             {popupState.isOpen && popupState.position && (
