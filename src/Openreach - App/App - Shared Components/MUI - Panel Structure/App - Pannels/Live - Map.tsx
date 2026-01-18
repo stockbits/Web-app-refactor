@@ -112,8 +112,8 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={theme => ({
         position: 'absolute',
-        // Ensure controls never clip at the top, even at 100% zoom
-        top: `max(${theme.spacing(10)}, 56px)`, // 56px is a safe minimum for most toolbars
+        // Position from bottom to auto-adjust to panel height
+        bottom: theme.spacing(2),
         left: theme.spacing(2),
         zIndex: 1000,
         display: 'flex',
@@ -124,7 +124,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         [theme.breakpoints.down('sm')]: {
           left: theme.spacing(1),
           gap: 1,
-          top: `max(${theme.spacing(7)}, 32px)`, // More margin for small screens
+          bottom: theme.spacing(1),
         },
       })}
     >
