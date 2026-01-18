@@ -697,11 +697,11 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             />
 
             {/* Render markers based on zoom level to prevent overlap */}
-            {currentZoom < 14 ? (
+            {currentZoom < 16 ? (
               <MarkerClusterGroup
                 chunkedLoading
                 maxClusterRadius={150}
-                disableClusteringAtZoom={14}
+                disableClusteringAtZoom={16}
                 spiderfyOnMaxZoom={false}
                 showCoverageOnHover={false}
                 zoomToBoundsOnClick={true}
