@@ -9,8 +9,6 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Menu,
-  MenuItem,
   Modal,
   OutlinedInput,
   Stack,
@@ -29,6 +27,11 @@ import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import AssignmentIcon from '@mui/icons-material/Assignment'
+import SpeedDial from '@mui/material/SpeedDial'
+import SpeedDialIcon from '@mui/material/SpeedDialIcon'
+import SpeedDialAction from '@mui/material/SpeedDialAction'
 import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
 import type { TaskTableQueryState, TaskFilterTab } from './TaskTableQueryConfig.shared';
 import {
@@ -75,7 +78,7 @@ const TaskTableQueryConfig = ({
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [exportAnchor, setExportAnchor] = useState<null | HTMLElement>(null)
+  const [speedDialOpen, setSpeedDialOpen] = useState(false)
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
       return null
@@ -130,13 +133,11 @@ const TaskTableQueryConfig = ({
     setActiveTab(nextTab)
   }
 
-  const handleOpenExportMenu = (event: MouseEvent<HTMLButtonElement>) => {
-    setExportAnchor(event.currentTarget)
-  }
-
-  const handleCloseExportMenu = () => {
-    setExportAnchor(null)
-  }
+  // Speed Dial actions for export operations
+  const exportActions = useMemo(() => [
+    { icon: <ContentCopyIcon />, name: 'Copy to Clipboard', action: onCopyHtml },
+    { icon: <AssignmentIcon />, name: 'Export CSV', action: onExportCsv },
+  ], [onCopyHtml, onExportCsv])
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newSearchValue = event.target.value
@@ -452,48 +453,43 @@ const TaskTableQueryConfig = ({
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
             {hasRows && (onCopyHtml || onExportCsv) && (
-              <>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={handleOpenExportMenu}
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 500,
-                  }}
-                >
-                  Copy
-                </Button>
-                <Menu
-                  anchorEl={exportAnchor}
-                  open={Boolean(exportAnchor)}
-                  onClose={handleCloseExportMenu}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-                >
-                  {onCopyHtml && (
-                    <MenuItem
-                      onClick={() => {
-                        handleCloseExportMenu()
-                        onCopyHtml()
-                      }}
-                    >
-                      Copy HTML
-                    </MenuItem>
-                  )}
-                  {onExportCsv && (
-                    <MenuItem
-                      onClick={() => {
-                        handleCloseExportMenu()
-                        onExportCsv()
-                      }}
-                    >
-                      Export CSV
-                    </MenuItem>
-                  )}
-                </Menu>
-              </>
+              <SpeedDial
+                ariaLabel="Export actions"
+                sx={{ 
+                  '& .MuiSpeedDial-fab': { 
+                    width: 40, 
+                    height: 40,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                    minHeight: 'auto'
+                  },
+                  '& .MuiSpeedDialIcon-root': {
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }
+                }}
+                icon={<SpeedDialIcon />}
+                onClose={() => setSpeedDialOpen(false)}
+                onOpen={() => setSpeedDialOpen(true)}
+                open={speedDialOpen}
+                direction="right"
+              >
+                {exportActions.map((action) => (
+                  <SpeedDialAction
+                    key={action.name}
+                    icon={action.icon}
+                    tooltipTitle={action.name}
+                    onClick={() => {
+                      action.action?.()
+                      setSpeedDialOpen(false)
+                    }}
+                  />
+                ))}
+              </SpeedDial>
             )}
           </Stack>
 

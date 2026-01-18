@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -22,6 +22,7 @@ interface AppSearchToolProps {
   onClose: () => void
   onSearch?: (filters: SearchFilters) => void
   currentSearchTerm?: string
+  clearTrigger?: number
 }
 
 export interface SearchFilters {
@@ -35,7 +36,7 @@ export interface SearchFilters {
   impactValue?: number | null
 }
 
-const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, currentSearchTerm = '' }) => {
+const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, currentSearchTerm = '', clearTrigger = 0 }) => {
   const theme = useTheme()
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatusCode[]>([])
   const [selectedCapabilities, setSelectedCapabilities] = useState<TaskSkillCode[]>([])
@@ -44,6 +45,19 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
   const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ start: null, end: null })
   const [impactOperator, setImpactOperator] = useState<'gt' | 'lt' | 'eq' | null>(null)
   const [impactValue, setImpactValue] = useState<number | null>(null)
+
+  // Reset all filters when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger > 0) {
+      setSelectedStatuses([])
+      setSelectedCapabilities([])
+      setSelectedResponseCodes([])
+      setSelectedCommitTypes([])
+      setDateRange({ start: null, end: null })
+      setImpactOperator(null)
+      setImpactValue(null)
+    }
+  }, [clearTrigger])
 
   // Extract unique options from DB data
   const statusOptions = React.useMemo(() =>

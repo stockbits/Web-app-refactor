@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent } from '@mui/material'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import SearchIcon from '@mui/icons-material/Search'
+import ClearIcon from '@mui/icons-material/Clear'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
@@ -9,6 +10,7 @@ import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
 import AppSearchTool from './App - Search Tool'
 import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
+import { useSelectionUI } from '../../../App - Shared Components/Selection - UI'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -26,6 +28,10 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [searchToolOpen, setSearchToolOpen] = useState(false)
   const [legendOpen, setLegendOpen] = useState(false)
   const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null)
+  const [clearTrigger, setClearTrigger] = useState(0)
+
+  // Selection UI context
+  const { clearSelection, selectedTaskIds } = useSelectionUI()
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -85,6 +91,19 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 <SearchIcon />
               </IconButton>
             </Tooltip>
+            <Tooltip title="Clear All Filters & Selections">
+              <IconButton 
+                onClick={() => {
+                  clearSelection()
+                  setSearchFilters(null)
+                  setClearTrigger(prev => prev + 1)
+                  // TODO: Clear sorting in the task table
+                }}
+                disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
+              >
+                <ClearIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Legend Key Menu">
               <IconButton onClick={() => setLegendOpen(true)}>
                 <VpnKeyIcon />
@@ -124,8 +143,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
         selectedDivision={selectedDivision}
         selectedDomain={selectedDomain}
         searchFilters={searchFilters}
+        clearSorting={clearTrigger}
       />
-      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} />
+      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} clearTrigger={clearTrigger} />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
         <DialogContent>

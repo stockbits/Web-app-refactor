@@ -37,6 +37,7 @@ import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More 
 import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Multi Task Dialog";
 import type { TaskNote, TaskTableRow } from "./Openreach - App/App - Data Tables/Task - Table";
 import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
+import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/Selection - UI";
 
 interface MenuCardTile {
   name: string;
@@ -768,7 +769,9 @@ function App() {
                     >
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
-                            <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
+                            <SelectionUIProvider>
+                              <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
+                            </SelectionUIProvider>
                           ) : activePage?.cardName === 'Task Management' ? (
                             <ActivePageComponent {...({
                               openTaskDialog,

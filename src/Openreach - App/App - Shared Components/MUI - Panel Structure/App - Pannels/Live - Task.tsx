@@ -26,9 +26,10 @@ interface LiveTaskProps {
   isExpanded?: boolean;
   minimized?: boolean;
   filteredTasks?: TaskTableRow[];
+  clearSorting?: number;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -118,6 +119,13 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   }, [filteredTasks, getPrioritizedTasks]);
 
   const apiRef = useGridApiRef();
+
+  // Clear sorting when clearSorting prop changes
+  useEffect(() => {
+    if (clearSorting && clearSorting > 0 && apiRef.current) {
+      apiRef.current.setSortModel([]);
+    }
+  }, [clearSorting, apiRef]);
 
   // Row styling for selected tasks - optimized to reduce re-renders
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {

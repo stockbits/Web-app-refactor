@@ -12,7 +12,6 @@ import LivePeople from "./App - Pannels/Live - People";
 import LiveTask from "./App - Pannels/Live - Task";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
-import { SelectionUIProvider } from "../Selection - UI";
 
 export interface DockedPanel {
   id: string;
@@ -27,9 +26,10 @@ export interface MUI4PanelProps {
   selectedDivision?: string | null;
   selectedDomain?: string | null;
   searchFilters?: SearchFilters | null;
+  clearSorting?: number;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters, clearSorting }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
 
@@ -91,7 +91,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
   }, [dockedPanels, filteredTasks]);
@@ -286,14 +286,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   }
 
   return (
-    <SelectionUIProvider>
-      <Box
-        ref={containerRef}
-        sx={{
-          height: '100%',
-          width: '100%',
-          backgroundColor: theme.palette.background.default,
-          position: 'relative',
+    <Box
+      ref={containerRef}
+      sx={{
+        height: '100%',
+        width: '100%',
+        backgroundColor: theme.palette.background.default,
+        position: 'relative',
         overflow: 'hidden',
         margin: 0,
         padding: 0,
@@ -503,6 +502,5 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         </Box>
       )}
     </Box>
-    </SelectionUIProvider>
   );
 }

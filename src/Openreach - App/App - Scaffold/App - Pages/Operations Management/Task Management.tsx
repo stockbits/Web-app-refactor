@@ -29,6 +29,7 @@ const TaskManagementPage = ({
     setSnackbar({ open: true, message, severity })
   }, [])
 
+
   // Touch and hold functionality
   const [touchTimer, setTouchTimer] = useState<number | null>(null)
   const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null)
