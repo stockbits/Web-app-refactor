@@ -1,5 +1,6 @@
 import { Box, Typography } from '@mui/material';
 import type { Theme } from '@mui/material/styles';
+import type { ReactNode } from 'react';
 
 interface AppBreadCrumbProps {
   left: string;
@@ -9,9 +10,10 @@ interface AppBreadCrumbProps {
   accessSummary?: boolean;
   groupsCount?: number;
   totalTools?: number;
+  rightContent?: ReactNode;
 }
 
-export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false, accessSummary = false, groupsCount, totalTools }: AppBreadCrumbProps) => {
+export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false, accessSummary = false, groupsCount, totalTools, rightContent }: AppBreadCrumbProps) => {
   const getTextStyles = (theme: Theme, colorOverride?: string) => ({
     textTransform: 'uppercase',
     letterSpacing: 1.5,
@@ -27,7 +29,7 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', minHeight: 32, pl: 3, pt: 2.2, mb: 0.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 32, pl: 3, pt: 2.2, mb: 0.5, pr: 3 }}>
       <Typography
         variant="overline"
         className="canvas-label"
@@ -64,13 +66,17 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
               sx={theme => getTextStyles(theme)}
               component="span"
             >
-              <Box component="span" sx={{ color: 'inherit', fontWeight: 400 }}>{'\u2022'}</Box>
               <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 700, textTransform: 'uppercase' }}>{groupsCount} programmes</Box>
-              <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 400 }}>{'\u2022'}</Box>
+              <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 400 }}>|</Box>
               <Box component="span" sx={{ mx: 0.75, color: 'inherit', fontWeight: 700, textTransform: 'uppercase' }}>{totalTools} tools ready to launch</Box>
             </Typography>
           </Box>
         </>
+      )}
+      {rightContent && (
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+          {rightContent}
+        </Box>
       )}
     </Box>
   )
