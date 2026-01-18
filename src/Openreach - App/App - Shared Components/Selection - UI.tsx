@@ -17,6 +17,8 @@
  * 3. Use useTaskTableSelection in task table components
  * 4. Selected tasks will automatically sync between components
  */
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import type { TaskTableRow } from '../App - Data Tables/Task - Table';
 
 interface SelectionUIContextType {
   selectedTaskIds: string[];
