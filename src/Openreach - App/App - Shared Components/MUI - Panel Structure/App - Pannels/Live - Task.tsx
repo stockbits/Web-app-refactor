@@ -254,11 +254,11 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             }}
           />
         ) : (
-          <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <ChecklistIcon sx={{ fontSize: 16, color: iconColor }} />
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="body2" color="text.secondary">Task Status</Typography>
-            </Box>
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <ChecklistIcon sx={{ fontSize: 48, color: iconColor, mb: 1 }} />
+            <Typography variant="h6" gutterBottom sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary }}>
+              Task Status
+            </Typography>
           </Box>
         )}
       </Box>
