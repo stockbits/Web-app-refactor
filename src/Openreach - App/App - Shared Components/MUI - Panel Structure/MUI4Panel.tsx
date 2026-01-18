@@ -286,7 +286,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   }
 
   return (
-    <SelectionUIProvider allTasks={TASK_TABLE_ROWS}>
+    <SelectionUIProvider>
       <Box
         ref={containerRef}
         sx={{

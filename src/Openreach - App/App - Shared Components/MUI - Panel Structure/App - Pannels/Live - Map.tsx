@@ -355,12 +355,14 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};
-    tasksToDisplay.forEach((task) => {
+    // Use for loop for better performance than forEach
+    for (let i = 0; i < tasksToDisplay.length; i++) {
+      const task = tasksToDisplay[i];
       const variant = getIconVariant(task.commitType);
       const isSelected = selectedSet.has(task.taskId);
       const key = `${task.taskId}-${isSelected}`;
       icons[key] = createMarkerIcon(variant, isSelected);
-    });
+    }
     return icons;
   }, [createMarkerIcon, selectedSet, tasksToDisplay]);
 

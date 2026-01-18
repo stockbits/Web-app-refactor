@@ -42,7 +42,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const { addMinimizedTask } = useMinimizedTasks();
 
   // Selection UI integration - use prioritization when selected from map
-  const { getPrioritizedTasks, isTaskSelected, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
+  const { getPrioritizedTasks, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
 
   // Resize observer for table height
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -119,10 +119,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const apiRef = useGridApiRef();
 
-  // Row styling for selected tasks
+  // Row styling for selected tasks - optimized to reduce re-renders
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
-    return isTaskSelected(params.row.taskId) ? 'selected-row' : '';
-  }, [isTaskSelected]);
+    return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
+  }, [selectedTaskIds]);
 
   // Handle row clicks for task selection
   const handleRowClick = useCallback((params: any, event: any) => {
