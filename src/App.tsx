@@ -542,42 +542,48 @@ function App() {
             <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
           )}
 
-          {/* Global task dock below breadcrumb - always reserve space */}
-          <Box sx={{ px: { xs: 1, sm: 1.5, md: 2 }, pb: 0, height: '36px', display: 'flex', alignItems: 'flex-end' }}>
-            {taskDockItems.length > 0 && (
-              <TaskDockBar
-                items={taskDockItems.map((item) => {
-                  const variant = (() => {
-                    switch (item.commitType) {
-                      case 'START BY':
-                        return 'startBy' as const;
-                      case 'COMPLETE BY':
-                        return 'completeBy' as const;
-                      case 'TAIL':
-                        return 'failedSLA' as const;
-                      default:
-                        return 'appointment' as const;
-                    }
-                  })();
-                  return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
-                })}
-                onClick={(id: string) => {
-                  const item = taskDockItems.find((it) => it.id === id);
-                  if (!item) return;
-                  if (item.task) {
-                    openTaskDialog(item.task);
-                  } else {
-                    const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
-                    if (task) {
-                      openTaskDialog(task);
-                    }
+{/* Global task dock - always visible dedicated row */}
+          <Box sx={{ 
+            px: { xs: 1, sm: 1.5, md: 2 }, 
+            py: 0,
+            minHeight: '52px', // Give it dedicated space
+            display: 'flex', 
+            alignItems: 'center',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            bgcolor: theme.palette.background.default,
+          }}>
+            <TaskDockBar
+              items={taskDockItems.map((item) => {
+                const variant = (() => {
+                  switch (item.commitType) {
+                    case 'START BY':
+                      return 'startBy' as const;
+                    case 'COMPLETE BY':
+                      return 'completeBy' as const;
+                    case 'TAIL':
+                      return 'failedSLA' as const;
+                    default:
+                      return 'appointment' as const;
                   }
-                }}
-                onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-                maxItems={5}
-                clickable={true}
-              />
-            )}
+                })();
+                return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
+              })}
+              onClick={(id: string) => {
+                const item = taskDockItems.find((it) => it.id === id);
+                if (!item) return;
+                if (item.task) {
+                  openTaskDialog(item.task);
+                } else {
+                  const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+                  if (task) {
+                    openTaskDialog(task);
+                  }
+                }
+              }}
+              onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+              maxItems={5}
+              clickable={true}
+            />
           </Box>
 
           <Box 

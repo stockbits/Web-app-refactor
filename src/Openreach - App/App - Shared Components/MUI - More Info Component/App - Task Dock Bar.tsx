@@ -55,15 +55,48 @@ export const TaskDockBar = memo(function TaskDockBar({
     }
   }, [onCompare, selectedItems])
 
-  if (visibleItems.length === 0) return null
+  if (visibleItems.length === 0) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          border: 'none',
+          boxShadow: 'none',
+          bgcolor: 'transparent',
+        }}
+      >
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '32px',
+          }}
+        >
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: 'text.secondary', 
+              fontStyle: 'italic',
+              textAlign: 'center',
+            }}
+          >
+            Task dock - minimized task dialogs will appear here
+          </Typography>
+        </Box>
+      </Paper>
+    )
+  }
 
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
-        borderTop: `1px solid ${theme.palette.divider}`,
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        bgcolor: theme.palette.background.default,
+        border: 'none',
+        boxShadow: 'none',
+        bgcolor: 'transparent',
       }}
     >
       <Box
