@@ -317,18 +317,15 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
     // Scale size based on cluster count
     const size = count < 10 ? 36 : count < 100 ? 44 : 52;
 
-    // Inline SVG for GppMaybe shield with white count text
+    // Inline SVG for GppMaybe shield
     const shieldFill = taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup;
     const borderColor = theme.openreach?.coreBlock || theme.palette.common.black;
-    const textColor = theme.palette.common.white;
     const svgSize = Math.round(size * 0.75);
-    const fontSize = Math.max(10, Math.round(svgSize * 0.4)); // Scale font size with icon
     const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative;transition:opacity 0.3s ease-out;">`
       + `
       <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="paint-order:stroke fill">
         <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="${shieldFill}" stroke="${borderColor}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
       </svg>
-      <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:${textColor};font-size:${fontSize}px;font-weight:600;font-family:${theme.typography.fontFamily};line-height:1;">${count}</span>
     </div>`;
 
     return L.divIcon({
@@ -336,7 +333,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
       className: 'custom-cluster-icon',
       iconSize: L.point(size, size, true),
     });
-  }, [taskColors?.taskGroup, theme.openreach?.coreBlock, theme.palette.common.black, theme.palette.common.white, theme.typography.fontFamily]);
+  }, [taskColors?.taskGroup, theme.openreach?.coreBlock, theme.palette.common.black]);
 
   // Create selected set for efficient lookups
   const selectedSet = useMemo(() => new Set(clickedMarkerIds), [clickedMarkerIds]);
@@ -697,17 +694,102 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             />
 
             {/* Render markers based on zoom level to prevent overlap */}
-            {currentZoom < 14 ? (
+            {currentZoom < 12 ? (
               <MarkerClusterGroup
                 chunkedLoading
                 maxClusterRadius={150}
-                disableClusteringAtZoom={14}
+                disableClusteringAtZoom={12}
                 spiderfyOnMaxZoom={false}
                 showCoverageOnHover={false}
-                zoomToBoundsOnClick={true}
+                zoomToBoundsOnClick={false}
                 animate={true}
                 animateAddingMarkers={false}
                 iconCreateFunction={createClusterIcon}
+                eventHandlers={{
+                  clustermouseover: (cluster: any) => {
+                    const count = cluster.layer.getChildCount();
+                    const tooltipText = `Tasks in Group (${count})`;
+                    
+                    // Create MUI-styled tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.innerHTML = tooltipText;
+                    Object.assign(tooltip.style, {
+                      position: 'absolute',
+                      backgroundColor: 'rgba(97, 97, 97, 0.9)',
+                      color: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem', // MUI tooltip default font size
+                      fontFamily: theme.typography.fontFamily,
+                      fontWeight: 400, // MUI tooltip default weight
+                      lineHeight: 1.4, // MUI tooltip default line height
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      zIndex: 10000,
+                      pointerEvents: 'none',
+                      whiteSpace: 'nowrap',
+                      opacity: '0',
+                      transition: 'opacity 0.15s ease-out, transform 0.15s ease-out',
+                      transform: 'translateY(5px)'
+                    });
+                    
+                    // Position tooltip anchored to cluster icon
+                    const map = cluster.target._map;
+                    const clusterCenter = cluster.layer.getBounds().getCenter();
+                    const pixelPoint = map.latLngToContainerPoint(clusterCenter);
+                    
+                    // Position relative to map container instead of document body
+                    const mapContainer = map.getContainer();
+                    const mapRect = mapContainer.getBoundingClientRect();
+                    
+                    tooltip.style.left = mapRect.left + pixelPoint.x + 15 + 'px';
+                    tooltip.style.top = mapRect.top + pixelPoint.y - 35 + 'px'; // Position above the icon
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    // Trigger fade-in animation
+                    requestAnimationFrame(() => {
+                      tooltip.style.opacity = '1';
+                      tooltip.style.transform = 'translateY(0)';
+                    });
+                    
+                    // Store reference for cleanup
+                    cluster.layer._customTooltip = tooltip;
+                  },
+                  clustermouseout: (cluster: any) => {
+                    // Remove custom tooltip with fade-out animation
+                    if (cluster.layer._customTooltip) {
+                      const tooltip = cluster.layer._customTooltip;
+                      tooltip.style.opacity = '0';
+                      tooltip.style.transform = 'translateY(5px)';
+                      
+                      // Remove after animation completes
+                      setTimeout(() => {
+                        if (document.body.contains(tooltip)) {
+                          document.body.removeChild(tooltip);
+                        }
+                      }, 150); // Match transition duration
+                      
+                      delete cluster.layer._customTooltip;
+                    }
+                  },
+                  clusterclick: (cluster: any) => {
+                    // Clear any existing tooltip immediately on click
+                    if (cluster.layer._customTooltip) {
+                      const tooltip = cluster.layer._customTooltip;
+                      if (document.body.contains(tooltip)) {
+                        document.body.removeChild(tooltip);
+                      }
+                      delete cluster.layer._customTooltip;
+                    }
+                    
+                    console.log('Cluster clicked!', cluster);
+                    // When clicking a cluster, zoom to level 14 and center on the cluster
+                    const map = cluster.target._map;
+                    const clusterLatLng = cluster.layer.getBounds().getCenter();
+                    console.log('Zooming to:', clusterLatLng, 'at zoom 14');
+                    map.setView(clusterLatLng, 14);
+                  }
+                }}
               >
                 {/* Render markers from task data */}
                 {tasksToDisplay.map((task: TaskTableRow) => {
