@@ -25,9 +25,12 @@ interface LiveTaskProps {
   isExpanded?: boolean;
   minimized?: boolean;
   globalSearch?: string;
+  selectedDivision?: string | null;
+  selectedDomain?: string | null;
+  searchFilters?: any;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, globalSearch = '' }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, globalSearch = '', selectedDivision, selectedDomain, searchFilters }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -105,6 +108,24 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     { field: 'linkedTask', headerName: 'Linked task', flex: 0.6, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}</Typography>) },
     { field: 'postCode', headerName: 'Post code', flex: 0.6, minWidth: 90, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.postCode}</Typography>) },
   ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.state?.info, tokens.background?.alt, theme.palette.text, openCallout]);
+
+  const filteredRows = useMemo(() => {
+    let rows = TASK_TABLE_ROWS;
+    if (selectedDivision) {
+      rows = rows.filter(row => row.division === selectedDivision);
+    }
+    if (selectedDomain) {
+      rows = rows.filter(row => row.domainId === selectedDomain);
+    }
+    if (searchFilters?.statuses?.length) {
+      rows = rows.filter(row => searchFilters.statuses.includes(row.status));
+    }
+    // Only show rows if at least division, domain, and status are defined
+    if (!selectedDivision || !selectedDomain || !searchFilters?.statuses?.length) {
+      return [];
+    }
+    return rows;
+  }, [selectedDivision, selectedDomain, searchFilters]);
 
   const apiRef = useGridApiRef();
 
@@ -220,7 +241,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
         <SharedMuiTable
           columns={columns}
-          rows={TASK_TABLE_ROWS}
+          rows={filteredRows}
           getRowId={(row) => row.taskId}
           density="compact"
           enablePagination={false}

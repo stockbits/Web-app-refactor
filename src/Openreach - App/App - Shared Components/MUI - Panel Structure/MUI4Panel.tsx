@@ -22,9 +22,12 @@ export interface MUI4PanelProps {
   onDockedPanelsChange?: (panels: DockedPanel[]) => void;
   dockedPanels?: DockedPanel[];
   globalSearch?: string;
+  selectedDivision?: string | null;
+  selectedDomain?: string | null;
+  searchFilters?: any; // or proper type
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], globalSearch = '' }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], globalSearch = '', selectedDivision, selectedDomain, searchFilters }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
 
@@ -43,10 +46,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, globalSearch } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, globalSearch } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" />, globalSearch } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, globalSearch } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, globalSearch, selectedDivision, selectedDomain, searchFilters } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, globalSearch]);
+  }, [dockedPanels, globalSearch, selectedDivision, selectedDomain, searchFilters]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {

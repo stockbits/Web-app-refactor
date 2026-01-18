@@ -7,6 +7,7 @@ import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel S
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
 import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
 import AppSearchTool from './App - Search Tool'
+import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
@@ -25,6 +26,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const [searchInput, setSearchInput] = useState('')
   const [searchToolOpen, setSearchToolOpen] = useState(false)
   const [legendOpen, setLegendOpen] = useState(false)
+  const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null)
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -124,9 +126,12 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
         <MUI4Panel
           dockedPanels={dockedPanels}
           onDockedPanelsChange={onDockedPanelsChange}
+          selectedDivision={selectedDivision}
+          selectedDomain={selectedDomain}
+          searchFilters={searchFilters}
         />
       </Box>
-      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} />
+      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
         <DialogContent>
