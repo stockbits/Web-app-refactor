@@ -112,9 +112,10 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     <Box
       sx={theme => ({
         position: 'absolute',
-        // Position from bottom to auto-adjust to panel height
+        // Center horizontally at bottom
         bottom: theme.spacing(2),
-        left: theme.spacing(2),
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
@@ -122,7 +123,6 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
         gap: { xs: 1, sm: 1.5 },
         maxWidth: 48,
         [theme.breakpoints.down('sm')]: {
-          left: theme.spacing(1),
           gap: 1,
           bottom: theme.spacing(1),
         },
@@ -421,7 +421,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         backgroundColor: theme.palette.background.paper,
         border: isExpanded ? 'none' : `1px solid ${theme.palette.divider}`,
         boxSizing: "border-box",
-        minHeight: 0,
+        minHeight: 300,
       }}
     >
       <AppBar
@@ -565,6 +565,14 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
           PaperProps={{
             sx: {
               backgroundColor: theme.palette.background.paper,
