@@ -92,6 +92,18 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
     };
   }, [map, currentZoom, onZoomChange]);
 
+  // Cleanup tooltips when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up any lingering tooltips
+      document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
+        if (tooltip.parentNode) {
+          tooltip.parentNode.removeChild(tooltip);
+        }
+      });
+    };
+  }, []);
+
   const handleZoomChange = (_event: Event, value: number | number[]) => {
     const zoom = value as number;
     map.setZoom(zoom);
@@ -707,12 +719,20 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                 iconCreateFunction={createClusterIcon}
                 eventHandlers={{
                   clustermouseover: (cluster: any) => {
+                    // Clear any existing tooltips before creating a new one
+                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    });
+
                     const count = cluster.layer.getChildCount();
                     const tooltipText = `Tasks in Group (${count})`;
 
                     // Create MUI-styled tooltip with optimized styling
                     const tooltip = document.createElement('div');
                     tooltip.textContent = tooltipText; // Use textContent instead of innerHTML for security
+                    tooltip.setAttribute('data-tooltip', 'cluster-tooltip'); // Add identifier for cleanup
 
                     // Pre-compute style object for better performance
                     const tooltipStyle = {
@@ -788,6 +808,22 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                     const map = cluster.target._map;
                     const clusterLatLng = cluster.layer.getBounds().getCenter();
                     map.setView(clusterLatLng, 14);
+                  },
+                  zoomstart: () => {
+                    // Clear all tooltips when zoom starts to prevent orphaned tooltips
+                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    });
+                  },
+                  zoomend: () => {
+                    // Additional cleanup after zoom completes
+                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
+                      if (tooltip.parentNode) {
+                        tooltip.parentNode.removeChild(tooltip);
+                      }
+                    });
                   }
                 }}
               >
