@@ -117,23 +117,33 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
       return tasks;
     }
 
-    // Pre-allocate arrays for better performance
-    const selectedTasks: TaskTableRow[] = [];
-    const unselectedTasks: TaskTableRow[] = [];
+    // Create task lookup map for O(1) access
+    const taskMap = new Map<string, TaskTableRow>();
+    for (let i = 0; i < tasks.length; i++) {
+      taskMap.set(tasks[i].taskId, tasks[i]);
+    }
 
-    // Single pass through tasks - most efficient approach
+    // Build selected tasks in reverse order (most recently selected first)
+    const selectedTasks: TaskTableRow[] = [];
+    for (let i = selectedTaskIds.length - 1; i >= 0; i--) {
+      const task = taskMap.get(selectedTaskIds[i]);
+      if (task) {
+        selectedTasks.push(task);
+      }
+    }
+
+    // Build unselected tasks
+    const unselectedTasks: TaskTableRow[] = [];
     for (let i = 0; i < tasks.length; i++) {
       const task = tasks[i];
-      if (selectedTaskIdsSet.has(task.taskId)) {
-        selectedTasks.push(task);
-      } else {
+      if (!selectedTaskIdsSet.has(task.taskId)) {
         unselectedTasks.push(task);
       }
     }
 
-    // Return concatenated result - avoid intermediate array creation
+    // Return concatenated result - most recently selected at top
     return selectedTasks.concat(unselectedTasks);
-  }, [selectedTaskIds.length, selectedTaskIdsSet, selectionSource]);
+  }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
 
   // Memoize context value with minimal dependencies to prevent unnecessary re-renders
   // Only include primitive values and stable references in dependencies
