@@ -539,7 +539,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
             sx={theme => ({
               position: 'absolute',
               top: theme.spacing(2),
-              left: theme.spacing(2),
+              right: theme.spacing(2),
               zIndex: 1001,
               width: 44,
               height: 44,
@@ -553,7 +553,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               },
               [theme.breakpoints.down('sm')]: {
                 top: theme.spacing(1),
-                left: theme.spacing(1),
+                right: theme.spacing(1),
               },
             })}
             aria-label="Map type"
@@ -632,23 +632,12 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
           zoomControl={false}
           preferCanvas={true}
         >
-            {/* Position ZoomControl below the map type button */}
+            {/* Position ZoomControl at bottom-left */}
             <ZoomControl 
               onZoomChange={setCurrentZoom} 
               currentZoom={currentZoom} 
               minZoom={1} 
               maxZoom={18} 
-              // @ts-ignore
-              sx={theme => ({
-                position: 'absolute',
-                top: theme.spacing(8), // below the map type button
-                left: theme.spacing(2),
-                zIndex: 1001,
-                [theme.breakpoints.down('sm')]: {
-                  top: theme.spacing(5),
-                  left: theme.spacing(1),
-                },
-              })}
             />
             <MapResizeHandler layoutKey={layoutKey} />
             <TileLayer
