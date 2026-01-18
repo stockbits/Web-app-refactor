@@ -7,7 +7,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
 import type { GridColDef } from '@mui/x-data-grid';
 import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { Chip } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
@@ -39,6 +39,25 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const { callout, openCallout, closeCallout } = useCalloutMgt();
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: TaskTableRow | null }>({ open: false, task: null });
   const { addMinimizedTask } = useMinimizedTasks();
+
+  // Resize observer for table height
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [tableHeight, setTableHeight] = useState(400);
+
+  useEffect(() => {
+    const element = tableContainerRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { height } = entry.contentRect;
+        setTableHeight(height);
+      }
+    });
+
+    resizeObserver.observe(element);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const handleMinimizeTask = () => {
     if (taskDialog.task) {
@@ -88,24 +107,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.state?.info, tokens.background?.alt, theme.palette.text, openCallout]);
 
   const apiRef = useGridApiRef();
-
-  // Scroll to the last row when data loads or component mounts
-  useEffect(() => {
-    if (TASK_TABLE_ROWS.length > 0) {
-      // Use multiple timeouts to ensure the grid is fully rendered
-      const scrollToLast = () => {
-        if (apiRef.current) {
-          apiRef.current.scrollToIndexes({ rowIndex: TASK_TABLE_ROWS.length - 1 });
-        }
-      };
-
-      // Try immediately, then with increasing delays
-      scrollToLast();
-      setTimeout(scrollToLast, 100);
-      setTimeout(scrollToLast, 300);
-      setTimeout(scrollToLast, 500);
-    }
-  }, [apiRef, TASK_TABLE_ROWS.length]);
 
   // TODO: Use globalSearch for filtering tasks
   console.log('Global search:', globalSearch);
@@ -216,7 +217,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           </Stack>
         </Toolbar>
       </AppBar>
-      <Box sx={{ flex: 1, backgroundColor: theme.palette.background.paper, minHeight: 0 }}>
+      <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
         <SharedMuiTable
           columns={columns}
           rows={TASK_TABLE_ROWS}
@@ -224,7 +225,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           density="compact"
           enablePagination={false}
           enableQuickFilter
-          height={400}
+          height={tableHeight}
           apiRef={apiRef}
           onCellDoubleClick={(params) => {
             setTaskDialog({ open: true, task: params.row });
