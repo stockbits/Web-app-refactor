@@ -279,8 +279,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         width: `${markerSize}px`, 
         height: `${markerSize}px`, 
         position: 'relative',
-        filter: isSelected ? `brightness(1.3) drop-shadow(0 0 8px ${alpha(theme.palette.error.main, 0.6)})` : 'none',
-        transition: 'filter 0.2s ease-in-out'
+        transition: 'all 0.2s ease-in-out'
       }}>
         <TaskIcon 
           variant={variant} 
@@ -290,12 +289,13 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
         {isSelected && (
           <div style={{
             position: 'absolute',
-            top: '-2px',
-            left: '-2px',
-            right: '-2px',
-            bottom: '-2px',
-            border: `2px solid ${theme.palette.error.main}`,
-            borderRadius: '4px',
+            top: '-4px',
+            left: '-4px',
+            right: '-4px',
+            bottom: '-4px',
+            border: `2px solid ${theme.palette.primary.main}`,
+            borderRadius: '6px',
+            backgroundColor: alpha(theme.palette.primary.main, 0.1),
             pointerEvents: 'none'
           }} />
         )}
