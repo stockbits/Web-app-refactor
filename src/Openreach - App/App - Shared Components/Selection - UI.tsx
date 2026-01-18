@@ -28,6 +28,7 @@ interface SelectionUIContextType {
   clearSelection: () => void;
   selectTasks: (taskIds: string[], source?: 'map' | 'table') => void;
   getPrioritizedTasks: (allTasks: TaskTableRow[]) => TaskTableRow[];
+  selectionSource: 'map' | 'table' | null;
 }
 
 const SelectionUIContext = createContext<SelectionUIContextType | undefined>(undefined);
@@ -136,11 +137,13 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     toggleTaskSelection,
     clearSelection,
     selectTasks,
-    getPrioritizedTasks
+    getPrioritizedTasks,
+    selectionSource
   }), [
     // Only include the actual state and computed values that change
     selectedTaskIds,
     selectedTasks,
+    selectionSource,
     // Functions are stable due to useCallback, so no need to include them
   ]);
 
@@ -171,13 +174,14 @@ export const useMapSelection = () => {
 
 // Hook for task table components to get prioritized task list
 export const useTaskTableSelection = () => {
-  const { getPrioritizedTasks, selectedTaskIds, isTaskSelected, toggleTaskSelection } = useSelectionUI();
+  const { getPrioritizedTasks, selectedTaskIds, isTaskSelected, toggleTaskSelection, selectionSource } = useSelectionUI();
 
   return {
     getPrioritizedTasks,
     selectedTaskIds,
     isTaskSelected,
-    toggleTaskSelection
+    toggleTaskSelection,
+    selectionSource
   };
 };
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, useMemo, type ReactNode } from 'react'
 import { Box, Stack, Switch, Typography, Menu, MenuItem } from '@mui/material'
 import {
   DataGrid,
@@ -23,6 +23,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   hideFooter?: boolean
   enablePagination?: boolean
   enableQuickFilter?: boolean
+  disableSorting?: boolean
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
@@ -45,6 +46,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   hideFooter = false,
   enablePagination = true,
   enableQuickFilter = false,
+  disableSorting = false,
   pageSizeOptions,
   initialPageSize = 16,
   emptyState,
@@ -67,6 +69,12 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     pageSize: resolvedInitialPageSize,
     page: 0,
   })
+
+  // Modify columns to disable sorting when requested
+  const modifiedColumns = useMemo(() => {
+    if (!disableSorting) return columns;
+    return columns.map(col => ({ ...col, sortable: false }));
+  }, [columns, disableSorting]);
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<{
@@ -196,10 +204,16 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
               backgroundColor: 'rgba(67, 176, 114, 0.12)', // energyAccent green with slightly higher opacity on hover
             },
           },
+          '& .MuiDataGrid-row.Mui-selected': {
+            backgroundColor: 'rgba(67, 176, 114, 0.08) !important', // Override MUI's default blue selection
+            '&:hover': {
+              backgroundColor: 'rgba(67, 176, 114, 0.12) !important',
+            },
+          },
         }}
         apiRef={apiRef}
         rows={rows}
-        columns={columns}
+        columns={modifiedColumns}
         getRowId={getRowId}
         getRowClassName={getRowClassName}
         density={densityMode}

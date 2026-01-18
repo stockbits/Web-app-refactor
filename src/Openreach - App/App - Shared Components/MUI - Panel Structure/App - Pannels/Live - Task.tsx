@@ -42,7 +42,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const { addMinimizedTask } = useMinimizedTasks();
 
   // Selection UI integration - use prioritization when selected from map
-  const { getPrioritizedTasks, isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
+  const { getPrioritizedTasks, isTaskSelected, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
 
   // Resize observer for table height
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -248,6 +248,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             density="compact"
             enablePagination={false}
             enableQuickFilter
+            disableSorting={selectionSource === 'map' && selectedTaskIds.length > 0}
             height={tableHeight}
             apiRef={apiRef}
             getRowClassName={getRowClassName}
