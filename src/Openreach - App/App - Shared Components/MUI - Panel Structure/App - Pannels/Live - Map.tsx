@@ -341,9 +341,10 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};
+    const selectedSet = new Set(clickedMarkerIds); // Faster lookup than array.includes()
     tasksToDisplay.forEach((task) => {
       const variant = getIconVariant(task.commitType);
-      const isSelected = clickedMarkerIds.includes(task.taskId);
+      const isSelected = selectedSet.has(task.taskId);
       const key = `${task.taskId}-${isSelected}`;
       icons[key] = createMarkerIcon(variant, isSelected);
     });
