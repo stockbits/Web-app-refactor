@@ -709,84 +709,84 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
                   clustermouseover: (cluster: any) => {
                     const count = cluster.layer.getChildCount();
                     const tooltipText = `Tasks in Group (${count})`;
-                    
-                    // Create MUI-styled tooltip
+
+                    // Create MUI-styled tooltip with optimized styling
                     const tooltip = document.createElement('div');
-                    tooltip.innerHTML = tooltipText;
-                    Object.assign(tooltip.style, {
+                    tooltip.textContent = tooltipText; // Use textContent instead of innerHTML for security
+
+                    // Pre-compute style object for better performance
+                    const tooltipStyle = {
                       position: 'absolute',
                       backgroundColor: 'rgba(97, 97, 97, 0.9)',
                       color: 'white',
                       padding: '8px 12px',
                       borderRadius: '4px',
-                      fontSize: '0.75rem', // MUI tooltip default font size
+                      fontSize: '0.75rem',
                       fontFamily: theme.typography.fontFamily,
-                      fontWeight: 400, // MUI tooltip default weight
-                      lineHeight: 1.4, // MUI tooltip default line height
+                      fontWeight: '400',
+                      lineHeight: '1.4',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      zIndex: 10000,
+                      zIndex: '10000',
                       pointerEvents: 'none',
                       whiteSpace: 'nowrap',
                       opacity: '0',
                       transition: 'opacity 0.15s ease-out, transform 0.15s ease-out',
                       transform: 'translateY(5px)'
-                    });
-                    
+                    };
+
+                    Object.assign(tooltip.style, tooltipStyle);
+
                     // Position tooltip anchored to cluster icon
                     const map = cluster.target._map;
                     const clusterCenter = cluster.layer.getBounds().getCenter();
                     const pixelPoint = map.latLngToContainerPoint(clusterCenter);
-                    
-                    // Position relative to map container instead of document body
+
+                    // Position relative to map container
                     const mapContainer = map.getContainer();
                     const mapRect = mapContainer.getBoundingClientRect();
-                    
-                    tooltip.style.left = mapRect.left + pixelPoint.x + 15 + 'px';
-                    tooltip.style.top = mapRect.top + pixelPoint.y - 35 + 'px'; // Position above the icon
-                    
+
+                    tooltip.style.left = `${mapRect.left + pixelPoint.x + 15}px`;
+                    tooltip.style.top = `${mapRect.top + pixelPoint.y - 35}px`;
+
                     document.body.appendChild(tooltip);
-                    
+
                     // Trigger fade-in animation
                     requestAnimationFrame(() => {
                       tooltip.style.opacity = '1';
                       tooltip.style.transform = 'translateY(0)';
                     });
-                    
+
                     // Store reference for cleanup
                     cluster.layer._customTooltip = tooltip;
                   },
                   clustermouseout: (cluster: any) => {
                     // Remove custom tooltip with fade-out animation
-                    if (cluster.layer._customTooltip) {
-                      const tooltip = cluster.layer._customTooltip;
+                    const tooltip = cluster.layer._customTooltip;
+                    if (tooltip) {
                       tooltip.style.opacity = '0';
                       tooltip.style.transform = 'translateY(5px)';
-                      
+
                       // Remove after animation completes
                       setTimeout(() => {
-                        if (document.body.contains(tooltip)) {
-                          document.body.removeChild(tooltip);
+                        if (tooltip.parentNode) {
+                          tooltip.parentNode.removeChild(tooltip);
                         }
-                      }, 150); // Match transition duration
-                      
+                      }, 150);
+
                       delete cluster.layer._customTooltip;
                     }
                   },
                   clusterclick: (cluster: any) => {
                     // Clear any existing tooltip immediately on click
-                    if (cluster.layer._customTooltip) {
-                      const tooltip = cluster.layer._customTooltip;
-                      if (document.body.contains(tooltip)) {
-                        document.body.removeChild(tooltip);
-                      }
+                    const tooltip = cluster.layer._customTooltip;
+                    if (tooltip && tooltip.parentNode) {
+                      tooltip.parentNode.removeChild(tooltip);
                       delete cluster.layer._customTooltip;
                     }
-                    
-                    console.log('Cluster clicked!', cluster);
+
                     // When clicking a cluster, zoom to level 14 and center on the cluster
                     const map = cluster.target._map;
                     const clusterLatLng = cluster.layer.getBounds().getCenter();
-                    console.log('Zooming to:', clusterLatLng, 'at zoom 14');
                     map.setView(clusterLatLng, 14);
                   }
                 }}
