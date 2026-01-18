@@ -10,6 +10,8 @@ import LiveGantt from "./App - Pannels/Live - Gantt";
 import LiveMap from "./App - Pannels/Live - Map";
 import LivePeople from "./App - Pannels/Live - People";
 import LiveTask from "./App - Pannels/Live - Task";
+import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
+import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
 
 export interface DockedPanel {
   id: string;
@@ -21,13 +23,12 @@ export interface DockedPanel {
 export interface MUI4PanelProps {
   onDockedPanelsChange?: (panels: DockedPanel[]) => void;
   dockedPanels?: DockedPanel[];
-  globalSearch?: string;
   selectedDivision?: string | null;
   selectedDomain?: string | null;
-  searchFilters?: any; // or proper type
+  searchFilters?: SearchFilters | null;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], globalSearch = '', selectedDivision, selectedDomain, searchFilters }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
 
@@ -40,16 +41,59 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
 
+  // Compute filtered tasks based on selectedDivision, selectedDomain, and searchFilters
+  const filteredTasks = useMemo(() => {
+    // Only show tasks after search has been performed
+    if (!searchFilters) {
+      return [];
+    }
+
+    return TASK_TABLE_ROWS.filter(task => {
+      // Filter by division if selected
+      if (selectedDivision && task.division !== selectedDivision) {
+        return false;
+      }
+
+      // Filter by domain if selected
+      if (selectedDomain && task.domainId !== selectedDomain) {
+        return false;
+      }
+
+      // Status filter
+      if (searchFilters.statuses && searchFilters.statuses.length > 0) {
+        if (!searchFilters.statuses.includes(task.status)) {
+          return false;
+        }
+      }
+
+      // Capability filter
+      if (searchFilters.capabilities && searchFilters.capabilities.length > 0) {
+        if (!searchFilters.capabilities.some(cap => task.capabilities.includes(cap))) {
+          return false;
+        }
+      }
+
+      // Response filter
+      if (searchFilters.responseCodes && searchFilters.responseCodes.length > 0) {
+        if (!searchFilters.responseCodes.includes(task.responseCode)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [selectedDivision, selectedDomain, searchFilters]);
+
   // Get list of visible panels (not docked)
   const visiblePanels = useMemo(() => {
     const panels = [
-      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, globalSearch } },
-      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, globalSearch } },
-      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" />, globalSearch } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, globalSearch, selectedDivision, selectedDomain, searchFilters } },
+      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
+      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks } },
+      { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, globalSearch, selectedDivision, selectedDomain, searchFilters]);
+  }, [dockedPanels, filteredTasks]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {
@@ -310,6 +354,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], glo
               }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {React.createElement(panel.component as unknown as React.ComponentType<any>, {
+                  ...panel.props,
                   onDock: () => handleDockPanel({
                     id: panel.id,
                     title: panel.props.title,

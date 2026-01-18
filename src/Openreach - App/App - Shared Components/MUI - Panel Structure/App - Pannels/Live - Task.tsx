@@ -6,7 +6,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
 import type { GridColDef } from '@mui/x-data-grid';
-import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
+import { TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 import { useMemo, useState, useRef, useEffect } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { Chip } from '@mui/material';
@@ -24,13 +24,10 @@ interface LiveTaskProps {
   isDocked?: boolean;
   isExpanded?: boolean;
   minimized?: boolean;
-  globalSearch?: string;
-  selectedDivision?: string | null;
-  selectedDomain?: string | null;
-  searchFilters?: any;
+  filteredTasks?: TaskTableRow[];
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, globalSearch = '', selectedDivision, selectedDomain, searchFilters }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -110,27 +107,13 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.state?.info, tokens.background?.alt, theme.palette.text, openCallout]);
 
   const filteredRows = useMemo(() => {
-    let rows = TASK_TABLE_ROWS;
-    if (selectedDivision) {
-      rows = rows.filter(row => row.division === selectedDivision);
-    }
-    if (selectedDomain) {
-      rows = rows.filter(row => row.domainId === selectedDomain);
-    }
-    if (searchFilters?.statuses?.length) {
-      rows = rows.filter(row => searchFilters.statuses.includes(row.status));
-    }
-    // Only show rows if at least division, domain, and status are defined
-    if (!selectedDivision || !selectedDomain || !searchFilters?.statuses?.length) {
-      return [];
-    }
-    return rows;
-  }, [selectedDivision, selectedDomain, searchFilters]);
+    // Use filteredTasks if provided, otherwise return empty array
+    return filteredTasks || [];
+  }, [filteredTasks]);
 
   const apiRef = useGridApiRef();
 
   // TODO: Use globalSearch for filtering tasks
-  console.log('Global search:', globalSearch);
 
 
   if (minimized) {

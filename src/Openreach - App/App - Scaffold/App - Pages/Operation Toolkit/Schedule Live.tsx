@@ -22,7 +22,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const searchRef = useRef<HTMLInputElement>(null)
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
-  const [globalSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [searchToolOpen, setSearchToolOpen] = useState(false)
   const [legendOpen, setLegendOpen] = useState(false)
@@ -36,9 +35,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
   const domainOptions = useMemo(() => 
     Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.domainId))).sort((a, b) => a.localeCompare(b)), 
   [])
-
-  // TODO: Use globalSearch for filtering
-  console.log('Global search applied:', globalSearch)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -122,15 +118,13 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
       </Box>
 
       {/* Panel Grid */}
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <MUI4Panel
-          dockedPanels={dockedPanels}
-          onDockedPanelsChange={onDockedPanelsChange}
-          selectedDivision={selectedDivision}
-          selectedDomain={selectedDomain}
-          searchFilters={searchFilters}
-        />
-      </Box>
+      <MUI4Panel
+        dockedPanels={dockedPanels}
+        onDockedPanelsChange={onDockedPanelsChange}
+        selectedDivision={selectedDivision}
+        selectedDomain={selectedDomain}
+        searchFilters={searchFilters}
+      />
       <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>

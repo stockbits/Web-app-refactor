@@ -24,7 +24,7 @@ interface AppSearchToolProps {
   currentSearchTerm?: string
 }
 
-interface SearchFilters {
+export interface SearchFilters {
   statuses?: TaskStatusCode[]
   capabilities?: TaskSkillCode[]
   responseCodes?: TaskResponseCode[]
@@ -49,7 +49,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
   const statusOptions = React.useMemo(() =>
     Object.entries(TASK_STATUS_LABELS).map(([code, label]) => ({
       value: code as TaskStatusCode,
-      label: `${code} → ${label}`
+      label: label
     })),
   [])
 

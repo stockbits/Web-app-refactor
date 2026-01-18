@@ -16,7 +16,7 @@ import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
 import { TASK_ICON_COLORS } from '../../../../App - Central Theme/Icon-Colors';
-import { TASK_TABLE_ROWS, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
+import { TASK_TABLE_ROWS, type TaskCommitType, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -35,6 +35,7 @@ interface LiveMapProps {
   isExpanded?: boolean;
   minimized?: boolean;
   layoutKey?: number;
+  filteredTasks?: TaskTableRow[];
 }
 
 interface MapClickHandlerProps {
@@ -211,11 +212,14 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
   );
 }
 
-export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0 }: LiveMapProps = {}) {
+export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0, filteredTasks }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
   const taskColors = theme.openreach?.darkTokens?.mapTaskColors; // Always use dark mode colors for task icons
+  
+  // Use filteredTasks if provided, otherwise fall back to all tasks
+  const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
   
   // Map commit types to icon variants
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
@@ -310,14 +314,14 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
     const icons: Record<string, L.DivIcon> = {};
-    TASK_TABLE_ROWS.forEach((task) => {
+    tasksToDisplay.forEach((task) => {
       const variant = getIconVariant(task.commitType);
       const isSelected = clickedMarkerIds.includes(task.taskId);
       const key = `${task.taskId}-${isSelected}`;
       icons[key] = createMarkerIcon(variant, isSelected);
     });
     return icons;
-  }, [createMarkerIcon, clickedMarkerIds]);
+  }, [createMarkerIcon, clickedMarkerIds, tasksToDisplay]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -691,7 +695,7 @@ export default memo(function LiveMap({ onDock, onUndock, onExpand, onCollapse, i
               }}
             >
               {/* Render markers from task data */}
-              {TASK_TABLE_ROWS.map((task: typeof TASK_TABLE_ROWS[0]) => {
+              {tasksToDisplay.map((task: TaskTableRow) => {
                 const variant = getIconVariant(task.commitType);
                 const isSelected = clickedMarkerIds.includes(task.taskId);
                 const iconKey = `${task.taskId}-${isSelected}`;
