@@ -24,9 +24,9 @@ interface SelectionUIContextType {
   selectedTaskIds: string[];
   selectedTasks: TaskTableRow[];
   isTaskSelected: (taskId: string) => boolean;
-  toggleTaskSelection: (taskId: string, multiSelect?: boolean) => void;
+  toggleTaskSelection: (taskId: string, multiSelect?: boolean, source?: 'map' | 'table') => void;
   clearSelection: () => void;
-  selectTasks: (taskIds: string[]) => void;
+  selectTasks: (taskIds: string[], source?: 'map' | 'table') => void;
   getPrioritizedTasks: (allTasks: TaskTableRow[]) => TaskTableRow[];
 }
 
@@ -50,6 +50,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
   allTasks
 }) => {
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
+  const [selectionSource, setSelectionSource] = useState<'map' | 'table' | null>(null);
 
   // Use Set for O(1) lookups instead of O(n) includes()
   const selectedTaskIdsSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
@@ -65,7 +66,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
   }, [selectedTaskIdsSet]);
 
   // Toggle task selection (supports multi-select with multiSelect flag)
-  const toggleTaskSelection = useCallback((taskId: string, multiSelect = false) => {
+  const toggleTaskSelection = useCallback((taskId: string, multiSelect = false, source: 'map' | 'table' = 'table') => {
     setSelectedTaskIds(prev => {
       const isCurrentlySelected = selectedTaskIdsSet.has(taskId);
 
@@ -89,6 +90,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
         return isCurrentlySelected ? [] : [taskId];
       }
     });
+    setSelectionSource(source);
   }, [selectedTaskIdsSet]);
 
   // Clear all selections
@@ -97,13 +99,15 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
   }, []);
 
   // Select multiple tasks at once
-  const selectTasks = useCallback((taskIds: string[]) => {
+  const selectTasks = useCallback((taskIds: string[], source: 'map' | 'table' = 'table') => {
     setSelectedTaskIds(taskIds);
+    setSelectionSource(source);
   }, []);
 
   // Get tasks with selected tasks prioritized (moved to top) - single pass optimization
   const getPrioritizedTasks = useCallback((tasks: TaskTableRow[]) => {
-    if (selectedTaskIds.length === 0) {
+    // Only prioritize if selection came from map
+    if (selectedTaskIds.length === 0 || selectionSource !== 'map') {
       return tasks;
     }
 
@@ -121,7 +125,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
 
     // Return selected tasks first, then unselected tasks
     return [...selectedTasks, ...unselectedTasks];
-  }, [selectedTaskIds.length, selectedTaskIdsSet]);
+  }, [selectedTaskIds.length, selectedTaskIdsSet, selectionSource]);
 
   // Memoize context value with minimal dependencies to prevent unnecessary re-renders
   // Only include primitive values and stable references in dependencies
@@ -152,11 +156,11 @@ export const useMapSelection = () => {
   const { toggleTaskSelection, selectTasks } = useSelectionUI();
 
   const selectTaskFromMap = useCallback((taskId: string, multiSelect = false) => {
-    toggleTaskSelection(taskId, multiSelect);
+    toggleTaskSelection(taskId, multiSelect, 'map');
   }, [toggleTaskSelection]);
 
   const selectMultipleTasksFromMap = useCallback((taskIds: string[]) => {
-    selectTasks(taskIds);
+    selectTasks(taskIds, 'map');
   }, [selectTasks]);
 
   return {

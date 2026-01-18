@@ -191,9 +191,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             border: 'none',
           },
           '& .selected-row': {
-            backgroundColor: 'rgba(25, 118, 210, 0.08)',
+            backgroundColor: 'rgba(67, 176, 114, 0.08)', // energyAccent green with low opacity
             '&:hover': {
-              backgroundColor: 'rgba(25, 118, 210, 0.12)',
+              backgroundColor: 'rgba(67, 176, 114, 0.12)', // energyAccent green with slightly higher opacity on hover
             },
           },
         }}

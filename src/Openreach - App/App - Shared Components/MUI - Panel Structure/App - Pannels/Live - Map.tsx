@@ -310,9 +310,9 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             left: '-4px',
             right: '-4px',
             bottom: '-4px',
-            border: `2px solid ${theme.palette.primary.main}`,
+            border: `2px solid ${theme.openreach.energyAccent}`,
             borderRadius: '6px',
-            backgroundColor: alpha(theme.palette.primary.main, 0.1),
+            backgroundColor: alpha(theme.openreach.energyAccent, 0.1),
             pointerEvents: 'none'
           }} />
         )}

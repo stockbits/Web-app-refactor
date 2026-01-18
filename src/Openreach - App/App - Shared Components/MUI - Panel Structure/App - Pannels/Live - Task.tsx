@@ -41,8 +41,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: TaskTableRow | null }>({ open: false, task: null });
   const { addMinimizedTask } = useMinimizedTasks();
 
-  // Selection UI integration - only need highlighting and selection toggle
-  const { isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
+  // Selection UI integration - use prioritization when selected from map
+  const { getPrioritizedTasks, isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
 
   // Resize observer for table height
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -112,9 +112,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
-    // Keep original task order for table view - don't prioritize selected tasks
-    return filteredTasks || [];
-  }, [filteredTasks]);
+    const baseTasks = filteredTasks || [];
+    // Apply prioritization only when selected from map for visibility
+    return getPrioritizedTasks(baseTasks);
+  }, [filteredTasks, getPrioritizedTasks]);
 
   const apiRef = useGridApiRef();
 
