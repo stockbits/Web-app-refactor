@@ -51,26 +51,37 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
 }) => {
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
-  // Get selected task objects
-  const selectedTasks = useMemo(() => {
-    return allTasks.filter(task => selectedTaskIds.includes(task.taskId));
-  }, [allTasks, selectedTaskIds]);
+  // Use Set for O(1) lookups instead of O(n) includes()
+  const selectedTaskIdsSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
-  // Check if a task is selected
+  // Get selected task objects - only compute when needed
+  const selectedTasks = useMemo(() => {
+    return allTasks.filter(task => selectedTaskIdsSet.has(task.taskId));
+  }, [allTasks, selectedTaskIdsSet]);
+
+  // Check if a task is selected - O(1) lookup
   const isTaskSelected = useCallback((taskId: string) => {
-    return selectedTaskIds.includes(taskId);
-  }, [selectedTaskIds]);
+    return selectedTaskIdsSet.has(taskId);
+  }, [selectedTaskIdsSet]);
 
   // Toggle task selection (supports multi-select with multiSelect flag)
   const toggleTaskSelection = useCallback((taskId: string, multiSelect = false) => {
     setSelectedTaskIds(prev => {
-      const isCurrentlySelected = prev.includes(taskId);
+      const isCurrentlySelected = selectedTaskIdsSet.has(taskId);
 
       if (multiSelect) {
         // Multi-select mode: add/remove from selection
         if (isCurrentlySelected) {
-          return prev.filter(id => id !== taskId);
+          // Remove taskId from array
+          const index = prev.indexOf(taskId);
+          if (index > -1) {
+            const newArray = [...prev];
+            newArray.splice(index, 1);
+            return newArray;
+          }
+          return prev; // Shouldn't happen, but safety check
         } else {
+          // Add taskId to array
           return [...prev, taskId];
         }
       } else {
@@ -78,7 +89,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
         return isCurrentlySelected ? [] : [taskId];
       }
     });
-  }, []);
+  }, [selectedTaskIdsSet]);
 
   // Clear all selections
   const clearSelection = useCallback(() => {
@@ -90,19 +101,30 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     setSelectedTaskIds(taskIds);
   }, []);
 
-  // Get tasks with selected tasks prioritized (moved to top)
+  // Get tasks with selected tasks prioritized (moved to top) - single pass optimization
   const getPrioritizedTasks = useCallback((tasks: TaskTableRow[]) => {
     if (selectedTaskIds.length === 0) {
       return tasks;
     }
 
-    const selectedTasks = tasks.filter(task => selectedTaskIds.includes(task.taskId));
-    const unselectedTasks = tasks.filter(task => !selectedTaskIds.includes(task.taskId));
+    const selectedTasks: TaskTableRow[] = [];
+    const unselectedTasks: TaskTableRow[] = [];
+
+    // Single pass through tasks for better performance
+    for (const task of tasks) {
+      if (selectedTaskIdsSet.has(task.taskId)) {
+        selectedTasks.push(task);
+      } else {
+        unselectedTasks.push(task);
+      }
+    }
 
     // Return selected tasks first, then unselected tasks
     return [...selectedTasks, ...unselectedTasks];
-  }, [selectedTaskIds]);
+  }, [selectedTaskIds.length, selectedTaskIdsSet]);
 
+  // Memoize context value with minimal dependencies to prevent unnecessary re-renders
+  // Only include primitive values and stable references in dependencies
   const value = useMemo(() => ({
     selectedTaskIds,
     selectedTasks,
@@ -112,13 +134,10 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     selectTasks,
     getPrioritizedTasks
   }), [
+    // Only include the actual state and computed values that change
     selectedTaskIds,
     selectedTasks,
-    isTaskSelected,
-    toggleTaskSelection,
-    clearSelection,
-    selectTasks,
-    getPrioritizedTasks
+    // Functions are stable due to useCallback, so no need to include them
   ]);
 
   return (

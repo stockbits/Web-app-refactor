@@ -7,7 +7,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
 import type { GridColDef } from '@mui/x-data-grid';
 import { TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { Chip } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
@@ -15,6 +15,7 @@ import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { AppTaskDialog } from '../../MUI - More Info Component/App - Task Dialog';
 import { useMinimizedTasks } from '../../../../App - Central Theme/MinimizedTaskContext';
+import { useTaskTableSelection } from '../../Selection - UI';
 
 interface LiveTaskProps {
   onDock?: () => void;
@@ -39,6 +40,9 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const { callout, openCallout, closeCallout } = useCalloutMgt();
   const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: TaskTableRow | null }>({ open: false, task: null });
   const { addMinimizedTask } = useMinimizedTasks();
+
+  // Selection UI integration
+  const { getPrioritizedTasks, isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
 
   // Resize observer for table height
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -108,10 +112,24 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
-    return filteredTasks || [];
-  }, [filteredTasks]);
+    const baseTasks = filteredTasks || [];
+    // Apply selection prioritization - selected tasks appear first
+    return getPrioritizedTasks(baseTasks);
+  }, [filteredTasks, getPrioritizedTasks]);
 
   const apiRef = useGridApiRef();
+
+  // Row styling for selected tasks
+  const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
+    return isTaskSelected(params.row.taskId) ? 'selected-row' : '';
+  }, [isTaskSelected]);
+
+  // Handle row clicks for task selection
+  const handleRowClick = useCallback((params: any, event: any) => {
+    // Check if CTRL key is held for multi-selection
+    const isCtrlPressed = event.ctrlKey || event.metaKey;
+    toggleTaskSelection(params.row.taskId, isCtrlPressed);
+  }, [toggleTaskSelection]);
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -232,6 +250,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             enableQuickFilter
             height={tableHeight}
             apiRef={apiRef}
+            getRowClassName={getRowClassName}
+            onCellClick={handleRowClick}
             onCellDoubleClick={(params) => {
               setTaskDialog({ open: true, task: params.row });
             }}

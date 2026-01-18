@@ -12,6 +12,7 @@ import LivePeople from "./App - Pannels/Live - People";
 import LiveTask from "./App - Pannels/Live - Task";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
+import { SelectionUIProvider } from "../Selection - UI";
 
 export interface DockedPanel {
   id: string;
@@ -285,13 +286,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   }
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        height: '100%',
-        width: '100%',
-        backgroundColor: theme.palette.background.default,
-        position: 'relative',
+    <SelectionUIProvider allTasks={TASK_TABLE_ROWS}>
+      <Box
+        ref={containerRef}
+        sx={{
+          height: '100%',
+          width: '100%',
+          backgroundColor: theme.palette.background.default,
+          position: 'relative',
         overflow: 'hidden',
         margin: 0,
         padding: 0,
@@ -501,5 +503,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         </Box>
       )}
     </Box>
+    </SelectionUIProvider>
   );
 }

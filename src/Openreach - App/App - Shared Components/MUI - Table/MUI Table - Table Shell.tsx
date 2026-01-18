@@ -33,6 +33,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   onCellTouchStart?: (params: GridCellParams<T>, event: React.TouchEvent) => void
   onCellTouchEnd?: (params: GridCellParams<T>, event: React.TouchEvent) => void
   onCellTouchMove?: (params: GridCellParams<T>, event: React.TouchEvent) => void
+  getRowClassName?: (params: { id: GridRowId; row: T }) => string
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
@@ -54,6 +55,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   onCellTouchStart,
   onCellTouchEnd,
   onCellTouchMove,
+  getRowClassName,
 }: SharedMuiTableProps<T>) {
   const internalApiRef = useGridApiRef()
   const apiRef = externalApiRef || internalApiRef
@@ -188,11 +190,18 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             boxShadow: 'none',
             border: 'none',
           },
+          '& .selected-row': {
+            backgroundColor: 'rgba(25, 118, 210, 0.08)',
+            '&:hover': {
+              backgroundColor: 'rgba(25, 118, 210, 0.12)',
+            },
+          },
         }}
         apiRef={apiRef}
         rows={rows}
         columns={columns}
         getRowId={getRowId}
+        getRowClassName={getRowClassName}
         density={densityMode}
         loading={loading}
         hideFooter={hideFooter || !enablePagination}

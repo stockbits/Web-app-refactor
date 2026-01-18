@@ -11,13 +11,12 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { memo } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
 import { TASK_ICON_COLORS } from '../../../../App - Central Theme/Icon-Colors';
 import { TASK_TABLE_ROWS, type TaskCommitType, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
-import { SelectionUIProvider, useMapSelection, useSelectionUI } from '../../Selection - UI';
+import { useMapSelection, useSelectionUI } from '../../Selection - UI';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
@@ -231,14 +230,16 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
   const taskColors = theme.openreach?.darkTokens?.mapTaskColors; // Always use dark mode colors for task icons
 
-  // Selection UI integration
+  // Selection UI integration - separate hooks for different concerns
   const { selectTaskFromMap } = useMapSelection();
   const { selectedTaskIds } = useSelectionUI();
 
   // Use filteredTasks if provided, otherwise fall back to all tasks
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
-  
-  // Map commit types to icon variants
+
+  // Create Set for O(1) lookups - memoized for performance
+  const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
+
   const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
     switch (commitType) {
       case 'APPOINTMENT':
@@ -260,7 +261,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     return (saved as MapLayerType) || 'roadmap';
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [clickedMarkerIds, setClickedMarkerIds] = useState<string[]>([]);
+
   const ignoreNextMapClickRef = useRef(false); // Prevent map click from closing popup right after marker double-tap
   const [currentZoom, setCurrentZoom] = useState(6); // Track current zoom level
   
@@ -276,8 +277,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   });
 
   // Clear clicked marker after a short delay
-  const clickedMarkerIdsRef = useRef(clickedMarkerIds);
-  clickedMarkerIdsRef.current = clickedMarkerIds;
+
 
   // Note: Removed auto-clear functionality to preserve multi-selections
 
@@ -351,9 +351,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       iconSize: L.point(size, size, true),
     });
   }, [taskColors?.taskGroup, theme.openreach?.coreBlock, theme.palette.common.black]);
-
-  // Create selected set for efficient lookups using selection UI
-  const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
@@ -925,33 +922,19 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                         // Check if CTRL key is held for multi-selection
                         const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
 
-                        if (isCtrlPressed) {
-                          // Multi-select: toggle this marker in the selection
-                          setClickedMarkerIds(prev =>
-                            prev.includes(task.taskId)
-                              ? prev.filter(id => id !== task.taskId) // Remove if already selected
-                              : [...prev, task.taskId] // Add if not selected
-                          );
-                        } else {
-                          // Single select: replace selection with just this marker
-                          setClickedMarkerIds([task.taskId]);
-                        }
+                        // Use the selection UI system
+                        selectTaskFromMap(task.taskId, isCtrlPressed);
                       },
                       mousedown: (e) => {
+                        // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
                         e.originalEvent.preventDefault();
                         e.originalEvent.stopPropagation();
 
+                        // Check if CTRL key is held for multi-selection
                         const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
 
-                        if (isCtrlPressed) {
-                          setClickedMarkerIds(prev =>
-                            prev.includes(task.taskId)
-                              ? prev.filter(id => id !== task.taskId)
-                              : [...prev, task.taskId]
-                          );
-                        } else {
-                          setClickedMarkerIds([task.taskId]);
-                        }
+                        // Use the selection UI system
+                        selectTaskFromMap(task.taskId, isCtrlPressed);
                       },
                       dblclick: () => {
                         ignoreNextMapClickRef.current = true;
@@ -1017,12 +1000,4 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 }
 
 // Wrapper component with Selection UI Provider
-const LiveMapWithSelection = memo(function LiveMapWithSelection(props: LiveMapProps = {}) {
-  return (
-    <SelectionUIProvider allTasks={TASK_TABLE_ROWS}>
-      <LiveMap {...props} />
-    </SelectionUIProvider>
-  );
-});
-
-export default LiveMapWithSelection;
+export default LiveMap;
