@@ -26,6 +26,8 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
+  height?: string | number
+  apiRef?: ReturnType<typeof useGridApiRef>
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellTouchStart?: (params: GridCellParams<T>, event: React.TouchEvent) => void
@@ -45,13 +47,16 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   pageSizeOptions,
   initialPageSize = 16,
   emptyState,
+  height = '60vh',
+  apiRef: externalApiRef,
   onCellClick,
   onCellDoubleClick,
   onCellTouchStart,
   onCellTouchEnd,
   onCellTouchMove,
 }: SharedMuiTableProps<T>) {
-  const apiRef = useGridApiRef()
+  const internalApiRef = useGridApiRef()
+  const apiRef = externalApiRef || internalApiRef
   const [densityMode, setDensityMode] = useState(density)
   const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
@@ -158,11 +163,19 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       >
         <DataGrid
         sx={{
-          height: '60vh',
+          height: height,
           width: '100%',
           '& .MuiDataGrid-cell': {
             display: 'flex',
             alignItems: 'center',
+          },
+          '& .MuiDataGrid-columnHeader': {
+            fontSize: '0.75rem', // 12px - same as caption variant
+            fontWeight: 600,
+          },
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontSize: '0.75rem', // 12px - same as caption variant
+            fontWeight: 600,
           },
           '& .action-col': {
             display: 'flex',
@@ -182,7 +195,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         getRowId={getRowId}
         density={densityMode}
         loading={loading}
-        hideFooter={hideFooter}
+        hideFooter={hideFooter || !enablePagination}
         autoHeight={false}
         {...(enablePagination && {
           pagination: true as const,

@@ -1,7 +1,20 @@
+
 import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+
+import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
+import type { GridColDef } from '@mui/x-data-grid';
+import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
+import { useMemo, useEffect, useState } from 'react';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import { Chip } from '@mui/material';
+import { useGridApiRef } from '@mui/x-data-grid';
+import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
+import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
+import { AppTaskDialog } from '../../MUI - More Info Component/App - Task Dialog';
+import { useMinimizedTasks } from '../../../../App - Central Theme/MinimizedTaskContext';
 
 interface LiveTaskProps {
   onDock?: () => void;
@@ -19,11 +32,84 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
   const iconColor = theme.openreach.energyAccent;
-  const bodyIconColor = iconColor;
-  const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
+
+  // --- Feature parity with Task Management ---
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+
+  const { callout, openCallout, closeCallout } = useCalloutMgt();
+  const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: TaskTableRow | null }>({ open: false, task: null });
+  const { addMinimizedTask } = useMinimizedTasks();
+
+  const handleMinimizeTask = () => {
+    if (taskDialog.task) {
+      addMinimizedTask(taskDialog.task);
+      setTaskDialog({ open: false, task: null });
+    }
+  };
+
+  // --- Columns (copied from Task Management) ---
+  const statusMetadata = useMemo(() => ({ ACT: { label: TASK_STATUS_LABELS.ACT }, AWI: { label: TASK_STATUS_LABELS.AWI }, ISS: { label: TASK_STATUS_LABELS.ISS }, EXC: { label: TASK_STATUS_LABELS.EXC }, COM: { label: TASK_STATUS_LABELS.COM } }), []);
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }), []);
+  const commitDateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), []);
+  const commitTypeLabels = useMemo(() => ({ APPOINTMENT: 'Appointment', 'START BY': 'Start by', 'COMPLETE BY': 'Complete by', TAIL: 'Tail' }), []);
+  const commitTypeColors = useMemo(() => ({ APPOINTMENT: tokens.mapTaskColors?.appointment, 'START BY': tokens.mapTaskColors?.startBy, 'COMPLETE BY': tokens.mapTaskColors?.completeBy, TAIL: tokens.mapTaskColors?.failedSLA }), [tokens.mapTaskColors]);
+  const linkedTaskLabels = useMemo(() => ({ Y: 'Yes', N: 'No' }), []);
+  const columns: GridColDef<TaskTableRow>[] = useMemo(() => [
+    {
+      field: 'actions', headerName: 'Actions', width: 90, minWidth: 80, sortable: false, filterable: false, align: 'center', headerAlign: 'center', disableColumnMenu: true, resizable: false, cellClassName: 'action-col', headerClassName: 'action-col',
+      renderCell: (params) => (
+        <IconButton
+          disableRipple={true}
+          onClick={(e) => {
+            e.stopPropagation();
+            openCallout(params.row.taskId);
+          }}
+          sx={{ p: 0.5 }}
+        >
+          <PhoneRoundedIcon sx={{ fontSize: 22 }} />
+        </IconButton>
+      ),
+    },
+    { field: 'taskId', headerName: 'Task ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.taskId}</Typography>) },
+    { field: 'workId', headerName: 'Work ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.workId}</Typography>) },
+    { field: 'status', headerName: 'Task Status', flex: 1.0, minWidth: 140, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>{statusMetadata[params.row.status].label}</Typography>) },
+    { field: 'commitDate', headerName: 'Commit Date', flex: 0.9, minWidth: 130, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{commitDateFormatter.format(new Date(params.row.commitDate))}</Typography>) },
+    { field: 'commitType', headerName: 'Commit Type', flex: 0.7, minWidth: 110, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} sx={{ color: commitTypeColors[params.row.commitType] }}>{commitTypeLabels[params.row.commitType] ?? params.row.commitType}</Typography>) },
+    { field: 'resourceId', headerName: 'Resource ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.resourceId}</Typography>) },
+    { field: 'impactScore', headerName: 'Impact score', flex: 0.6, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => { const score = params.row.impactScore; let color: string; if (score >= 500) { color = tokens.state?.error; } else if (score >= 300) { color = tokens.state?.warning; } else { color = tokens.success?.main; } return (<Typography variant="caption" fontWeight={600} color={color} noWrap>{params.row.impactScore}</Typography>); } },
+    { field: 'resourceName', headerName: 'Resource name', flex: 1.0, minWidth: 130, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" color={params.row.resourceName ? 'text.primary' : 'text.secondary'} noWrap>{params.row.resourceName || '—'}</Typography>) },
+    { field: 'domainId', headerName: 'Domain', flex: 0.7, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.domainId}</Typography>) },
+    { field: 'responseCode', headerName: 'Response code', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.responseCode}</Typography>) },
+    { field: 'primarySkill', headerName: 'Primary skill', flex: 0.7, minWidth: 110, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.primarySkill}</Typography>) },
+    { field: 'capabilities', headerName: 'Capabilities', flex: 1.2, minWidth: 160, align: 'left', headerAlign: 'left', renderCell: (params) => (<Stack direction="row" gap={0.5} flexWrap="wrap" alignItems="center">{params.row.capabilities.length === 0 ? (<Typography variant="caption" color="text.secondary">—</Typography>) : (params.row.capabilities.map((capability) => (<Chip key={capability} label={capability} size="small" variant="outlined" sx={{ borderColor: tokens.state?.info, color: tokens.state?.info, backgroundColor: tokens.background?.alt, fontWeight: 500, fontSize: '0.6875rem' }} />)))}</Stack>) },
+    { field: 'updatedAt', headerName: 'Last update (alt)', flex: 0.9, minWidth: 140, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" color="text.secondary" noWrap>{dateFormatter.format(new Date(params.row.updatedAt))}</Typography>) },
+    { field: 'linkedTask', headerName: 'Linked task', flex: 0.6, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}</Typography>) },
+    { field: 'postCode', headerName: 'Post code', flex: 0.6, minWidth: 90, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.postCode}</Typography>) },
+  ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.state?.info, tokens.background?.alt, theme.palette.text, openCallout]);
+
+  const apiRef = useGridApiRef();
+
+  // Scroll to the last row when data loads or component mounts
+  useEffect(() => {
+    if (TASK_TABLE_ROWS.length > 0) {
+      // Use multiple timeouts to ensure the grid is fully rendered
+      const scrollToLast = () => {
+        if (apiRef.current) {
+          apiRef.current.scrollToIndexes({ rowIndex: TASK_TABLE_ROWS.length - 1 });
+        }
+      };
+
+      // Try immediately, then with increasing delays
+      scrollToLast();
+      setTimeout(scrollToLast, 100);
+      setTimeout(scrollToLast, 300);
+      setTimeout(scrollToLast, 500);
+    }
+  }, [apiRef, TASK_TABLE_ROWS.length]);
 
   // TODO: Use globalSearch for filtering tasks
   console.log('Global search:', globalSearch);
+
 
   if (minimized) {
     return (
@@ -35,6 +121,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       </Box>
     );
   }
+
+  // --- Layout ---
 
   return (
     <Box
@@ -62,10 +150,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         }}
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
-          {/* Left side reserved for main tools */}
           <Box />
-
-          {/* Right side for secondary actions */}
           <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
@@ -131,22 +216,28 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           </Stack>
         </Toolbar>
       </AppBar>
-      <Box
-        sx={{
-          flex: 1,
-          backgroundColor: theme.palette.background.paper,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Box sx={{ textAlign: 'center' }}>
-          <ChecklistIcon sx={{ fontSize: 40, color: bodyIconColor, mb: 2 }} />
-          <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
-            Active Tasks
-          </Typography>
-        </Box>
+      <Box sx={{ flex: 1, backgroundColor: theme.palette.background.paper, minHeight: 0 }}>
+        <SharedMuiTable
+          columns={columns}
+          rows={TASK_TABLE_ROWS}
+          getRowId={(row) => row.taskId}
+          density="compact"
+          enablePagination={false}
+          enableQuickFilter
+          height={400}
+          apiRef={apiRef}
+          onCellDoubleClick={(params) => {
+            setTaskDialog({ open: true, task: params.row });
+          }}
+        />
       </Box>
+      <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+      <AppTaskDialog
+        open={taskDialog.open}
+        onClose={() => setTaskDialog({ open: false, task: null })}
+        task={taskDialog.task}
+        onMinimize={handleMinimizeTask}
+      />
     </Box>
   );
 }
