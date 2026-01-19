@@ -10,13 +10,23 @@ interface CalloutCompodentProps {
 
 const CalloutCompodent: React.FC<CalloutCompodentProps> = ({ open, taskNumber, onClose }) => {
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pb: 1 }}>
-        <Typography variant="h6" fontWeight={700}>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="xs" 
+      fullWidth
+      aria-labelledby="callout-dialog-title"
+      aria-describedby="callout-dialog-content"
+    >
+      <DialogTitle 
+        id="callout-dialog-title"
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', pb: 1 }}
+      >
+        <Typography variant="h6" component="h2" fontWeight={700}>
           Task: {taskNumber}
         </Typography>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent id="callout-dialog-content">
         {/* Additional content can go here */}
       </DialogContent>
       <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
@@ -24,6 +34,7 @@ const CalloutCompodent: React.FC<CalloutCompodentProps> = ({ open, taskNumber, o
           variant="outlined"
           color="primary"
           onClick={onClose}
+          aria-label="Close task callout dialog"
           startIcon={
             <CloseRoundedIcon
               sx={{

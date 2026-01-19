@@ -1,11 +1,30 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, Paper } from '@mui/material'
+import AssessmentIcon from '@mui/icons-material/Assessment'
+import PageContainer from '../../../App - Shared Components/Page Container'
 
 const RecordAuditPage = () => (
-  <Box >
-    <Typography variant="body1" color="text.secondary">
-      Placeholder content for Record Audit. Wire real data pipelines here.
-    </Typography>
-  </Box>
+  <PageContainer maxWidth="lg" spacing={3}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 4, 
+        textAlign: 'center',
+        border: '1px dashed',
+        borderColor: 'divider',
+        borderRadius: 2
+      }}
+    >
+      <Box sx={{ mb: 2 }}>
+        <AssessmentIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
+      </Box>
+      <Typography variant="h6" color="text.primary" sx={{ mb: 1 }}>
+        Record Audit
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Placeholder content for Record Audit administration. Wire real data pipelines here.
+      </Typography>
+    </Paper>
+  </PageContainer>
 )
 
 export default RecordAuditPage

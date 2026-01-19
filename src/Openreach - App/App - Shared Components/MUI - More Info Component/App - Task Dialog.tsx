@@ -25,9 +25,48 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
   const theme = useTheme()
   const modeTokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
 
+  const dialogTitle = task ? `Task ${task.taskId}` : 'Task Details'
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" aria-labelledby="task-dialog-title">
-      <DialogContent dividers sx={{ bgcolor: theme.palette.background.default, p: 0 }}>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      fullWidth 
+      maxWidth="md" 
+      aria-labelledby="task-dialog-title"
+      aria-describedby="task-dialog-content"
+      scroll="paper"
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: theme.shape.borderRadius,
+        }
+      }}
+    >
+      <Box 
+        id="task-dialog-title" 
+        sx={{ 
+          position: 'absolute', 
+          left: -10000, 
+          top: 'auto', 
+          width: 1, 
+          height: 1, 
+          overflow: 'hidden' 
+        }}
+      >
+        {dialogTitle}
+      </Box>
+      <DialogContent 
+        id="task-dialog-content"
+        dividers 
+        sx={{ 
+          bgcolor: theme.palette.background.default, 
+          p: 0,
+          '&:focus-visible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: -2,
+          }
+        }}
+      >
         <TaskDetails task={task} loading={loading} onAddNote={onAddNote} />
       </DialogContent>
 
@@ -39,6 +78,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             onClick={onMinimize}
             variant="outlined"
             color="primary"
+            aria-label="Minimize task dialog"
             startIcon={
               <CallToActionRoundedIcon
                 sx={{
@@ -66,6 +106,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
           onClick={onClose}
           variant="contained"
           color="primary"
+          aria-label="Close task dialog"
           sx={{ minWidth: 100 }}
         >
           Close

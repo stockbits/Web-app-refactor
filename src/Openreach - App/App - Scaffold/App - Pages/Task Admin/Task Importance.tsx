@@ -1,11 +1,30 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography, Paper } from '@mui/material'
+import PriorityHighIcon from '@mui/icons-material/PriorityHigh'
+import PageContainer from '../../../App - Shared Components/Page Container'
 
 const TaskImportancePage = () => (
-  <Box >
-    <Typography variant="body1" color="text.secondary">
-      Placeholder content for Task Importance. Wire real data pipelines here.
-    </Typography>
-  </Box>
+  <PageContainer maxWidth="lg" spacing={3}>
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: 4, 
+        textAlign: 'center',
+        border: '1px dashed',
+        borderColor: 'divider',
+        borderRadius: 2
+      }}
+    >
+      <Box sx={{ mb: 2 }}>
+        <PriorityHighIcon sx={{ fontSize: 48, color: 'text.secondary', opacity: 0.5 }} />
+      </Box>
+      <Typography variant="h6" color="text.primary" sx={{ mb: 1 }}>
+        Task Importance Configuration
+      </Typography>
+      <Typography variant="body1" color="text.secondary">
+        Placeholder content for Task Importance administration. Wire real data pipelines here.
+      </Typography>
+    </Paper>
+  </PageContainer>
 )
 
 export default TaskImportancePage

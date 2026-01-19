@@ -22,6 +22,9 @@ export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
       width={size}
       height={size}
       viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      role="img"
       style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
       {/* Solid map marker pin shape */}

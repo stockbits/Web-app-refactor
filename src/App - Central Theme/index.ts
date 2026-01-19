@@ -433,6 +433,117 @@ export const lightTheme = createTheme({
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: 2,
+        },
+        contained: {
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        },
+        containedPrimary: {
+          backgroundColor: lightTokens.primary.main,
+          color: lightTokens.primary.text,
+          '&:hover': {
+            backgroundColor: lightTokens.primary.hover,
+          },
+          '&:active': {
+            backgroundColor: lightTokens.primary.active,
+          },
+        },
+        outlined: {
+          borderWidth: '1.5px',
+          '&:hover': {
+            borderWidth: '1.5px',
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 500,
+          borderRadius: 2,
+        },
+        filled: {
+          backgroundColor: lightTokens.chip.bg,
+          color: lightTokens.chip.text,
+          border: `1px solid ${lightTokens.chip.border}`,
+          '&:hover': {
+            backgroundColor: lightTokens.chip.hover.bg,
+          },
+        },
+        outlined: {
+          borderColor: lightTokens.chip.border,
+          color: lightTokens.chip.text,
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+          '&:hover': {
+            backgroundColor: `rgba(67, 176, 114, 0.08)`,
+          },
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: lightTokens.background.overlay,
+          color: lightTokens.text.inverse,
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          padding: '6px 12px',
+          borderRadius: 2,
+        },
+        arrow: {
+          color: lightTokens.background.overlay,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+        },
+        elevation1: {
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        },
+        elevation2: {
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04)',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+          border: `1px solid ${lightTokens.border.soft}`,
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 2,
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: lightTokens.divider,
+        },
+      },
+    },
   },
 });
 
@@ -656,6 +767,117 @@ export const darkTheme = createTheme({
           backgroundColor: darkTokens.table.rowBg,
           color: darkTokens.table.rowText,
           borderBottom: `1px solid ${darkTokens.table.border}`,
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: 2,
+        },
+        contained: {
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        },
+        containedPrimary: {
+          backgroundColor: darkTokens.primary.main,
+          color: darkTokens.primary.text,
+          '&:hover': {
+            backgroundColor: darkTokens.primary.hover,
+          },
+          '&:active': {
+            backgroundColor: darkTokens.primary.active,
+          },
+        },
+        outlined: {
+          borderWidth: '1.5px',
+          '&:hover': {
+            borderWidth: '1.5px',
+          },
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          fontWeight: 500,
+          borderRadius: 2,
+        },
+        filled: {
+          backgroundColor: darkTokens.chip.bg,
+          color: darkTokens.chip.text,
+          border: `1px solid ${darkTokens.chip.border}`,
+          '&:hover': {
+            backgroundColor: darkTokens.chip.hover.bg,
+          },
+        },
+        outlined: {
+          borderColor: darkTokens.chip.border,
+          color: darkTokens.chip.text,
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+          '&:hover': {
+            backgroundColor: `rgba(82, 190, 132, 0.12)`,
+          },
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: darkTokens.background.overlay,
+          color: darkTokens.text.onPrimary,
+          fontSize: '0.75rem',
+          fontWeight: 500,
+          padding: '6px 12px',
+          borderRadius: 2,
+        },
+        arrow: {
+          color: darkTokens.background.overlay,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+        },
+        elevation1: {
+          boxShadow: '0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2)',
+        },
+        elevation2: {
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -1px rgba(0,0,0,0.3)',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 2,
+          border: `1px solid ${darkTokens.border.soft}`,
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 2,
+        },
+      },
+    },
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: darkTokens.divider,
         },
       },
     },

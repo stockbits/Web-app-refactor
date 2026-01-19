@@ -23,7 +23,10 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
 
   return (
     <Paper 
+      component="section"
       elevation={0} 
+      role="region"
+      aria-label="Landing overview"
       sx={{ 
         width: '100%', 
         height: '100%',
@@ -37,6 +40,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
         onChange={(_, newValue) => setSelectedTab(newValue)}
         variant="scrollable"
         scrollButtons="auto"
+        aria-label="Tool category navigation"
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
@@ -58,6 +62,9 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
               icon={<Icon fontSize="small" />}
               iconPosition="start"
               label={group.label}
+              aria-label={`${group.label} tools category`}
+              id={`tab-${group.id}`}
+              aria-controls={`tabpanel-${group.id}`}
               sx={{
                 minHeight: { xs: 40, sm: 48 },
                 px: { xs: 1.5, sm: 2 },
@@ -71,6 +78,9 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
       </Tabs>
 
       <Box 
+        role="tabpanel"
+        id={`tabpanel-${selectedGroup.id}`}
+        aria-labelledby={`tab-${selectedGroup.id}`}
         sx={{ 
           display: 'flex', 
           flexDirection: 'column',

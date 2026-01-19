@@ -118,6 +118,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     <>
       <Box
         sx={{ width: '100%' }}
+        role="region"
+        aria-label="Data table"
       >
         <DataGrid
         sx={{
@@ -166,6 +168,14 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
                 : 'rgba(67, 176, 114, 0.12) !important',
             },
           },
+          '& .MuiDataGrid-cell:focus': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: '-2px',
+          },
+          '& .MuiDataGrid-columnHeader:focus': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: '-2px',
+          },
         }}
         apiRef={apiRef}
         rows={rows}
@@ -185,6 +195,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         disableRowSelectionOnClick={true}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
+        aria-label="Interactive data table"
         slots={{
           toolbar: enableQuickFilter
             ? () => (

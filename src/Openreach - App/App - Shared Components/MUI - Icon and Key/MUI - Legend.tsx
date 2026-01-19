@@ -21,9 +21,10 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
   const isCompact = variant === 'compact';
 
   return (
-    <Box>
+    <Box component="nav" aria-label="Task status legend" role="navigation">
       {showTitle && (
         <Typography 
+          component="h3"
           variant={isCompact ? 'caption' : 'subtitle2'} 
           fontWeight={700} 
           sx={{ 
@@ -35,7 +36,7 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
           Legend Key Menu
         </Typography>
       )}
-      <Stack spacing={isCompact ? 0.8 : 1.2} direction={isCompact ? 'row' : 'column'}>
+      <Stack spacing={isCompact ? 0.8 : 1.2} direction={isCompact ? 'row' : 'column'} component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
         <Stack direction="row" spacing={isCompact ? 0.75 : 1.5} alignItems="center" sx={{ py: isCompact ? 0 : 0.5 }}>
           <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
             <TaskIcon 

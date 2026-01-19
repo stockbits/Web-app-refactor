@@ -519,9 +519,25 @@ function App() {
         onSelect={(item) => handleNavSelection(item.id)}
       />
 
-      <Box className="app-stage" sx={{ bgcolor: theme.palette.background.default }}>
-        <Stack className="app-stack" gap={0} width="100%">
-          <Box className="app-hero">
+      <Box 
+        component="main"
+        sx={{ 
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '100%',
+          bgcolor: 'background.default'
+        }}
+      >
+        <Stack 
+          sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            width: '100%' 
+          }}
+        >
+          <Box component="header" sx={{ position: 'relative', zIndex: 1 }}>
             <OpenreachTopBanner
               title="Task Force"
               subtitle="Day-to-day operational tool for Openreach operations."
@@ -611,8 +627,19 @@ function App() {
             />
 
           <Box 
-            className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}
-            sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}
+            component="section"
+            aria-label="Main content area"
+            sx={{ 
+              flex: 1,
+              minHeight: { xs: '240px', md: '320px' },
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              p: { xs: 1, sm: 1.5, md: 2 },
+              ...(activePage && {
+                minHeight: 0
+              })
+            }}
           >
             {showWelcome ? (
               <Box>
