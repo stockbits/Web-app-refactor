@@ -41,6 +41,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                 p: 2,
                 borderRadius: theme.shape.borderRadius,
                 backgroundColor: tokens.background.paper,
+                minHeight: 120,
               }}
             >
               <Stack direction="row" gap={1.5} alignItems="flex-start">
@@ -55,7 +56,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                 >
                   <Icon fontSize="small" />
                 </Box>
-                <Box flexGrow={1} minWidth={0}>
+                <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60 }}>
                   <Typography variant="subtitle1" fontWeight={600} sx={{ color: tokens.text.primary }}>
                     {group.label}
                   </Typography>

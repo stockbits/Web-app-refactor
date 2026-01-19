@@ -695,6 +695,7 @@ function App() {
                         sx={{
                           bgcolor: "background.paper",
                           borderRadius: theme.shape.borderRadius,
+                          minHeight: 120,
                         }}
                       >
                         <CardActionArea
@@ -719,7 +720,7 @@ function App() {
                             >
                               <MenuIcon fontSize="small" />
                             </Box>
-                            <Box flexGrow={1} minWidth={0}>
+                            <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60 }}>
                               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                                 {card.name}
                               </Typography>
