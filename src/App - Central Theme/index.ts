@@ -311,8 +311,8 @@ export const lightTheme = createTheme({
           scrollbarColor: `${brandColors.networkNavy} ${lightTokens.background.default}`,
           scrollbarWidth: "thin",
           "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
-            width: "0.65rem",
-            height: "0.65rem",
+            width: "0.8rem",
+            height: "0.8rem",
           },
           "&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track": {
             backgroundColor: lightTokens.background.default,
@@ -512,8 +512,8 @@ export const darkTheme = createTheme({
           scrollbarColor: `#4A5568 ${darkTokens.background.default}`,
           scrollbarWidth: "thin",
           "&::-webkit-scrollbar, & *::-webkit-scrollbar": {
-            width: "0.65rem",
-            height: "0.65rem",
+            width: "0.8rem",
+            height: "0.8rem",
           },
           "&::-webkit-scrollbar-track, & *::-webkit-scrollbar-track": {
             backgroundColor: darkTokens.background.default,
