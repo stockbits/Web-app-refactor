@@ -36,13 +36,11 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
             <Paper
               key={group.id}
               component="section"
-              elevation={0}
+              elevation={1}
               sx={{
                 p: 2,
-                borderRadius: 0,
-                border: `1px solid ${tokens.border.soft}`,
+                borderRadius: theme.shape.borderRadius,
                 backgroundColor: tokens.background.paper,
-                boxShadow: `0 12px 32px ${tokens.background.overlay}`,
               }}
             >
               <Stack direction="row" gap={1.5} alignItems="flex-start">

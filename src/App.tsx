@@ -691,13 +691,10 @@ function App() {
                     return (
                       <Paper
                         key={card.name}
-                        elevation={0}
+                        elevation={1}
                         sx={{
-                          border: `1px solid ${theme.palette.divider}`,
                           bgcolor: "background.paper",
-                          boxShadow: `0 12px 32px ${theme.palette.mode === 'dark' 
-                            ? 'rgba(0,0,0,0.3)' 
-                            : 'rgba(20,32,50,0.1)'}`,
+                          borderRadius: theme.shape.borderRadius,
                         }}
                       >
                         <CardActionArea
