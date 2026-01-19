@@ -1265,6 +1265,18 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                 color: tokens?.state.info || '#5488C7',
                 backgroundColor: tokens?.background.alt || '#F3F4F7',
                 fontWeight: 500,
+                '& .MuiChip-deleteIcon': {
+                  color: tokens?.state.info || '#5488C7',
+                  transition: 'none',
+                  '&:hover': {
+                    color: tokens?.state.info || '#5488C7',
+                    opacity: 0.8,
+                  },
+                  '&:active': {
+                    color: tokens?.state.info || '#5488C7',
+                    opacity: 0.6,
+                  },
+                },
               }}
               onDelete={(event) => {
                 event.preventDefault()
@@ -1286,6 +1298,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
               overflow: 'hidden',
               gap: 0.5,
               maxWidth: '100%',
+              alignItems: 'center',
             }}
           >
             {visibleTags.map((option, index) => (
@@ -1295,6 +1308,18 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   color: tokens?.state.info || '#5488C7',
                   backgroundColor: tokens?.background.alt || '#F3F4F7',
                   fontWeight: 500,
+                  '& .MuiChip-deleteIcon': {
+                    color: tokens?.state.info || '#5488C7',
+                    transition: 'none',
+                    '&:hover': {
+                      color: tokens?.state.info || '#5488C7',
+                      opacity: 0.8,
+                    },
+                    '&:active': {
+                      color: tokens?.state.info || '#5488C7',
+                      opacity: 0.6,
+                    },
+                  },
                 }}
               />
             ))}

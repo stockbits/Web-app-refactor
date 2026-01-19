@@ -1,6 +1,5 @@
 import { Box, Typography, Breadcrumbs, Link, Chip } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import type { Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
 interface AppBreadCrumbProps {

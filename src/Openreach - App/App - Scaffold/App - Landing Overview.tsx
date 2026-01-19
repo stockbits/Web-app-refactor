@@ -72,6 +72,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                   flexWrap: 'wrap',
                   gap: 1,
                   mt: 1.5,
+                  alignItems: 'center',
                 }}
               >
                 {group.cards.map((card) => (

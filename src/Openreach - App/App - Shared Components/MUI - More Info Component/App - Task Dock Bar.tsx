@@ -1,4 +1,4 @@
-import { Box, Chip, Paper, Typography, useTheme, Button, Tooltip } from '@mui/material'
+import { Box, Chip, Paper, Typography, useTheme, Button, Tooltip, useMediaQuery } from '@mui/material'
 import CompareIcon from '@mui/icons-material/Compare'
 import { useCallback, memo, useMemo } from 'react'
 import type { ReactNode } from 'react'
@@ -30,11 +30,16 @@ export const TaskDockBar = memo(function TaskDockBar({
   selectedItems = [],
   onSelectionChange,
   multiSelect = false,
-  maxItems = 3, 
+  maxItems: propMaxItems, 
   clickable = true 
 }: TaskDockBarProps) {
   const theme = useTheme()
   const tokens = useMemo(() => theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens, [theme.palette.mode, theme.openreach])
+  
+  // Responsive max items: 2 on mobile, 3 on desktop
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const maxItems = propMaxItems || (isMobile ? 2 : 3)
+  
   const visibleItems = useMemo(() => items.slice(0, maxItems), [items, maxItems])
 
   const handleChipClick = useCallback((id: string) => {
@@ -113,14 +118,15 @@ export const TaskDockBar = memo(function TaskDockBar({
         }}
       >
         <Typography 
-          variant="caption" 
+          variant="body2" 
           sx={{ 
             color: 'text.primary',
-            fontSize: { xs: '0.75rem', sm: '0.875rem' },
+            fontWeight: 600,
+            fontSize: { xs: '0.875rem', sm: '0.9rem' },
             mb: { xs: 0.5, sm: 0 },
           }}
         >
-          Recent tasks ({items.length})
+          Recent Tab ({items.length})
         </Typography>
         <Box 
           sx={{ 
@@ -132,6 +138,7 @@ export const TaskDockBar = memo(function TaskDockBar({
             py: { xs: 0, sm: 0.25 },
             width: { xs: '100%', sm: 'auto' },
             justifyContent: { xs: 'flex-start', sm: 'flex-start' },
+            alignItems: 'center',
           }}
         >
             {visibleItems.map((item) => {

@@ -142,19 +142,30 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
       PaperProps={{
         sx: {
           minHeight: 500,
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
+          maxHeight: { xs: '90vh', sm: '80vh' },
+          m: { xs: 1, sm: 2 },
         }
       }}
     >
         <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-            <Typography variant="h6" component="div">
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' }, 
+            justifyContent: { xs: 'flex-start', sm: 'space-between' }, 
+            width: '100%',
+            gap: { xs: 2, sm: 0 }
+          }}>
+            <Typography variant="h6" component="div" sx={{ flexShrink: 0 }}>
               Advanced Search Tool
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'flex-end', sm: 'flex-start' }
+            }}>
               <TextField
                 label="Score"
                 size="small"
@@ -163,7 +174,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}
                 placeholder="999"
                 sx={{
-                  width: { md: '160px', lg: '160px', xs: '100%' },
+                  width: { xs: '100%', sm: '160px' },
                   minWidth: 0,
                 }}
                 InputProps={{
@@ -211,8 +222,9 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
                 gap: 3,
                 gridTemplateColumns: {
                   xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(2, 1fr)',
                 },
+                px: { xs: 1, sm: 0 },
               }}
             >
               <Box>
@@ -260,18 +272,19 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
             </Box>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: { xs: 3, sm: 3 }, pb: { xs: 2, sm: 3 }, pt: { xs: 1, sm: 2 } }}>
           {hasActiveFilters && (
             <Button 
               onClick={handleClear} 
               sx={{ 
-                color: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.secondary.main 
+                color: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.secondary.main,
+                mr: { xs: 1, sm: 2 }
               }}
             >
               Clear
             </Button>
           )}
-          <Button onClick={handleSearch} variant="contained" color="primary">
+          <Button onClick={handleSearch} variant="contained" color="primary" size="large">
             Search
           </Button>
         </DialogActions>
