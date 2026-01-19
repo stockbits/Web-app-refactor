@@ -64,7 +64,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     gap: 1,
                     alignItems: 'center',
                     flexShrink: 0,
-                    order: { xs: -1, md: 0 }, // Chips after icon on mobile, before text on desktop
+                    order: { xs: 1, md: 0 },
                   }}
                 >
                   {group.cards.map((card) => (
@@ -82,7 +82,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     />
                   ))}
                 </Box>
-                <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60 }}>
+                <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60, order: { xs: 0, md: 1 } }}>
                   <Typography variant="subtitle1" fontWeight={600} sx={{ color: tokens.text.primary }}>
                     {group.label}
                   </Typography>
