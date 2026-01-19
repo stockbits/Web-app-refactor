@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, alpha } from "@mui/material/styles";
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import { TASK_ICON_COLORS } from './Icon-Colors';
 
@@ -28,7 +28,7 @@ const brandColors = {
 // ============================================================
 const lightTokens = {
   background: {
-    default: "#FAFBFC",
+    default: alpha(brandColors.earthGrey, 0.05),
     paper: "#FFFFFF",
     alt: "#F3F4F7",
     overlay: "rgba(20,32,50,0.5)",
