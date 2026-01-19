@@ -107,13 +107,14 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, clearSorting]);
+  }, [dockedPanels, filteredTasks, clearSorting, openTaskDialog]);
 
   // Ensure activeMobileTab stays within bounds when panels change
-  useEffect(() => {
+  const clampedActiveMobileTab = useMemo(() => {
     if (isMobileMemo && activeMobileTab >= visiblePanels.length && visiblePanels.length > 0) {
-      setActiveMobileTab(0);
+      return 0;
     }
+    return activeMobileTab;
   }, [visiblePanels.length, activeMobileTab, isMobileMemo]);
 
   // Calculate grid layout based on number of visible panels
@@ -332,7 +333,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         // Mobile tab layout
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           <Tabs
-            value={activeMobileTab}
+            value={clampedActiveMobileTab}
             onChange={(_, newValue) => setActiveMobileTab(newValue)}
             variant="scrollable"
             scrollButtons="auto"
@@ -367,8 +368,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  opacity: activeMobileTab === index ? 1 : 0,
-                  pointerEvents: activeMobileTab === index ? 'auto' : 'none',
+                  opacity: clampedActiveMobileTab === index ? 1 : 0,
+                  pointerEvents: clampedActiveMobileTab === index ? 'auto' : 'none',
                   transition: 'opacity 0.2s ease-in-out'
                 }}
               >

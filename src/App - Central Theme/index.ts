@@ -28,7 +28,7 @@ const brandColors = {
 // ============================================================
 const lightTokens = {
   background: {
-    default: alpha(brandColors.earthGrey, 0.05),
+    default: alpha(brandColors.earthGrey, 0.08),
     paper: "#FFFFFF",
     alt: "#F3F4F7",
     overlay: "rgba(20,32,50,0.5)",

@@ -80,7 +80,7 @@ export const TaskDockBar = memo(function TaskDockBar({
         sx={{
           border: 'none',
           boxShadow: 'none',
-          bgcolor: 'transparent',
+          bgcolor: theme.palette.background.default,
         }}
       >
         <Box
@@ -113,7 +113,7 @@ export const TaskDockBar = memo(function TaskDockBar({
       sx={{
         border: 'none',
         boxShadow: 'none',
-        bgcolor: 'transparent',
+        bgcolor: theme.palette.background.default,
       }}
     >
       <Box

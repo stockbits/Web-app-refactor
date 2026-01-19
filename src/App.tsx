@@ -519,7 +519,7 @@ function App() {
         onSelect={(item) => handleNavSelection(item.id)}
       />
 
-      <Box className="app-stage">
+      <Box className="app-stage" sx={{ bgcolor: theme.palette.background.default }}>
         <Stack className="app-stack" gap={0} width="100%">
           <Box className="app-hero">
             <OpenreachTopBanner
@@ -553,7 +553,6 @@ function App() {
             minHeight: '52px', // Give it dedicated space
             display: 'flex', 
             alignItems: 'center',
-            borderBottom: `1px solid ${theme.palette.divider}`,
             bgcolor: theme.palette.background.default,
           }}>
             <TaskDockBar
@@ -739,7 +738,7 @@ function App() {
             ) : (
                 <Box
                   component="section"
-                  sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: 'background.paper', overflow: 'hidden' }}
+                  sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: theme.palette.background.default, overflow: 'hidden' }}
                 >
                 {(() => {
                   const ActivePageComponent =

@@ -1,4 +1,4 @@
-import { Box, Typography, Breadcrumbs, Link, Chip } from '@mui/material';
+import { Box, Typography, Breadcrumbs, Link, Chip, useTheme } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import type { ReactNode } from 'react';
 
@@ -14,6 +14,7 @@ interface AppBreadCrumbProps {
 }
 
 export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false, accessSummary = false, groupsCount, totalTools, rightContent }: AppBreadCrumbProps) => {
+  const theme = useTheme();
   return (
     <Box sx={{
       display: 'flex',
@@ -26,7 +27,7 @@ export const AppBreadCrumb = ({ left, right, onLeftClick, leftClickable = false,
       gap: { xs: 1.5, sm: 0 },
       borderBottom: '1px solid',
       borderColor: 'divider',
-      bgcolor: 'background.paper'
+      bgcolor: theme.palette.background.default
     }}>
       {/* Breadcrumb Navigation */}
       <Breadcrumbs
