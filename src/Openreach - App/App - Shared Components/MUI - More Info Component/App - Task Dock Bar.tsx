@@ -1,7 +1,9 @@
-import { Box, Chip, Paper, Typography, useTheme, Button, Tooltip, useMediaQuery } from '@mui/material'
+import { Box, Chip, Paper, Typography, useTheme, Button, Tooltip, useMediaQuery, IconButton } from '@mui/material'
 import CompareIcon from '@mui/icons-material/Compare'
+import CloseIcon from '@mui/icons-material/Close'
 import { useCallback, memo, useMemo } from 'react'
 import type { ReactNode } from 'react'
+import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 export interface TaskDockItem {
   id: string
@@ -10,10 +12,18 @@ export interface TaskDockItem {
   subtitle?: string
 }
 
+export interface MinimizedTaskItem {
+  id: string
+  task: TaskTableRow
+}
+
 export interface TaskDockBarProps {
   items: TaskDockItem[]
+  minimizedTasks?: MinimizedTaskItem[]
   onClick?: (id: string) => void
   onDelete?: (id: string) => void
+  onMinimizedTaskClick?: (task: TaskTableRow) => void
+  onMinimizedTaskRemove?: (taskId: string) => void
   onCompare?: (selectedIds: string[]) => void
   selectedItems?: string[]
   onSelectionChange?: (selected: string[]) => void
@@ -24,8 +34,11 @@ export interface TaskDockBarProps {
 
 export const TaskDockBar = memo(function TaskDockBar({ 
   items, 
+  minimizedTasks = [],
   onClick, 
   onDelete, 
+  onMinimizedTaskClick,
+  onMinimizedTaskRemove,
   onCompare,
   selectedItems = [],
   onSelectionChange,
@@ -117,30 +130,30 @@ export const TaskDockBar = memo(function TaskDockBar({
           gap: { xs: 1, sm: 0 },
         }}
       >
-        <Typography 
-          variant="body2" 
-          sx={{ 
-            color: 'text.primary',
-            fontWeight: 600,
-            fontSize: { xs: '0.875rem', sm: '0.9rem' },
-            mb: { xs: 0.5, sm: 0 },
-          }}
-        >
-          Recent Tab ({items.length})
-        </Typography>
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            gap: { xs: 1, sm: 2 }, 
-            flexWrap: { xs: 'wrap', sm: 'nowrap' }, 
-            overflow: { xs: 'visible', sm: 'visible' }, 
-            px: { xs: 0, sm: 0.5 }, 
-            py: { xs: 0, sm: 0.25 },
-            width: { xs: '100%', sm: 'auto' },
-            justifyContent: { xs: 'flex-start', sm: 'flex-start' },
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
+          {/* Recent Tasks Row */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexWrap: 'wrap' }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: 'text.primary',
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '0.9rem' },
+              }}
+            >
+              Recent Tab ({items.length})
+            </Typography>
+            <Box 
+              sx={{ 
+                display: 'flex', 
+                gap: { xs: 1, sm: 2 }, 
+                flexWrap: { xs: 'wrap', sm: 'nowrap' }, 
+                overflow: { xs: 'visible', sm: 'visible' }, 
+                px: { xs: 0, sm: 0.5 }, 
+                py: { xs: 0, sm: 0.25 },
+                alignItems: 'center',
+              }}
+            >
             {visibleItems.map((item) => {
               const isSelected = selectedItems.includes(item.id)
               return (
@@ -239,6 +252,65 @@ export const TaskDockBar = memo(function TaskDockBar({
               </Typography>
             )}
           </Box>
+
+          {/* Minimized Tasks Row */}
+          {minimizedTasks.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '0.9rem' },
+                }}
+              >
+                Minimized ({minimizedTasks.length}):
+              </Typography>
+              {minimizedTasks.map((item) => (
+                <Paper
+                  key={item.id}
+                  elevation={1}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1,
+                    py: 0.5,
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover
+                    }
+                  }}
+                  onClick={() => onMinimizedTaskClick?.(item.task)}
+                >
+                  <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                    {item.task.taskId}
+                  </Typography>
+                  <Tooltip title="Remove from minimized">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onMinimizedTaskRemove?.(item.id)
+                      }}
+                      sx={{
+                        p: 0.25,
+                        '&:hover': {
+                          bgcolor: theme.palette.action.selected
+                        }
+                      }}
+                    >
+                      <CloseIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Tooltip>
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </Box>
+        </Box>
+
         {multiSelect && (
           <Tooltip title={selectedItems.length > 1 ? "Compare selected tasks side by side" : "Select at least 2 tasks to compare"} placement="top">
             <span>

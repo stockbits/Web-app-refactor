@@ -13,8 +13,6 @@ import { Chip } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
-import { AppTaskDialog } from '../../MUI - More Info Component/App - Task Dialog';
-import { useMinimizedTasks } from '../../../../App - Central Theme/MinimizedTaskContext';
 import { useTaskTableSelection } from '../../Selection - UI';
 
 interface LiveTaskProps {
@@ -27,9 +25,10 @@ interface LiveTaskProps {
   minimized?: boolean;
   filteredTasks?: TaskTableRow[];
   clearSorting?: number;
+  openTaskDialog?: (task: TaskTableRow) => void;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting, openTaskDialog }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -39,8 +38,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
 
   const { callout, openCallout, closeCallout } = useCalloutMgt();
-  const [taskDialog, setTaskDialog] = useState<{ open: boolean; task: TaskTableRow | null }>({ open: false, task: null });
-  const { addMinimizedTask } = useMinimizedTasks();
 
   // Selection UI integration - use prioritization when selected from map
   const { getPrioritizedTasks, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
@@ -99,13 +96,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       clearTimeout(timeoutId);
     };
   }, []);
-
-  const handleMinimizeTask = () => {
-    if (taskDialog.task) {
-      addMinimizedTask(taskDialog.task);
-      setTaskDialog({ open: false, task: null });
-    }
-  };
 
   // --- Columns (copied from Task Management) ---
   const statusMetadata = useMemo(() => ({ ACT: { label: TASK_STATUS_LABELS.ACT }, AWI: { label: TASK_STATUS_LABELS.AWI }, ISS: { label: TASK_STATUS_LABELS.ISS }, EXC: { label: TASK_STATUS_LABELS.EXC }, COM: { label: TASK_STATUS_LABELS.COM } }), []);
@@ -298,7 +288,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
             onCellDoubleClick={(params) => {
-              setTaskDialog({ open: true, task: params.row });
+              openTaskDialog?.(params.row);
             }}
           />
         ) : (
@@ -311,12 +301,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
-      <AppTaskDialog
-        open={taskDialog.open}
-        onClose={() => setTaskDialog({ open: false, task: null })}
-        task={taskDialog.task}
-        onMinimize={handleMinimizeTask}
-      />
     </Box>
   );
 }

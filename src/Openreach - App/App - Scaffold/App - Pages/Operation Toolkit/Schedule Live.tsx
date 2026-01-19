@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useCallback } from 'react'
 import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button } from '@mui/material'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import SearchIcon from '@mui/icons-material/Search'
@@ -6,7 +6,7 @@ import ClearIcon from '@mui/icons-material/Clear'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
-import type { TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import type { TaskDomainId, TaskTableRow } from '../../../App - Data Tables/Task - Table'
 import AppSearchTool from './App - Search Tool'
 import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
@@ -17,9 +17,10 @@ type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 interface ScheduleLivePageProps {
   dockedPanels?: DockedPanel[]
   onDockedPanelsChange?: (panels: DockedPanel[]) => void
+  openTaskDialog?: (task: TaskTableRow) => void
 }
 
-const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleLivePageProps = {}) => {
+const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDialog }: ScheduleLivePageProps = {}) => {
   const theme = useTheme()
   const searchRef = useRef<HTMLInputElement>(null)
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
@@ -32,6 +33,19 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
 
   // Selection UI context
   const { clearSelection, selectedTaskIds } = useSelectionUI()
+
+  // Clear handler - memoized to prevent unnecessary re-renders
+  const handleClear = useCallback(() => {
+    clearSelection()
+    setSearchFilters(null)
+    setClearTrigger(prev => prev + 1)
+    // TODO: Clear sorting in the task table
+  }, [clearSelection])
+
+  // Undock panel handler - memoized
+  const handleUndockPanel = useCallback((panelId: string) => {
+    onDockedPanelsChange?.(dockedPanels.filter(p => p.id !== panelId))
+  }, [dockedPanels, onDockedPanelsChange])
 
   // Extract unique divisions and domains from DB data
   const divisionOptions = useMemo(() => 
@@ -119,12 +133,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
                 variant="contained" 
                 color="primary"
                 startIcon={<ClearIcon />}
-                onClick={() => {
-                  clearSelection()
-                  setSearchFilters(null)
-                  setClearTrigger(prev => prev + 1)
-                  // TODO: Clear sorting in the task table
-                }}
+                onClick={handleClear}
                 disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
               >
                 Clear
@@ -152,10 +161,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
               <Tooltip key={panel.id} title={panel.title}>
                 <IconButton
                   size="small"
-                  onClick={() => {
-                    // Undock the panel
-                    onDockedPanelsChange?.(dockedPanels.filter(p => p.id !== panel.id))
-                  }}
+                  onClick={() => handleUndockPanel(panel.id)}
                   sx={{
                     color: theme.palette.text.secondary,
                     '&:hover': {
@@ -179,6 +185,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
         selectedDomain={selectedDomain}
         searchFilters={searchFilters}
         clearSorting={clearTrigger}
+        openTaskDialog={openTaskDialog}
       />
       <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} clearTrigger={clearTrigger} />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>

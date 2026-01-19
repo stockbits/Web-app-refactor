@@ -31,6 +31,7 @@ import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing 
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { TaskDockBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Bar";
+import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
 import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
@@ -383,6 +384,9 @@ function App() {
     task?: TaskTableRow;
   }[]>([]);
 
+  // Minimized tasks context
+  const { minimizedTasks, removeMinimizedTask } = useMinimizedTasks();
+
   // Persist recent tasks dock in localStorage (id, title, commitType)
   useEffect(() => {
     try {
@@ -568,6 +572,7 @@ function App() {
                 })();
                 return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
               })}
+              minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
               onClick={(id: string) => {
                 const item = taskDockItems.find((it) => it.id === id);
                 if (!item) return;
@@ -581,6 +586,8 @@ function App() {
                 }
               }}
               onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+              onMinimizedTaskClick={openTaskDialog}
+              onMinimizedTaskRemove={removeMinimizedTask}
               maxItems={5}
               clickable={true}
             />
@@ -762,7 +769,7 @@ function App() {
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
                             <SelectionUIProvider>
-                              <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels } as Record<string, unknown>)} />
+                              <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog } as Record<string, unknown>)} />
                             </SelectionUIProvider>
                           ) : activePage?.cardName === 'Task Management' ? (
                             <ActivePageComponent {...({

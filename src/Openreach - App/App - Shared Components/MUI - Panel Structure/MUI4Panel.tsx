@@ -12,6 +12,7 @@ import LivePeople from "./App - Pannels/Live - People";
 import LiveTask from "./App - Pannels/Live - Task";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
+import type { TaskTableRow } from "../../App - Data Tables/Task - Table";
 
 export interface DockedPanel {
   id: string;
@@ -27,16 +28,21 @@ export interface MUI4PanelProps {
   selectedDomain?: string | null;
   searchFilters?: SearchFilters | null;
   clearSorting?: number;
+  openTaskDialog?: (task: TaskTableRow) => void;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters, clearSorting }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters, clearSorting, openTaskDialog }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
   const [activeMobileTab, setActiveMobileTab] = useState(0);
 
-  // Use dockedPanels.length as layout key to trigger re-renders when panels are docked/undocked
+  // Memoize layout key to avoid unnecessary re-renders
   const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
+
+  // Memoize isMobile to prevent unnecessary recalculations
+  const isMobileMemo = useMemo(() => isMobile, [isMobile]);
+
   // isResizing: { type: 'row'|'col', index: number, rowIndex?: number } | null
   const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
   const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
@@ -92,23 +98,23 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     return tasks;
   }, [selectedDivision, selectedDomain, searchFilters]);
 
-  // Get list of visible panels (not docked)
+  // Get list of visible panels (not docked) - memoized to prevent recreation
   const visiblePanels = useMemo(() => {
     const panels = [
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
   }, [dockedPanels, filteredTasks, clearSorting]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   useEffect(() => {
-    if (isMobile && activeMobileTab >= visiblePanels.length && visiblePanels.length > 0) {
+    if (isMobileMemo && activeMobileTab >= visiblePanels.length && visiblePanels.length > 0) {
       setActiveMobileTab(0);
     }
-  }, [visiblePanels.length, activeMobileTab, isMobile]);
+  }, [visiblePanels.length, activeMobileTab, isMobileMemo]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {
@@ -145,19 +151,19 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
 
-  const handleDockPanel = (panel: DockedPanel) => {
+  const handleDockPanel = useCallback((panel: DockedPanel) => {
     const newDockedPanels = [...dockedPanels, panel];
     onDockedPanelsChange?.(newDockedPanels);
-  };
+  }, [dockedPanels, onDockedPanelsChange]);
 
-  const handleUndockPanel = (panelId: string) => {
+  const handleUndockPanel = useCallback((panelId: string) => {
     const newDockedPanels = dockedPanels.filter(p => p.id !== panelId);
     onDockedPanelsChange?.(newDockedPanels);
-  };
+  }, [dockedPanels, onDockedPanelsChange]);
 
-  const handleExpandPanel = (panelId: string) => {
+  const handleExpandPanel = useCallback((panelId: string) => {
     setExpandedPanelId(panelId);
-  };
+  }, []);
 
   // Unified resize calculation function for smoother performance
   const calculateResize = useCallback((type: 'row' | 'col', index: number, clientX: number, clientY: number, rowIndex?: number) => {
@@ -212,7 +218,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   }, []);
 
   // Pointer event handler for resize handles
-  const handlePointerDown = (type: 'row' | 'col', index: number, rowIndex?: number) => (e: React.PointerEvent) => {
+  const handlePointerDown = useCallback((type: 'row' | 'col', index: number, rowIndex?: number) => (e: React.PointerEvent) => {
     setIsResizing({ type, index, rowIndex });
     e.preventDefault();
 
@@ -228,7 +234,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
 
     window.addEventListener('pointermove', moveHandler);
     window.addEventListener('pointerup', upHandler);
-  };
+  }, [calculateResize]);
 
   // Mouse event handlers
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -268,11 +274,11 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     handleTouchEndRef.current = handleTouchEnd;
   }, [handleTouchEnd]);
 
-  const handleCollapsePanel = () => {
+  const handleCollapsePanel = useCallback(() => {
     setExpandedPanelId(null);
-  };
+  }, []);
 
-  const isPanelDocked = (panelId: string) => dockedPanels.some(p => p.id === panelId);
+  const isPanelDocked = useCallback((panelId: string) => dockedPanels.some(p => p.id === panelId), [dockedPanels]);
 
   // If a panel is expanded, show only that panel
   if (expandedPanelId) {
