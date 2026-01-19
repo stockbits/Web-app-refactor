@@ -44,7 +44,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                 minHeight: 120,
               }}
             >
-              <Stack direction="row" gap={1.5} alignItems="flex-start">
+              <Stack direction={{ xs: 'column', md: 'row' }} gap={1.5} alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
                 <Box
                   sx={{
                     width: 44,
@@ -52,6 +52,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     display: 'grid',
                     placeItems: 'center',
                     color: theme.palette.primary.main,
+                    flexShrink: 0,
                   }}
                 >
                   <Icon fontSize="small" />
@@ -63,6 +64,7 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                     gap: 1,
                     alignItems: 'center',
                     flexShrink: 0,
+                    order: { xs: -1, md: 0 }, // Chips after icon on mobile, before text on desktop
                   }}
                 >
                   {group.cards.map((card) => (
