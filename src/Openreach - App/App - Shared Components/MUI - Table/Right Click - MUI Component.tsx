@@ -1,4 +1,4 @@
-import { useState, useCallback, type ReactNode } from 'react'
+import { useState, useCallback, useEffect, type ReactNode } from 'react'
 import { Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import { ContentCopy as ContentCopyIcon } from '@mui/icons-material'
 import { type GridCellParams, type MuiEvent } from '@mui/x-data-grid'
@@ -74,9 +74,12 @@ export interface TableContextMenuState<T = Record<string, unknown>> {
 export function TableContextMenu<T = Record<string, unknown>>({
   additionalItems = [],
   onClose,
-  menuSx = {}
-}: TableContextMenuProps) {
+  menuSx = {},
+  longPressDelay = 500, // ms
+}: TableContextMenuProps & { longPressDelay?: number }) {
   const [contextMenu, setContextMenu] = useState<TableContextMenuState<T> | null>(null)
+  const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
+  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null)
 
   const handleCellRightClick = useCallback((
     params: GridCellParams,
@@ -97,10 +100,70 @@ export function TableContextMenu<T = Record<string, unknown>>({
     }
   }, [])
 
+  const handleCellTouchStart = useCallback((
+    params: GridCellParams,
+    event: React.TouchEvent
+  ) => {
+    const touch = event.touches[0]
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY })
+
+    // Start long-press timer
+    const timer = window.setTimeout(() => {
+      setContextMenu({
+        mouseX: touch.clientX - 2,
+        mouseY: touch.clientY - 4,
+        value: params.value != null ? String(params.value) : '',
+        field: params.field,
+        rowId: params.id,
+        rowData: params.row,
+      })
+      setLongPressTimer(null)
+    }, longPressDelay)
+    setLongPressTimer(timer)
+  }, [longPressDelay])
+
+  const handleCellTouchMove = useCallback((_params: GridCellParams, event: React.TouchEvent) => {
+    if (!touchStartPos || !longPressTimer) return
+
+    const touch = event.touches[0]
+    const deltaX = Math.abs(touch.clientX - touchStartPos.x)
+    const deltaY = Math.abs(touch.clientY - touchStartPos.y)
+
+    // Cancel long press if user moves finger more than 10px
+    if (deltaX > 10 || deltaY > 10) {
+      clearTimeout(longPressTimer)
+      setLongPressTimer(null)
+      setTouchStartPos(null)
+    }
+  }, [touchStartPos, longPressTimer])
+
+  const handleCellTouchEnd = useCallback(() => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      setLongPressTimer(null)
+    }
+    setTouchStartPos(null)
+  }, [longPressTimer])
+
   const handleClose = useCallback(() => {
     setContextMenu(null)
+    // Clear any pending long-press timer
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      setLongPressTimer(null)
+    }
+    setTouchStartPos(null)
     onClose?.()
-  }, [onClose])
+  }, [onClose, longPressTimer])
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer)
+      }
+    }
+  }, [longPressTimer])
 
   const handleCopyValue = useCallback(async () => {
     if (contextMenu?.value) {
@@ -162,6 +225,11 @@ export function TableContextMenu<T = Record<string, unknown>>({
   return {
     // Handler to attach to DataGrid onCellClick
     handleCellRightClick,
+
+    // Touch handlers for mobile long-press support
+    handleCellTouchStart,
+    handleCellTouchMove,
+    handleCellTouchEnd,
 
     // Context menu component
     contextMenuComponent: (

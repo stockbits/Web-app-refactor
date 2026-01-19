@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
 import CalloutCompodent from '../../../App - Shared Components/MUI - Callout MGT/Callout - Compodent'
 import { useCalloutMgt } from './useCalloutMgt'
-import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
+import type { GridColDef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
@@ -43,58 +43,6 @@ const TaskManagementPage = ({
       },
     ],
   })
-
-  // Touch and hold functionality
-  const [touchTimer, setTouchTimer] = useState<number | null>(null)
-  const [touchStartPos, setTouchStartPos] = useState<{ x: number; y: number } | null>(null)
-  const touchTargetRef = useRef<TaskTableRow | null>(null)
-
-  const handleTouchStart = useCallback((params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
-    const touch = event.touches[0]
-    setTouchStartPos({ x: touch.clientX, y: touch.clientY })
-    touchTargetRef.current = params.row
-
-    // Start timer for long press (500ms)
-    const timer = window.setTimeout(() => {
-      openTaskDialog?.(params.row)
-      setTouchTimer(null)
-    }, 500)
-    setTouchTimer(timer)
-  }, [openTaskDialog])
-
-  const handleTouchEnd = useCallback(() => {
-    if (touchTimer) {
-      clearTimeout(touchTimer)
-      setTouchTimer(null)
-    }
-    setTouchStartPos(null)
-    touchTargetRef.current = null
-  }, [touchTimer])
-
-  const handleTouchMove = useCallback((_params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
-    if (!touchStartPos || !touchTimer) return
-
-    const touch = event.touches[0]
-    const deltaX = Math.abs(touch.clientX - touchStartPos.x)
-    const deltaY = Math.abs(touch.clientY - touchStartPos.y)
-
-    // Cancel long press if user moves finger more than 10px
-    if (deltaX > 10 || deltaY > 10) {
-      clearTimeout(touchTimer)
-      setTouchTimer(null)
-      setTouchStartPos(null)
-      touchTargetRef.current = null
-    }
-  }, [touchStartPos, touchTimer])
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (touchTimer) {
-        clearTimeout(touchTimer)
-      }
-    }
-  }, [touchTimer])
 
   const statusMetadata: Record<TaskTableRow['status'], { label: string }> = useMemo(
     () => ({
@@ -601,12 +549,12 @@ const TaskManagementPage = ({
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
               onCellClick={contextMenu.handleCellRightClick}
+              onCellTouchStart={contextMenu.handleCellTouchStart}
+              onCellTouchMove={contextMenu.handleCellTouchMove}
+              onCellTouchEnd={contextMenu.handleCellTouchEnd}
               onCellDoubleClick={(params) => {
                 openTaskDialog?.(params.row)
               }}
-              onCellTouchStart={handleTouchStart}
-              onCellTouchEnd={handleTouchEnd}
-              onCellTouchMove={handleTouchMove}
             />
           ) : (
             <Box

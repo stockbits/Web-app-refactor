@@ -186,6 +186,19 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     toggleTaskSelection(params.row.taskId, isCtrlPressed);
   }, [toggleTaskSelection, contextMenu])
 
+  // Handle touch events for mobile long-press context menu
+  const handleCellTouchStart = useCallback((params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
+    contextMenu.handleCellTouchStart(params, event)
+  }, [contextMenu])
+
+  const handleCellTouchMove = useCallback((_params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
+    contextMenu.handleCellTouchMove(_params, event)
+  }, [contextMenu])
+
+  const handleCellTouchEnd = useCallback(() => {
+    contextMenu.handleCellTouchEnd()
+  }, [contextMenu])
+
   // TODO: Use globalSearch for filtering tasks
 
 
@@ -308,6 +321,9 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             apiRef={apiRef}
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
+            onCellTouchStart={handleCellTouchStart}
+            onCellTouchMove={handleCellTouchMove}
+            onCellTouchEnd={handleCellTouchEnd}
             onCellDoubleClick={(params) => {
               openTaskDialog?.(params.row);
             }}
