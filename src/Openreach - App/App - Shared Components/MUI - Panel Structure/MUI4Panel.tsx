@@ -1,4 +1,4 @@
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme, Tabs, Tab, useMediaQuery } from "@mui/material";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import * as React from "react";
 import TimelineIcon from "@mui/icons-material/Timeline";
@@ -31,7 +31,9 @@ export interface MUI4PanelProps {
 
 export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters, clearSorting }: MUI4PanelProps = {}) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
+  const [activeMobileTab, setActiveMobileTab] = useState(0);
 
   // Use dockedPanels.length as layout key to trigger re-renders when panels are docked/undocked
   const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
@@ -100,6 +102,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
   }, [dockedPanels, filteredTasks, clearSorting]);
+
+  // Ensure activeMobileTab stays within bounds when panels change
+  useEffect(() => {
+    if (isMobile && activeMobileTab >= visiblePanels.length && visiblePanels.length > 0) {
+      setActiveMobileTab(0);
+    }
+  }, [visiblePanels.length, activeMobileTab, isMobile]);
 
   // Calculate grid layout based on number of visible panels
   const gridLayout = useMemo(() => {
@@ -313,8 +322,68 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         }}>
           All panels are docked to the top banner
         </Box>
+      ) : isMobile ? (
+        // Mobile tab layout
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Tabs
+            value={activeMobileTab}
+            onChange={(_, newValue) => setActiveMobileTab(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              minHeight: 48,
+              '& .MuiTab-root': {
+                minHeight: 48,
+                textTransform: 'none',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+              }
+            }}
+          >
+            {visiblePanels.map((panel) => (
+              <Tab
+                key={panel.id}
+                label={panel.props.title}
+                icon={panel.props.icon}
+                iconPosition="start"
+              />
+            ))}
+          </Tabs>
+          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+            {visiblePanels.map((panel, index) => (
+              <Box
+                key={panel.id}
+                sx={{
+                  height: '100%',
+                  display: activeMobileTab === index ? 'block' : 'none'
+                }}
+              >
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {React.createElement(panel.component as unknown as React.ComponentType<any>, {
+                  ...panel.props,
+                  onDock: () => handleDockPanel({
+                    id: panel.id,
+                    title: panel.props.title,
+                    icon: panel.props.icon,
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    content: React.createElement(panel.component as unknown as React.ComponentType<any>, { minimized: true })
+                  }),
+                  onUndock: () => handleUndockPanel(panel.id),
+                  onExpand: () => handleExpandPanel(panel.id),
+                  onCollapse: handleCollapsePanel,
+                  isDocked: isPanelDocked(panel.id),
+                  isExpanded: false,
+                  layoutKey: layoutKey,
+                  style: { height: '100%', width: '100%', display: 'flex', flexDirection: 'column' },
+                })}
+              </Box>
+            ))}
+          </Box>
+        </Box>
       ) : (
-        // Dynamic layout using absolute positioning for independent per-row column sizing
+        // Desktop grid layout using absolute positioning for independent per-row column sizing
         <Box sx={{
           height: '100%',
           position: 'relative',
