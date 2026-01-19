@@ -94,13 +94,10 @@ export const TaskDockBar = memo(function TaskDockBar({
           }}
         >
           <Typography 
-            variant="caption" 
+            variant="body2" 
             sx={{ 
               color: 'text.secondary', 
-              fontStyle: 'italic',
               textAlign: 'center',
-              fontSize: { xs: '0.7rem', sm: '0.75rem' },
-              lineHeight: 1.4,
             }}
           >
             Recent tasks will appear here
