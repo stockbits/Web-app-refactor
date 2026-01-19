@@ -320,9 +320,7 @@ export const lightTheme = createTheme({
           },
           "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
             backgroundColor: brandColors.networkNavy,
-            border: `3px solid ${lightTokens.background.default}`,
             borderRadius: "999px",
-            boxShadow: `inset 0 0 0 1px ${lightTokens.border.soft}`,
           },
           "&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover": {
             backgroundColor: lightTokens.primary.hover,
@@ -521,9 +519,7 @@ export const darkTheme = createTheme({
           },
           "&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb": {
             backgroundColor: "#4A5568",
-            border: `3px solid ${darkTokens.background.default}`,
             borderRadius: "999px",
-            boxShadow: `inset 0 0 0 1px ${darkTokens.border.soft}`,
           },
           "&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover": {
             backgroundColor: "#6B7C93",
