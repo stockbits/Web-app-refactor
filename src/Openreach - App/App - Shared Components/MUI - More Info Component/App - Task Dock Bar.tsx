@@ -103,7 +103,7 @@ export const TaskDockBar = memo(function TaskDockBar({
               lineHeight: 1.4,
             }}
           >
-            Task dock - minimized task dialogs will appear here
+            Recent tasks will appear here
           </Typography>
         </Box>
       </Paper>

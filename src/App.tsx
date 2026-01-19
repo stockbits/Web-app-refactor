@@ -696,6 +696,7 @@ function App() {
                           bgcolor: "background.paper",
                           borderRadius: theme.shape.borderRadius,
                           minHeight: 120,
+                          p: 2,
                         }}
                       >
                         <CardActionArea
@@ -705,7 +706,7 @@ function App() {
                               cardName: card.name,
                             })
                           }
-                          sx={{ p: 2 }}
+                          sx={{ height: '100%', p: 0 }}
                         >
                           <Stack direction="row" spacing={1.5} alignItems="flex-start">
                             <Box
