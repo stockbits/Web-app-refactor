@@ -56,6 +56,30 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                 >
                   <Icon fontSize="small" />
                 </Box>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 1,
+                    alignItems: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  {group.cards.map((card) => (
+                    <Chip
+                      key={card.name}
+                      label={card.name}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        borderColor: tokens.state.info,
+                        color: tokens.state.info,
+                        backgroundColor: tokens.background.alt,
+                        fontWeight: 500,
+                      }}
+                    />
+                  ))}
+                </Box>
                 <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60 }}>
                   <Typography variant="subtitle1" fontWeight={600} sx={{ color: tokens.text.primary }}>
                     {group.label}
@@ -65,30 +89,6 @@ export const LandingOverview = ({ groups }: LandingOverviewProps) => {
                   </Typography>
                 </Box>
               </Stack>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  mt: 1.5,
-                  alignItems: 'center',
-                }}
-              >
-                {group.cards.map((card) => (
-                  <Chip
-                    key={card.name}
-                    label={card.name}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      borderColor: tokens.state.info,
-                      color: tokens.state.info,
-                      backgroundColor: tokens.background.alt,
-                      fontWeight: 500,
-                    }}
-                  />
-                ))}
-              </Box>
             </Paper>
           )
         })}
