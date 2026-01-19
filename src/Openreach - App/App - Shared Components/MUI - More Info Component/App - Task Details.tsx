@@ -18,7 +18,6 @@ import RoomRoundedIcon from '@mui/icons-material/RoomRounded'
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
 import StickyNote2RoundedIcon from '@mui/icons-material/StickyNote2Rounded'
 import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded'
-import { TaskIcon, type TaskIconVariant } from '../MUI - Icon and Key/MUI - Icon'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 export interface TaskDetailsProps {
@@ -53,19 +52,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
   const [fieldNoteDraft, setFieldNoteDraft] = useState('')
   const [progressNoteDraft, setProgressNoteDraft] = useState('')
 
-  const dialogIconVariant = useMemo<TaskIconVariant>(() => {
-    switch (task?.commitType) {
-      case 'START BY':
-        return 'startBy'
-      case 'COMPLETE BY':
-        return 'completeBy'
-      case 'TAIL':
-        return 'failedSLA'
-      default:
-        return 'appointment'
-    }
-  }, [task?.commitType])
-
   const fieldNotesList = useMemo(() => {
     const notes = task?.fieldNotes ?? []
     return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -91,59 +77,111 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
   const notesHeight = compact ? 120 : 150
 
   return (
-    <Stack spacing={0}>
+    <Stack spacing={0} sx={{ minWidth: 0 }}>
       {/* Task Header */}
-      <Box sx={{ p: padding, borderBottom: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}` }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <TaskIcon variant={dialogIconVariant} size={compact ? 24 : 32} />
-          <Stack spacing={0.25} minWidth={0} flex={1}>
-            <Typography variant="h6" fontWeight={700} noWrap>
-              {task?.taskId ?? 'Task details'}
+      <Box sx={{
+        p: { xs: padding * 0.75, sm: padding },
+        borderBottom: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`
+      }}>
+        <Stack spacing={0.5}>
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            noWrap
+            sx={{
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
+              lineHeight: 1.2,
+              color: 'text.primary'
+            }}
+          >
+            {task?.taskId ?? 'Task details'}
+          </Typography>
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={{ xs: 0.25, sm: 1 }}
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            divider={compact ? undefined : <Divider flexItem orientation="vertical" />}
+          >
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                fontWeight: 500
+              }}
+            >
+              Work ID: {task?.workId ?? '—'}
             </Typography>
-            <Stack direction="row" spacing={1} alignItems="center" divider={<Divider flexItem orientation="vertical" />}>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {task?.workId ?? '—'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Updated {task?.updatedAt ? formatDate(task.updatedAt) : '—'}
-              </Typography>
-            </Stack>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                fontWeight: 500
+              }}
+            >
+              Updated: {task?.updatedAt ? formatDate(task.updatedAt) : '—'}
+            </Typography>
           </Stack>
         </Stack>
       </Box>
 
       {/* Main Content */}
-      <Stack spacing={spacing} sx={{ p: padding }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={spacing} alignItems="flex-start">
+      <Stack spacing={{ xs: spacing * 0.75, sm: spacing }} sx={{ p: { xs: padding * 0.75, sm: padding } }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: spacing * 0.75, sm: spacing }} alignItems="flex-start">
           <Box
             sx={{
               flex: 1,
-              p: padding,
+              p: { xs: padding * 0.75, sm: padding },
               borderRadius: 2,
               bgcolor: theme.palette.background.paper,
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+              width: { xs: '100%', sm: 'auto' },
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center" mb={1}>
               <AccessTimeRoundedIcon fontSize="small" color="primary" />
-              <Typography variant="subtitle2" fontWeight={700}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Schedule
               </Typography>
             </Stack>
             <Stack spacing={1}>
               <Box>
-                <Typography variant="body2" color="text.secondary" mb={0.5}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mb={0.5}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Commit type
                 </Typography>
-                <Typography variant="body1" fontWeight={600}>
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
                   {loading ? renderSkeleton(120) : task?.commitType ?? '—'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary" mb={0.5}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mb={0.5}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Commit date
                 </Typography>
-                <Typography variant="body1" fontWeight={600}>
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
                   {loading ? renderSkeleton(160) : formatDate(task?.commitDate)}
                 </Typography>
               </Box>
@@ -153,32 +191,58 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
           <Box
             sx={{
               flex: 1,
-              p: padding,
+              p: { xs: padding * 0.75, sm: padding },
               borderRadius: 2,
               bgcolor: theme.palette.background.paper,
               border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
+              width: { xs: '100%', sm: 'auto' },
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center" mb={1}>
               <RoomRoundedIcon fontSize="small" color="primary" />
-              <Typography variant="subtitle2" fontWeight={700}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Location
               </Typography>
             </Stack>
             <Stack spacing={1}>
               <Box>
-                <Typography variant="body2" color="text.secondary" mb={0.5}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mb={0.5}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Postcode
                 </Typography>
-                <Typography variant="body1" fontWeight={600}>
+                <Typography
+                  variant="body1"
+                  fontWeight={600}
+                  sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                >
                   {loading ? renderSkeleton(120) : task?.postCode ?? '—'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary" mb={0.5}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  mb={0.5}
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                >
                   Coordinates
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    wordBreak: 'break-all'
+                  }}
+                >
                   {loading
                     ? renderSkeleton(140)
                     : task
@@ -192,7 +256,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
 
         <Box
           sx={{
-            p: padding,
+            p: { xs: padding * 0.75, sm: padding },
             borderRadius: 2,
             bgcolor: theme.palette.background.paper,
             border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
@@ -200,24 +264,56 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
         >
           <Stack direction="row" spacing={1} alignItems="center" mb={1}>
             <PersonRoundedIcon fontSize="small" color="primary" />
-            <Typography variant="subtitle2" fontWeight={700}>
+            <Typography
+              variant="subtitle2"
+              fontWeight={700}
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
               Assigned team
             </Typography>
           </Stack>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} divider={<Divider flexItem orientation="vertical" />}>
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={0.5}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={{ xs: 1.5, sm: 1 }}
+            divider={compact ? undefined : <Divider flexItem orientation="vertical" />}
+          >
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                mb={0.5}
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
                 Resource
               </Typography>
-              <Typography variant="body1" fontWeight={700}>
+              <Typography
+                variant="body1"
+                fontWeight={700}
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  wordBreak: 'break-word'
+                }}
+              >
                 {loading ? renderSkeleton(160) : task?.resourceName || 'Unassigned'}
               </Typography>
             </Box>
-            <Box>
-              <Typography variant="body2" color="text.secondary" mb={0.5}>
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                mb={0.5}
+                sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+              >
                 Division
               </Typography>
-              <Typography variant="body1" fontWeight={600}>
+              <Typography
+                variant="body1"
+                fontWeight={600}
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  wordBreak: 'break-word'
+                }}
+              >
                 {loading ? renderSkeleton(120) : task?.division ?? '—'}
               </Typography>
             </Box>
@@ -235,48 +331,122 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
           border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
           '&:before': { display: 'none' },
           '&:not(:last-child)': { mb: 1 },
+          mx: { xs: -0.5, sm: 0 },
+          boxShadow: 'none',
         }}
       >
-        <AccordionSummary>
+        <AccordionSummary
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1.5, sm: 2 },
+            minHeight: { xs: 48, sm: 56 },
+            '& .MuiAccordionSummary-content': {
+              my: { xs: 0, sm: 1 },
+            },
+          }}
+        >
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" width="100%">
             <Stack direction="row" spacing={1} alignItems="center">
               <StickyNote2RoundedIcon fontSize="small" color="primary" />
-              <Typography variant="subtitle2" fontWeight={700}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Field notes
               </Typography>
             </Stack>
-            <Chip size="small" label={loading ? '…' : `${fieldNotesList.length}`} variant="outlined"
+            <Chip
+              size="small"
+              label={loading ? '…' : `${fieldNotesList.length}`}
+              variant="outlined"
               sx={{
                 borderColor: modeTokens?.state.info || '#5488C7',
                 color: modeTokens?.state.info || '#5488C7',
                 backgroundColor: modeTokens?.background.alt || '#F3F4F7',
                 fontWeight: 500,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                height: { xs: '20px', sm: '24px' },
               }}
             />
           </Stack>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
           <Stack spacing={1.25}>
-            <Stack spacing={0.75} sx={{ height: notesHeight, overflowY: 'auto', pr: 0.5 }}>
+            <Stack
+              spacing={0.75}
+              sx={{
+                height: { xs: 120, sm: notesHeight },
+                overflowY: 'auto',
+                pr: 0.5,
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  borderRadius: '2px',
+                },
+              }}
+            >
               {loading ? (
                 <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
               ) : fieldNotesList.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <StickyNote2RoundedIcon sx={{ fontSize: 32, color: 'text.disabled', mb: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
+                <Box sx={{ textAlign: 'center', py: { xs: 3, sm: 2 } }}>
+                  <StickyNote2RoundedIcon
+                    sx={{
+                      fontSize: { xs: 28, sm: 32 },
+                      color: 'text.disabled',
+                      mb: 1
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                  >
                     No field notes yet
                   </Typography>
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography
+                    variant="caption"
+                    color="text.disabled"
+                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                  >
                     Add notes to track field activities
                   </Typography>
                 </Box>
               ) : (
                 fieldNotesList.map((note) => (
-                  <Box key={note.id} sx={{ p: 1, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
-                    <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                  <Box
+                    key={note.id}
+                    sx={{
+                      p: { xs: 1, sm: 1.5 },
+                      bgcolor: theme.palette.action.hover,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{
+                        mb: 0.5,
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        lineHeight: 1.4
+                      }}
+                    >
                       {note.text}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        display: 'block'
+                      }}
+                    >
                       {note.author} • {formatDate(note.createdAt)}
                     </Typography>
                   </Box>
@@ -293,10 +463,26 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   multiline
                   minRows={1}
                   fullWidth
-                  sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: theme.palette.background.default,
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                    }
+                  }}
                 />
                 <Stack direction="row" justifyContent="flex-end">
-                  <Button onClick={() => addNote('field')} size="small" variant="contained" color="primary" disabled={!fieldNoteDraft.trim()}>
+                  <Button
+                    onClick={() => addNote('field')}
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    disabled={!fieldNoteDraft.trim()}
+                    sx={{
+                      minHeight: { xs: '36px', sm: '32px' },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      px: { xs: 2, sm: 1.5 },
+                    }}
+                  >
                     Add note
                   </Button>
                 </Stack>
@@ -314,48 +500,122 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
           bgcolor: theme.palette.background.paper,
           border: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}`,
           '&:before': { display: 'none' },
+          mx: { xs: -0.5, sm: 0 },
+          boxShadow: 'none',
         }}
       >
-        <AccordionSummary>
+        <AccordionSummary
+          sx={{
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1.5, sm: 2 },
+            minHeight: { xs: 48, sm: 56 },
+            '& .MuiAccordionSummary-content': {
+              my: { xs: 0, sm: 1 },
+            },
+          }}
+        >
           <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" width="100%">
             <Stack direction="row" spacing={1} alignItems="center">
               <TimelineRoundedIcon fontSize="small" color="primary" />
-              <Typography variant="subtitle2" fontWeight={700}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={700}
+                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+              >
                 Progress notes
               </Typography>
             </Stack>
-            <Chip size="small" label={loading ? '…' : `${progressNotesList.length}`} variant="outlined"
+            <Chip
+              size="small"
+              label={loading ? '…' : `${progressNotesList.length}`}
+              variant="outlined"
               sx={{
                 borderColor: modeTokens?.state.info || '#5488C7',
                 color: modeTokens?.state.info || '#5488C7',
                 backgroundColor: modeTokens?.background.alt || '#F3F4F7',
                 fontWeight: 500,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                height: { xs: '20px', sm: '24px' },
               }}
             />
           </Stack>
         </AccordionSummary>
-        <AccordionDetails>
+        <AccordionDetails sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
           <Stack spacing={1.25}>
-            <Stack spacing={0.75} sx={{ height: notesHeight, overflowY: 'auto', pr: 0.5 }}>
+            <Stack
+              spacing={0.75}
+              sx={{
+                height: { xs: 120, sm: notesHeight },
+                overflowY: 'auto',
+                pr: 0.5,
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  borderRadius: '2px',
+                },
+              }}
+            >
               {loading ? (
                 <>{renderSkeleton('100%')}{renderSkeleton('85%')}</>
               ) : progressNotesList.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <TimelineRoundedIcon sx={{ fontSize: 32, color: 'text.disabled', mb: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
+                <Box sx={{ textAlign: 'center', py: { xs: 3, sm: 2 } }}>
+                  <TimelineRoundedIcon
+                    sx={{
+                      fontSize: { xs: 28, sm: 32 },
+                      color: 'text.disabled',
+                      mb: 1
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                  >
                     No progress notes yet
                   </Typography>
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography
+                    variant="caption"
+                    color="text.disabled"
+                    sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                  >
                     Track task progress and updates
                   </Typography>
                 </Box>
               ) : (
                 progressNotesList.map((note) => (
-                  <Box key={note.id} sx={{ p: 1, bgcolor: theme.palette.action.hover, borderRadius: 1 }}>
-                    <Typography variant="body2" fontWeight={500} sx={{ mb: 0.5 }}>
+                  <Box
+                    key={note.id}
+                    sx={{
+                      p: { xs: 1, sm: 1.5 },
+                      bgcolor: theme.palette.action.hover,
+                      borderRadius: 1,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight={500}
+                      sx={{
+                        mb: 0.5,
+                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                        lineHeight: 1.4
+                      }}
+                    >
                       {note.text}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        display: 'block'
+                      }}
+                    >
                       {note.author} • {formatDate(note.createdAt)}
                     </Typography>
                   </Box>
@@ -372,10 +632,26 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   multiline
                   minRows={1}
                   fullWidth
-                  sx={{ '& .MuiOutlinedInput-root': { bgcolor: theme.palette.background.default } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      bgcolor: theme.palette.background.default,
+                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                    }
+                  }}
                 />
                 <Stack direction="row" justifyContent="flex-end">
-                  <Button onClick={() => addNote('progress')} size="small" variant="contained" color="primary" disabled={!progressNoteDraft.trim()}>
+                  <Button
+                    onClick={() => addNote('progress')}
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    disabled={!progressNoteDraft.trim()}
+                    sx={{
+                      minHeight: { xs: '36px', sm: '32px' },
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      px: { xs: 2, sm: 1.5 },
+                    }}
+                  >
                     Add note
                   </Button>
                 </Stack>

@@ -24,7 +24,24 @@ const CalloutCompodent: React.FC<CalloutCompodentProps> = ({ open, taskNumber, o
           variant="outlined"
           color="primary"
           onClick={onClose}
-          startIcon={<CloseRoundedIcon />}
+          startIcon={
+            <CloseRoundedIcon
+              sx={{
+                transition: 'none', // Prevent icon color transitions
+                '&:hover': {
+                  opacity: 0.8,
+                },
+                '&:active': {
+                  opacity: 0.6,
+                },
+              }}
+            />
+          }
+          sx={{
+            '& .MuiButton-startIcon': {
+              transition: 'none', // Prevent icon container transitions
+            },
+          }}
         >
           Close
         </Button>

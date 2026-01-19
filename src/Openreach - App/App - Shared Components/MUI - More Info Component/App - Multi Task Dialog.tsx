@@ -111,8 +111,25 @@ export function MultiTaskDialog({
             onClick={onMinimize}
             variant="outlined"
             color="primary"
-            startIcon={<CallToActionRoundedIcon />}
-            sx={{ minWidth: 140 }}
+            startIcon={
+              <CallToActionRoundedIcon
+                sx={{
+                  transition: 'none', // Prevent icon color transitions
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                  '&:active': {
+                    opacity: 0.6,
+                  },
+                }}
+              />
+            }
+            sx={{
+              minWidth: 140,
+              '& .MuiButton-startIcon': {
+                transition: 'none', // Prevent icon container transitions
+              },
+            }}
           >
             Minimise
           </Button>
