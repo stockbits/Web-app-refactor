@@ -351,13 +351,19 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
               />
             ))}
           </Tabs>
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+          <Box sx={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
             {visiblePanels.map((panel, index) => (
               <Box
                 key={panel.id}
                 sx={{
-                  height: '100%',
-                  display: activeMobileTab === index ? 'block' : 'none'
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  opacity: activeMobileTab === index ? 1 : 0,
+                  pointerEvents: activeMobileTab === index ? 'auto' : 'none',
+                  transition: 'opacity 0.2s ease-in-out'
                 }}
               >
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

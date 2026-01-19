@@ -45,7 +45,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   // Selection UI integration - use prioritization when selected from map
   const { getPrioritizedTasks, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
 
-  // Resize observer for table height
+  // Resize observer for table height - handle mobile tab changes
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const [tableHeight, setTableHeight] = useState(400);
 
@@ -56,12 +56,48 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const { height } = entry.contentRect;
-        setTableHeight(height);
+        // Only update height if it's a meaningful change (avoid 0 height)
+        if (height > 50) {
+          setTableHeight(height);
+        }
       }
     });
 
     resizeObserver.observe(element);
     return () => resizeObserver.disconnect();
+  }, []);
+
+  // Force height recalculation when component mounts or becomes visible
+  useEffect(() => {
+    const element = tableContainerRef.current;
+    if (element) {
+      const { height } = element.getBoundingClientRect();
+      if (height > 50) {
+        setTableHeight(height);
+      }
+    }
+  }, []);
+
+  // Recalculate height when window resizes or when component becomes visible
+  useEffect(() => {
+    const handleResize = () => {
+      const element = tableContainerRef.current;
+      if (element) {
+        const { height } = element.getBoundingClientRect();
+        if (height > 50) {
+          setTableHeight(height);
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Also trigger on a short delay to handle tab changes
+    const timeoutId = setTimeout(handleResize, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleMinimizeTask = () => {
