@@ -314,8 +314,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '2.2fr 1.4fr 2.4fr 2fr 1fr',
-                lg: '2.2fr 1.4fr 2.4fr 2fr 1fr',
+                md: '2.2fr 1.6fr 2.4fr 1.8fr 1fr',
+                lg: '2.2fr 1.6fr 2.4fr 1.8fr 1fr',
               },
             }}
           >
