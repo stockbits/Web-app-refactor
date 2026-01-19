@@ -16,7 +16,7 @@ const spin = keyframes`
 export const ThemeToggleButton = () => {
   const { isDarkMode, toggleTheme } = useThemeMode()
   const theme = useTheme()
-  const isLightMode = theme.palette.mode === 'light'
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
   const [isAnimating, setIsAnimating] = useState(false)
 
   const handleClick = () => {
@@ -33,7 +33,7 @@ export const ThemeToggleButton = () => {
         '&:hover': {
           bgcolor: 'transparent',
         },
-        color: isLightMode ? theme.palette.text.primary : '#FFFFFF',
+        color: tokens?.text.primary,
         transition: 'background-color 0.3s ease-in-out',
         padding: '10px',
       }}

@@ -539,23 +539,42 @@ function App() {
               accessSummary
               groupsCount={MENU_GROUPS.length}
               totalTools={TOTAL_TOOL_COUNT}
+              rightAction={
+                <Tooltip title="Tap to view info" placement="left">
+                  <IconButton
+                    size="small"
+                    aria-label="Info: landing page help"
+                    onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
+                    aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
+                  >
+                    <InfoOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              }
             />
           ) : !activePage ? (
-            <AppBreadCrumb left="MENU" right={selectedMenu.label} />
+            <AppBreadCrumb 
+              left="MENU" 
+              right={selectedMenu.label}
+              rightAction={
+                <Tooltip title="Tap to view info" placement="left">
+                  <IconButton
+                    size="small"
+                    aria-label="Info: select a tool card"
+                    onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
+                    aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
+                  >
+                    <InfoOutlinedIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              }
+            />
           ) : (
             <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
           )}
 
 {/* Global task dock - always visible dedicated row */}
-          <Box sx={{ 
-            px: { xs: 1, sm: 1.5, md: 2 }, 
-            py: 0,
-            minHeight: '52px', // Give it dedicated space
-            display: 'flex', 
-            alignItems: 'center',
-            bgcolor: theme.palette.background.default,
-          }}>
-            <TaskDockBar
+          <TaskDockBar
               items={taskDockItems.map((item) => {
                 const variant = (() => {
                   switch (item.commitType) {
@@ -590,26 +609,13 @@ function App() {
               maxItems={5}
               clickable={true}
             />
-          </Box>
 
           <Box 
             className={`app-canvas ${activePage ? 'app-canvas-page' : ''}`}
-            sx={{ p: { xs: 1, sm: 1.5, md: 2 }, pt: activePage ? { xs: 0, sm: 0, md: 0 } : undefined }}
+            sx={{ p: { xs: 1, sm: 1.5, md: 2 } }}
           >
             {showWelcome ? (
               <Box>
-                <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 2 }}>
-                  <Tooltip title="Tap to view info" placement="left">
-                    <IconButton
-                      size="small"
-                      aria-label="Info: landing page help"
-                      onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
-                      aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
-                    >
-                      <InfoOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
                 <Popover
                   id="landing-info-popover"
                   open={landingInfoOpen}
@@ -639,18 +645,6 @@ function App() {
               </Box>
             ) : !activePage ? (
               <Box>
-                <Stack direction="row" justifyContent="flex-end" alignItems="center" sx={{ mb: 1 }}>
-                  <Tooltip title="Tap to view info" placement="left">
-                    <IconButton
-                      size="small"
-                      aria-label="Info: select a tool card"
-                      onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
-                      aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
-                    >
-                      <InfoOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
                 <Popover
                   id="menu-info-popover"
                   open={menuInfoOpen}
@@ -680,9 +674,10 @@ function App() {
                     gap: 2,
                     gridTemplateColumns: {
                       xs: "repeat(1, minmax(0, 1fr))",
-                      sm: "repeat(2, minmax(0, 1fr))",
-                      md: "repeat(3, minmax(0, 1fr))",
+                      sm: "repeat(3, minmax(0, 1fr))",
                     },
+                    justifyItems: "center",
+                    alignItems: "start",
                   }}
                 >
                   {selectedMenu.cards.map((card) => {
@@ -695,7 +690,9 @@ function App() {
                           bgcolor: "background.paper",
                           borderRadius: theme.shape.borderRadius,
                           minHeight: 120,
-                          p: 2,
+                          p: 1.5,
+                          width: "100%",
+                          maxWidth: 280,
                         }}
                       >
                         <CardActionArea
@@ -707,11 +704,11 @@ function App() {
                           }
                           sx={{ height: '100%', p: 0 }}
                         >
-                          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                          <Stack direction="row" spacing={1} alignItems="flex-start">
                             <Box
                               sx={{
-                                width: 44,
-                                height: 44,
+                                width: 36,
+                                height: 36,
                                 display: "grid",
                                 placeItems: "center",
                                 color: theme.palette.primary.main,
@@ -720,11 +717,11 @@ function App() {
                             >
                               <MenuIcon fontSize="small" />
                             </Box>
-                            <Box flexGrow={1} minWidth={0} sx={{ minHeight: 60 }}>
-                              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                            <Box flexGrow={1} minWidth={0}>
+                              <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ mb: 0.5 }}>
                                 {card.name}
                               </Typography>
-                              <Typography variant="body2" color="text.secondary">
+                              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.3 }}>
                                 {card.description}
                               </Typography>
                             </Box>

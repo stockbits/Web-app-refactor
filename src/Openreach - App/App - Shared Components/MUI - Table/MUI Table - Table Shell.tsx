@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography, Menu, MenuItem } from '@mui/material'
+import { Box, Stack, Switch, Typography, Menu, MenuItem, useTheme } from '@mui/material'
 import {
   DataGrid,
   GridToolbarQuickFilter,
@@ -59,6 +59,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   onCellTouchMove,
   getRowClassName,
 }: SharedMuiTableProps<T>) {
+  const theme = useTheme()
   const internalApiRef = useGridApiRef()
   const apiRef = externalApiRef || internalApiRef
   const [densityMode, setDensityMode] = useState(density)
@@ -199,15 +200,23 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             border: 'none',
           },
           '& .selected-row': {
-            backgroundColor: 'rgba(67, 176, 114, 0.08)', // energyAccent green with low opacity
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(20, 32, 49, 0.25)' 
+              : 'rgba(67, 176, 114, 0.08)', // energyAccent green with low opacity
             '&:hover': {
-              backgroundColor: 'rgba(67, 176, 114, 0.12)', // energyAccent green with slightly higher opacity on hover
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(20, 32, 49, 0.35)' 
+                : 'rgba(67, 176, 114, 0.12)', // energyAccent green with slightly higher opacity on hover
             },
           },
           '& .MuiDataGrid-row.Mui-selected': {
-            backgroundColor: 'rgba(67, 176, 114, 0.08) !important', // Override MUI's default blue selection
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(20, 32, 49, 0.25) !important' 
+              : 'rgba(67, 176, 114, 0.08) !important', // Override MUI's default blue selection
             '&:hover': {
-              backgroundColor: 'rgba(67, 176, 114, 0.12) !important',
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(20, 32, 49, 0.35) !important' 
+                : 'rgba(67, 176, 114, 0.12) !important',
             },
           },
         }}

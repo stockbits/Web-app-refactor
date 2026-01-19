@@ -1,4 +1,4 @@
-import { createTheme, alpha } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 import type {} from '@mui/x-data-grid/themeAugmentation';
 import { TASK_ICON_COLORS } from './Icon-Colors';
 
@@ -28,7 +28,7 @@ const brandColors = {
 // ============================================================
 const lightTokens = {
   background: {
-    default: alpha(brandColors.earthGrey, 0.08),
+    default: "#fafafa",
     paper: "#FFFFFF",
     alt: "#F3F4F7",
     overlay: "rgba(20,32,50,0.5)",
@@ -304,6 +304,9 @@ export const lightTheme = createTheme({
       color: lightTokens.text.secondary,
     },
   },
+  shape: {
+    borderRadius: 2, // More square with slight rounding
+  },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
@@ -502,6 +505,9 @@ export const darkTheme = createTheme({
     body2: {
       color: darkTokens.text.secondary,
     },
+  },
+  shape: {
+    borderRadius: 2, // More square with slight rounding
   },
   components: {
     MuiCssBaseline: {

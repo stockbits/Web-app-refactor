@@ -62,7 +62,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
       <Box 
         sx={{ 
           flexShrink: 0, 
-          p: { xs: 1, sm: 2 }, 
+          p: 2, 
           borderBottom: `1px solid ${theme.palette.divider}`,
           bgcolor: 'background.paper',
         }}

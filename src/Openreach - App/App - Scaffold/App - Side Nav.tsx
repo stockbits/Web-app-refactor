@@ -415,7 +415,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                 bgcolor: isLightMode ? theme.palette.background.paper : alpha(palette.energyAccent, 0.12),
                 border: `1px solid ${isLightMode ? theme.palette.divider : alpha(palette.energyAccent, 0.35)}`,
                 boxShadow: isLightMode ? `0 0 0 1px ${alpha(theme.palette.primary.main, 0.18)}` : `0 0 0 1px ${alpha(palette.energyAccent, 0.18)}`,
-                borderRadius: 1,
+                borderRadius: theme.shape.borderRadius,
                 px: 2,
                 py: 0.5,
                 transition: 'border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease',

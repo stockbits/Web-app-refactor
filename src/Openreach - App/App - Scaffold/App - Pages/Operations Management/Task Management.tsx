@@ -365,10 +365,20 @@ const TaskManagementPage = ({
                   size="small" 
                   variant="outlined"
                   sx={{
-                    borderColor: tokens.state.info,
-                    color: tokens.state.info,
-                    backgroundColor: tokens.background.alt,
+                    borderColor: theme.palette.mode === 'dark' ? tokens.chip.border : tokens.secondary.main,
+                    color: theme.palette.mode === 'dark' ? tokens.chip.text : tokens.secondary.main,
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? tokens.chip.bg 
+                      : tokens.background.alt,
                     fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: theme.palette.mode === 'dark' 
+                        ? tokens.chip.hover.bg 
+                        : tokens.secondary.light,
+                      borderColor: theme.palette.mode === 'dark' 
+                        ? tokens.chip.border 
+                        : tokens.secondary.main,
+                    }
                   }}
                 />
               ))
@@ -423,7 +433,7 @@ const TaskManagementPage = ({
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, tokens.state.info, tokens.background.alt, theme.palette.text, openCallout],
+    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, tokens.background.alt, tokens.secondary.light, tokens.secondary.main, tokens.chip.bg, tokens.chip.border, tokens.chip.hover.bg, tokens.chip.text, theme.palette.text, theme.palette.mode, openCallout],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])
@@ -547,7 +557,7 @@ const TaskManagementPage = ({
           overflow: 'auto',
         }}
       >
-        <Box sx={{ px: 3, pt: 3, pb: 1 }}>
+        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
           <TaskTableQueryConfig
             initialQuery={activeQuery}
             defaultQuery={defaultQuery}
@@ -564,7 +574,7 @@ const TaskManagementPage = ({
           />
         </Box>
 
-        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: 3, pt: 1, pb: 3 }}>
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: 2, pt: 1, pb: 2 }}>
           {hasAppliedQuery ? (
             <SharedMuiTable<TaskTableRow>
               columns={columns}
@@ -586,10 +596,10 @@ const TaskManagementPage = ({
           ) : (
             <Box
               sx={{
-                borderRadius: 2,
+                borderRadius: theme.shape.borderRadius,
                 border: `2px dashed ${theme.palette.divider}`,
                 bgcolor: theme.palette.mode === 'dark'
-                  ? 'rgba(255, 255, 255, 0.02)'
+                  ? tokens.background.alt
                   : 'rgba(0, 0, 0, 0.02)',
                 p: 4,
                 m: 3,
@@ -600,9 +610,9 @@ const TaskManagementPage = ({
                 justifyContent: 'center',
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  borderColor: theme.palette.primary.main,
+                  borderColor: tokens.primary.main,
                   bgcolor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.04)'
+                    ? tokens.secondary.light
                     : 'rgba(0, 0, 0, 0.04)',
                 },
               }}

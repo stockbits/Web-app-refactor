@@ -38,6 +38,7 @@ export interface SearchFilters {
 
 const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, currentSearchTerm = '', clearTrigger = 0 }) => {
   const theme = useTheme()
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatusCode[]>([])
   const [selectedCapabilities, setSelectedCapabilities] = useState<TaskSkillCode[]>([])
   const [selectedResponseCodes, setSelectedResponseCodes] = useState<TaskResponseCode[]>([])
@@ -210,7 +211,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
                 <Typography variant="body2" color="text.secondary" gutterBottom>
                   Current Global Search:
                 </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'medium', bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
+                <Typography variant="body1" sx={{ fontWeight: 'medium', bgcolor: 'action.hover', p: 1, borderRadius: 'inherit' }}>
                   "{currentSearchTerm}"
                 </Typography>
               </Box>
@@ -277,7 +278,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
             <Button 
               onClick={handleClear} 
               sx={{ 
-                color: theme.palette.mode === 'dark' ? '#FFFFFF' : theme.palette.secondary.main,
+                color: tokens?.text.primary,
                 mr: { xs: 1, sm: 2 }
               }}
             >
