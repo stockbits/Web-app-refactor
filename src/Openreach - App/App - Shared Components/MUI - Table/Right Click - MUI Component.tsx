@@ -1,15 +1,13 @@
 import { useState, useCallback, useEffect, type ReactNode } from 'react'
 import { Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import { ContentCopy as ContentCopyIcon } from '@mui/icons-material'
-import { type GridCellParams, type MuiEvent } from '@mui/x-data-grid'
+import { type GridCellParams, type MuiEvent, type GridColDef } from '@mui/x-data-grid'
 
 /**
  * TableContextMenu - A reusable right-click context menu for MUI DataGrid tables
  *
  * Features:
- * - Copy cell value to clipboard
- * - Copy field name to clipboard
- * - Copy row ID to clipboard
+ * - Copy cell value to clipboard (shows the actual value in the menu)
  * - Extensible with additional menu items
  * - TypeScript support with generics
  *
@@ -104,11 +102,13 @@ export function TableContextMenu<T = Record<string, unknown>>({
     params: GridCellParams,
     event: React.TouchEvent
   ) => {
+    console.log('TableContextMenu: handleCellTouchStart called', params, event)
     const touch = event.touches[0]
     setTouchStartPos({ x: touch.clientX, y: touch.clientY })
 
     // Start long-press timer
     const timer = window.setTimeout(() => {
+      console.log('TableContextMenu: Long press timer triggered, showing context menu')
       setContextMenu({
         mouseX: touch.clientX - 2,
         mouseY: touch.clientY - 4,
@@ -121,6 +121,14 @@ export function TableContextMenu<T = Record<string, unknown>>({
     }, longPressDelay)
     setLongPressTimer(timer)
   }, [longPressDelay])
+
+  const handleCellTouchEnd = useCallback(() => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer)
+      setLongPressTimer(null)
+    }
+    setTouchStartPos(null)
+  }, [longPressTimer])
 
   const handleCellTouchMove = useCallback((_params: GridCellParams, event: React.TouchEvent) => {
     if (!touchStartPos || !longPressTimer) return
@@ -136,14 +144,6 @@ export function TableContextMenu<T = Record<string, unknown>>({
       setTouchStartPos(null)
     }
   }, [touchStartPos, longPressTimer])
-
-  const handleCellTouchEnd = useCallback(() => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer)
-      setLongPressTimer(null)
-    }
-    setTouchStartPos(null)
-  }, [longPressTimer])
 
   const handleClose = useCallback(() => {
     setContextMenu(null)
@@ -177,50 +177,40 @@ export function TableContextMenu<T = Record<string, unknown>>({
     handleClose()
   }, [contextMenu?.value, handleClose])
 
-  const handleCopyFieldName = useCallback(async () => {
-    if (contextMenu?.field) {
-      try {
-        await navigator.clipboard.writeText(contextMenu.field)
-      } catch (error) {
-        console.error('Failed to copy field name to clipboard:', error)
-      }
-    }
-    handleClose()
-  }, [contextMenu?.field, handleClose])
-
-  const handleCopyRowId = useCallback(async () => {
-    if (contextMenu?.rowId) {
-      try {
-        await navigator.clipboard.writeText(String(contextMenu.rowId))
-      } catch (error) {
-        console.error('Failed to copy row ID to clipboard:', error)
-      }
-    }
-    handleClose()
-  }, [contextMenu?.rowId, handleClose])
-
   // Default menu items
   const defaultItems: ContextMenuItem[] = [
     {
-      label: 'Copy Cell Value',
+      label: `Copy "${contextMenu?.value || '(empty)'}"`,
       icon: <ContentCopyIcon fontSize="small" />,
       onClick: handleCopyValue,
       disabled: !contextMenu?.value,
-    },
-    {
-      label: 'Copy Field Name',
-      icon: <ContentCopyIcon fontSize="small" />,
-      onClick: handleCopyFieldName,
-    },
-    {
-      label: 'Copy Row ID',
-      icon: <ContentCopyIcon fontSize="small" />,
-      onClick: handleCopyRowId,
     },
   ]
 
   // Combine default and additional items
   const allItems = [...defaultItems, ...additionalItems]
+
+  // Helper function to wrap column renderCell with touch event handlers
+  const wrapColumnWithTouchEvents = useCallback(<T extends GridColDef>(column: T): T => {
+    if (!column.renderCell) return column
+
+    return {
+      ...column,
+      renderCell: (params: any) => {
+        const cellContent = column.renderCell!(params)
+        return (
+          <div
+            onTouchStart={(e) => handleCellTouchStart(params, e)}
+            onTouchMove={(e) => handleCellTouchMove(params, e)}
+            onTouchEnd={() => handleCellTouchEnd()}
+            style={{ width: '100%', height: '100%' }}
+          >
+            {cellContent}
+          </div>
+        )
+      }
+    }
+  }, [handleCellTouchStart, handleCellTouchMove, handleCellTouchEnd])
 
   return {
     // Handler to attach to DataGrid onCellClick
@@ -293,6 +283,7 @@ export function TableContextMenu<T = Record<string, unknown>>({
 
     // Current context menu state (useful for debugging or additional logic)
     contextMenuState: contextMenu,
+    wrapColumnWithTouchEvents,
   }
 }
 

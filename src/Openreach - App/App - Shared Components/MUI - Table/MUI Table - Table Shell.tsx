@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography, Menu, MenuItem, useTheme } from '@mui/material'
+import { Box, Stack, Switch, Typography, useTheme } from '@mui/material'
 import {
   DataGrid,
   GridToolbarQuickFilter,
@@ -11,6 +11,7 @@ import {
   type MuiEvent,
   type GridCellParams,
 } from '@mui/x-data-grid'
+import TableContextMenu from './Right Click - MUI Component'
 
 interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   columns: GridColDef[]
@@ -31,10 +32,12 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   apiRef?: ReturnType<typeof useGridApiRef>
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
-  onCellTouchStart?: (params: GridCellParams<T>, event: React.TouchEvent) => void
-  onCellTouchEnd?: (params: GridCellParams<T>, event: React.TouchEvent) => void
-  onCellTouchMove?: (params: GridCellParams<T>, event: React.TouchEvent) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
+  contextMenuItems?: Array<{
+    label: string
+    onClick: () => void
+    divider?: boolean
+  }>
 }
 
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
@@ -54,10 +57,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   apiRef: externalApiRef,
   onCellClick,
   onCellDoubleClick,
-  onCellTouchStart,
-  onCellTouchEnd,
-  onCellTouchMove,
   getRowClassName,
+  contextMenuItems,
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
   const internalApiRef = useGridApiRef()
@@ -71,40 +72,29 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     page: 0,
   })
 
-  // Modify columns to disable sorting when requested
-  const modifiedColumns = useMemo(() => {
-    if (!disableSorting) return columns;
-    return columns.map(col => ({ ...col, sortable: false }));
-  }, [columns, disableSorting]);
+  // Context menu using the reusable hook
+  const contextMenu = TableContextMenu<T>({
+    additionalItems: contextMenuItems,
+  })
 
-  // Context menu state
-  const [contextMenu, setContextMenu] = useState<{
-    mouseX: number;
-    mouseY: number;
-    value: string;
-  } | null>(null)
+  // Apply touch event wrappers to columns
+  const modifiedColumns: GridColDef[] = useMemo(() => {
+    let cols = columns.map(col => ({ ...col, sortable: disableSorting ? false : col.sortable }))
 
+    // Wrap columns with touch events for mobile support
+    cols = cols.map(col => contextMenu.wrapColumnWithTouchEvents(col))
+
+    return cols
+  }, [columns, disableSorting, contextMenu])
+
+  // Combined cell click handler for both context menu and custom clicks
   const handleCellClick = useCallback((params: GridCellParams, event: MuiEvent<React.MouseEvent>) => {
     if (event.button === 2) { // Right-click
-      event.preventDefault()
-      setContextMenu({
-        mouseX: event.clientX - 2,
-        mouseY: event.clientY - 4,
-        value: params.value != null ? String(params.value) : '',
-      })
+      contextMenu.handleCellRightClick(params, event)
     } else if (onCellClick) {
       onCellClick(params, event)
     }
-  }, [onCellClick])
-
-  const handleCloseContextMenu = () => setContextMenu(null)
-
-  const handleCopyValue = async () => {
-    if (contextMenu?.value) {
-      await navigator.clipboard.writeText(contextMenu.value)
-    }
-    setContextMenu(null)
-  }
+  }, [contextMenu, onCellClick])
 
   useEffect(() => {
     setDensityMode(density)
@@ -127,49 +117,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   return (
     <>
       <Box
-        onTouchStart={onCellTouchStart ? (e) => {
-          // Handle touch start on table level
-          const target = e.target as HTMLElement
-          const cell = target.closest('.MuiDataGrid-cell')
-          if (cell) {
-            const rowId = cell.getAttribute('data-rowindex')
-            const colField = cell.getAttribute('data-field')
-            if (rowId && colField) {
-              const row = rows[parseInt(rowId)]
-              if (row) {
-                onCellTouchStart({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
-              }
-            }
-          }
-        } : undefined}
-        onTouchEnd={onCellTouchEnd ? (e) => {
-          const target = e.target as HTMLElement
-          const cell = target.closest('.MuiDataGrid-cell')
-          if (cell) {
-            const rowId = cell.getAttribute('data-rowindex')
-            const colField = cell.getAttribute('data-field')
-            if (rowId && colField) {
-              const row = rows[parseInt(rowId)]
-              if (row) {
-                onCellTouchEnd({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
-              }
-            }
-          }
-        } : undefined}
-        onTouchMove={onCellTouchMove ? (e) => {
-          const target = e.target as HTMLElement
-          const cell = target.closest('.MuiDataGrid-cell')
-          if (cell) {
-            const rowId = cell.getAttribute('data-rowindex')
-            const colField = cell.getAttribute('data-field')
-            if (rowId && colField) {
-              const row = rows[parseInt(rowId)]
-              if (row) {
-                onCellTouchMove({ row, field: colField, id: getRowId(row) } as GridCellParams<T>, e)
-              }
-            }
-          }
-        } : undefined}
         sx={{ width: '100%' }}
       >
         <DataGrid
@@ -251,23 +198,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         }}
       />
       </Box>
-      <Menu
-        open={!!contextMenu}
-        onClose={handleCloseContextMenu}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          contextMenu
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : undefined
-        }
-      >
-        <MenuItem disabled sx={{ fontSize: 13, opacity: 0.7 }}>
-          Copy value
-        </MenuItem>
-        <MenuItem onClick={handleCopyValue} sx={{ fontFamily: 'monospace', fontSize: 15 }}>
-          {contextMenu?.value || '(empty)'}
-        </MenuItem>
-      </Menu>
+      {contextMenu.contextMenuComponent}
     </>
   )
 }

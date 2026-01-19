@@ -3,6 +3,7 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography 
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
 import type { GridColDef, GridCellParams } from '@mui/x-data-grid';
@@ -48,6 +49,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     additionalItems: [
       {
         label: 'Open Task Details',
+        icon: <OpenInNewIcon fontSize="small" />,
         onClick: () => {
           if (contextMenu.contextMenuState?.rowData) {
             openTaskDialog?.(contextMenu.contextMenuState.rowData)
@@ -186,19 +188,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     toggleTaskSelection(params.row.taskId, isCtrlPressed);
   }, [toggleTaskSelection, contextMenu])
 
-  // Handle touch events for mobile long-press context menu
-  const handleCellTouchStart = useCallback((params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
-    contextMenu.handleCellTouchStart(params, event)
-  }, [contextMenu])
-
-  const handleCellTouchMove = useCallback((_params: GridCellParams<TaskTableRow>, event: React.TouchEvent) => {
-    contextMenu.handleCellTouchMove(_params, event)
-  }, [contextMenu])
-
-  const handleCellTouchEnd = useCallback(() => {
-    contextMenu.handleCellTouchEnd()
-  }, [contextMenu])
-
   // TODO: Use globalSearch for filtering tasks
 
 
@@ -321,9 +310,16 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             apiRef={apiRef}
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
-            onCellTouchStart={handleCellTouchStart}
-            onCellTouchMove={handleCellTouchMove}
-            onCellTouchEnd={handleCellTouchEnd}
+            contextMenuItems={[
+              {
+                label: 'Open Task Details',
+                onClick: () => {
+                  if (contextMenu.contextMenuState?.rowData) {
+                    openTaskDialog?.(contextMenu.contextMenuState.rowData)
+                  }
+                },
+              },
+            ]}
             onCellDoubleClick={(params) => {
               openTaskDialog?.(params.row);
             }}
@@ -338,7 +334,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
-      {contextMenu.contextMenuComponent}
     </Box>
   );
 }

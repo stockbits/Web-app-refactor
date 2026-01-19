@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import CalloutCompodent from '../../../App - Shared Components/MUI - Callout MGT/Callout - Compodent'
 import { useCalloutMgt } from './useCalloutMgt'
 import type { GridColDef } from '@mui/x-data-grid'
@@ -35,6 +36,7 @@ const TaskManagementPage = ({
     additionalItems: [
       {
         label: 'Open Task Details',
+        icon: <OpenInNewIcon fontSize="small" />,
         onClick: () => {
           if (contextMenu.contextMenuState?.rowData) {
             openTaskDialog?.(contextMenu.contextMenuState.rowData)
@@ -548,10 +550,16 @@ const TaskManagementPage = ({
               enablePagination={true}
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
-              onCellClick={contextMenu.handleCellRightClick}
-              onCellTouchStart={contextMenu.handleCellTouchStart}
-              onCellTouchMove={contextMenu.handleCellTouchMove}
-              onCellTouchEnd={contextMenu.handleCellTouchEnd}
+              contextMenuItems={[
+                {
+                  label: 'Open Task Details',
+                  onClick: () => {
+                    if (contextMenu.contextMenuState?.rowData) {
+                      openTaskDialog?.(contextMenu.contextMenuState.rowData)
+                    }
+                  },
+                },
+              ]}
               onCellDoubleClick={(params) => {
                 openTaskDialog?.(params.row)
               }}
