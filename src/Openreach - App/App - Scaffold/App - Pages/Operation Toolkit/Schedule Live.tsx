@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button } from '@mui/material'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -107,24 +107,28 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange }: ScheduleL
             />
 
             <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-              <Tooltip title="Search Tool">
-                <IconButton onClick={() => setSearchToolOpen(true)}>
-                  <SearchIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Clear All Filters & Selections">
-                <IconButton 
-                  onClick={() => {
-                    clearSelection()
-                    setSearchFilters(null)
-                    setClearTrigger(prev => prev + 1)
-                    // TODO: Clear sorting in the task table
-                  }}
-                  disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </Tooltip>
+              <Button 
+                variant="contained" 
+                color="primary"
+                startIcon={<SearchIcon />}
+                onClick={() => setSearchToolOpen(true)}
+              >
+                Search
+              </Button>
+              <Button 
+                variant="contained" 
+                color="primary"
+                startIcon={<ClearIcon />}
+                onClick={() => {
+                  clearSelection()
+                  setSearchFilters(null)
+                  setClearTrigger(prev => prev + 1)
+                  // TODO: Clear sorting in the task table
+                }}
+                disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
+              >
+                Clear
+              </Button>
               <Tooltip title="Legend Key Menu">
                 <IconButton onClick={() => setLegendOpen(true)}>
                   <VpnKeyIcon />
