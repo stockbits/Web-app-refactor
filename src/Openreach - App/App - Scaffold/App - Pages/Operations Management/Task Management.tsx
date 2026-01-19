@@ -9,6 +9,7 @@ import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/M
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
+import { TableContextMenu } from '../../../App - Shared Components/MUI - Table'
 
 const TaskManagementPage = ({
   openTaskDialog,
@@ -29,6 +30,19 @@ const TaskManagementPage = ({
     setSnackbar({ open: true, message, severity })
   }, [])
 
+  // Right-click context menu
+  const contextMenu = TableContextMenu<TaskTableRow>({
+    additionalItems: [
+      {
+        label: 'Open Task Details',
+        onClick: () => {
+          if (contextMenu.contextMenuState?.rowData) {
+            openTaskDialog?.(contextMenu.contextMenuState.rowData)
+          }
+        },
+      },
+    ],
+  })
 
   // Touch and hold functionality
   const [touchTimer, setTouchTimer] = useState<number | null>(null)
@@ -586,6 +600,7 @@ const TaskManagementPage = ({
               enablePagination={true}
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
+              onCellClick={contextMenu.handleCellRightClick}
               onCellDoubleClick={(params) => {
                 openTaskDialog?.(params.row)
               }}
@@ -657,6 +672,7 @@ const TaskManagementPage = ({
         </Snackbar>
       </Paper>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+      {contextMenu.contextMenuComponent}
     </>
   )
 }

@@ -14,6 +14,7 @@ import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { useTaskTableSelection } from '../../Selection - UI';
+import { TableContextMenu } from '../../MUI - Table';
 
 interface LiveTaskProps {
   onDock?: () => void;
@@ -41,6 +42,20 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   // Selection UI integration - use prioritization when selected from map
   const { getPrioritizedTasks, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
+
+  // Right-click context menu
+  const contextMenu = TableContextMenu<TaskTableRow>({
+    additionalItems: [
+      {
+        label: 'Open Task Details',
+        onClick: () => {
+          if (contextMenu.contextMenuState?.rowData) {
+            openTaskDialog?.(contextMenu.contextMenuState.rowData)
+          }
+        },
+      },
+    ],
+  })
 
   // Resize observer for table height - handle mobile tab changes
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -158,12 +173,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
   }, [selectedTaskIds]);
 
-  // Handle row clicks for task selection
+  // Handle row clicks for task selection and context menu
   const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
-    // Check if CTRL key is held for multi-selection
+    // Handle right-click for context menu
+    if (event.button === 2) {
+      contextMenu.handleCellRightClick(params, event)
+      return
+    }
+
+    // Handle left-click for task selection
     const isCtrlPressed = event.ctrlKey || event.metaKey;
     toggleTaskSelection(params.row.taskId, isCtrlPressed);
-  }, [toggleTaskSelection]);
+  }, [toggleTaskSelection, contextMenu])
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -301,6 +322,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+      {contextMenu.contextMenuComponent}
     </Box>
   );
 }
