@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import LockResetIcon from '@mui/icons-material/LockReset'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SupervisorChangePasswordPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

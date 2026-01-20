@@ -5,11 +5,13 @@ import {
   AppBar,
   Avatar,
   Box,
+  Chip,
   IconButton,
   Menu,
   MenuItem,
   Stack,
   Toolbar,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
@@ -130,13 +132,34 @@ export const OpenreachTopBanner = ({
           direction="row"
           gap={1.5}
           alignItems="center"
-          sx={{ flexShrink: 0, justifyContent: 'flex-end' }}
+          sx={{ 
+            flexShrink: 0, 
+            justifyContent: 'flex-end',
+            pr: 0.5,
+          }}
         >
-
-
           {actions}
 
-          <>
+          {/* User Role Chip - Subtle indicator */}
+          <Chip
+            label={userRole}
+            size="small"
+            sx={{
+              display: { xs: 'none', md: 'inline-flex' },
+              height: 28,
+              bgcolor: alpha(brand.fibreThreads, 0.15),
+              color: brand.fibreThreads,
+              borderColor: alpha(brand.fibreThreads, 0.25),
+              border: 1,
+              fontWeight: 500,
+              fontSize: '0.8125rem',
+              '& .MuiChip-label': {
+                px: 1.5,
+              },
+            }}
+          />
+
+          <Tooltip title="Profile settings">
             <IconButton
               aria-label="Open profile menu"
               onClick={handleProfileMenuOpen}
@@ -155,6 +178,7 @@ export const OpenreachTopBanner = ({
                 <EngineeringRoundedIcon fontSize="small" />
               </Avatar>
             </IconButton>
+          </Tooltip>
             <Menu
               anchorEl={profileAnchorEl}
               open={profileMenuOpen}
@@ -168,7 +192,6 @@ export const OpenreachTopBanner = ({
                     px: 1,
                     bgcolor: theme.palette.background.paper,
                     border: `1px solid ${theme.palette.divider}`,
-                    color: theme.palette.text.primary,
                     boxShadow: theme.shadows[8],
                     borderRadius: 0,
                   },
@@ -186,7 +209,6 @@ export const OpenreachTopBanner = ({
                 </Stack>
               </MenuItem>
             </Menu>
-          </>
         </Stack>
       </Toolbar>
     </AppBar>

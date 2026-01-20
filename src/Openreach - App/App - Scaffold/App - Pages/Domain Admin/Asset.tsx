@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import BuildIcon from '@mui/icons-material/Build'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AssetPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

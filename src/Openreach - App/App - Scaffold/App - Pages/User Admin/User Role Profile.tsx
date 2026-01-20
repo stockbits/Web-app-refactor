@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const UserRoleProfilePage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

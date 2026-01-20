@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import PlayCircleIcon from '@mui/icons-material/PlayCircle'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AlertActionDefinitionPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

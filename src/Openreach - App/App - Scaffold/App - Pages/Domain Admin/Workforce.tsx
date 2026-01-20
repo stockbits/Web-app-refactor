@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import GroupsIcon from '@mui/icons-material/Groups'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const WorkforcePage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import StarIcon from '@mui/icons-material/Star'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SelfSelectionTaskRatingAdminPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

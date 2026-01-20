@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, type ReactNode } from 'react'
 import { Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import { ContentCopy as ContentCopyIcon } from '@mui/icons-material'
-import { type GridCellParams, type MuiEvent, type GridColDef } from '@mui/x-data-grid'
+import { type GridCellParams, type GridRenderCellParams, type MuiEvent, type GridColDef } from '@mui/x-data-grid'
 
 /**
  * TableContextMenu - A reusable right-click context menu for MUI DataGrid tables
@@ -196,7 +196,7 @@ export function TableContextMenu<T = Record<string, unknown>>({
 
     return {
       ...column,
-      renderCell: (params: any) => {
+      renderCell: (params: GridRenderCellParams) => {
         const cellContent = column.renderCell!(params)
         return (
           <div

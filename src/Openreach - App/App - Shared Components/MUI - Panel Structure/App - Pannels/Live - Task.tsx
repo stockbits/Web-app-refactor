@@ -42,7 +42,14 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const { callout, openCallout, closeCallout } = useCalloutMgt();
 
   // Selection UI integration - use prioritization when selected from map
-  const { getPrioritizedTasks, toggleTaskSelection, selectionSource, selectedTaskIds } = useTaskTableSelection();
+  const { 
+    getPrioritizedTasks, 
+    toggleTaskSelection, 
+    rangeSelectTasks,
+    isLastInteracted,
+    selectionSource, 
+    selectedTaskIds 
+  } = useTaskTableSelection();
 
   // Right-click context menu
   const contextMenu = TableContextMenu<TaskTableRow>({
@@ -172,8 +179,14 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   // Row styling for selected tasks - optimized to reduce re-renders
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
-    return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
-  }, [selectedTaskIds]);
+    const isSelected = selectedTaskIds.includes(params.row.taskId);
+    const isLast = isLastInteracted(params.row.taskId);
+    
+    if (isSelected && isLast) return 'selected-row last-interacted-row';
+    if (isSelected) return 'selected-row';
+    if (isLast) return 'last-interacted-row';
+    return '';
+  }, [selectedTaskIds, isLastInteracted]);
 
   // Handle row clicks for task selection and context menu
   const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
@@ -185,8 +198,19 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
     // Handle left-click for task selection
     const isCtrlPressed = event.ctrlKey || event.metaKey;
-    toggleTaskSelection(params.row.taskId, isCtrlPressed);
-  }, [toggleTaskSelection, contextMenu])
+    const isShiftPressed = event.shiftKey;
+    
+    // Prevent default text selection when shift-clicking
+    if (isShiftPressed) {
+      event.preventDefault();
+      // Shift-click: range select
+      const allTaskIds = filteredRows.map(row => row.taskId);
+      rangeSelectTasks(params.row.taskId, allTaskIds, 'table');
+    } else {
+      // Regular or Ctrl-click
+      toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
+    }
+  }, [toggleTaskSelection, rangeSelectTasks, filteredRows, contextMenu])
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -310,6 +334,37 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             apiRef={apiRef}
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
+            sx={{
+              '& .MuiDataGrid-root': {
+                userSelect: 'none',
+              },
+              '& .selected-row': {
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(144, 202, 249, 0.12)' 
+                  : 'rgba(25, 118, 210, 0.08)',
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(144, 202, 249, 0.18)' 
+                    : 'rgba(25, 118, 210, 0.12)',
+                },
+              },
+              '& .last-interacted-row': {
+                borderLeft: `3px solid ${theme.palette.primary.main}`,
+                borderRight: `3px solid ${theme.palette.primary.main}`,
+              },
+              '& .selected-row.last-interacted-row': {
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(144, 202, 249, 0.16)' 
+                  : 'rgba(25, 118, 210, 0.10)',
+                borderLeft: `3px solid ${theme.palette.primary.main}`,
+                borderRight: `3px solid ${theme.palette.primary.main}`,
+                '&:hover': {
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? 'rgba(144, 202, 249, 0.22)' 
+                    : 'rgba(25, 118, 210, 0.14)',
+                },
+              },
+            }}
             contextMenuItems={[
               {
                 label: 'Open Task Details',

@@ -30,13 +30,17 @@ export const AppBreadCrumb = ({
       justifyContent: 'space-between',
       minHeight: 48,
       px: 3,
-      py: 1,
-      borderBottom: '1px solid',
-      borderColor: 'divider',
+      py: 1.25,
       bgcolor: 'background.paper'
     }}>
       {/* Breadcrumb Navigation */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        {/* Info icon on the left */}
+        {rightAction && (
+          <Box sx={{ mr: -0.5 }}>
+            {rightAction}
+          </Box>
+        )}
         <Breadcrumbs
           separator={<NavigateNextIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />}
           sx={{
@@ -48,12 +52,13 @@ export const AppBreadCrumb = ({
           {leftClickable ? (
             <Link
               component="button"
-              variant="body2"
+              variant="h6"
               onClick={onLeftClick}
               sx={{
-                color: 'text.secondary',
+                color: 'text.primary',
                 textDecoration: 'none',
-                fontWeight: 500,
+                fontWeight: 700,
+                fontSize: '1.125rem',
                 '&:hover': {
                   color: 'primary.main',
                   textDecoration: 'underline'
@@ -65,10 +70,11 @@ export const AppBreadCrumb = ({
             </Link>
           ) : (
             <Typography
-              variant="body2"
+              variant="h6"
               sx={{
-                color: 'text.secondary',
-                fontWeight: 500
+                color: 'text.primary',
+                fontWeight: 700,
+                fontSize: '1.125rem'
               }}
             >
               {left}
@@ -79,8 +85,9 @@ export const AppBreadCrumb = ({
             <Typography
               variant="body2"
               sx={{
-                color: 'text.primary',
-                fontWeight: 600
+                color: 'text.secondary',
+                fontWeight: 400,
+                fontSize: '0.8125rem'
               }}
             >
               {right}
@@ -115,13 +122,6 @@ export const AppBreadCrumb = ({
           </Box>
         )}
       </Box>
-
-      {/* Right Action/Icon */}
-      {rightAction && (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {rightAction}
-        </Box>
-      )}
     </Box>
   )
 };

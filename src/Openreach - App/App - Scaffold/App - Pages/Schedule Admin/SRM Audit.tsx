@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import FindInPageIcon from '@mui/icons-material/FindInPage'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SRMAuditPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>
@@ -27,4 +27,4 @@ const SRMAuditPage = () => (
   </PageContainer>
 )
 
-export default SrmAuditPage
+export default SRMAuditPage

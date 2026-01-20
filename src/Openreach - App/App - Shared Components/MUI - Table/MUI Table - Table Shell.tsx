@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography, useTheme } from '@mui/material'
+import { Box, Stack, Switch, Typography, useTheme, type SxProps, type Theme } from '@mui/material'
 import {
   DataGrid,
   GridToolbarQuickFilter,
@@ -33,6 +33,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
+  sx?: SxProps<Theme>
   contextMenuItems?: Array<{
     label: string
     onClick: () => void
@@ -58,6 +59,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   onCellClick,
   onCellDoubleClick,
   getRowClassName,
+  sx,
   contextMenuItems,
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
@@ -125,6 +127,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         sx={{
           height: height,
           width: '100%',
+          userSelect: 'none',
           '& .MuiDataGrid-cell': {
             display: 'flex',
             alignItems: 'center',
@@ -150,22 +153,38 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           },
           '& .selected-row': {
             backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(20, 32, 49, 0.25)' 
-              : 'rgba(67, 176, 114, 0.08)', // energyAccent green with low opacity
+              ? 'rgba(144, 202, 249, 0.12)' 
+              : 'rgba(25, 118, 210, 0.08)',
             '&:hover': {
               backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(20, 32, 49, 0.35)' 
-                : 'rgba(67, 176, 114, 0.12)', // energyAccent green with slightly higher opacity on hover
+                ? 'rgba(144, 202, 249, 0.18)' 
+                : 'rgba(25, 118, 210, 0.12)',
+            },
+          },
+          '& .last-interacted-row': {
+            borderLeft: `3px solid ${theme.palette.primary.main}`,
+            borderRight: `3px solid ${theme.palette.primary.main}`,
+          },
+          '& .selected-row.last-interacted-row': {
+            backgroundColor: theme.palette.mode === 'dark' 
+              ? 'rgba(144, 202, 249, 0.16)' 
+              : 'rgba(25, 118, 210, 0.10)',
+            borderLeft: `3px solid ${theme.palette.primary.main}`,
+            borderRight: `3px solid ${theme.palette.primary.main}`,
+            '&:hover': {
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(144, 202, 249, 0.22)' 
+                : 'rgba(25, 118, 210, 0.14)',
             },
           },
           '& .MuiDataGrid-row.Mui-selected': {
             backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(20, 32, 49, 0.25) !important' 
-              : 'rgba(67, 176, 114, 0.08) !important', // Override MUI's default blue selection
+              ? 'rgba(144, 202, 249, 0.12) !important' 
+              : 'rgba(25, 118, 210, 0.08) !important',
             '&:hover': {
               backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(20, 32, 49, 0.35) !important' 
-                : 'rgba(67, 176, 114, 0.12) !important',
+                ? 'rgba(144, 202, 249, 0.18) !important' 
+                : 'rgba(25, 118, 210, 0.12) !important',
             },
           },
           '& .MuiDataGrid-cell:focus': {
@@ -176,6 +195,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
             outline: `2px solid ${theme.palette.primary.main}`,
             outlineOffset: '-2px',
           },
+          ...sx,
         }}
         apiRef={apiRef}
         rows={rows}

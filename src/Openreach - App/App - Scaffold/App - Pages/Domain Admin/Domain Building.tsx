@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import BusinessIcon from '@mui/icons-material/Business'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const DomainBuildingPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

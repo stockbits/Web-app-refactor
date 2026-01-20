@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import ExtensionIcon from '@mui/icons-material/Extension'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SelfSelectionPatchAdminPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

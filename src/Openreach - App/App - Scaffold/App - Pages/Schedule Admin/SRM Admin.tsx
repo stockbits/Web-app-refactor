@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SRMAdminPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>
@@ -27,4 +27,4 @@ const SRMAdminPage = () => (
   </PageContainer>
 )
 
-export default SrmAdminPage
+export default SRMAdminPage

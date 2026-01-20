@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AlertRankingPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

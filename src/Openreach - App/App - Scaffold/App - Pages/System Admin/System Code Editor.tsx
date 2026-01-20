@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import CodeIcon from '@mui/icons-material/Code'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SystemCodeEditorPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

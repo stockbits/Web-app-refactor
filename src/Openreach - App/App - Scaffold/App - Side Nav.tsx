@@ -506,70 +506,118 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               )}
 
               {showTreeResults && (
-                <Stack gap={2.5}>
+                <Stack gap={2}>
                   {noMatches && (
-                    <Typography variant="body2" sx={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.8) }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.8),
+                        textAlign: 'center',
+                        py: 4,
+                      }}
+                    >
                       No menus match “{trimmedQuery}”. Try another term.
                     </Typography>
                   )}
                   {filteredGroups.map((group, index) => (
                     <Box key={group.id}>
-                      <Stack direction="row" alignItems="center" gap={1} sx={{ mb: 1 }}>
+                      {/* Group Header */}
+                      <Stack 
+                        direction="row" 
+                        alignItems="center" 
+                        gap={1.5} 
+                        sx={{ 
+                          mb: 1.25,
+                          pl: 0.5,
+                        }}
+                      >
                         <Box
                           sx={{
-                            width: 36,
-                            height: 36,
+                            width: 32,
+                            height: 32,
+                            borderRadius: 1.5,
                             display: 'grid',
                             placeItems: 'center',
+                            bgcolor: alpha(palette.energyAccent, 0.12),
                             color: palette.energyAccent,
+                            flexShrink: 0,
                           }}
                         >
                           {group.icon}
                         </Box>
-                        <Typography variant="subtitle2" fontWeight={700} sx={{ textTransform: 'uppercase', letterSpacing: 0.5, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads }}>
+                        <Typography 
+                          variant="overline" 
+                          fontWeight={700} 
+                          sx={{ 
+                            letterSpacing: 0.75,
+                            color: isLightMode ? theme.palette.text.primary : palette.fibreThreads,
+                            fontSize: '0.7rem',
+                            lineHeight: 1.2,
+                          }}
+                        >
                           {group.label}
                         </Typography>
                       </Stack>
 
+                      {/* Child Menu Items */}
                       <List disablePadding>
                         {group.children.map((child) => (
                           <ListItemButton
                             key={child.id}
                             onClick={() => handleGroupSelect(group)}
                             sx={{
-                              borderRadius: 0,
-                              mb: 0.5,
-                              pl: 3.5,
-                              pr: 1.25,
-                              py: 1,
+                              borderRadius: 1.5,
+                              mb: 0.75,
+                              pl: 2,
+                              pr: 1.5,
+                              py: 1.25,
                               alignItems: 'flex-start',
                               color: isLightMode ? theme.palette.text.primary : palette.fibreThreads,
+                              border: `1px solid ${alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.2)}`,
+                              transition: 'all 0.2s ease',
                               '&:hover': {
-                                bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.14),
+                                bgcolor: alpha(isLightMode ? theme.palette.primary.main : palette.energyAccent, 0.12),
+                                borderColor: isLightMode ? theme.palette.primary.main : palette.energyAccent,
+                                transform: 'translateX(4px)',
                               },
                             }}
                           >
                             <ListItemIcon
                               sx={{
-                                minWidth: 28,
-                                mt: 0.2,
-                                color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7),
+                                minWidth: 24,
+                                mt: 0.25,
+                                color: isLightMode ? theme.palette.primary.main : palette.energyAccent,
                               }}
                             >
-                              <ChevronRightRoundedIcon fontSize="small" />
+                              <ChevronRightRoundedIcon sx={{ fontSize: 18 }} />
                             </ListItemIcon>
                             <ListItemText
                               primary={child.label}
                               secondary={child.description}
-                              primaryTypographyProps={{ fontWeight: 600, color: isLightMode ? theme.palette.text.primary : palette.fibreThreads }}
-                              secondaryTypographyProps={{ color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.7) }}
+                              primaryTypographyProps={{ 
+                                fontWeight: 600, 
+                                fontSize: '0.9rem',
+                                color: isLightMode ? theme.palette.text.primary : palette.fibreThreads,
+                                lineHeight: 1.4,
+                              }}
+                              secondaryTypographyProps={{ 
+                                color: alpha(isLightMode ? theme.palette.text.secondary : palette.fibreThreads, 0.75),
+                                fontSize: '0.8125rem',
+                                lineHeight: 1.5,
+                                mt: 0.25,
+                              }}
                             />
                           </ListItemButton>
                         ))}
                       </List>
 
                       {index < filteredGroups.length - 1 && (
-                        <Divider sx={{ mt: 2, borderColor: alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.22) }} />
+                        <Divider 
+                          sx={{ 
+                            my: 2.5, 
+                            borderColor: alpha(isLightMode ? theme.palette.divider : palette.energyAccent, 0.2) 
+                          }} 
+                        />
                       )}
                     </Box>
                   ))}

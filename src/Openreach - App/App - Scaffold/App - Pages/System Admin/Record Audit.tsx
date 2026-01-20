@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import AssessmentIcon from '@mui/icons-material/Assessment'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const RecordAuditPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

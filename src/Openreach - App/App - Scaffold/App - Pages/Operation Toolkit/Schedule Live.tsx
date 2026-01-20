@@ -1,8 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { Box, Stack, TextField, Autocomplete, useTheme, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button } from '@mui/material'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
-import SearchIcon from '@mui/icons-material/Search'
-import ClearIcon from '@mui/icons-material/Clear'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
@@ -21,7 +19,6 @@ interface ScheduleLivePageProps {
 }
 
 const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDialog }: ScheduleLivePageProps = {}) => {
-  const theme = useTheme()
   const searchRef = useRef<HTMLInputElement>(null)
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
@@ -57,122 +54,154 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   [])
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      {/* Top Toolbar */}
+    <Stack sx={{ height: '100%', overflow: 'hidden', bgcolor: 'background.default' }}>
+      {/* Compact Toolbar */}
       <Box 
         sx={{ 
-          flexShrink: 0, 
-          p: 2, 
-          borderBottom: `1px solid ${theme.palette.divider}`,
+          flexShrink: 0,
+          px: { xs: 1.5, sm: 2 },
+          py: 1.25,
+          borderBottom: 1,
+          borderColor: 'divider',
           bgcolor: 'background.paper',
         }}
       >
         <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
-          spacing={{ xs: 1, sm: 2 }} 
-          alignItems={{ xs: 'stretch', sm: 'center' }} 
-          justifyContent="space-between"
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          sx={{ 
+            flexWrap: { xs: 'wrap', md: 'nowrap' },
+          }}
         >
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={{ xs: 1, sm: 2 }} 
-            alignItems={{ xs: 'stretch', sm: 'center' }}
-            sx={{ flex: 1 }}
-          >
-            <Autocomplete
-              size="small"
-              sx={{ 
-                minWidth: { xs: '100%', sm: 200 },
-                width: { xs: '100%', sm: 'auto' }
-              }}
-              options={divisionOptions}
-              value={selectedDivision}
-              onChange={(_, newValue) => setSelectedDivision(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Division" placeholder="Select division" />
-              )}
-            />
-            
-            <Autocomplete
-              size="small"
-              sx={{ 
-                minWidth: { xs: '100%', sm: 150 },
-                width: { xs: '100%', sm: 'auto' }
-              }}
-              options={domainOptions}
-              value={selectedDomain}
-              onChange={(_, newValue) => setSelectedDomain(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} label="Domain" placeholder="Select domain" />
-              )}
-            />
+          {/* Filters */}
+          <Autocomplete
+            size="small"
+            sx={{ 
+              minWidth: { xs: '100%', sm: 160, md: 140 },
+              width: { xs: '100%', sm: 'auto' },
+              order: { xs: 1, sm: 1 }
+            }}
+            options={divisionOptions}
+            value={selectedDivision}
+            onChange={(_, newValue) => setSelectedDivision(newValue)}
+            renderInput={(params) => (
+              <TextField {...params} label="Division" placeholder="Select division" />
+            )}
+          />
+          
+          <Autocomplete
+            size="small"
+            sx={{ 
+              minWidth: { xs: '100%', sm: 140, md: 120 },
+              width: { xs: '100%', sm: 'auto' },
+              order: { xs: 2, sm: 2 }
+            }}
+            options={domainOptions}
+            value={selectedDomain}
+            onChange={(_, newValue) => setSelectedDomain(newValue)}
+            renderInput={(params) => (
+              <TextField {...params} label="Domain" placeholder="Select domain" />
+            )}
+          />
 
+          {/* Global Search with integrated action buttons */}
+          <Stack 
+            direction="row" 
+            spacing={0.75}
+            alignItems="center"
+            sx={{ 
+              flex: { xs: '1 1 100%', md: 1 },
+              maxWidth: { md: 500 },
+              order: { xs: 3, sm: 3 }
+            }}
+          >
             <TextField
               size="small"
-              sx={{ 
-                flex: 1, 
-                maxWidth: { xs: 'none', sm: 400 },
-                minWidth: { xs: '100%', sm: 'auto' }
-              }}
+              sx={{ flex: 1 }}
               placeholder="Global search..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               inputRef={searchRef}
             />
-
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexShrink: 0 }}>
-              <Button 
-                variant="contained" 
-                color="primary"
-                startIcon={<SearchIcon />}
-                onClick={() => setSearchToolOpen(true)}
-              >
-                Search
-              </Button>
-              <Button 
-                variant="contained" 
-                color="primary"
-                startIcon={<ClearIcon />}
-                onClick={handleClear}
-                disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
-              >
-                Clear
-              </Button>
-              <Tooltip title="Legend Key Menu">
-                <IconButton onClick={() => setLegendOpen(true)}>
-                  <VpnKeyIcon />
-                </IconButton>
-              </Tooltip>
-            </Stack>
+            <Button 
+              variant="contained" 
+              size="small"
+              onClick={() => setSearchToolOpen(true)}
+              sx={{ 
+                minWidth: 80,
+                px: 1.5
+              }}
+            >
+              Search
+            </Button>
+            <Button 
+              variant="outlined" 
+              size="small"
+              onClick={handleClear}
+              disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
+              sx={{ 
+                minWidth: 70,
+                px: 1.5
+              }}
+            >
+              Clear
+            </Button>
           </Stack>
-          
+
+          {/* Utility Icons */}
           <Stack 
             direction="row" 
-            spacing={1} 
-            alignItems="center"
+            spacing={0.75}
             sx={{ 
               flexShrink: 0,
-              mt: { xs: 1, sm: 0 },
-              justifyContent: { xs: 'center', sm: 'flex-end' }
+              order: { xs: 4, sm: 4 },
+              ml: { md: 'auto !important' }
             }}
           >
+            <Tooltip title="Legend Key Menu">
+              <IconButton 
+                size="small"
+                onClick={() => setLegendOpen(true)}
+                sx={{ 
+                  border: 1, 
+                  borderColor: 'divider',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'action.hover',
+                  }
+                }}
+              >
+                <VpnKeyIcon sx={{ fontSize: 20 }} />
+              </IconButton>
+            </Tooltip>
+
             {/* Docked Panel Icons */}
-            {dockedPanels.map((panel) => (
-              <Tooltip key={panel.id} title={panel.title}>
-                <IconButton
-                  size="small"
-                  onClick={() => handleUndockPanel(panel.id)}
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                    }
-                  }}
-                >
-                  {panel.icon}
-                </IconButton>
-              </Tooltip>
-            ))}
+            {dockedPanels.length > 0 && (
+              <>
+                <Box sx={{ width: '1px', height: 24, bgcolor: 'divider', mx: 0.5 }} />
+                {dockedPanels.map((panel) => (
+                  <Tooltip key={panel.id} title={panel.title}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleUndockPanel(panel.id)}
+                      sx={{
+                        border: 1,
+                        borderColor: 'divider',
+                        color: 'text.secondary',
+                        '&:hover': {
+                          borderColor: 'error.main',
+                          color: 'error.main',
+                          bgcolor: 'action.hover',
+                        }
+                      }}
+                    >
+                      {panel.icon}
+                    </IconButton>
+                  </Tooltip>
+                ))}
+              </>
+            )}
           </Stack>
         </Stack>
       </Box>
@@ -187,6 +216,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         clearSorting={clearTrigger}
         openTaskDialog={openTaskDialog}
       />
+      
       <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} clearTrigger={clearTrigger} />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
@@ -194,7 +224,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           <TaskStatusLegend variant="full" showTitle={false} />
         </DialogContent>
       </Dialog>
-    </Box>
+    </Stack>
   )
 }
 

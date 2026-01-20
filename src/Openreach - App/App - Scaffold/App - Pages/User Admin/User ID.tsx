@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import BadgeIcon from '@mui/icons-material/Badge'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const UserIDPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>
@@ -27,4 +27,4 @@ const UserIDPage = () => (
   </PageContainer>
 )
 
-export default UserIdPage
+export default UserIDPage

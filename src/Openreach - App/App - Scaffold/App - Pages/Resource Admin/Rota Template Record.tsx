@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const RotaTemplateRecordPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

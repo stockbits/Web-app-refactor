@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import NotificationsIcon from '@mui/icons-material/Notifications'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const NotificationChannelsPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

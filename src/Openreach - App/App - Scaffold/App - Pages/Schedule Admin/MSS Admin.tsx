@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const MSSAdminPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>
@@ -27,4 +27,4 @@ const MSSAdminPage = () => (
   </PageContainer>
 )
 
-export default MssAdminPage
+export default MSSAdminPage

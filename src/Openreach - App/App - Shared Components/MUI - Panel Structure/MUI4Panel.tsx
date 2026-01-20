@@ -124,16 +124,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     if (count === 1) return { rows: 1, cols: 1, areas: [[visiblePanels[0].id]] };
     if (count === 2) return { rows: 1, cols: 2, areas: [[visiblePanels[0].id, visiblePanels[1].id]] };
     if (count === 3) {
-      // For 3 panels, fill a 2x2 grid, leaving one cell empty and letting panels expand
-      // Assign panels to top-left, top-right, bottom-left; bottom-right is empty
       return {
         rows: 2, cols: 2,
         areas: [
           [visiblePanels[0].id, visiblePanels[1].id],
-          [visiblePanels[2].id, visiblePanels[2].id]] // bottom row: panel 3 spans both columns
+          [visiblePanels[2].id, visiblePanels[2].id]]
       };
     }
-    // count === 4
     return {
       rows: 2, cols: 2,
       areas: [
@@ -143,11 +140,30 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     };
   }, [visiblePanels]);
 
-  // Initialize grid sizes state - separate column sizes for each row
-  const [rowSizes, setRowSizes] = useState<number[]>(() => Array(gridLayout.rows).fill(100 / gridLayout.rows));
-  const [colSizes, setColSizes] = useState<number[][]>(() => 
-    Array(gridLayout.rows).fill(null).map(() => Array(gridLayout.cols).fill(100 / gridLayout.cols))
+  // Initialize grid sizes - derive defaults from gridLayout
+  const defaultRowSizes = useMemo(() => 
+    gridLayout.rows === 1 ? [100] : Array(gridLayout.rows).fill(100 / gridLayout.rows),
+    [gridLayout.rows]
   );
+  const defaultColSizes = useMemo(() => 
+    gridLayout.rows === 1 && gridLayout.cols === 1 
+      ? [[100]] 
+      : Array(gridLayout.rows).fill(null).map(() => Array(gridLayout.cols).fill(100 / gridLayout.cols)),
+    [gridLayout.rows, gridLayout.cols]
+  );
+
+  // Use defaultRowSizes and defaultColSizes directly as initial state
+  // Reset state when panel count changes using derived state pattern
+  const [rowSizes, setRowSizes] = useState<number[]>(() => defaultRowSizes);
+  const [colSizes, setColSizes] = useState<number[][]>(() => defaultColSizes);
+  const [prevPanelCount, setPrevPanelCount] = useState(dockedPanels.length);
+
+  // Derive state updates - only when panel count actually changes
+  if (prevPanelCount !== dockedPanels.length) {
+    setPrevPanelCount(dockedPanels.length);
+    setRowSizes(defaultRowSizes);
+    setColSizes(defaultColSizes);
+  }
 
   // All panels get equal space: 50/50 for main split, then 50/50 for each sub-split = 25% each
   // Allotment handles sizes internally for smooth resizing; no need for manual state unless you want to control it.
@@ -433,15 +449,19 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                 position: 'absolute',
                 top: `${rowStart}%`,
                 left: `${colStart}%`,
-                width: `${colWidth}%`,
-                height: `${rowHeight}%`,
+                width: `calc(${colWidth}% + 0.5px)`,
+                height: `calc(${rowHeight}% + 0.5px)`,
                 minHeight: {
                   xs: panel.id === 'map' ? '250px' : '200px',
                   sm: panel.id === 'map' ? '300px' : 'auto'
                 },
                 overflow: 'hidden',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                boxSizing: 'border-box',
+                '& > *': {
+                  boxSizing: 'border-box',
+                }
               }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {React.createElement(panel.component as unknown as React.ComponentType<any>, {

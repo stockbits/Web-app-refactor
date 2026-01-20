@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const TravelAreasPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

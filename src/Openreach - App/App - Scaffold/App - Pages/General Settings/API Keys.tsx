@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import KeyIcon from '@mui/icons-material/Key'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const APIKeysPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>
@@ -27,4 +27,4 @@ const APIKeysPage = () => (
   </PageContainer>
 )
 
-export default ApiKeysPage
+export default APIKeysPage

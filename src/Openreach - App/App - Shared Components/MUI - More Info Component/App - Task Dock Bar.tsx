@@ -17,7 +17,7 @@ export interface MinimizedTaskItem {
   task: TaskTableRow
 }
 
-export interface TaskDockBarProps {
+export interface RecentTabsBarProps {
   items: TaskDockItem[]
   minimizedTasks?: MinimizedTaskItem[]
   onClick?: (id: string) => void
@@ -32,7 +32,10 @@ export interface TaskDockBarProps {
   clickable?: boolean
 }
 
-export const TaskDockBar = memo(function TaskDockBar({ 
+// Legacy export for backwards compatibility
+export type TaskDockBarProps = RecentTabsBarProps;
+
+export const RecentTabsBar = memo(function RecentTabsBar({ 
   items, 
   minimizedTasks = [],
   onClick, 
@@ -45,7 +48,7 @@ export const TaskDockBar = memo(function TaskDockBar({
   multiSelect = false,
   maxItems: propMaxItems, 
   clickable = true 
-}: TaskDockBarProps) {
+}: RecentTabsBarProps) {
   const maxItems = propMaxItems || 5
   const visibleItems = useMemo(() => items.slice(0, maxItems), [items, maxItems])
 
@@ -73,7 +76,7 @@ export const TaskDockBar = memo(function TaskDockBar({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
           minHeight: 48,
           px: 3,
           py: 1,
@@ -83,11 +86,10 @@ export const TaskDockBar = memo(function TaskDockBar({
         <Typography 
           variant="body2" 
           sx={{ 
-            color: 'text.secondary', 
-            textAlign: 'center',
+            color: 'text.secondary',
           }}
         >
-          Recent tasks will appear here
+          Recent tabs will appear here
         </Typography>
       </Box>
     )
@@ -101,8 +103,10 @@ export const TaskDockBar = memo(function TaskDockBar({
         justifyContent: 'space-between',
         minHeight: 48,
         px: 3,
-        py: 1,
-        bgcolor: 'background.paper'
+        py: 1.25,
+        bgcolor: 'background.paper',
+        borderBottom: 1,
+        borderColor: 'divider',
       }}
     >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1 }}>
@@ -116,7 +120,7 @@ export const TaskDockBar = memo(function TaskDockBar({
                   fontWeight: 600,
                 }}
               >
-                Recent Tasks ({items.length})
+                Recent Tabs ({items.length})
               </Typography>
               <Box 
                 sx={{ 
@@ -132,7 +136,19 @@ export const TaskDockBar = memo(function TaskDockBar({
                   <Tooltip 
                     key={item.id} 
                     title={multiSelect ? (isSelected ? 'Deselect task' : 'Select task for comparison') : 'Open task details'}
-                    placement="top"
+                    placement="bottom"
+                    slotProps={{
+                      popper: {
+                        modifiers: [
+                          {
+                            name: 'offset',
+                            options: {
+                              offset: [0, 8],
+                            },
+                          },
+                        ],
+                      },
+                    }}
                   >
                     <Chip
                       label={

@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const UnbarUserPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

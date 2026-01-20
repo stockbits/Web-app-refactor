@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import BlockIcon from '@mui/icons-material/Block'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AlertExclusionPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

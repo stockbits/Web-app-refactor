@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import CategoryIcon from '@mui/icons-material/Category'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const TaskTypePage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

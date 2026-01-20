@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const PersonalOvertimePage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

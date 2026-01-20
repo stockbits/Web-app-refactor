@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import SettingsIcon from '@mui/icons-material/Settings'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const SystemPreferencesPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

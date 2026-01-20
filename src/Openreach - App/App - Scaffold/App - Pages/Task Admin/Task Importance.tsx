@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const TaskImportancePage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

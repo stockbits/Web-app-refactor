@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const RotaWeekRecordPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

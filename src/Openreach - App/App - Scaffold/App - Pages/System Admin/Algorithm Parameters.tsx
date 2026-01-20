@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import FunctionsIcon from '@mui/icons-material/Functions'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AlgorithmParametersPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

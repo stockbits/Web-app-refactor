@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const ResourceManagementPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

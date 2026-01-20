@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import PaletteIcon from '@mui/icons-material/Palette'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const ThemeBuilderPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

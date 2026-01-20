@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import WarningIcon from '@mui/icons-material/Warning'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const AlertDefinitionsPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

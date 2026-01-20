@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const DivisionPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

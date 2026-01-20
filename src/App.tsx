@@ -2,16 +2,19 @@ import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from "react
 import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
+  alpha,
   Box,
+  Card,
   CardActionArea,
+  Chip,
+  CircularProgress,
   IconButton,
-  Paper,
   Popover,
   Stack,
-  Typography,
   Tooltip,
+  Typography,
   useTheme,
-  CircularProgress,
+  Grid,
 } from "@mui/material";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
 import BuildCircleRoundedIcon from "@mui/icons-material/BuildCircleRounded";
@@ -25,12 +28,13 @@ import PublicRoundedIcon from "@mui/icons-material/PublicRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import MemoryRoundedIcon from "@mui/icons-material/MemoryRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { OpenreachSideNav } from "./Openreach - App/App - Scaffold/App - Side Nav";
 import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { TaskDockBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Bar";
+import { RecentTabsBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Bar";
 import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
 import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
@@ -548,31 +552,69 @@ function App() {
             />
           </Box>
 
-          {/* Unified breadcrumb position and style for all pages */}
-          {showWelcome ? (
-            <AppBreadCrumb
-              left="Access summary"
-              accessSummary
-              groupsCount={MENU_GROUPS.length}
-              totalTools={TOTAL_TOOL_COUNT}
-              rightAction={
-                <Tooltip title="Tap to view info" placement="left">
-                  <IconButton
-                    size="small"
-                    aria-label="Info: landing page help"
-                    onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
-                    aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
-                  >
-                    <InfoOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              }
-            />
-          ) : !activePage ? (
-            <AppBreadCrumb 
-              left="MENU" 
-              right={selectedMenu.label}
-              rightAction={
+          {/* Page-level header: Breadcrumb + Recent Tabs with consistent spacing */}
+          <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
+            {/* Unified breadcrumb position and style for all pages */}
+            {showWelcome ? (
+              <AppBreadCrumb
+                left="Access summary"
+                accessSummary
+                groupsCount={MENU_GROUPS.length}
+                totalTools={TOTAL_TOOL_COUNT}
+                rightAction={
+                  <Tooltip title="Tap to view info" placement="left">
+                    <IconButton
+                      size="small"
+                      aria-label="Info: landing page help"
+                      onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
+                      aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
+                    >
+                      <InfoOutlinedIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                }
+              />
+            ) : !activePage ? (
+              <>
+                <RecentTabsBar
+                items={taskDockItems.map((item) => {
+                  const variant = (() => {
+                    switch (item.commitType) {
+                      case 'START BY':
+                        return 'startBy' as const;
+                      case 'COMPLETE BY':
+                        return 'completeBy' as const;
+                      case 'TAIL':
+                        return 'failedSLA' as const;
+                      default:
+                        return 'appointment' as const;
+                    }
+                  })();
+                  return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
+                })}
+                minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
+                onClick={(id: string) => {
+                  const item = taskDockItems.find((it) => it.id === id);
+                  if (!item) return;
+                  if (item.task) {
+                    openTaskDialog(item.task);
+                  } else {
+                    const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+                    if (task) {
+                      openTaskDialog(task);
+                    }
+                  }
+                }}
+                onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+                onMinimizedTaskClick={openTaskDialog}
+                onMinimizedTaskRemove={removeMinimizedTask}
+                maxItems={5}
+                clickable={true}
+              />
+              <AppBreadCrumb 
+                left="MENU" 
+                right={selectedMenu.label}
+                rightAction={
                 <Tooltip title="Tap to view info" placement="left">
                   <IconButton
                     size="small"
@@ -584,47 +626,49 @@ function App() {
                   </IconButton>
                 </Tooltip>
               }
-            />
+              />
+            </>
           ) : (
-            <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
+            <>
+              <RecentTabsBar
+                items={taskDockItems.map((item) => {
+                  const variant = (() => {
+                    switch (item.commitType) {
+                      case 'START BY':
+                        return 'startBy' as const;
+                      case 'COMPLETE BY':
+                        return 'completeBy' as const;
+                      case 'TAIL':
+                        return 'failedSLA' as const;
+                      default:
+                        return 'appointment' as const;
+                    }
+                  })();
+                  return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
+                })}
+                minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
+                onClick={(id: string) => {
+                  const item = taskDockItems.find((it) => it.id === id);
+                  if (!item) return;
+                  if (item.task) {
+                    openTaskDialog(item.task);
+                  } else {
+                    const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+                    if (task) {
+                      openTaskDialog(task);
+                    }
+                  }
+                }}
+                onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+                onMinimizedTaskClick={openTaskDialog}
+                onMinimizedTaskRemove={removeMinimizedTask}
+                maxItems={5}
+                clickable={true}
+              />
+              <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
+            </>
           )}
-
-{/* Global task dock - always visible dedicated row */}
-          <TaskDockBar
-              items={taskDockItems.map((item) => {
-                const variant = (() => {
-                  switch (item.commitType) {
-                    case 'START BY':
-                      return 'startBy' as const;
-                    case 'COMPLETE BY':
-                      return 'completeBy' as const;
-                    case 'TAIL':
-                      return 'failedSLA' as const;
-                    default:
-                      return 'appointment' as const;
-                  }
-                })();
-                return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
-              })}
-              minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
-              onClick={(id: string) => {
-                const item = taskDockItems.find((it) => it.id === id);
-                if (!item) return;
-                if (item.task) {
-                  openTaskDialog(item.task);
-                } else {
-                  const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
-                  if (task) {
-                    openTaskDialog(task);
-                  }
-                }
-              }}
-              onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-              onMinimizedTaskClick={openTaskDialog}
-              onMinimizedTaskRemove={removeMinimizedTask}
-              maxItems={5}
-              clickable={true}
-            />
+          </Box>
 
           <Box 
             component="section"
@@ -635,7 +679,6 @@ function App() {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              p: { xs: 1, sm: 1.5, md: 2 },
               ...(activePage && {
                 minHeight: 0
               })
@@ -668,6 +711,17 @@ function App() {
                 </Popover>
                 <LandingOverview
                   groups={MENU_GROUPS}
+                  onToolClick={(groupId, toolName) => {
+                    const group = MENU_GROUPS.find((g) => g.id === groupId);
+                    if (group) {
+                      setSelectedMenuId(groupId);
+                      setActivePage({
+                        menuLabel: group.label,
+                        cardName: toolName,
+                      });
+                      setShowWelcome(false);
+                    }
+                  }}
                 />
               </Box>
             ) : !activePage ? (
@@ -695,69 +749,167 @@ function App() {
                     Select a tool card to load its page.
                   </Typography>
                 </Popover>
-                <Box
-                  sx={{
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: {
-                      xs: "repeat(1, minmax(0, 1fr))",
-                      sm: "repeat(3, minmax(0, 1fr))",
-                    },
-                    justifyItems: "center",
-                    alignItems: "start",
-                  }}
-                >
-                  {selectedMenu.cards.map((card) => {
-                    const MenuIcon = selectedMenu.icon;
-                    return (
-                      <Paper
-                        key={card.name}
-                        elevation={1}
-                        sx={{
-                          bgcolor: "background.paper",
-                          borderRadius: theme.shape.borderRadius,
-                          minHeight: 120,
-                          p: 1.5,
-                          width: "100%",
-                          maxWidth: 280,
+                <Stack spacing={4} sx={{ px: { xs: 2, sm: 3, md: 4 }, py: { xs: 3, sm: 4 } }}>
+                  {/* Category Header */}
+                  <Stack direction="row" spacing={2} alignItems="flex-start">
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 2,
+                        display: 'grid',
+                        placeItems: 'center',
+                        bgcolor: alpha(theme.palette.primary.main, 0.08),
+                        color: 'primary.main',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <selectedMenu.icon sx={{ fontSize: 26 }} />
+                    </Box>
+                    <Stack spacing={0.75} sx={{ minWidth: 0, flex: 1 }}>
+                      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+                        <Typography 
+                          variant="h5" 
+                          component="h1"
+                          fontWeight={700} 
+                          sx={{ 
+                            color: 'text.primary',
+                            fontSize: { xs: '1.5rem', sm: '1.75rem' },
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          {selectedMenu.label}
+                        </Typography>
+                        {selectedMenu.accessLabel && (
+                          <Chip 
+                            label={selectedMenu.accessLabel} 
+                            size="small"
+                            sx={{
+                              height: 24,
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                              bgcolor: alpha(theme.palette.success.main, 0.1),
+                              color: 'success.dark',
+                              border: 'none',
+                            }}
+                          />
+                        )}
+                      </Stack>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: 'text.secondary',
+                          fontSize: '0.9375rem',
+                          lineHeight: 1.5,
                         }}
                       >
-                        <CardActionArea
-                          onClick={() =>
-                            setActivePage({
-                              menuLabel: selectedMenu.label,
-                              cardName: card.name,
-                            })
-                          }
-                          sx={{ height: '100%', p: 0 }}
+                        {selectedMenu.description}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+
+                  {/* Tool Cards Grid */}
+                  <Grid container spacing={2}>
+                    {selectedMenu.cards.map((card) => (
+                      <Grid size={{ xs: 12, sm: 6, md: 4 }} key={card.name}>
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            height: '100%',
+                            borderRadius: 2,
+                            borderColor: 'divider',
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: '3px',
+                              bgcolor: 'primary.main',
+                              transform: 'scaleX(0)',
+                              transformOrigin: 'left',
+                              transition: 'transform 0.2s ease-in-out',
+                            },
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                              transform: 'translateY(-2px)',
+                              '&::before': {
+                                transform: 'scaleX(1)',
+                              },
+                              '& .tool-arrow': {
+                                opacity: 1,
+                                transform: 'translateX(4px)',
+                              },
+                            },
+                            '&:active': {
+                              transform: 'translateY(0)',
+                            },
+                          }}
                         >
-                          <Stack direction="row" spacing={1} alignItems="flex-start">
-                            <Box
-                              sx={{
-                                width: 36,
-                                height: 36,
-                                display: "grid",
-                                placeItems: "center",
-                                color: theme.palette.primary.main,
-                                flexShrink: 0,
-                              }}
-                            >
-                              <MenuIcon fontSize="small" />
-                            </Box>
-                            <Box flexGrow={1} minWidth={0}>
-                              <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ mb: 0.5 }}>
-                                {card.name}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.3 }}>
+                          <CardActionArea
+                            onClick={() =>
+                              setActivePage({
+                                menuLabel: selectedMenu.label,
+                                cardName: card.name,
+                              })
+                            }
+                            sx={{ 
+                              height: '100%',
+                              p: 2.5,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              justifyContent: 'flex-start',
+                            }}
+                          >
+                            <Stack spacing={1.5} sx={{ width: '100%' }}>
+                              <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                                <Typography 
+                                  variant="subtitle1" 
+                                  component="h2"
+                                  fontWeight={600} 
+                                  sx={{ 
+                                    color: 'text.primary',
+                                    fontSize: '1rem',
+                                    lineHeight: 1.4,
+                                    pr: 1,
+                                    flex: 1,
+                                  }}
+                                >
+                                  {card.name}
+                                </Typography>
+                                <ArrowForwardIcon 
+                                  className="tool-arrow"
+                                  sx={{ 
+                                    fontSize: 18,
+                                    color: 'primary.main',
+                                    opacity: 0,
+                                    transition: 'all 0.2s',
+                                    flexShrink: 0,
+                                  }} 
+                                />
+                              </Stack>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: 'text.secondary',
+                                  lineHeight: 1.6,
+                                  fontSize: '0.875rem',
+                                }}
+                              >
                                 {card.description}
                               </Typography>
-                            </Box>
-                          </Stack>
-                        </CardActionArea>
-                      </Paper>
-                    );
-                  })}
-                </Box>
+                            </Stack>
+                          </CardActionArea>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Stack>
               </Box>
             ) : (
                 <Box
@@ -794,9 +946,11 @@ function App() {
                               <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog } as Record<string, unknown>)} />
                             </SelectionUIProvider>
                           ) : activePage?.cardName === 'Task Management' ? (
-                            <ActivePageComponent {...({
-                              openTaskDialog,
-                            } as Record<string, unknown>)} />
+                            <SelectionUIProvider>
+                              <ActivePageComponent {...({
+                                openTaskDialog,
+                              } as Record<string, unknown>)} />
+                            </SelectionUIProvider>
                           ) : (
                             <ActivePageComponent />
                           )}

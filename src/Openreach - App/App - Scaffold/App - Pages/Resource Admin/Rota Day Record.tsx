@@ -1,6 +1,6 @@
 import { Box, Typography, Paper } from '@mui/material'
 import TodayIcon from '@mui/icons-material/Today'
-import PageContainer from '../../../App - Shared Components/Page Container'
+import { PageContainer } from '../../../App - Shared Components/Page Container'
 
 const RotaDayRecordPage = () => (
   <PageContainer maxWidth="lg" spacing={3}>

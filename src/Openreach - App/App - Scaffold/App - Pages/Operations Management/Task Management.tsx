@@ -1,16 +1,18 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Alert, Box, Chip, IconButton, Paper, Snackbar, Stack, Typography, useTheme } from '@mui/material'
+import { Alert, Box, Chip, IconButton, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import CalloutCompodent from '../../../App - Shared Components/MUI - Callout MGT/Callout - Compodent'
 import { useCalloutMgt } from './useCalloutMgt'
-import type { GridColDef } from '@mui/x-data-grid'
+import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
+import { useGridApiRef } from '@mui/x-data-grid'
 import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
 import { TableContextMenu } from '../../../App - Shared Components/MUI - Table'
+import { useTaskTableSelection } from '../../../App - Shared Components/Selection - UI'
 
 const TaskManagementPage = ({
   openTaskDialog,
@@ -20,6 +22,15 @@ const TaskManagementPage = ({
   const { callout, openCallout, closeCallout } = useCalloutMgt();
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
+  const apiRef = useGridApiRef();
+
+  // Selection UI integration
+  const { 
+    selectedTaskIds,
+    toggleTaskSelection, 
+    rangeSelectTasks,
+    isLastInteracted,
+  } = useTaskTableSelection()
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -474,6 +485,17 @@ const TaskManagementPage = ({
     return [headers.join(','), ...rows].join('\n')
   }, [columns, filteredRows, getCellText])
 
+  // Row styling for selected tasks
+  const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
+    const isSelected = selectedTaskIds.includes(params.row.taskId);
+    const isLast = isLastInteracted(params.row.taskId);
+    
+    if (isSelected && isLast) return 'selected-row last-interacted-row';
+    if (isSelected) return 'selected-row';
+    if (isLast) return 'last-interacted-row';
+    return '';
+  }, [selectedTaskIds, isLastInteracted]);
+
   const handleExportCsv = useCallback(() => {
     if (!filteredRows.length) {
       showMessage('No rows to export', 'error')
@@ -509,19 +531,43 @@ const TaskManagementPage = ({
     setHasAppliedQuery(true)
   }
 
+  // Handle row clicks for selection with Ctrl/Shift support
+  const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
+    const isCtrlPressed = event.ctrlKey || event.metaKey;
+    const isShiftPressed = event.shiftKey;
+    
+    if (isShiftPressed) {
+      // Prevent default text selection when shift-clicking
+      event.preventDefault();
+      // Shift-click: range select - use DataGrid's actual visible row order
+      // This respects sorting and ensures range matches what user sees
+      const allVisibleRowIds = apiRef.current?.getAllRowIds() || filteredRows.map(row => row.taskId);
+      rangeSelectTasks(params.row.taskId, allVisibleRowIds as string[], 'table');
+    } else {
+      // Regular or Ctrl-click
+      toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
+    }
+  }, [toggleTaskSelection, rangeSelectTasks, filteredRows, apiRef]);
+
   return (
     <>
-      <Paper
+      <Stack
         sx={{
-          boxShadow: 'none',
-          bgcolor: 'background.paper',
-          display: 'flex',
-          flexDirection: 'column',
+          bgcolor: 'background.default',
           height: '100%',
-          overflow: 'auto',
+          overflow: 'hidden',
         }}
       >
-        <Box sx={{ px: 2, pt: 2, pb: 1 }}>
+        {/* Toolbar Section */}
+        <Box 
+          sx={{ 
+            bgcolor: 'background.paper',
+            borderBottom: 1,
+            borderColor: 'divider',
+            px: { xs: 2, sm: 3 },
+            py: 1.5,
+          }}
+        >
           <TaskTableQueryConfig
             initialQuery={activeQuery}
             defaultQuery={defaultQuery}
@@ -538,7 +584,8 @@ const TaskManagementPage = ({
           />
         </Box>
 
-        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: 2, pt: 1, pb: 2 }}>
+        {/* Table Section */}
+        <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: { xs: 2, sm: 3 }, py: 2 }}>
           {hasAppliedQuery ? (
             <SharedMuiTable<TaskTableRow>
               columns={columns}
@@ -550,6 +597,9 @@ const TaskManagementPage = ({
               enablePagination={true}
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
+              apiRef={apiRef}
+              getRowClassName={getRowClassName}
+              onCellClick={handleRowClick}
               contextMenuItems={[
                 {
                   label: 'Open Task Details',
@@ -567,46 +617,41 @@ const TaskManagementPage = ({
           ) : (
             <Box
               sx={{
-                borderRadius: theme.shape.borderRadius,
-                border: `2px dashed ${theme.palette.divider}`,
-                bgcolor: theme.palette.mode === 'dark'
-                  ? tokens.background.alt
-                  : 'rgba(0, 0, 0, 0.02)',
-                p: 4,
-                m: 3,
-                textAlign: 'center',
+                flex: 1,
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  borderColor: tokens.primary.main,
-                  bgcolor: theme.palette.mode === 'dark'
-                    ? tokens.secondary.light
-                    : 'rgba(0, 0, 0, 0.04)',
-                },
               }}
             >
-              <Typography
-                variant="h6"
-                gutterBottom
+              <Stack
+                spacing={1.5}
+                alignItems="center"
                 sx={{
-                  fontWeight: 600,
-                  color: theme.palette.text.primary,
-                }}
-              >
-                Run a query to load tasks
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.text.secondary,
                   maxWidth: '400px',
+                  textAlign: 'center',
+                  p: 3,
                 }}
               >
-                Use the filters above to define your search, then hit Search to fetch matching rows.
-              </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'text.primary',
+                    fontSize: '1.125rem',
+                  }}
+                >
+                  Run a query to load tasks
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Use the filters above to define your search, then hit Search to fetch matching rows.
+                </Typography>
+              </Stack>
             </Box>
           )}
         </Box>
@@ -626,7 +671,7 @@ const TaskManagementPage = ({
             {snackbar.message}
           </Alert>
         </Snackbar>
-      </Paper>
+      </Stack>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
       {contextMenu.contextMenuComponent}
     </>
