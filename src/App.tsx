@@ -424,9 +424,17 @@ function App() {
         commitType: item.commitType,
         task: item.task,
       };
-      return [nextItem, ...prev].slice(0, 5);
+      // Limit to max 20 items, remove oldest when adding new
+      const updated = [nextItem, ...prev];
+      return updated.slice(0, 20);
     });
   }, []);
+
+  const handleClearAllDockItems = useCallback(() => {
+    setTaskDockItems([]);
+    // Also clear minimized tasks
+    minimizedTasks.forEach(task => removeMinimizedTask(task.taskId));
+  }, [minimizedTasks, removeMinimizedTask]);
 
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
@@ -878,6 +886,7 @@ function App() {
             subtitle: item.commitType,
           }))}
           minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
+          maxItems={20}
           onClick={(id: string) => {
             const item = taskDockItems.find((it) => it.id === id);
             if (!item) return;
@@ -891,6 +900,7 @@ function App() {
             }
           }}
           onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+          onClearAll={handleClearAllDockItems}
           onMinimizedTaskClick={openTaskDialog}
           onMinimizedTaskRemove={removeMinimizedTask}
         />

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   Badge,
   Box,
+  Button,
+  ButtonGroup,
   Drawer,
   IconButton,
   List,
@@ -14,12 +16,16 @@ import {
   alpha,
   useTheme,
   Divider,
+  Stack,
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
+
+type FilterType = 'all' | 'task' | 'resource'
 
 export interface OpenDockItem {
   id: string
@@ -38,8 +44,10 @@ export interface OpenItemsDockProps {
   minimizedTasks?: MinimizedTaskItem[]
   onClick?: (id: string) => void
   onDelete?: (id: string) => void
+  onClearAll?: () => void
   onMinimizedTaskClick?: (task: TaskTableRow) => void
   onMinimizedTaskRemove?: (taskId: string) => void
+  maxItems?: number
 }
 
 export const OpenItemsDock = ({
@@ -47,11 +55,14 @@ export const OpenItemsDock = ({
   minimizedTasks = [],
   onClick,
   onDelete,
+  onClearAll,
   onMinimizedTaskClick,
   onMinimizedTaskRemove,
+  maxItems = 20,
 }: OpenItemsDockProps) => {
   const theme = useTheme()
   const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState<FilterType>('all')
 
   // Combine all items into a unified list
   const allItems = [
@@ -65,7 +76,14 @@ export const OpenItemsDock = ({
     })),
   ]
 
+  // Apply filter
+  const filteredItems = filter === 'all' 
+    ? allItems 
+    : allItems.filter(item => item.type === filter)
+
   const totalCount = allItems.length
+  const taskCount = allItems.filter(item => item.type === 'task').length
+  const resourceCount = allItems.filter(item => item.type === 'resource').length
 
   if (totalCount === 0) {
     return null
@@ -87,6 +105,13 @@ export const OpenItemsDock = ({
     } else if (onDelete) {
       onDelete(item.id)
     }
+  }
+
+  const handleClearAll = () => {
+    if (onClearAll) {
+      onClearAll()
+    }
+    setOpen(false)
   }
 
   const getItemIcon = (type: string) => {
@@ -160,7 +185,7 @@ export const OpenItemsDock = ({
               bgcolor: 'background.paper',
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
               <Typography variant="h6" fontWeight={600} sx={{ fontSize: '1rem' }}>
                 Open Items
               </Typography>
@@ -178,9 +203,67 @@ export const OpenItemsDock = ({
                 <CloseIcon fontSize="small" />
               </IconButton>
             </Box>
-            <Typography variant="caption" sx={{ color: 'text.secondary', mt: 0.5, display: 'block' }}>
-              {totalCount} {totalCount === 1 ? 'item' : 'items'}
-            </Typography>
+
+            {/* Filter buttons */}
+            <Stack spacing={1.5}>
+              <ButtonGroup size="small" fullWidth variant="outlined">
+                <Button
+                  onClick={() => setFilter('all')}
+                  variant={filter === 'all' ? 'contained' : 'outlined'}
+                  sx={{ textTransform: 'none' }}
+                >
+                  All ({totalCount})
+                </Button>
+                <Button
+                  onClick={() => setFilter('task')}
+                  variant={filter === 'task' ? 'contained' : 'outlined'}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Tasks ({taskCount})
+                </Button>
+                <Button
+                  onClick={() => setFilter('resource')}
+                  variant={filter === 'resource' ? 'contained' : 'outlined'}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Resources ({resourceCount})
+                </Button>
+              </ButtonGroup>
+
+              {/* Clear all button */}
+              {totalCount > 0 && onClearAll && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  startIcon={<ClearAllIcon />}
+                  onClick={handleClearAll}
+                  fullWidth
+                  sx={{ textTransform: 'none' }}
+                >
+                  Clear All Items
+                </Button>
+              )}
+
+              {/* Max items warning */}
+              {totalCount >= maxItems && (
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: 'warning.main',
+                    fontSize: '0.7rem',
+                    display: 'block',
+                    textAlign: 'center',
+                    bgcolor: alpha(theme.palette.warning.main, 0.1),
+                    py: 0.5,
+                    px: 1,
+                    borderRadius: 1,
+                  }}
+                >
+                  Maximum {maxItems} items reached. Oldest items will be removed automatically.
+                </Typography>
+              )}
+            </Stack>
           </Box>
 
           {/* Items list */}
@@ -191,59 +274,67 @@ export const OpenItemsDock = ({
               py: 0,
             }}
           >
-            {allItems.map((item, index) => (
-              <Box key={item.id}>
-                <ListItem
-                  disablePadding
-                  secondaryAction={
-                    <IconButton
-                      edge="end"
-                      size="small"
-                      onClick={(e) => handleItemRemove(item, e)}
+            {filteredItems.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No {filter === 'all' ? '' : filter} items to display
+                </Typography>
+              </Box>
+            ) : (
+              filteredItems.map((item, index) => (
+                <Box key={item.id}>
+                  <ListItem
+                    disablePadding
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        size="small"
+                        onClick={(e) => handleItemRemove(item, e)}
+                        sx={{
+                          color: 'text.secondary',
+                          '&:hover': {
+                            color: 'error.main',
+                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                          },
+                        }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemButton
+                      onClick={() => handleItemClick(item)}
                       sx={{
-                        color: 'text.secondary',
+                        py: 1.5,
                         '&:hover': {
-                          color: 'error.main',
-                          bgcolor: alpha(theme.palette.error.main, 0.1),
+                          bgcolor: alpha(theme.palette.primary.main, 0.04),
                         },
                       }}
                     >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  }
-                >
-                  <ListItemButton
-                    onClick={() => handleItemClick(item)}
-                    sx={{
-                      py: 1.5,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.04),
-                      },
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 40 }}>
-                      {getItemIcon(item.type)}
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.875rem' }}>
-                          {item.type === 'task' ? 'Task' : 'Resource'} · {item.title}
-                        </Typography>
-                      }
-                      secondary={
-                        item.subtitle && (
-                          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                            {item.subtitle}
+                      <ListItemIcon sx={{ minWidth: 40 }}>
+                        {getItemIcon(item.type)}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.875rem' }}>
+                            {item.type === 'task' ? 'Task' : 'Resource'} · {item.title}
                           </Typography>
-                        )
-                      }
-                      sx={{ my: 0 }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-                {index < allItems.length - 1 && <Divider />}
-              </Box>
-            ))}
+                        }
+                        secondary={
+                          item.subtitle && (
+                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                              {item.subtitle}
+                            </Typography>
+                          )
+                        }
+                        sx={{ my: 0 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                  {index < filteredItems.length - 1 && <Divider />}
+                </Box>
+              ))
+            )}
           </List>
 
           {/* Footer */}
