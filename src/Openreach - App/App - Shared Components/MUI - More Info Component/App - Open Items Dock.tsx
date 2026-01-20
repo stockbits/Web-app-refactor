@@ -102,14 +102,14 @@ export const OpenItemsDock = ({
 
   return (
     <>
-      {/* Floating trigger button - bottom right */}
-      <Tooltip title="Open Items" placement="left">
+      {/* Floating trigger button - bottom left */}
+      <Tooltip title="Open Items" placement="right">
         <IconButton
           onClick={() => setOpen(true)}
           sx={{
             position: 'fixed',
             bottom: 24,
-            right: 24,
+            left: 24,
             bgcolor: 'primary.main',
             color: 'primary.contrastText',
             boxShadow: 3,
@@ -139,7 +139,7 @@ export const OpenItemsDock = ({
 
       {/* Drawer panel */}
       <Drawer
-        anchor="right"
+        anchor="left"
         open={open}
         onClose={() => setOpen(false)}
         sx={{
