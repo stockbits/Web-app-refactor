@@ -551,8 +551,7 @@ function App() {
           <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
             {/* Unified breadcrumb position and style for all pages */}
             {showWelcome ? null : !activePage ? (
-              <>
-                <RecentTabsBar
+              <RecentTabsBar
                 items={taskDockItems.map((item) => {
                   const variant = (() => {
                     switch (item.commitType) {
@@ -587,12 +586,7 @@ function App() {
                 maxItems={5}
                 clickable={true}
               />
-              <AppBreadCrumb 
-                left="MENU" 
-                right={selectedMenu.label}
-              />
-            </>
-          ) : (
+            ) : (
             <>
               <RecentTabsBar
                 items={taskDockItems.map((item) => {
