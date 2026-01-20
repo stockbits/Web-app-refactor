@@ -127,25 +127,24 @@ export const TaskDockDial = ({
           icon={
             <Stack 
               direction="row" 
-              spacing={1} 
+              spacing={1.5} 
               alignItems="center"
               sx={{ 
-                minWidth: 200,
-                px: 1.5,
-                py: 0.5,
+                minWidth: 220,
+                maxWidth: 300,
+                px: 2,
+                py: 1.25,
               }}
             >
-              <TaskAltIcon sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0 }} />
+              <TaskAltIcon sx={{ fontSize: 22, color: 'primary.main', flexShrink: 0 }} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography 
                   variant="body2" 
                   fontWeight={600}
                   sx={{ 
                     color: 'text.primary',
-                    fontSize: '0.875rem',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    fontSize: '0.9375rem',
+                    lineHeight: 1.3,
                   }}
                 >
                   {item.title}
@@ -155,21 +154,23 @@ export const TaskDockDial = ({
                     variant="caption" 
                     sx={{ 
                       color: 'text.secondary',
-                      fontSize: '0.75rem',
+                      fontSize: '0.8125rem',
                       display: 'block',
+                      lineHeight: 1.4,
+                      mt: 0.25,
                     }}
                   >
                     {item.subtitle}
                   </Typography>
                 )}
               </Box>
-              <Tooltip title={`Remove ${item.title}`}>
+              <Tooltip title="Remove">
                 <IconButton
                   size="small"
                   onClick={(e) => handleActionDelete(item, e)}
                   sx={{
                     flexShrink: 0,
-                    p: 0.5,
+                    p: 0.75,
                     color: 'text.secondary',
                     '&:hover': {
                       color: 'error.main',
@@ -177,7 +178,7 @@ export const TaskDockDial = ({
                     },
                   }}
                 >
-                  <CloseIcon sx={{ fontSize: 16 }} />
+                  <CloseIcon sx={{ fontSize: 18 }} />
                 </IconButton>
               </Tooltip>
             </Stack>
@@ -188,23 +189,21 @@ export const TaskDockDial = ({
             sx: {
               width: 'auto',
               height: 'auto',
-              minHeight: 48,
-              borderRadius: 3,
-              boxShadow: 2,
-              bgcolor: item.type === 'minimized' 
-                ? alpha(theme.palette.warning.main, 0.1)
-                : 'background.paper',
+              minHeight: 56,
+              borderRadius: 2,
+              boxShadow: 3,
+              bgcolor: 'background.paper',
               border: 1,
               borderColor: item.type === 'minimized' 
-                ? alpha(theme.palette.warning.main, 0.3)
+                ? 'warning.main'
                 : 'divider',
               '&:hover': {
-                bgcolor: item.type === 'minimized'
-                  ? alpha(theme.palette.warning.main, 0.2)
-                  : alpha(theme.palette.primary.main, 0.08),
+                bgcolor: alpha(theme.palette.primary.main, 0.04),
                 borderColor: 'primary.main',
-                boxShadow: 3,
+                boxShadow: 4,
+                transform: 'translateY(-2px)',
               },
+              transition: 'all 0.2s ease-in-out',
             },
           }}
         />
