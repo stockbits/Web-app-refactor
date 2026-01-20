@@ -4,7 +4,6 @@ import {
   SpeedDialAction,
   SpeedDialIcon,
   Badge,
-  Tooltip,
   alpha,
   useTheme,
   Box,
@@ -14,7 +13,6 @@ import {
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
-import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import type { ReactNode } from 'react'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
@@ -127,24 +125,24 @@ export const TaskDockDial = ({
           icon={
             <Stack 
               direction="row" 
-              spacing={1.5} 
+              spacing={1} 
               alignItems="center"
+              justifyContent="space-between"
               sx={{ 
-                minWidth: 220,
-                maxWidth: 300,
+                minWidth: 180,
+                maxWidth: 280,
                 px: 2,
-                py: 1.25,
+                py: 1,
               }}
             >
-              <TaskAltIcon sx={{ fontSize: 22, color: 'primary.main', flexShrink: 0 }} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography 
                   variant="body2" 
                   fontWeight={600}
                   sx={{ 
                     color: 'text.primary',
-                    fontSize: '0.9375rem',
-                    lineHeight: 1.3,
+                    fontSize: '0.875rem',
+                    lineHeight: 1.4,
                   }}
                 >
                   {item.title}
@@ -154,9 +152,9 @@ export const TaskDockDial = ({
                     variant="caption" 
                     sx={{ 
                       color: 'text.secondary',
-                      fontSize: '0.8125rem',
+                      fontSize: '0.75rem',
                       display: 'block',
-                      lineHeight: 1.4,
+                      lineHeight: 1.3,
                       mt: 0.25,
                     }}
                   >
@@ -164,23 +162,22 @@ export const TaskDockDial = ({
                   </Typography>
                 )}
               </Box>
-              <Tooltip title="Remove">
-                <IconButton
-                  size="small"
-                  onClick={(e) => handleActionDelete(item, e)}
-                  sx={{
-                    flexShrink: 0,
-                    p: 0.75,
-                    color: 'text.secondary',
-                    '&:hover': {
-                      color: 'error.main',
-                      bgcolor: alpha(theme.palette.error.main, 0.1),
-                    },
-                  }}
-                >
-                  <CloseIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
+              <IconButton
+                size="small"
+                onClick={(e) => handleActionDelete(item, e)}
+                sx={{
+                  flexShrink: 0,
+                  p: 0.5,
+                  ml: 1,
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'error.main',
+                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                  },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 16 }} />
+              </IconButton>
             </Stack>
           }
           tooltipTitle=""
@@ -189,9 +186,9 @@ export const TaskDockDial = ({
             sx: {
               width: 'auto',
               height: 'auto',
-              minHeight: 56,
-              borderRadius: 2,
-              boxShadow: 3,
+              minHeight: 48,
+              borderRadius: 1.5,
+              boxShadow: 2,
               bgcolor: 'background.paper',
               border: 1,
               borderColor: item.type === 'minimized' 
@@ -200,8 +197,7 @@ export const TaskDockDial = ({
               '&:hover': {
                 bgcolor: alpha(theme.palette.primary.main, 0.04),
                 borderColor: 'primary.main',
-                boxShadow: 4,
-                transform: 'translateY(-2px)',
+                boxShadow: 3,
               },
               transition: 'all 0.2s ease-in-out',
             },
