@@ -34,9 +34,8 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { RecentTabsBar } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Bar";
+import { TaskDockDial } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Dial";
 import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
-import { TaskIcon } from "./Openreach - App/App - Shared Components/MUI - Icon and Key/MUI - Icon";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
@@ -547,49 +546,12 @@ function App() {
             />
           </Box>
 
-          {/* Page-level header: Breadcrumb + Recent Tabs with consistent spacing */}
+          {/* Page-level header: Breadcrumb */}
           <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
             {/* Unified breadcrumb position and style for all pages */}
             {showWelcome ? null : !activePage ? null : (
-            <>
-              <RecentTabsBar
-                items={taskDockItems.map((item) => {
-                  const variant = (() => {
-                    switch (item.commitType) {
-                      case 'START BY':
-                        return 'startBy' as const;
-                      case 'COMPLETE BY':
-                        return 'completeBy' as const;
-                      case 'TAIL':
-                        return 'failedSLA' as const;
-                      default:
-                        return 'appointment' as const;
-                    }
-                  })();
-                  return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
-                })}
-                minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
-                onClick={(id: string) => {
-                  const item = taskDockItems.find((it) => it.id === id);
-                  if (!item) return;
-                  if (item.task) {
-                    openTaskDialog(item.task);
-                  } else {
-                    const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
-                    if (task) {
-                      openTaskDialog(task);
-                    }
-                  }
-                }}
-                onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-                onMinimizedTaskClick={openTaskDialog}
-                onMinimizedTaskRemove={removeMinimizedTask}
-                maxItems={5}
-                clickable={true}
-              />
               <AppBreadCrumb left={selectedMenu.label} right={activePage.cardName} leftClickable onLeftClick={() => setActivePage(null)} />
-            </>
-          )}
+            )}
           </Box>
 
           <Box 
@@ -905,6 +867,33 @@ function App() {
           </Box>
         </Stack>
       </Box>
+
+      {/* Floating Task Dock Dial */}
+      {activePage && (
+        <TaskDockDial
+          items={taskDockItems.map((item) => ({
+            id: item.id,
+            title: item.title,
+            subtitle: item.commitType,
+          }))}
+          minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
+          onClick={(id: string) => {
+            const item = taskDockItems.find((it) => it.id === id);
+            if (!item) return;
+            if (item.task) {
+              openTaskDialog(item.task);
+            } else {
+              const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
+              if (task) {
+                openTaskDialog(task);
+              }
+            }
+          }}
+          onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
+          onMinimizedTaskClick={openTaskDialog}
+          onMinimizedTaskRemove={removeMinimizedTask}
+        />
+      )}
 
       {/* Global task dialog */}
       <AppTaskDialog
