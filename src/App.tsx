@@ -34,7 +34,7 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { TaskDockDial } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dock Dial";
+import { OpenItemsDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Open Items Dock";
 import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
@@ -868,12 +868,13 @@ function App() {
         </Stack>
       </Box>
 
-      {/* Floating Task Dock Dial */}
+      {/* Open Items Dock */}
       {activePage && (
-        <TaskDockDial
+        <OpenItemsDock
           items={taskDockItems.map((item) => ({
             id: item.id,
             title: item.title,
+            type: 'task' as const,
             subtitle: item.commitType,
           }))}
           minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
