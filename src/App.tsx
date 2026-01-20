@@ -341,11 +341,6 @@ const MENU_GROUPS: MenuGroup[] = [
   },
 ];
 
-const TOTAL_TOOL_COUNT = MENU_GROUPS.reduce(
-  (total, group) => total + group.cards.length,
-  0
-);
-
 type PageComponent = () => JSX.Element;
 type PageModule = { default: PageComponent };
 type PageModuleLoader = () => Promise<PageModule>;
@@ -555,26 +550,7 @@ function App() {
           {/* Page-level header: Breadcrumb + Recent Tabs with consistent spacing */}
           <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
             {/* Unified breadcrumb position and style for all pages */}
-            {showWelcome ? (
-              <AppBreadCrumb
-                left="Access summary"
-                accessSummary
-                groupsCount={MENU_GROUPS.length}
-                totalTools={TOTAL_TOOL_COUNT}
-                rightAction={
-                  <Tooltip title="Tap to view info" placement="left">
-                    <IconButton
-                      size="small"
-                      aria-label="Info: landing page help"
-                      onClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
-                      aria-describedby={landingInfoOpen ? 'landing-info-popover' : undefined}
-                    >
-                      <InfoOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                }
-              />
-            ) : !activePage ? (
+            {showWelcome ? null : !activePage ? (
               <>
                 <RecentTabsBar
                 items={taskDockItems.map((item) => {
@@ -614,18 +590,6 @@ function App() {
               <AppBreadCrumb 
                 left="MENU" 
                 right={selectedMenu.label}
-                rightAction={
-                <Tooltip title="Tap to view info" placement="left">
-                  <IconButton
-                    size="small"
-                    aria-label="Info: select a tool card"
-                    onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
-                    aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
-                  >
-                    <InfoOutlinedIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              }
               />
             </>
           ) : (
@@ -691,8 +655,8 @@ function App() {
                   open={landingInfoOpen}
                   anchorEl={landingInfoAnchor}
                   onClose={() => setLandingInfoAnchor(null)}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                   disableRestoreFocus
                   slotProps={{
                     paper: {
@@ -722,6 +686,9 @@ function App() {
                       setShowWelcome(false);
                     }
                   }}
+                  infoIconOpen={landingInfoOpen}
+                  onInfoIconClick={(e) => setLandingInfoAnchor(landingInfoOpen ? null : e.currentTarget)}
+                  infoIconId={landingInfoOpen ? 'landing-info-popover' : undefined}
                 />
               </Box>
             ) : !activePage ? (
@@ -731,8 +698,8 @@ function App() {
                   open={menuInfoOpen}
                   anchorEl={menuInfoAnchor}
                   onClose={() => setMenuInfoAnchor(null)}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                   disableRestoreFocus
                   slotProps={{
                     paper: {
@@ -780,6 +747,23 @@ function App() {
                         >
                           {selectedMenu.label}
                         </Typography>
+                        <Tooltip title="View help" placement="right">
+                          <IconButton
+                            size="small"
+                            aria-label="Info: select a tool card"
+                            onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
+                            aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
+                            sx={{
+                              color: 'text.secondary',
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                color: 'primary.main',
+                              },
+                            }}
+                          >
+                            <InfoOutlinedIcon sx={{ fontSize: 20 }} />
+                          </IconButton>
+                        </Tooltip>
                         {selectedMenu.accessLabel && (
                           <Chip 
                             label={selectedMenu.accessLabel} 
