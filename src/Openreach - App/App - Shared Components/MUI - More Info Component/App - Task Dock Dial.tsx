@@ -7,9 +7,14 @@ import {
   Tooltip,
   alpha,
   useTheme,
+  Box,
+  IconButton,
+  Stack,
+  Typography,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
+import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import type { ReactNode } from 'react'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
@@ -114,50 +119,92 @@ export const TaskDockDial = ({
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       open={open}
-      direction="up"
+      direction="left"
     >
       {allItems.map((item) => (
         <SpeedDialAction
           key={item.id}
           icon={
-            <Tooltip title={`Remove ${item.title}`} placement="left">
-              <CloseIcon
-                onClick={(e) => handleActionDelete(item, e)}
-                sx={{
-                  fontSize: 18,
-                  color: 'error.main',
-                  '&:hover': {
-                    color: 'error.dark',
-                  },
-                }}
-              />
-            </Tooltip>
+            <Stack 
+              direction="row" 
+              spacing={1} 
+              alignItems="center"
+              sx={{ 
+                minWidth: 200,
+                px: 1.5,
+                py: 0.5,
+              }}
+            >
+              <TaskAltIcon sx={{ fontSize: 20, color: 'primary.main', flexShrink: 0 }} />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="body2" 
+                  fontWeight={600}
+                  sx={{ 
+                    color: 'text.primary',
+                    fontSize: '0.875rem',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {item.title}
+                </Typography>
+                {item.subtitle && (
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.75rem',
+                      display: 'block',
+                    }}
+                  >
+                    {item.subtitle}
+                  </Typography>
+                )}
+              </Box>
+              <Tooltip title={`Remove ${item.title}`}>
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleActionDelete(item, e)}
+                  sx={{
+                    flexShrink: 0,
+                    p: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'error.main',
+                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                    },
+                  }}
+                >
+                  <CloseIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+              </Tooltip>
+            </Stack>
           }
-          tooltipTitle={
-            item.subtitle ? (
-              <div>
-                <div style={{ fontWeight: 600 }}>{item.title}</div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>{item.subtitle}</div>
-              </div>
-            ) : (
-              item.title
-            )
-          }
-          tooltipPlacement="left"
+          tooltipTitle=""
           onClick={() => handleActionClick(item)}
-          sx={{
-            bgcolor: item.type === 'minimized' 
-              ? alpha(theme.palette.warning.main, 0.1)
-              : 'background.paper',
-            border: 1,
-            borderColor: item.type === 'minimized' 
-              ? alpha(theme.palette.warning.main, 0.3)
-              : 'divider',
-            '&:hover': {
-              bgcolor: item.type === 'minimized'
-                ? alpha(theme.palette.warning.main, 0.2)
-                : alpha(theme.palette.primary.main, 0.08),
-              borderColor: 'primary.main',
+          FabProps={{
+            sx: {
+              width: 'auto',
+              height: 'auto',
+              minHeight: 48,
+              borderRadius: 3,
+              boxShadow: 2,
+              bgcolor: item.type === 'minimized' 
+                ? alpha(theme.palette.warning.main, 0.1)
+                : 'background.paper',
+              border: 1,
+              borderColor: item.type === 'minimized' 
+                ? alpha(theme.palette.warning.main, 0.3)
+                : 'divider',
+              '&:hover': {
+                bgcolor: item.type === 'minimized'
+                  ? alpha(theme.palette.warning.main, 0.2)
+                  : alpha(theme.palette.primary.main, 0.08),
+                borderColor: 'primary.main',
+                boxShadow: 3,
+              },
             },
           }}
         />
