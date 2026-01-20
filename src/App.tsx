@@ -550,43 +550,7 @@ function App() {
           {/* Page-level header: Breadcrumb + Recent Tabs with consistent spacing */}
           <Box sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
             {/* Unified breadcrumb position and style for all pages */}
-            {showWelcome ? null : !activePage ? (
-              <RecentTabsBar
-                items={taskDockItems.map((item) => {
-                  const variant = (() => {
-                    switch (item.commitType) {
-                      case 'START BY':
-                        return 'startBy' as const;
-                      case 'COMPLETE BY':
-                        return 'completeBy' as const;
-                      case 'TAIL':
-                        return 'failedSLA' as const;
-                      default:
-                        return 'appointment' as const;
-                    }
-                  })();
-                  return { ...item, icon: <TaskIcon variant={variant} size={28} /> };
-                })}
-                minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
-                onClick={(id: string) => {
-                  const item = taskDockItems.find((it) => it.id === id);
-                  if (!item) return;
-                  if (item.task) {
-                    openTaskDialog(item.task);
-                  } else {
-                    const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
-                    if (task) {
-                      openTaskDialog(task);
-                    }
-                  }
-                }}
-                onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-                onMinimizedTaskClick={openTaskDialog}
-                onMinimizedTaskRemove={removeMinimizedTask}
-                maxItems={5}
-                clickable={true}
-              />
-            ) : (
+            {showWelcome ? null : !activePage ? null : (
             <>
               <RecentTabsBar
                 items={taskDockItems.map((item) => {
