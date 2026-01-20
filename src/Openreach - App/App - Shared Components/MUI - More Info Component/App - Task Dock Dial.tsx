@@ -91,7 +91,7 @@ export const TaskDockDial = ({
       sx={{
         position: 'fixed',
         bottom: 24,
-        right: 24,
+        left: 24,
         '& .MuiSpeedDial-fab': {
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
@@ -119,7 +119,7 @@ export const TaskDockDial = ({
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       open={open}
-      direction="left"
+      direction="right"
     >
       {allItems.map((item) => (
         <SpeedDialAction
