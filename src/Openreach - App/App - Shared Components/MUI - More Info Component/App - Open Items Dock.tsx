@@ -348,7 +348,7 @@ export const OpenItemsDock = ({
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.8125rem', lineHeight: 1.4 }}>
-                            {item.type === 'task' ? 'Task' : 'Resource'} · {item.title}
+                            {item.title}
                           </Typography>
                         }
                         secondary={
