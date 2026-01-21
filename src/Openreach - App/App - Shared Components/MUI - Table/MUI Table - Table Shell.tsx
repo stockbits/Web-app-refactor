@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo, type ReactNode } from 'react'
+import { useCallback, useEffect, useState, useMemo, memo, type ReactNode } from 'react'
 import { Box, Stack, Switch, Typography, useTheme, type SxProps, type Theme } from '@mui/material'
 import {
   DataGrid,
@@ -41,6 +41,18 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   }>
 }
 
+// Memoized NoRowsOverlay to prevent recreation
+const NoRowsOverlay = memo(({ emptyState }: { emptyState?: ReactNode }) => (
+  <Box sx={{ py: 4, textAlign: 'center' }}>
+    {emptyState ?? (
+      <Typography variant="body2" color="text.secondary">
+        No records available yet.
+      </Typography>
+    )}
+  </Box>
+));
+NoRowsOverlay.displayName = 'NoRowsOverlay';
+
 export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>({
   columns,
   rows,
@@ -66,9 +78,16 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   const internalApiRef = useGridApiRef()
   const apiRef = externalApiRef || internalApiRef
   const [densityMode, setDensityMode] = useState(density)
-  const resolvedPageSizeOptions = pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64]
+  
+  // Memoize page size options to prevent recreation
+  const resolvedPageSizeOptions = useMemo(() => 
+    pageSizeOptions?.length ? pageSizeOptions : [16, 32, 64], 
+    [pageSizeOptions]
+  );
+  
   const normalizedInitialPageSize = initialPageSize ?? resolvedPageSizeOptions[0]
   const resolvedInitialPageSize = normalizedInitialPageSize > 0 ? normalizedInitialPageSize : resolvedPageSizeOptions[0]
+  
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     pageSize: resolvedInitialPageSize,
     page: 0,
@@ -79,24 +98,27 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     additionalItems: contextMenuItems,
   })
 
-  // Apply touch event wrappers to columns
+  // Extract stable methods to avoid dependency warnings
+  const { handleCellRightClick, wrapColumnWithTouchEvents, contextMenuComponent } = contextMenu
+
+  // Apply touch event wrappers to columns - memoize to prevent column recreation
   const modifiedColumns: GridColDef[] = useMemo(() => {
     let cols = columns.map(col => ({ ...col, sortable: disableSorting ? false : col.sortable }))
 
     // Wrap columns with touch events for mobile support
-    cols = cols.map(col => contextMenu.wrapColumnWithTouchEvents(col))
+    cols = cols.map(col => wrapColumnWithTouchEvents(col))
 
     return cols
-  }, [columns, disableSorting, contextMenu])
+  }, [columns, disableSorting, wrapColumnWithTouchEvents])
 
-  // Combined cell click handler for both context menu and custom clicks
+  // Combined cell click handler for both context menu and custom clicks - stabilized
   const handleCellClick = useCallback((params: GridCellParams, event: MuiEvent<React.MouseEvent>) => {
     if (event.button === 2) { // Right-click
-      contextMenu.handleCellRightClick(params, event)
+      handleCellRightClick(params, event)
     } else if (onCellClick) {
       onCellClick(params, event)
     }
-  }, [contextMenu, onCellClick])
+  }, [handleCellRightClick, onCellClick])
 
   useEffect(() => {
     setDensityMode(density)
@@ -106,15 +128,19 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     setDensityMode(nextDense ? 'compact' : 'standard')
   }, [])
 
-  const NoRowsOverlay = () => (
-    <Box sx={{ py: 4, textAlign: 'center' }}>
-      {emptyState ?? (
-        <Typography variant="body2" color="text.secondary">
-          No records available yet.
-        </Typography>
-      )}
-    </Box>
-  )
+  // Memoize NoRowsOverlay slot
+  const NoRowsComponent = useCallback(() => <NoRowsOverlay emptyState={emptyState} />, [emptyState]);
+
+  // Memoize toolbar slot to prevent recreation
+  const ToolbarComponent = useMemo(() => {
+    if (!enableQuickFilter) return undefined;
+    return () => (
+      <QuickFilterToolbar
+        densityMode={densityMode}
+        onToggleDensity={handleDensityToggle}
+      />
+    );
+  }, [enableQuickFilter, densityMode, handleDensityToggle]);
 
   return (
     <>
@@ -217,19 +243,12 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         onCellDoubleClick={onCellDoubleClick}
         aria-label="Interactive data table"
         slots={{
-          toolbar: enableQuickFilter
-            ? () => (
-                <QuickFilterToolbar
-                  densityMode={densityMode}
-                  onToggleDensity={handleDensityToggle}
-                />
-              )
-            : undefined,
-          noRowsOverlay: NoRowsOverlay,
+          toolbar: ToolbarComponent,
+          noRowsOverlay: NoRowsComponent,
         }}
       />
       </Box>
-      {contextMenu.contextMenuComponent}
+      {contextMenuComponent}
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { MouseEvent, ReactNode } from 'react'
 import { alpha, useTheme } from '@mui/material/styles'
 import {
@@ -47,11 +47,13 @@ export const OpenreachTopBanner = ({
   const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null)
   const profileMenuOpen = Boolean(profileAnchorEl)
 
-  const handleProfileMenuOpen = (event: MouseEvent<HTMLElement>) => {
+  const handleProfileMenuOpen = useCallback((event: MouseEvent<HTMLElement>) => {
     setProfileAnchorEl(event.currentTarget)
-  }
+  }, [])
 
-  const handleProfileMenuClose = () => setProfileAnchorEl(null)
+  const handleProfileMenuClose = useCallback(() => {
+    setProfileAnchorEl(null)
+  }, [])
 
   return (
     <AppBar

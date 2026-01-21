@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useMemo, useEffect, type ReactNode } from 'react'
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, type ReactNode } from 'react'
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles'
-import { CssBaseline, GlobalStyles } from '@mui/material'
+import { CssBaseline } from '@mui/material'
 import { lightTheme, darkTheme } from './index'
 
 interface ThemeContextType {
@@ -22,34 +22,29 @@ export const useThemeMode = () => {
 export const ThemeToggleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false)
 
-  const theme = useMemo(() => {
-    return isDarkMode ? darkTheme : lightTheme
-  }, [isDarkMode])
+  // Theme selection is now O(1) - no recreation, just reference selection
+  const theme = isDarkMode ? darkTheme : lightTheme
 
   // Update color-scheme for instant browser chrome change
   useEffect(() => {
     document.documentElement.style.colorScheme = isDarkMode ? 'dark' : 'light'
   }, [isDarkMode])
 
-  const toggleTheme = () => {
+  // Stabilize toggleTheme callback
+  const toggleTheme = useCallback(() => {
     setIsDarkMode(prev => !prev)
-  }
+  }, [])
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({ 
+    isDarkMode, 
+    toggleTheme 
+  }), [isDarkMode, toggleTheme])
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        <GlobalStyles
-          styles={{
-            '*': {
-              transition: 'background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out !important',
-            },
-            // Exclude elements that should not have transitions
-            'input, textarea, button, [role="button"]': {
-              transition: 'background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out !important',
-            },
-          }}
-        />
         {children}
       </MuiThemeProvider>
     </ThemeContext.Provider>

@@ -380,13 +380,8 @@ function App() {
     title: string;
     commitType?: TaskCommitType;
     task?: TaskTableRow;
-  }[]>([]);
-
-  // Minimized tasks context
-  const { minimizedTasks, removeMinimizedTask } = useMinimizedTasks();
-
-  // Persist recent tasks dock in localStorage (id, title, commitType)
-  useEffect(() => {
+  }[]>(() => {
+    // Initialize from localStorage only once on mount
     try {
       const saved = localStorage.getItem('recentTasksDock');
       if (saved) {
@@ -397,22 +392,36 @@ function App() {
           task?: TaskTableRow;
         }[];
         if (Array.isArray(parsed)) {
-          setTimeout(() => setTaskDockItems(parsed.slice(0, 5)), 0);
+          return parsed.slice(0, 5);
         }
       }
     } catch {
       // ignore load errors
     }
-  }, []);
+    return [];
+  });
 
+  // Minimized tasks context
+  const { minimizedTasks, removeMinimizedTask } = useMinimizedTasks();
+
+  // Persist to localStorage - debounced to avoid excessive writes
   useEffect(() => {
-    try {
-      // Save the full task object for each item (if present)
-      const minimal = taskDockItems.map(({ id, title, commitType, task }) => ({ id, title, commitType, task }));
-      localStorage.setItem('recentTasksDock', JSON.stringify(minimal));
-    } catch {
-      // ignore save errors
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        // Only serialize essential data to reduce storage size
+        const minimal = taskDockItems.map(({ id, title, commitType, task }) => ({ 
+          id, 
+          title, 
+          commitType, 
+          task 
+        }));
+        localStorage.setItem('recentTasksDock', JSON.stringify(minimal));
+      } catch {
+        // ignore save errors
+      }
+    }, 500); // Debounce 500ms
+
+    return () => clearTimeout(timeoutId);
   }, [taskDockItems]);
 
   const handleAddTaskDockItem = useCallback((item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => {
@@ -450,39 +459,39 @@ function App() {
   }, []);
 
   const closeTaskDialog = useCallback((keepInDock = false) => {
-    // If the dialog task is currently docked, remove it from dock when closing (unless keeping in dock)
-    if (dialogTask && !keepInDock) {
-      setTaskDockItems((prev) => prev.filter((item) => item.id !== dialogTask.taskId));
-    }
+    setDialogTask((currentTask) => {
+      // Remove from dock if needed before closing
+      if (currentTask && !keepInDock) {
+        setTaskDockItems((prev) => prev.filter((item) => item.id !== currentTask.taskId));
+      }
+      return null;
+    });
     setDialogOpen(false);
-    setDialogTask(null);
-  }, [dialogTask]);
+  }, []);
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
-      if (!dialogTask) return;
-      const nextNote: TaskNote = {
-        id: `${type}-${Date.now()}`,
-        author: 'You',
-        createdAt: new Date().toISOString(),
-        text,
-      };
       setDialogTask((prev) => {
         if (!prev) return prev;
+        const nextNote: TaskNote = {
+          id: `${type}-${Date.now()}`,
+          author: 'You',
+          createdAt: new Date().toISOString(),
+          text,
+        };
         const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes;
         const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes;
         return { ...prev, fieldNotes, progressNotes };
       });
-      // Could add a snackbar message here if needed
     },
-    [dialogTask],
+    [],
   );
 
   const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
   const landingInfoOpen = Boolean(landingInfoAnchor);
 
-  const openNav = () => setNavOpen(true);
-  const closeNav = () => setNavOpen(false);
+  const openNav = useCallback(() => setNavOpen(true), []);
+  const closeNav = useCallback(() => setNavOpen(false), []);
 
   const selectedMenu = useMemo(
     () =>
@@ -506,14 +515,14 @@ function App() {
     [selectedMenuId]
   );
 
-  const handleNavSelection = (itemId: string) => {
+  const handleNavSelection = useCallback((itemId: string) => {
     setSelectedMenuId(itemId);
     setShowWelcome(false);
     const nextGroup = MENU_GROUPS.find((group) => group.id === itemId);
     setActivePage((current) =>
       current && current.menuLabel === nextGroup?.label ? current : null
     );
-  };
+  }, []);
 
   return (
     <>

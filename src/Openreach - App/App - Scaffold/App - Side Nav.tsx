@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { alpha, useTheme } from '@mui/material/styles'
 import {
@@ -217,11 +217,11 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   const hasCustomItems = Boolean(navItems && navItems.length > 0)
   const showTreeResults = !hasCustomItems || Boolean(trimmedQuery)
 
-  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+  const submitSearch = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!trimmedQuery) return
     onSearch?.(trimmedQuery)
-  }
+  }, [trimmedQuery, onSearch])
 
   const filteredGroups = useMemo(() => {
     if (!trimmedQuery) {
@@ -241,6 +241,16 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
   }, [trimmedQuery])
 
   const noMatches = showTreeResults && filteredGroups.length === 0
+
+  const handleGroupSelect = useCallback((group: TaskForceMenuGroup) => {
+    onSelect?.({
+      id: group.id,
+      label: group.label,
+      icon: group.icon,
+      description: `${group.children.length} tools`,
+    })
+    onClose()
+  }, [onSelect, onClose])
 
   const footerContent = footerSlot ?? (
     <Stack gap={0.5} alignItems="stretch" sx={{ px: 2, pb: 1 }}>
@@ -297,16 +307,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       </Typography>
     </Stack>
   )
-
-  const handleGroupSelect = (group: TaskForceMenuGroup) => {
-    onSelect?.({
-      id: group.id,
-      label: group.label,
-      icon: group.icon,
-      description: `${group.children.length} tools`,
-    })
-    onClose()
-  }
 
   return (
     <Drawer

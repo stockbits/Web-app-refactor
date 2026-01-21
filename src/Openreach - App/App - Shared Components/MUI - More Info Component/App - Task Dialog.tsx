@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import {
   Dialog,
   DialogActions,
@@ -27,6 +27,28 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
 
   const dialogTitle = task ? `Task ${task.taskId}` : 'Task Details'
 
+  // Memoize sx objects to prevent recreation
+  const paperSx = useMemo(() => ({
+    borderRadius: theme.shape.borderRadius,
+  }), [theme.shape.borderRadius])
+
+  const contentSx = useMemo(() => ({
+    bgcolor: theme.palette.background.default, 
+    p: 0,
+    '&:focus-visible': {
+      outline: `2px solid ${theme.palette.primary.main}`,
+      outlineOffset: -2,
+    }
+  }), [theme.palette.background.default, theme.palette.primary.main])
+
+  const actionsSx = useMemo(() => ({ 
+    px: 3, 
+    py: 1.5, 
+    gap: 1.5, 
+    bgcolor: theme.palette.background.paper, 
+    borderTop: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}` 
+  }), [theme.palette.background.paper, modeTokens.border?.soft])
+
   return (
     <Dialog 
       open={open} 
@@ -37,9 +59,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
       aria-describedby="task-dialog-content"
       scroll="paper"
       sx={{
-        '& .MuiDialog-paper': {
-          borderRadius: theme.shape.borderRadius,
-        }
+        '& .MuiDialog-paper': paperSx
       }}
     >
       <Box 
@@ -58,19 +78,12 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
       <DialogContent 
         id="task-dialog-content"
         dividers 
-        sx={{ 
-          bgcolor: theme.palette.background.default, 
-          p: 0,
-          '&:focus-visible': {
-            outline: `2px solid ${theme.palette.primary.main}`,
-            outlineOffset: -2,
-          }
-        }}
+        sx={contentSx}
       >
         <TaskDetails task={task} loading={loading} onAddNote={onAddNote} />
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 1.5, gap: 1.5, bgcolor: theme.palette.background.paper, borderTop: `1px solid ${modeTokens.border?.soft ?? '#E8EAF0'}` }}>
+      <DialogActions sx={actionsSx}>
         {actions}
         <Box sx={{ flex: 1 }} />
         {onMinimize && (

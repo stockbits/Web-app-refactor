@@ -180,8 +180,8 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     return selectedTasks.concat(unselectedTasks);
   }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
 
-  // Context value - let React Compiler optimize memoization
-  const value = {
+  // Memoize context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     selectedTaskIds,
     lastInteractedTaskId,
     isTaskSelected,
@@ -192,7 +192,18 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
     selectTasks,
     getPrioritizedTasks,
     selectionSource
-  };
+  }), [
+    selectedTaskIds,
+    lastInteractedTaskId,
+    isTaskSelected,
+    isLastInteracted,
+    toggleTaskSelection,
+    rangeSelectTasks,
+    clearSelection,
+    selectTasks,
+    getPrioritizedTasks,
+    selectionSource
+  ]);
 
   return (
     <SelectionUIContext.Provider value={value}>
@@ -213,10 +224,10 @@ export const useMapSelection = () => {
     selectTasks(taskIds, 'map');
   }, [selectTasks]);
 
-  return {
+  return useMemo(() => ({
     selectTaskFromMap,
     selectMultipleTasksFromMap
-  };
+  }), [selectTaskFromMap, selectMultipleTasksFromMap]);
 };
 
 // Hook for task table components to get prioritized task list
@@ -232,7 +243,7 @@ export const useTaskTableSelection = () => {
     selectionSource 
   } = useSelectionUI();
 
-  return {
+  return useMemo(() => ({
     getPrioritizedTasks,
     selectedTaskIds,
     lastInteractedTaskId,
@@ -241,7 +252,16 @@ export const useTaskTableSelection = () => {
     toggleTaskSelection,
     rangeSelectTasks,
     selectionSource
-  };
+  }), [
+    getPrioritizedTasks,
+    selectedTaskIds,
+    lastInteractedTaskId,
+    isTaskSelected,
+    isLastInteracted,
+    toggleTaskSelection,
+    rangeSelectTasks,
+    selectionSource
+  ]);
 };
 
 // Example usage in a Task Table component:
