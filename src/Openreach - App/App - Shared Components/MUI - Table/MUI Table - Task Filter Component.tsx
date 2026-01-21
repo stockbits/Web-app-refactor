@@ -314,8 +314,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '2.5fr 2fr 2.6fr 2fr 1.2fr',
-                lg: '2.5fr 2fr 2.6fr 2fr 1.2fr',
+                md: '3.5fr 2fr 2.8fr 2fr 1.2fr',
+                lg: '3.5fr 2fr 2.8fr 2fr 1.2fr',
               },
             }}
           >
@@ -1356,13 +1356,13 @@ const BulkSelectableMultiSelect = <TValue extends string>({
           InputProps={{
             ...params.InputProps,
             sx: {
-              paddingRight: '9px !important',
+              paddingRight: '40px !important',
             },
             endAdornment: (
               <Box
                 sx={{
                   position: 'absolute',
-                  right: 9,
+                  right: 4,
                   top: '50%',
                   transform: 'translateY(-50%)',
                   display: 'flex',
