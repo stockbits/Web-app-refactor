@@ -1251,6 +1251,15 @@ const BulkSelectableMultiSelect = <TValue extends string>({
       fullWidth
       isOptionEqualToValue={(option, selected) => option.value === selected.value}
       getOptionLabel={(option) => option.label}
+      sx={{
+        // Add spacing between custom icons and chevron popup indicator
+        '& .MuiAutocomplete-endAdornment': {
+          gap: '4px',
+        },
+        '& .MuiAutocomplete-popupIndicator': {
+          marginLeft: '4px',
+        },
+      }}
       renderTags={(tagValue, getTagProps) => {
         if (isAllSelected) {
           return (
@@ -1355,21 +1364,8 @@ const BulkSelectableMultiSelect = <TValue extends string>({
           placeholder={value.length ? undefined : 'Filter list'}
           InputProps={{
             ...params.InputProps,
-            sx: {
-              paddingRight: '40px !important',
-            },
             endAdornment: (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  right: 4,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                }}
-              >
+              <>
                 {shouldShowSelectAllIcon && (
                   <Tooltip title={bulkTooltipLabel} placement="top">
                     <span>
@@ -1377,7 +1373,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                         onClick={handleBulkSelect}
                         disabled={isBulkActionDisabled}
                         aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
-                        sx={{ padding: '4px', mr: 0.5 }}
+                        sx={{ padding: '4px' }}
                       >
                         <DoneAllRoundedIcon fontSize="small" />
                       </IconButton>
@@ -1391,7 +1387,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                         onClick={handleClearSelection}
                         aria-label="Clear selection"
                         disabled={!value.length}
-                        sx={{ padding: '4px', mr: 0.5 }}
+                        sx={{ padding: '4px' }}
                       >
                         <CloseRoundedIcon fontSize="small" />
                       </IconButton>
@@ -1399,7 +1395,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   </Tooltip>
                 )}
                 {params.InputProps.endAdornment}
-              </Box>
+              </>
             ),
           }}
         />
