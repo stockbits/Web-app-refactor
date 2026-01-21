@@ -76,7 +76,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         >
           {/* Filters */}
           <Autocomplete
-            size="small"
             sx={{ 
               minWidth: { xs: '100%', sm: 160, md: 140 },
               width: { xs: '100%', sm: 'auto' },
@@ -91,7 +90,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           />
           
           <Autocomplete
-            size="small"
             sx={{ 
               minWidth: { xs: '100%', sm: 140, md: 120 },
               width: { xs: '100%', sm: 'auto' },
@@ -117,7 +115,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             }}
           >
             <TextField
-              size="small"
               sx={{ flex: 1 }}
               placeholder="Global search..."
               value={searchInput}

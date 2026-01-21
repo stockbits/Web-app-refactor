@@ -337,7 +337,6 @@ const TaskManagementPage = ({
                 <Chip 
                   key={capability} 
                   label={capability} 
-                  size="small" 
                   variant="outlined"
                   sx={{
                     borderColor: theme.palette.mode === 'dark' ? tokens.chip.border : tokens.secondary.main,

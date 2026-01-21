@@ -143,7 +143,6 @@ export const OpenreachTopBanner = ({
           {/* User Role Chip - Subtle indicator */}
           <Chip
             label={userRole}
-            size="small"
             sx={{
               display: { xs: 'none', md: 'inline-flex' },
               height: 28,

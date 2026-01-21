@@ -247,7 +247,6 @@ export const OpenItemsDock = ({
                 Open Items
               </Typography>
               <IconButton
-                size="small"
                 onClick={() => setOpen(false)}
                 sx={{
                   color: 'text.secondary',
@@ -265,7 +264,6 @@ export const OpenItemsDock = ({
             {/* Filter chips */}
             <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
               <Button
-                size="small"
                 onClick={() => setFilter('all')}
                 variant={filter === 'all' ? 'contained' : 'outlined'}
                 sx={{
@@ -280,7 +278,6 @@ export const OpenItemsDock = ({
                 All · {totalCount}
               </Button>
               <Button
-                size="small"
                 onClick={() => setFilter('task')}
                 variant={filter === 'task' ? 'contained' : 'outlined'}
                 sx={{
@@ -295,7 +292,6 @@ export const OpenItemsDock = ({
                 Tasks · {taskCount}
               </Button>
               <Button
-                size="small"
                 onClick={() => setFilter('resource')}
                 variant={filter === 'resource' ? 'contained' : 'outlined'}
                 sx={{
@@ -316,7 +312,6 @@ export const OpenItemsDock = ({
               <Stack spacing={0.5}>
                 {/* Compare button - always visible */}
                 <Button
-                  size="small"
                   variant="contained"
                   color="primary"
                   disabled={selectedIds.length < 2}
@@ -333,7 +328,6 @@ export const OpenItemsDock = ({
                 </Button>
                 {/* Clear selection button - always visible, disabled when none selected */}
                 <Button
-                  size="small"
                   variant="text"
                   color="secondary"
                   disabled={selectedIds.length === 0}
@@ -352,7 +346,6 @@ export const OpenItemsDock = ({
                 {/* Clear all button */}
                 {onClearAll && (
                   <Button
-                    size="small"
                     variant="text"
                     color="error"
                     startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
@@ -415,7 +408,6 @@ export const OpenItemsDock = ({
                     secondaryAction={
                       <IconButton
                         edge="end"
-                        size="small"
                         onClick={(e) => handleItemRemove(item, e)}
                         sx={{
                           color: 'text.secondary',
@@ -447,7 +439,6 @@ export const OpenItemsDock = ({
                         onClick={(event) => handleCheckboxToggle(item.id, event, MAX_SELECTION)}
                         tabIndex={-1}
                         disableRipple
-                        size="small"
                         sx={{ mr: 1, p: 0 }}
                       />
                       <ListItemIcon sx={{ minWidth: 36 }}>

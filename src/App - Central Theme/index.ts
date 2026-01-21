@@ -502,6 +502,19 @@ export const lightTheme = createTheme({
     MuiAutocomplete: {
       defaultProps: {
         size: 'small',
+        disableClearable: false,
+        componentsProps: {
+          popupIndicator: {
+            disableRipple: true,
+            disableTouchRipple: true,
+            title: '', // Disable tooltip
+          },
+          clearIndicator: {
+            disableRipple: true,
+            disableTouchRipple: true,
+            title: '', // Disable tooltip
+          },
+        },
       },
       styleOverrides: {
         root: {
@@ -523,10 +536,26 @@ export const lightTheme = createTheme({
           },
         },
         endAdornment: {
-          top: 'calc(50% - 14px)',
+          position: 'absolute',
+          right: 9,
+          top: '50%',
+          transform: 'translateY(-50%)',
         },
         popupIndicator: {
           color: lightTokens.text.secondary,
+          padding: 2,
+          marginRight: '-2px',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+        },
+        clearIndicator: {
+          color: lightTokens.text.secondary,
+          padding: 2,
+          marginRight: '-2px',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
         },
       },
     },
@@ -964,6 +993,19 @@ export const darkTheme = createTheme({
     MuiAutocomplete: {
       defaultProps: {
         size: 'small',
+        disableClearable: false,
+        componentsProps: {
+          popupIndicator: {
+            disableRipple: true,
+            disableTouchRipple: true,
+            title: '', // Disable tooltip
+          },
+          clearIndicator: {
+            disableRipple: true,
+            disableTouchRipple: true,
+            title: '', // Disable tooltip
+          },
+        },
       },
       styleOverrides: {
         root: {
@@ -985,10 +1027,26 @@ export const darkTheme = createTheme({
           },
         },
         endAdornment: {
-          top: 'calc(50% - 14px)',
+          position: 'absolute',
+          right: 9,
+          top: '50%',
+          transform: 'translateY(-50%)',
         },
         popupIndicator: {
           color: darkTokens.text.secondary,
+          padding: 2,
+          marginRight: '-2px',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          },
+        },
+        clearIndicator: {
+          color: darkTokens.text.secondary,
+          padding: 2,
+          marginRight: '-2px',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+          },
         },
       },
     },

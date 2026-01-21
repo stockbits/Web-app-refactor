@@ -357,7 +357,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
               </Typography>
             </Stack>
             <Chip
-              size="small"
               label={loading ? '…' : `${fieldNotesList.length}`}
               variant="outlined"
               sx={{
@@ -459,7 +458,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   value={fieldNoteDraft}
                   onChange={(e) => setFieldNoteDraft(e.target.value)}
                   placeholder="Add a field note..."
-                  size="small"
                   multiline
                   minRows={1}
                   fullWidth
@@ -473,7 +471,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                 <Stack direction="row" justifyContent="flex-end">
                   <Button
                     onClick={() => addNote('field')}
-                    size="small"
                     variant="contained"
                     color="primary"
                     disabled={!fieldNoteDraft.trim()}
@@ -526,7 +523,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
               </Typography>
             </Stack>
             <Chip
-              size="small"
               label={loading ? '…' : `${progressNotesList.length}`}
               variant="outlined"
               sx={{
@@ -628,7 +624,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   value={progressNoteDraft}
                   onChange={(e) => setProgressNoteDraft(e.target.value)}
                   placeholder="Add a progress note..."
-                  size="small"
                   multiline
                   minRows={1}
                   fullWidth
@@ -642,7 +637,6 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                 <Stack direction="row" justifyContent="flex-end">
                   <Button
                     onClick={() => addNote('progress')}
-                    size="small"
                     variant="contained"
                     color="primary"
                     disabled={!progressNoteDraft.trim()}

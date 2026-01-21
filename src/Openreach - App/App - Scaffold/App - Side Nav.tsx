@@ -256,7 +256,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
       >
         <Chip
           label={CLIENT_BUILD.label}
-          size="small"
           variant="outlined"
           sx={{
             height: 22,
@@ -437,7 +436,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
               {trimmedQuery && (
                 <IconButton
                   aria-label="Clear search"
-                  size="small"
                   onClick={() => setQuery('')}
                   sx={{ color: isLightMode ? theme.palette.text.secondary : palette.energyAccent, ml: 1 }}
                 >
@@ -490,7 +488,6 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                       {item.badge && (
                         <Chip
                           label={item.badge}
-                          size="small"
                           sx={{
                             ml: 1,
                             borderColor: isLightMode ? theme.openreach?.lightTokens?.state.info : theme.openreach?.darkTokens?.state.info,

@@ -677,7 +677,6 @@ function App() {
                         </Typography>
                         <Tooltip title="View help" placement="right">
                           <IconButton
-                            size="small"
                             aria-label="Info: select a tool card"
                             onClick={(e) => setMenuInfoAnchor(menuInfoOpen ? null : e.currentTarget)}
                             aria-describedby={menuInfoOpen ? 'menu-info-popover' : undefined}
@@ -695,7 +694,7 @@ function App() {
                         {selectedMenu.accessLabel && (
                           <Chip 
                             label={selectedMenu.accessLabel} 
-                            size="small"
+
                             sx={{
                               height: 24,
                               fontSize: '0.75rem',

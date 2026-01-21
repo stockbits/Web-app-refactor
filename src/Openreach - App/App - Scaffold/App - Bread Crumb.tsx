@@ -100,7 +100,6 @@ export const AppBreadCrumb = ({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Chip
               label={`${groupsCount} programmes`}
-              size="small"
               variant="outlined"
               sx={{
                 fontSize: '0.75rem',
@@ -110,7 +109,7 @@ export const AppBreadCrumb = ({
             />
             <Chip
               label={`${totalTools} tools`}
-              size="small"
+
               variant="filled"
               color="primary"
               sx={{
