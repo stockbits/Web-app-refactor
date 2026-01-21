@@ -24,7 +24,7 @@ import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 import { MultiTaskDialog } from './App - Multi Task Dialog'
 
@@ -141,10 +141,14 @@ export const OpenItemsDock = ({
   }
 
   const getSelectedTasks = (): TaskTableRow[] => {
-    return allItems
-      .filter((item) => selectedIds.includes(item.id) && item.type === 'task' && 'task' in item && item.task)
-      .map((item) => 'task' in item ? item.task : null)
-      .filter((task): task is TaskTableRow => task !== null && task !== undefined)
+    const selectedItems = allItems.filter((item) => selectedIds.includes(item.id))
+    const tasks = selectedItems
+      .filter((item) => 'task' in item && item.task)
+      .map((item: any) => item.task)
+    console.log('Selected IDs:', selectedIds)
+    console.log('Selected Items:', selectedItems)
+    console.log('Extracted Tasks:', tasks)
+    return tasks
   }
 
   const getItemIcon = (type: string) => {
@@ -314,7 +318,7 @@ export const OpenItemsDock = ({
                   variant="text"
                   color="secondary"
                   disabled={selectedIds.length === 0}
-                  startIcon={<CheckBoxOutlineBlankIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<IndeterminateCheckBoxIcon sx={{ fontSize: 16 }} />}
                   onClick={handleClearSelection}
                   fullWidth
                   sx={{
