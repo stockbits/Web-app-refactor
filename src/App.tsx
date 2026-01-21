@@ -884,6 +884,7 @@ function App() {
             title: item.title,
             type: 'task' as const,
             subtitle: item.commitType,
+            task: item.task,
           }))}
           minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
           maxItems={20}

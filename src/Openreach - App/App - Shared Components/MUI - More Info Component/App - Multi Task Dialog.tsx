@@ -52,7 +52,7 @@ export function MultiTaskDialog({
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby="multi-task-dialog-title">
       <DialogTitle id="multi-task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 6, pb: 1 }}>
-        <Typography variant="h6" fontWeight={700}>
+        <Typography variant="h6" component="h2" fontWeight={700}>
           Task Comparison ({tasks.length} tasks)
         </Typography>
         <IconButton

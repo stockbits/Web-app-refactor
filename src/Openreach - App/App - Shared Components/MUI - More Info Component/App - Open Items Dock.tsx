@@ -35,6 +35,7 @@ export interface OpenDockItem {
   title: string
   type: 'task' | 'resource'
   subtitle?: string
+  task?: TaskTableRow
 }
 
 export interface MinimizedTaskItem {
