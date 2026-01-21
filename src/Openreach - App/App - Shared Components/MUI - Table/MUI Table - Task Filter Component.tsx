@@ -1,6 +1,5 @@
 import { useMemo, useState, type ChangeEvent, type MouseEvent, type SyntheticEvent } from 'react'
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import {
   Autocomplete,
   Box,
@@ -40,6 +39,7 @@ import {
   DEFAULT_STATUSES,
   STATUS_OPTION_LABELS,
 } from './TaskTableQueryConfig.shared';
+import GlobalSearchField from './GlobalSearchField';
 
 interface TaskTableQueryConfigProps {
   divisionOptions?: TaskTableRow['division'][]
@@ -81,6 +81,7 @@ const TaskTableQueryConfig = ({
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
   const [validationError, setValidationError] = useState<string | null>(null)
   const [speedDialOpen, setSpeedDialOpen] = useState(false)
+  
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
       return null
@@ -140,19 +141,6 @@ const TaskTableQueryConfig = ({
     { icon: <ContentCopyIcon />, name: 'Copy to Clipboard', action: onCopyHtml },
     { icon: <AssignmentIcon />, name: 'Export CSV', action: onExportCsv },
   ], [onCopyHtml, onExportCsv])
-
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newSearchValue = event.target.value
-    const hasSearchValue = newSearchValue.trim().length > 0
-
-    setDraftQuery((prev) => ({
-      ...prev,
-      searchTerm: newSearchValue,
-      // Mutual exclusivity: if global search entered, clear status selection only
-      statuses: hasSearchValue ? [] : prev.statuses,
-    }))
-    setValidationError(null)
-  }
 
   const handleStatusChange = (value: TaskTableRow['status'][]) => {
     setDraftQuery((prev) => ({
@@ -226,7 +214,7 @@ const TaskTableQueryConfig = ({
     const hasStatusSelection = draftQuery.statuses.length > 0
 
     // New validation: require either a global search OR a status selection.
-    // Division and Domain can coexist with either; they are optional.
+    // Global search works independently and bypasses all other filters
     if (!hasGlobalSearch && !hasStatusSelection) {
       setValidationError('Enter a global search or select at least one Status.')
       return
@@ -290,20 +278,27 @@ const TaskTableQueryConfig = ({
               <Tab key={tab.value} label={tab.label} value={tab.value} disableRipple />
             ))}
           </Tabs>
-          <TextField
-            size="small"
-            placeholder="Global search..."
+          <GlobalSearchField
             value={draftQuery.searchTerm}
-            onChange={handleSearchChange}
+            onChange={(newValue) => {
+              const hasSearchValue = newValue.trim().length > 0
+              setDraftQuery((prev) => ({
+                ...prev,
+                searchTerm: newValue,
+                // Mutual exclusivity: if global search entered, clear status selection only
+                statuses: hasSearchValue ? [] : prev.statuses,
+              }))
+              setValidationError(null)
+            }}
+            placeholder="Global search..."
+            localStorageKey="taskSearchHistory"
+            showSearchIcon={true}
             sx={{
               flex: 1,
               maxWidth: 400,
               '& .MuiOutlinedInput-root': {
                 borderRadius: 0,
               },
-            }}
-            InputProps={{
-              startAdornment: <SearchRoundedIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 20 }} />,
             }}
           />
         </Stack>

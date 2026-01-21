@@ -26,12 +26,13 @@ export interface MUI4PanelProps {
   dockedPanels?: DockedPanel[];
   selectedDivision?: string | null;
   selectedDomain?: string | null;
+  searchTerm?: string;
   searchFilters?: SearchFilters | null;
   clearSorting?: number;
   openTaskDialog?: (task: TaskTableRow) => void;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchFilters, clearSorting, openTaskDialog }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchTerm = '', searchFilters, clearSorting, openTaskDialog }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
@@ -50,14 +51,26 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);
 
-  // Compute filtered tasks based on selectedDivision, selectedDomain, and searchFilters
+  // Compute filtered tasks based on searchTerm, selectedDivision, selectedDomain, and searchFilters
   const filteredTasks = useMemo(() => {
+    let tasks = TASK_TABLE_ROWS;
+
+    // If searchTerm is provided, filter by exact match on Task ID, Work ID, or Resource ID
+    if (searchTerm && searchTerm.trim()) {
+      const keyword = searchTerm.trim().toLowerCase();
+      tasks = tasks.filter(task => 
+        task.taskId.toLowerCase() === keyword ||
+        task.workId.toLowerCase() === keyword ||
+        task.resourceId.toLowerCase() === keyword
+      );
+      // When searchTerm is active, return early (ignore other filters)
+      return tasks;
+    }
+
     // Only show tasks after search has been performed
     if (!searchFilters) {
       return [];
     }
-
-    let tasks = TASK_TABLE_ROWS;
 
     // Filter by division if selected
     if (selectedDivision) {
@@ -96,7 +109,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     });
 
     return tasks;
-  }, [selectedDivision, selectedDomain, searchFilters]);
+  }, [searchTerm, selectedDivision, selectedDomain, searchFilters]);
 
   // Get list of visible panels (not docked) - memoized to prevent recreation
   const visiblePanels = useMemo(() => {

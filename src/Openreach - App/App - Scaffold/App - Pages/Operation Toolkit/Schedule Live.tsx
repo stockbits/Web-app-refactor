@@ -9,6 +9,7 @@ import AppSearchTool from './App - Search Tool'
 import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 import { useSelectionUI } from '../../../App - Shared Components/Selection - UI'
+import GlobalSearchField from '../../../App - Shared Components/MUI - Table/GlobalSearchField'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
@@ -23,6 +24,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [searchInput, setSearchInput] = useState('')
+  const [activeSearchTerm, setActiveSearchTerm] = useState('') // Currently applied search
   const [searchToolOpen, setSearchToolOpen] = useState(false)
   const [legendOpen, setLegendOpen] = useState(false)
   const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null)
@@ -31,10 +33,20 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   // Selection UI context
   const { clearSelection, selectedTaskIds } = useSelectionUI()
 
+  // Handle search execution
+  const handleSearch = useCallback(() => {
+    const trimmed = searchInput.trim()
+    if (trimmed) {
+      setActiveSearchTerm(trimmed)
+    }
+  }, [searchInput])
+
   // Clear handler - memoized to prevent unnecessary re-renders
   const handleClear = useCallback(() => {
     clearSelection()
     setSearchFilters(null)
+    setSearchInput('')
+    setActiveSearchTerm('')
     setClearTrigger(prev => prev + 1)
     // TODO: Clear sorting in the task table
   }, [clearSelection])
@@ -112,13 +124,14 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               maxWidth: { md: 420 },
             }}
           >
-            <TextField
-              sx={{ flex: 1 }}
-              placeholder="Global search..."
+            <GlobalSearchField
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={setSearchInput}
+              onSearch={handleSearch}
+              placeholder="Global search..."
+              localStorageKey="scheduleLiveSearchHistory"
               inputRef={searchRef}
-              size="small"
+              sx={{ flex: 1 }}
             />
             <Button 
               variant="contained" 
@@ -207,6 +220,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         onDockedPanelsChange={onDockedPanelsChange}
         selectedDivision={selectedDivision}
         selectedDomain={selectedDomain}
+        searchTerm={activeSearchTerm}
         searchFilters={searchFilters}
         clearSorting={clearTrigger}
         openTaskDialog={openTaskDialog}

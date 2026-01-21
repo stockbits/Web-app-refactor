@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState, useMemo, memo, type ReactNode } from 'react'
-import { Box, Stack, Switch, Typography, useTheme, type SxProps, type Theme } from '@mui/material'
+import { Box, Stack, Switch, Typography, useTheme, type SxProps, type Theme, Autocomplete, TextField } from '@mui/material'
 import {
   DataGrid,
-  GridToolbarQuickFilter,
   useGridApiRef,
   type GridColDef,
   type GridPaginationModel,
@@ -11,6 +10,7 @@ import {
   type MuiEvent,
   type GridCellParams,
 } from '@mui/x-data-grid'
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import TableContextMenu from './Right Click - MUI Component'
 
 interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
@@ -142,9 +142,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
       <QuickFilterToolbar
         densityMode={densityMode}
         onToggleDensity={handleDensityToggle}
+        apiRef={apiRef}
       />
     );
-  }, [enableQuickFilter, densityMode, handleDensityToggle]);
+  }, [enableQuickFilter, densityMode, handleDensityToggle, apiRef]);
 
   return (
     <>
@@ -251,10 +252,61 @@ export default SharedMuiTable
 function QuickFilterToolbar({
   densityMode,
   onToggleDensity,
+  apiRef,
 }: {
   densityMode: 'compact' | 'standard' | 'comfortable'
   onToggleDensity: (dense: boolean) => void
+  apiRef: any
 }) {
+  const SEARCH_HISTORY_KEY = 'liveTaskSearchHistory'
+  const MAX_HISTORY_ITEMS = 10
+  
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(SEARCH_HISTORY_KEY)
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
+  
+  const [searchValue, setSearchValue] = useState('')
+  
+  const addToSearchHistory = (searchTerm: string) => {
+    const trimmed = searchTerm.trim()
+    if (!trimmed) return
+    
+    setSearchHistory(prev => {
+      const filtered = prev.filter(item => item !== trimmed)
+      const updated = [trimmed, ...filtered].slice(0, MAX_HISTORY_ITEMS)
+      
+      try {
+        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated))
+      } catch {
+        // Ignore localStorage errors
+      }
+      
+      return updated
+    })
+  }
+  
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      const value = searchValue.trim()
+      if (value) {
+        addToSearchHistory(value)
+        // The search is already applied automatically by MUI DataGrid
+      }
+    }
+  }
+  
+  const handleSearchChange = (_: any, newValue: string) => {
+    setSearchValue(newValue)
+    // Apply filter to DataGrid
+    apiRef.current?.setQuickFilterValues([newValue])
+  }
+  
   return (
     <Stack
       px={1.5}
@@ -264,10 +316,34 @@ function QuickFilterToolbar({
       justifyContent="space-between"
       width="100%"
     >
-      <Box flex={1}>
-        <GridToolbarQuickFilter
-          debounceMs={250}
-          quickFilterParser={(value) => value.split(/\s+/).filter(Boolean)}
+      <Box flex={1} maxWidth={400}>
+        <Autocomplete
+          freeSolo
+          options={searchHistory}
+          value={searchValue}
+          onInputChange={handleSearchChange}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              size="small"
+              placeholder="Quick filter..."
+              onKeyDown={handleKeyDown}
+              InputProps={{
+                ...params.InputProps,
+                startAdornment: (
+                  <>
+                    <SearchRoundedIcon sx={{ mr: 0.5, ml: 0.5, color: 'text.secondary', fontSize: 18 }} />
+                    {params.InputProps.startAdornment}
+                  </>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '0.875rem',
+                },
+              }}
+            />
+          )}
         />
       </Box>
 

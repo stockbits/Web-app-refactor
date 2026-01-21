@@ -681,25 +681,25 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
   const keyword = query.searchTerm.trim().toLowerCase()
 
   return rows.filter((row) => {
+    // Global search: exact match on Task ID, Work ID, or Resource ID ONLY
+    // This bypasses ALL other filters - it's a direct lookup
     if (keyword) {
       const hasExactMatch = [
         row.taskId,
         row.workId,
         row.resourceId,
-        row.resourceName,
-        row.domainId,
-        row.division,
       ].some((value) => {
         if (value == null) {
           return false
         }
         return value.toString().toLowerCase() === keyword
       })
-      if (!hasExactMatch) {
-        return false
-      }
+      
+      // If global search is active, ONLY check the exact match - ignore other filters
+      return hasExactMatch
     }
 
+    // Below filters only apply when NO global search is active
     if (query.divisions.length && !query.divisions.includes(row.division)) {
       return false
     }
