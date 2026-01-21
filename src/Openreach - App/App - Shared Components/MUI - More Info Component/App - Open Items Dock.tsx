@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   Badge,
   Box,
@@ -69,87 +69,95 @@ export const OpenItemsDock = ({
   const [filter, setFilter] = useState<FilterType>('all')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [multiTaskDialogOpen, setMultiTaskDialogOpen] = useState(false)
-  // Combine all items into a unified list
-  const allItems = [
-    ...items,
-    ...minimizedTasks.map(({ id, task }) => ({
-      id,
-      title: task.taskId,
-      type: 'task' as const,
-      subtitle: task.status,
-      task,
-    })),
-  ]
 
-  // Apply filter
-  const filteredItems = filter === 'all' 
-    ? allItems 
-    : allItems.filter(item => item.type === filter)
+  // Memoize combined items list
+  const allItems = useMemo(
+    () => [
+      ...items,
+      ...minimizedTasks.map(({ id, task }) => ({
+        id,
+        title: task.taskId,
+        type: 'task' as const,
+        subtitle: task.status,
+        task,
+      })),
+    ],
+    [items, minimizedTasks]
+  )
 
-  const totalCount = allItems.length
-  const taskCount = allItems.filter(item => item.type === 'task').length
-  const resourceCount = allItems.filter(item => item.type === 'resource').length
+  // Memoize filtered items
+  const filteredItems = useMemo(
+    () => (filter === 'all' ? allItems : allItems.filter((item) => item.type === filter)),
+    [allItems, filter]
+  )
+
+  // Memoize counts
+  const { totalCount, taskCount, resourceCount } = useMemo(
+    () => ({
+      totalCount: allItems.length,
+      taskCount: allItems.filter((item) => item.type === 'task').length,
+      resourceCount: allItems.filter((item) => item.type === 'resource').length,
+    }),
+    [allItems]
+  )
 
   if (totalCount === 0) {
     return null
   }
 
-  const handleItemClick = (item: typeof allItems[0]) => {
-    // Click item to open it
-    if ('task' in item && item.task && onMinimizedTaskClick) {
-      onMinimizedTaskClick(item.task as TaskTableRow)
-    } else if (onClick) {
-      onClick(item.id)
-    }
-    setOpen(false)
-  }
-
-  const handleCheckboxToggle = (itemId: string, event: React.MouseEvent) => {
-    event.stopPropagation()
-    setSelectedIds((prev) => {
-      if (prev.includes(itemId)) {
-        return prev.filter((id) => id !== itemId)
-      } else {
-        return [...prev, itemId]
+  const handleItemClick = useCallback(
+    (item: typeof allItems[0]) => {
+      if ('task' in item && item.task && onMinimizedTaskClick) {
+        onMinimizedTaskClick(item.task as TaskTableRow)
+      } else if (onClick) {
+        onClick(item.id)
       }
-    })
-  }
+      setOpen(false)
+    },
+    [onClick, onMinimizedTaskClick]
+  )
 
-  const handleItemRemove = (item: typeof allItems[0], event: React.MouseEvent) => {
+  const handleCheckboxToggle = useCallback((itemId: string, event: React.MouseEvent) => {
     event.stopPropagation()
-    if ('task' in item && item.task && onMinimizedTaskRemove) {
-      onMinimizedTaskRemove(item.id)
-    } else if (onDelete) {
-      onDelete(item.id)
-    }
-  }
+    setSelectedIds((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
+  }, [])
 
-  const handleClearAll = () => {
+  const handleItemRemove = useCallback(
+    (item: typeof allItems[0], event: React.MouseEvent) => {
+      event.stopPropagation()
+      if ('task' in item && item.task && onMinimizedTaskRemove) {
+        onMinimizedTaskRemove(item.id)
+      } else if (onDelete) {
+        onDelete(item.id)
+      }
+    },
+    [onDelete, onMinimizedTaskRemove]
+  )
+
+  const handleClearAll = useCallback(() => {
     if (onClearAll) {
       onClearAll()
     }
     setOpen(false)
-  }
+  }, [onClearAll])
 
-  const handleCompareSelected = () => {
+  const handleCompareSelected = useCallback(() => {
     if (selectedIds.length >= 2) {
       setMultiTaskDialogOpen(true)
     }
-  }
+  }, [selectedIds.length])
 
-  const handleClearSelection = () => {
+  const handleClearSelection = useCallback(() => {
     setSelectedIds([])
-  }
+  }, [])
 
-  const getSelectedTasks = (): TaskTableRow[] => {
-    const selectedItems = allItems.filter((item) => selectedIds.includes(item.id))
-    const tasks = selectedItems
-      .filter((item) => 'task' in item && item.task)
+  const getSelectedTasks = useCallback((): TaskTableRow[] => {
+    return allItems
+      .filter((item) => selectedIds.includes(item.id) && 'task' in item && item.task)
       .map((item: any) => item.task)
-    return tasks
-  }
+  }, [allItems, selectedIds])
 
-  const getItemIcon = (type: string) => {
+  const getItemIcon = useCallback((type: string) => {
     switch (type) {
       case 'task':
         return <TaskAltIcon sx={{ color: 'primary.main' }} />
@@ -158,7 +166,7 @@ export const OpenItemsDock = ({
       default:
         return <FolderOpenIcon sx={{ color: 'text.secondary' }} />
     }
-  }
+  }, [])
 
   return (
     <>

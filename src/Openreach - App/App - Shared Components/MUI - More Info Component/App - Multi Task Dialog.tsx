@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useState, useMemo, useCallback } from 'react'
 import {
   Dialog,
   DialogActions,
@@ -20,7 +20,6 @@ export interface MultiTaskDialogProps {
   open: boolean
   onClose: () => void
   tasks: (TaskTableRow | null)[]
-  loading?: boolean
   actions?: ReactNode
   onMinimize?: () => void
   onAddNote?: (taskId: string, type: 'field' | 'progress', text: string) => void
@@ -30,24 +29,28 @@ export function MultiTaskDialog({
   open,
   onClose,
   tasks,
-  loading = false,
   actions,
   onMinimize,
   onAddNote,
 }: MultiTaskDialogProps) {
   const theme = useTheme()
-  const modeTokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
+  const modeTokens = useMemo(
+    () => (theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens),
+    [theme.palette.mode, theme.openreach]
+  )
 
-  // Shared expansion state for synchronized note sections
   const [fieldNotesExpanded, setFieldNotesExpanded] = useState(false)
   const [progressNotesExpanded, setProgressNotesExpanded] = useState(false)
 
-  const handleAddNote = (index: number, type: 'field' | 'progress', text: string) => {
-    const task = tasks[index]
-    if (task) {
-      onAddNote?.(task.taskId, type, text)
-    }
-  }
+  const handleAddNote = useCallback(
+    (index: number, type: 'field' | 'progress', text: string) => {
+      const task = tasks[index]
+      if (task) {
+        onAddNote?.(task.taskId, type, text)
+      }
+    },
+    [tasks, onAddNote]
+  )
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby="multi-task-dialog-title">
@@ -90,7 +93,6 @@ export function MultiTaskDialog({
             >
               <TaskDetails
                 task={task}
-                loading={loading}
                 onAddNote={onAddNote ? (type, text) => handleAddNote(index, type, text) : undefined}
                 compact={tasks.length > 1}
                 fieldNotesExpanded={fieldNotesExpanded}
