@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useMemo, useCallback } from 'react'
+import { type ReactNode, useState, useMemo, useCallback, useEffect } from 'react'
 import {
   Dialog,
   DialogActions,
@@ -41,6 +41,14 @@ export function MultiTaskDialog({
 
   const [fieldNotesExpanded, setFieldNotesExpanded] = useState(false)
   const [progressNotesExpanded, setProgressNotesExpanded] = useState(false)
+
+  // Reset expansion state when dialog opens
+  useEffect(() => {
+    if (open) {
+      setFieldNotesExpanded(false)
+      setProgressNotesExpanded(false)
+    }
+  }, [open])
 
   const handleAddNote = useCallback(
     (index: number, type: 'field' | 'progress', text: string) => {
