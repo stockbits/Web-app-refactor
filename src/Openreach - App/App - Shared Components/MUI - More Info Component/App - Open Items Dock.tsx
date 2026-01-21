@@ -291,33 +291,41 @@ export const OpenItemsDock = ({
             {totalCount > 0 && (
               <Stack spacing={0.5}>
                 {/* Compare button - always visible */}
-                <Stack direction="row" spacing={0.5}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="primary"
+                  disabled={selectedIds.length < 2}
+                  startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleCompareSelected}
+                  fullWidth
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    py: 0.5,
+                  }}
+                >
+                  Compare ({selectedIds.length})
+                </Button>
+                {/* Clear selection button */}
+                {selectedIds.length > 0 && (
                   <Button
                     size="small"
-                    variant="contained"
-                    color="primary"
-                    disabled={selectedIds.length < 2}
-                    startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
-                    onClick={handleCompareSelected}
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<CloseIcon sx={{ fontSize: 16 }} />}
+                    onClick={handleClearSelection}
                     fullWidth
                     sx={{
                       textTransform: 'none',
                       fontSize: '0.75rem',
                       py: 0.5,
+                      justifyContent: 'flex-start',
                     }}
                   >
-                    Compare ({selectedIds.length})
+                    Clear Selection
                   </Button>
-                  {selectedIds.length > 0 && (
-                    <IconButton
-                      size="small"
-                      onClick={handleClearSelection}
-                      sx={{ color: 'text.secondary' }}
-                    >
-                      <CloseIcon sx={{ fontSize: 16 }} />
-                    </IconButton>
-                  )}
-                </Stack>
+                )}
                 {/* Clear all button */}
                 {onClearAll && (
                   <Button
