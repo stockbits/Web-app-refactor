@@ -564,10 +564,11 @@ const TaskManagementPage = ({
             borderBottom: 1,
             borderColor: 'divider',
             px: { xs: 2, sm: 3 },
-            py: 1.5,
+            py: 1,
           }}
         >
           <TaskTableQueryConfig
+            compact
             initialQuery={activeQuery}
             defaultQuery={defaultQuery}
             divisionOptions={divisionOptions}

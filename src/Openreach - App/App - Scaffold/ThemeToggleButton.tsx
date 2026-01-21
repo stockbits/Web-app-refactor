@@ -1,4 +1,4 @@
-import { IconButton, keyframes, useTheme } from '@mui/material'
+import { IconButton, keyframes, Tooltip, useTheme } from '@mui/material'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import { useThemeMode } from '../../App - Central Theme/ThemeContext'
@@ -26,24 +26,25 @@ export const ThemeToggleButton = () => {
   }
 
   return (
-    <IconButton
-      onClick={handleClick}
-      sx={{
-        animation: isAnimating ? `${spin} 0.6s ease-in-out` : 'none',
-        '&:hover': {
-          bgcolor: 'transparent',
-        },
-        color: tokens?.text.primary,
-        transition: 'background-color 0.3s ease-in-out',
-        padding: '10px',
-      }}
-      title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      {isDarkMode ? (
-        <LightModeIcon sx={{ fontSize: 32 }} />
-      ) : (
-        <DarkModeIcon sx={{ fontSize: 32 }} />
-      )}
-    </IconButton>
+    <Tooltip title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'} placement="bottom" arrow>
+      <IconButton
+        onClick={handleClick}
+        sx={{
+          animation: isAnimating ? `${spin} 0.6s ease-in-out` : 'none',
+          '&:hover': {
+            bgcolor: 'transparent',
+          },
+          color: tokens?.text.primary,
+          transition: 'background-color 0.3s ease-in-out',
+          padding: '10px',
+        }}
+      >
+        {isDarkMode ? (
+          <LightModeIcon sx={{ fontSize: 32 }} />
+        ) : (
+          <DarkModeIcon sx={{ fontSize: 32 }} />
+        )}
+      </IconButton>
+    </Tooltip>
   )
 }

@@ -5,7 +5,6 @@ import {
   AppBar,
   Avatar,
   Box,
-  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -89,8 +88,8 @@ export const OpenreachTopBanner = ({
       <Toolbar
         disableGutters
         sx={{
-          pl: 'var(--page-gutter)',
-          pr: 'var(--page-gutter)',
+          pl: { xs: 1, sm: 1.5, md: 2 },
+          pr: { xs: 1, sm: 1.5, md: 2 },
           py: { xs: 0.5, md: 0.85 },
           gap: 1.5,
           flexDirection: 'row',
@@ -109,6 +108,7 @@ export const OpenreachTopBanner = ({
               bgcolor: 'transparent',
               color: theme.openreach.brand.success,
               p: 0.6,
+              ml: -0.6,
               '&:hover': { bgcolor: alpha(theme.openreach.brand.white, 0.12) },
               '&:active': { bgcolor: alpha(theme.openreach.brand.white, 0.2) },
             }}
@@ -135,28 +135,10 @@ export const OpenreachTopBanner = ({
           sx={{ 
             flexShrink: 0, 
             justifyContent: 'flex-end',
-            pr: 0.5,
+            mr: -0.6,
           }}
         >
           {actions}
-
-          {/* User Role Chip - Subtle indicator */}
-          <Chip
-            label={userRole}
-            sx={{
-              display: { xs: 'none', md: 'inline-flex' },
-              height: 28,
-              bgcolor: alpha(brand.fibreThreads, 0.15),
-              color: brand.fibreThreads,
-              borderColor: alpha(brand.fibreThreads, 0.25),
-              border: 1,
-              fontWeight: 500,
-              fontSize: '0.8125rem',
-              '& .MuiChip-label': {
-                px: 1.5,
-              },
-            }}
-          />
 
           <Tooltip title="Profile settings">
             <IconButton

@@ -55,6 +55,7 @@ interface TaskTableQueryConfigProps {
   hasRows?: boolean
   onCopyHtml?: () => void
   onExportCsv?: () => void
+  compact?: boolean
 }
 
 const TaskTableQueryConfig = ({
@@ -71,6 +72,7 @@ const TaskTableQueryConfig = ({
   hasRows = false,
   onCopyHtml,
   onExportCsv,
+  compact = false,
 }: TaskTableQueryConfigProps) => {
   const [hasQueried, setHasQueried] = useState(false)
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
@@ -112,7 +114,7 @@ const TaskTableQueryConfig = ({
     () =>
       statusOptions.map((value) => ({
         value,
-        label: `${value} → ${STATUS_OPTION_LABELS[value] ?? value}`,
+        label: STATUS_OPTION_LABELS[value] ?? value,
       })),
     [statusOptions],
   )
@@ -259,7 +261,7 @@ const TaskTableQueryConfig = ({
         boxShadow: 'none',
       }}
     >
-      <Stack spacing={3}>
+      <Stack spacing={compact ? 2 : 3}>
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           spacing={2}
@@ -314,8 +316,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '3.5fr 2fr 2.8fr 2fr 1.2fr',
-                lg: '3.5fr 2fr 2.8fr 2fr 1.2fr',
+                md: '3fr 2fr 2.8fr 2.5fr 1.2fr',
+                lg: '3fr 2fr 2.8fr 2.5fr 1.2fr',
               },
             }}
           >
@@ -324,6 +326,9 @@ const TaskTableQueryConfig = ({
               options={divisionSelectOptions}
               value={draftQuery.divisions}
               onChange={handleDivisionsChange}
+              sx={{
+                minWidth: { xs: '100%', sm: 260, md: 260 },
+              }}
             />
             <BulkSelectableMultiSelect
               label="Domains"
@@ -637,29 +642,11 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                 size="small" 
                 onClick={handleOpen} 
                 aria-label="Edit date window"
-                sx={{
-                  width: { xs: 40, sm: 32 }, // Larger touch target on mobile
-                  height: { xs: 40, sm: 32 },
-                }}
               >
-                <CalendarMonthRoundedIcon 
-                  fontSize="small"
-                  sx={{
-                    fontSize: { xs: '1.25rem', sm: '1rem' }, // Larger icon on mobile
-                  }}
-                />
+                <CalendarMonthRoundedIcon fontSize="small" />
               </IconButton>
             </InputAdornment>
           }
-          sx={{
-            '& .MuiOutlinedInput-input': {
-              fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input text
-              py: { xs: 1.5, sm: 1 }, // More padding on mobile for touch
-            },
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 1,
-            },
-          }}
         />
 
         <Modal
@@ -1112,6 +1099,7 @@ type BulkSelectableMultiSelectProps<TValue extends string> = {
   options: LabeledOption<TValue>[]
   value: TValue[]
   onChange: (value: TValue[]) => void
+  sx?: SxProps<Theme>
 }
 
 const BulkSelectableMultiSelect = <TValue extends string>({
@@ -1119,6 +1107,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
   options,
   value,
   onChange,
+  sx,
 }: BulkSelectableMultiSelectProps<TValue>) => {
   const theme = useTheme();
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
@@ -1251,6 +1240,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
       fullWidth
       isOptionEqualToValue={(option, selected) => option.value === selected.value}
       getOptionLabel={(option) => option.label}
+      sx={sx}
       renderTags={(tagValue, getTagProps) => {
         if (isAllSelected) {
           return (
