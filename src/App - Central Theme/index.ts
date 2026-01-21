@@ -536,15 +536,12 @@ export const lightTheme = createTheme({
           },
         },
         endAdornment: {
-          position: 'absolute',
-          right: 9,
-          top: '50%',
-          transform: 'translateY(-50%)',
+          gap: '4px',
         },
         popupIndicator: {
           color: lightTokens.text.secondary,
           padding: 2,
-          marginRight: '-2px',
+          marginLeft: '4px',
           '&:hover': {
             backgroundColor: 'rgba(0, 0, 0, 0.04)',
           },
@@ -552,7 +549,6 @@ export const lightTheme = createTheme({
         clearIndicator: {
           color: lightTokens.text.secondary,
           padding: 2,
-          marginRight: '-2px',
           '&:hover': {
             backgroundColor: 'rgba(0, 0, 0, 0.04)',
           },
@@ -1027,15 +1023,12 @@ export const darkTheme = createTheme({
           },
         },
         endAdornment: {
-          position: 'absolute',
-          right: 9,
-          top: '50%',
-          transform: 'translateY(-50%)',
+          gap: '4px',
         },
         popupIndicator: {
           color: darkTokens.text.secondary,
           padding: 2,
-          marginRight: '-2px',
+          marginLeft: '4px',
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.08)',
           },
@@ -1043,7 +1036,6 @@ export const darkTheme = createTheme({
         clearIndicator: {
           color: darkTokens.text.secondary,
           padding: 2,
-          marginRight: '-2px',
           '&:hover': {
             backgroundColor: 'rgba(255, 255, 255, 0.08)',
           },
