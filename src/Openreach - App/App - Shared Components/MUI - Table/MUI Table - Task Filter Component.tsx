@@ -288,10 +288,10 @@ const TaskTableQueryConfig = ({
             onSearch={handleApply}
             placeholder="Global search..."
             localStorageKey="taskSearchHistory"
-            showSearchIcon={true}
             showSearchButton={true}
             sx={{
-              maxWidth: 400,
+              minWidth: { xs: '100%', sm: 200, md: 260 },
+              flex: { xs: '1 1 100%', sm: '0 0 auto' },
               '& .MuiOutlinedInput-root': {
                 borderRadius: 0,
               },

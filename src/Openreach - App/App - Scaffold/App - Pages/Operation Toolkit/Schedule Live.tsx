@@ -128,89 +128,71 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             }}
           />
 
-          <Stack 
-            direction="row" 
-            spacing={0.75}
-            alignItems="center"
+          <Button 
+            variant="contained" 
+            size="small"
+            onClick={() => setSearchToolOpen(true)}
+            sx={{ 
+              minWidth: 80,
+              px: 1.5,
+              whiteSpace: 'nowrap',
+              flex: { xs: '1 1 auto', sm: '0 0 auto' },
+            }}
           >
-            <Button 
-              variant="contained" 
+            Search Tool
+          </Button>
+          <Button 
+            variant="outlined" 
+            size="small"
+            onClick={handleClear}
+            disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
+            sx={{ 
+              minWidth: 70,
+              px: 1.5,
+              whiteSpace: 'nowrap',
+              flex: { xs: '1 1 auto', sm: '0 0 auto' },
+            }}
+          >
+            Clear
+          </Button>
+          <Tooltip title="Legend Key Menu">
+            <IconButton 
               size="small"
-              onClick={() => setSearchToolOpen(true)}
+              onClick={() => setLegendOpen(true)}
               sx={{ 
-                minWidth: 80,
-                px: 1.5,
-                whiteSpace: 'nowrap'
+                border: 1, 
+                borderColor: 'divider',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  bgcolor: 'action.hover',
+                }
               }}
             >
-              Search Tool
-            </Button>
-            <Button 
-              variant="outlined" 
-              size="small"
-              onClick={handleClear}
-              disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
-              sx={{ 
-                minWidth: 70,
-                px: 1.5,
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Clear
-            </Button>
-            <Tooltip title="Legend Key Menu">
-              <IconButton 
+              <VpnKeyIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+
+          {/* Docked Panel Icons */}
+          {dockedPanels.length > 0 && dockedPanels.map((panel) => (
+            <Tooltip key={panel.id} title={panel.title}>
+              <IconButton
                 size="small"
-                onClick={() => setLegendOpen(true)}
-                sx={{ 
-                  border: 1, 
+                onClick={() => handleUndockPanel(panel.id)}
+                sx={{
+                  border: 1,
                   borderColor: 'divider',
+                  color: 'text.secondary',
                   '&:hover': {
-                    borderColor: 'primary.main',
+                    borderColor: 'error.main',
+                    color: 'error.main',
                     bgcolor: 'action.hover',
                   }
                 }}
               >
-                <VpnKeyIcon fontSize="small" />
+                {panel.icon}
               </IconButton>
             </Tooltip>
-          </Stack>
-
-          {/* Utility Icons */}
-          <Stack 
-            direction="row" 
-            spacing={0.75}
-            sx={{ 
-              flexShrink: 0,
-              ml: { sm: 'auto !important' }
-            }}
-          >
-            {/* Docked Panel Icons */}
-            {dockedPanels.length > 0 && (
-              <>
-                {dockedPanels.map((panel) => (
-                  <Tooltip key={panel.id} title={panel.title}>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleUndockPanel(panel.id)}
-                      sx={{
-                        border: 1,
-                        borderColor: 'divider',
-                        color: 'text.secondary',
-                        '&:hover': {
-                          borderColor: 'error.main',
-                          color: 'error.main',
-                          bgcolor: 'action.hover',
-                        }
-                      }}
-                    >
-                      {panel.icon}
-                    </IconButton>
-                  </Tooltip>
-                ))}
-              </>
-            )}
-          </Stack>
+          ))}
         </Stack>
       </Box>
 
