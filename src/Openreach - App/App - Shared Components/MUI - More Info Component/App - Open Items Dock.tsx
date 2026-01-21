@@ -92,27 +92,25 @@ export const OpenItemsDock = ({
     return null
   }
 
-  const handleItemClick = (item: typeof allItems[0], event: React.MouseEvent) => {
-    // CTRL+click for multi-selection
-    if (event.ctrlKey || event.metaKey) {
-      event.preventDefault()
-      setSelectedIds((prev) => {
-        if (prev.includes(item.id)) {
-          return prev.filter((id) => id !== item.id)
-        } else {
-          return [...prev, item.id]
-        }
-      })
-      return
-    }
-
-    // Normal click - single item
+  const handleItemClick = (item: typeof allItems[0]) => {
+    // Click item to open it
     if ('task' in item && item.task && onMinimizedTaskClick) {
       onMinimizedTaskClick(item.task as TaskTableRow)
     } else if (onClick) {
       onClick(item.id)
     }
     setOpen(false)
+  }
+
+  const handleCheckboxToggle = (itemId: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setSelectedIds((prev) => {
+      if (prev.includes(itemId)) {
+        return prev.filter((id) => id !== itemId)
+      } else {
+        return [...prev, itemId]
+      }
+    })
   }
 
   const handleItemRemove = (item: typeof allItems[0], event: React.MouseEvent) => {
@@ -132,7 +130,7 @@ export const OpenItemsDock = ({
   }
 
   const handleCompareSelected = () => {
-    if (selectedIds.length > 0) {
+    if (selectedIds.length >= 2) {
       setMultiTaskDialogOpen(true)
     }
   }
@@ -292,24 +290,25 @@ export const OpenItemsDock = ({
             {/* Action buttons */}
             {totalCount > 0 && (
               <Stack spacing={0.5}>
-                {/* Compare selected button */}
-                {selectedIds.length > 0 && (
-                  <Stack direction="row" spacing={0.5}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="primary"
-                      startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
-                      onClick={handleCompareSelected}
-                      fullWidth
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: '0.75rem',
-                        py: 0.5,
-                      }}
-                    >
-                      Compare ({selectedIds.length})
-                    </Button>
+                {/* Compare button - always visible */}
+                <Stack direction="row" spacing={0.5}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    disabled={selectedIds.length < 2}
+                    startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
+                    onClick={handleCompareSelected}
+                    fullWidth
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      py: 0.5,
+                    }}
+                  >
+                    Compare ({selectedIds.length})
+                  </Button>
+                  {selectedIds.length > 0 && (
                     <IconButton
                       size="small"
                       onClick={handleClearSelection}
@@ -317,8 +316,8 @@ export const OpenItemsDock = ({
                     >
                       <CloseIcon sx={{ fontSize: 16 }} />
                     </IconButton>
-                  </Stack>
-                )}
+                  )}
+                </Stack>
                 {/* Clear all button */}
                 {onClearAll && (
                   <Button
@@ -400,7 +399,7 @@ export const OpenItemsDock = ({
                     }
                   >
                     <ListItemButton
-                      onClick={(event) => handleItemClick(item, event)}
+                      onClick={() => handleItemClick(item)}
                       selected={selectedIds.includes(item.id)}
                       sx={{
                         py: 1.25,
@@ -413,6 +412,7 @@ export const OpenItemsDock = ({
                       <Checkbox
                         edge="start"
                         checked={selectedIds.includes(item.id)}
+                        onClick={(event) => handleCheckboxToggle(item.id, event)}
                         tabIndex={-1}
                         disableRipple
                         size="small"
@@ -455,8 +455,8 @@ export const OpenItemsDock = ({
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>
               {selectedIds.length > 0 
-                ? `${selectedIds.length} selected • Click Compare or clear selection`
-                : 'Click item to open • Hold CTRL to select multiple'}
+                ? `${selectedIds.length} selected • Select 2+ to compare`
+                : 'Click item to open • Check boxes to compare multiple'}
             </Typography>
           </Box>
         </Box>
