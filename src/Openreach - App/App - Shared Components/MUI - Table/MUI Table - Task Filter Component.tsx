@@ -1251,15 +1251,6 @@ const BulkSelectableMultiSelect = <TValue extends string>({
       fullWidth
       isOptionEqualToValue={(option, selected) => option.value === selected.value}
       getOptionLabel={(option) => option.label}
-      sx={{
-        // Add spacing between custom icons and chevron popup indicator
-        '& .MuiAutocomplete-endAdornment': {
-          gap: '4px',
-        },
-        '& .MuiAutocomplete-popupIndicator': {
-          marginLeft: '4px',
-        },
-      }}
       renderTags={(tagValue, getTagProps) => {
         if (isAllSelected) {
           return (
@@ -1357,49 +1348,60 @@ const BulkSelectableMultiSelect = <TValue extends string>({
           </Box>
         )
       }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          placeholder={value.length ? undefined : 'Filter list'}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {shouldShowSelectAllIcon && (
-                  <Tooltip title={bulkTooltipLabel} placement="top">
-                    <span>
-                      <IconButton
-                        onClick={handleBulkSelect}
-                        disabled={isBulkActionDisabled}
-                        aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
-                        sx={{ padding: '4px' }}
-                      >
-                        <DoneAllRoundedIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                {!shouldShowSelectAllIcon && shouldShowClearIcon && (
-                  <Tooltip title="Clear selection" placement="top">
-                    <span>
-                      <IconButton
-                        onClick={handleClearSelection}
-                        aria-label="Clear selection"
-                        disabled={!value.length}
-                        sx={{ padding: '4px' }}
-                      >
-                        <CloseRoundedIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-                {params.InputProps.endAdornment}
-              </>
-            ),
-          }}
-        />
-      )}
+      renderInput={(params) => {
+        // Extract the original endAdornment children (chevron icon)
+        const originalEndAdornment = params.InputProps.endAdornment;
+        
+        return (
+          <TextField
+            {...params}
+            label={label}
+            placeholder={value.length ? undefined : 'Filter list'}
+            InputProps={{
+              ...params.InputProps,
+              endAdornment: (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  {shouldShowSelectAllIcon && (
+                    <Tooltip title={bulkTooltipLabel} placement="top">
+                      <span>
+                        <IconButton
+                          onClick={handleBulkSelect}
+                          disabled={isBulkActionDisabled}
+                          aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
+                          sx={{ padding: '4px' }}
+                        >
+                          <DoneAllRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {!shouldShowSelectAllIcon && shouldShowClearIcon && (
+                    <Tooltip title="Clear selection" placement="top">
+                      <span>
+                        <IconButton
+                          onClick={handleClearSelection}
+                          aria-label="Clear selection"
+                          disabled={!value.length}
+                          sx={{ padding: '4px' }}
+                        >
+                          <CloseRoundedIcon fontSize="small" />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {originalEndAdornment}
+                </Box>
+              ),
+            }}
+          />
+        );
+      }}
     />
   )
 }
