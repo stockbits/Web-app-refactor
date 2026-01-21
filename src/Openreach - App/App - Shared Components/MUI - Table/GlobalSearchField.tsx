@@ -90,34 +90,27 @@ const GlobalSearchField = ({
           inputRef={inputRef}
           InputProps={{
             ...params.InputProps,
-            ...(showSearchIcon && {
-              startAdornment: (
-                <>
-                  <InputAdornment position="start">
-                    <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
-                  </InputAdornment>
-                  {params.InputProps.startAdornment}
-                </>
-              ),
-            }),
-            ...(showSearchButton && {
-              endAdornment: (
-                <>
-                  {params.InputProps.endAdornment}
-                  <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={handleSearch}
-                      disabled={!value.trim()}
-                      edge="end"
-                      sx={{ mr: -0.5 }}
-                    >
-                      <SearchRoundedIcon fontSize="small" />
-                    </IconButton>
-                  </InputAdornment>
-                </>
-              ),
-            }),
+            startAdornment: showSearchIcon ? (
+              <InputAdornment position="start">
+                <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+              </InputAdornment>
+            ) : params.InputProps.startAdornment,
+            endAdornment: showSearchButton ? (
+              <>
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={handleSearch}
+                    disabled={!value.trim()}
+                    edge="end"
+                    sx={{ mr: 4.0 }}
+                  >
+                    <SearchRoundedIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+                {params.InputProps.endAdornment}
+              </>
+            ) : params.InputProps.endAdornment,
           }}
         />
       )}
