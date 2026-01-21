@@ -16,13 +16,16 @@ import {
   useTheme,
   Divider,
   Stack,
+  Checkbox,
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
+import { MultiTaskDialog } from './App - Multi Task Dialog'
 
 type FilterType = 'all' | 'task' | 'resource'
 
@@ -62,7 +65,8 @@ export const OpenItemsDock = ({
   const theme = useTheme()
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState<FilterType>('all')
-
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [multiTaskDialogOpen, setMultiTaskDialogOpen] = useState(false)
   // Combine all items into a unified list
   const allItems = [
     ...items,
@@ -88,7 +92,21 @@ export const OpenItemsDock = ({
     return null
   }
 
-  const handleItemClick = (item: typeof allItems[0]) => {
+  const handleItemClick = (item: typeof allItems[0], event: React.MouseEvent) => {
+    // CTRL+click for multi-selection
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault()
+      setSelectedIds((prev) => {
+        if (prev.includes(item.id)) {
+          return prev.filter((id) => id !== item.id)
+        } else {
+          return [...prev, item.id]
+        }
+      })
+      return
+    }
+
+    // Normal click - single item
     if ('task' in item && item.task && onMinimizedTaskClick) {
       onMinimizedTaskClick(item.task as TaskTableRow)
     } else if (onClick) {
@@ -111,6 +129,23 @@ export const OpenItemsDock = ({
       onClearAll()
     }
     setOpen(false)
+  }
+
+  const handleCompareSelected = () => {
+    if (selectedIds.length > 0) {
+      setMultiTaskDialogOpen(true)
+    }
+  }
+
+  const handleClearSelection = () => {
+    setSelectedIds([])
+  }
+
+  const getSelectedTasks = (): TaskTableRow[] => {
+    return allItems
+      .filter((item) => selectedIds.includes(item.id) && 'task' in item && item.task)
+      .map((item) => ('task' in item ? item.task : null))
+      .filter((task): task is TaskTableRow => task !== null)
   }
 
   const getItemIcon = (type: string) => {
@@ -254,24 +289,56 @@ export const OpenItemsDock = ({
               </Button>
             </Stack>
 
-            {/* Clear all button - compact */}
-            {totalCount > 0 && onClearAll && (
-              <Button
-                size="small"
-                variant="text"
-                color="error"
-                startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
-                onClick={handleClearAll}
-                fullWidth
-                sx={{
-                  textTransform: 'none',
-                  fontSize: '0.75rem',
-                  py: 0.5,
-                  justifyContent: 'flex-start',
-                }}
-              >
-                Clear All Items
-              </Button>
+            {/* Action buttons */}
+            {totalCount > 0 && (
+              <Stack spacing={0.5}>
+                {/* Compare selected button */}
+                {selectedIds.length > 0 && (
+                  <Stack direction="row" spacing={0.5}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="primary"
+                      startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
+                      onClick={handleCompareSelected}
+                      fullWidth
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                      }}
+                    >
+                      Compare ({selectedIds.length})
+                    </Button>
+                    <IconButton
+                      size="small"
+                      onClick={handleClearSelection}
+                      sx={{ color: 'text.secondary' }}
+                    >
+                      <CloseIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </Stack>
+                )}
+                {/* Clear all button */}
+                {onClearAll && (
+                  <Button
+                    size="small"
+                    variant="text"
+                    color="error"
+                    startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
+                    onClick={handleClearAll}
+                    fullWidth
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      py: 0.5,
+                      justifyContent: 'flex-start',
+                    }}
+                  >
+                    Clear All Items
+                  </Button>
+                )}
+              </Stack>
             )}
 
             {/* Max items warning */}
@@ -333,7 +400,8 @@ export const OpenItemsDock = ({
                     }
                   >
                     <ListItemButton
-                      onClick={() => handleItemClick(item)}
+                      onClick={(event) => handleItemClick(item, event)}
+                      selected={selectedIds.includes(item.id)}
                       sx={{
                         py: 1.25,
                         px: 2,
@@ -342,6 +410,14 @@ export const OpenItemsDock = ({
                         },
                       }}
                     >
+                      <Checkbox
+                        edge="start"
+                        checked={selectedIds.includes(item.id)}
+                        tabIndex={-1}
+                        disableRipple
+                        size="small"
+                        sx={{ mr: 1, p: 0 }}
+                      />
                       <ListItemIcon sx={{ minWidth: 36 }}>
                         {getItemIcon(item.type)}
                       </ListItemIcon>
@@ -378,11 +454,27 @@ export const OpenItemsDock = ({
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>
-              Click item to reopen
+              {selectedIds.length > 0 
+                ? `${selectedIds.length} selected • Click Compare or clear selection`
+                : 'Click item to open • Hold CTRL to select multiple'}
             </Typography>
           </Box>
         </Box>
       </Drawer>
+
+      {/* Multi-task comparison dialog */}
+      <MultiTaskDialog
+        open={multiTaskDialogOpen}
+        onClose={() => {
+          setMultiTaskDialogOpen(false)
+          setSelectedIds([])
+        }}
+        tasks={getSelectedTasks()}
+        onMinimize={() => {
+          setMultiTaskDialogOpen(false)
+          setSelectedIds([])
+        }}
+      />
     </>
   )
 }
