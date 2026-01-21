@@ -77,7 +77,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           {/* Filters */}
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 240, md: 240 },
+              minWidth: { xs: '100%', sm: 260, md: 260 },
               width: { xs: '100%', sm: 'auto' },
               order: { xs: 1, sm: 1 }
             }}

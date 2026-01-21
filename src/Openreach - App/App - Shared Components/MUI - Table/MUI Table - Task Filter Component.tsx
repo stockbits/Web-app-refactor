@@ -1367,7 +1367,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   transform: 'translateY(-50%)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.25,
+                  gap: 0.5,
                 }}
               >
                 {shouldShowSelectAllIcon && (
@@ -1377,7 +1377,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                         onClick={handleBulkSelect}
                         disabled={isBulkActionDisabled}
                         aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
-                        sx={{ padding: '4px' }}
+                        sx={{ padding: '4px', mr: 0.5 }}
                       >
                         <DoneAllRoundedIcon fontSize="small" />
                       </IconButton>
@@ -1391,7 +1391,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                         onClick={handleClearSelection}
                         aria-label="Clear selection"
                         disabled={!value.length}
-                        sx={{ padding: '4px' }}
+                        sx={{ padding: '4px', mr: 0.5 }}
                       >
                         <CloseRoundedIcon fontSize="small" />
                       </IconButton>
