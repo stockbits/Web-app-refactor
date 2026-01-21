@@ -146,9 +146,6 @@ export const OpenItemsDock = ({
     const tasks = selectedItems
       .filter((item) => 'task' in item && item.task)
       .map((item: any) => item.task)
-    console.log('Selected IDs:', selectedIds)
-    console.log('Selected Items:', selectedItems)
-    console.log('Extracted Tasks:', tasks)
     return tasks
   }
 
