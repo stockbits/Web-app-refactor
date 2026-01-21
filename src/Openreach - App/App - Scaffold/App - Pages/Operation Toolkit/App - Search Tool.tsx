@@ -12,9 +12,10 @@ import {
   IconButton,
   Tooltip,
   useTheme,
+  Alert,
 } from '@mui/material'
 import { TASK_TABLE_ROWS, TASK_STATUS_LABELS } from '../../../App - Data Tables/Task - Table'
-import type { TaskSkillCode, TaskStatusCode, TaskResponseCode, TaskCommitType } from '../../../App - Data Tables/Task - Table'
+import type { TaskSkillCode, TaskStatusCode, TaskResponseCode, TaskCommitType, TaskDomainId } from '../../../App - Data Tables/Task - Table'
 import { BulkSelectableMultiSelect, TaskDateWindowField } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 
 interface AppSearchToolProps {
@@ -23,9 +24,13 @@ interface AppSearchToolProps {
   onSearch?: (filters: SearchFilters) => void
   currentSearchTerm?: string
   clearTrigger?: number
+  selectedDivision?: string | null
+  selectedDomain?: TaskDomainId | null
 }
 
 export interface SearchFilters {
+  division?: string | null
+  domain?: TaskDomainId | null
   statuses?: TaskStatusCode[]
   capabilities?: TaskSkillCode[]
   responseCodes?: TaskResponseCode[]
@@ -36,7 +41,15 @@ export interface SearchFilters {
   impactValue?: number | null
 }
 
-const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, currentSearchTerm = '', clearTrigger = 0 }) => {
+const AppSearchTool: React.FC<AppSearchToolProps> = ({ 
+  open, 
+  onClose, 
+  onSearch, 
+  currentSearchTerm = '', 
+  clearTrigger = 0,
+  selectedDivision = null,
+  selectedDomain = null
+}) => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
   const [selectedStatuses, setSelectedStatuses] = useState<TaskStatusCode[]>([])
@@ -95,8 +108,11 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
     })),
   [])
 
-  // Check if any filters have been modified from their default state
-  const hasActiveFilters = React.useMemo(() => {
+  // Check if mandatory fields (from toolbar) are filled
+  const isMandatoryFieldsFilled = selectedDivision !== null && selectedDomain !== null
+
+  // Check if any optional filters have been modified from their default state
+  const hasOptionalFilters = React.useMemo(() => {
     return selectedStatuses.length > 0 ||
            selectedCapabilities.length > 0 ||
            selectedResponseCodes.length > 0 ||
@@ -108,7 +124,11 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
   }, [selectedStatuses, selectedCapabilities, selectedResponseCodes, selectedCommitTypes, dateRange, impactOperator, impactValue])
 
   const handleSearch = () => {
+    if (!isMandatoryFieldsFilled) return
+
     const filters: SearchFilters = {
+      division: selectedDivision,
+      domain: selectedDomain,
       statuses: selectedStatuses.length > 0 ? selectedStatuses : undefined,
       capabilities: selectedCapabilities.length > 0 ? selectedCapabilities : undefined,
       responseCodes: selectedResponseCodes.length > 0 ? selectedResponseCodes : undefined,
@@ -216,6 +236,27 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
               </Box>
             )}
 
+            {!isMandatoryFieldsFilled && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                Please select Division and Domain from the toolbar before using the Search Tool.
+              </Alert>
+            )}
+
+            {isMandatoryFieldsFilled && (
+              <Box sx={{ mb: 3, p: 2, bgcolor: 'action.hover', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', gap: 4 }}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Division:</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedDivision}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Domain:</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedDomain}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+
             <Box
               sx={{
                 display: 'grid',
@@ -227,6 +268,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
                 px: { xs: 1, sm: 0 },
               }}
             >
+              {/* Optional Filters */}
               <Box>
                 <BulkSelectableMultiSelect
                   label="Task Status"
@@ -273,7 +315,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: { xs: 3, sm: 3 }, pb: { xs: 2, sm: 3 }, pt: { xs: 1, sm: 2 } }}>
-          {hasActiveFilters && (
+          {(hasOptionalFilters) && (
             <Button 
               onClick={handleClear} 
               sx={{ 
@@ -281,10 +323,16 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
                 mr: { xs: 1, sm: 2 }
               }}
             >
-              Clear
+              Clear Filters
             </Button>
           )}
-          <Button onClick={handleSearch} variant="contained" color="primary" size="large">
+          <Button 
+            onClick={handleSearch} 
+            variant="contained" 
+            color="primary" 
+            size="large"
+            disabled={!isMandatoryFieldsFilled}
+          >
             Search
           </Button>
         </DialogActions>

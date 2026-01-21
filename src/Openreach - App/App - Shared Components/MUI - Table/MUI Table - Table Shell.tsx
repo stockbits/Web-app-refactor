@@ -9,6 +9,7 @@ import {
   type GridValidRowModel,
   type MuiEvent,
   type GridCellParams,
+  type GridSortModel,
 } from '@mui/x-data-grid'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import TableContextMenu from './Right Click - MUI Component'
@@ -25,7 +26,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   enablePagination?: boolean
   enableQuickFilter?: boolean
   disableSorting?: boolean
-  sortModel?: any[]
+  sortModel?: GridSortModel
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
@@ -33,7 +34,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   apiRef?: ReturnType<typeof useGridApiRef>
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
-  onSortModelChange?: (model: any) => void
+  onSortModelChange?: (model: GridSortModel) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
   sx?: SxProps<Theme>
   contextMenuItems?: Array<{
@@ -256,7 +257,7 @@ function QuickFilterToolbar({
 }: {
   densityMode: 'compact' | 'standard' | 'comfortable'
   onToggleDensity: (dense: boolean) => void
-  apiRef: any
+  apiRef: ReturnType<typeof useGridApiRef>
 }) {
   const SEARCH_HISTORY_KEY = 'liveTaskSearchHistory'
   const MAX_HISTORY_ITEMS = 10
@@ -301,7 +302,7 @@ function QuickFilterToolbar({
     }
   }
   
-  const handleSearchChange = (_: any, newValue: string) => {
+  const handleSearchChange = (_: React.SyntheticEvent, newValue: string) => {
     setSearchValue(newValue)
     // Apply filter to DataGrid
     apiRef.current?.setQuickFilterValues([newValue])

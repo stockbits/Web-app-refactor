@@ -573,6 +573,7 @@ const TaskManagementPage = ({
             commitTypeOptions={commitTypeOptions}
             exactSearchValues={exactSearchValues}
             onApply={handleApplyQuery}
+            onValidationError={(error) => showMessage(error, 'error')}
             hasRows={filteredRows.length > 0}
             onCopyHtml={handleCopyHtml}
             onExportCsv={handleExportCsv}

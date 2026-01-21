@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Chip,
-  Divider,
   IconButton,
   InputAdornment,
   Modal,
@@ -52,6 +51,7 @@ interface TaskTableQueryConfigProps {
   initialQuery?: TaskTableQueryState
   defaultQuery?: TaskTableQueryState
   onApply: (query: TaskTableQueryState) => void
+  onValidationError?: (error: string) => void
   hasRows?: boolean
   onCopyHtml?: () => void
   onExportCsv?: () => void
@@ -69,6 +69,7 @@ const TaskTableQueryConfig = ({
   initialQuery,
   defaultQuery,
   onApply,
+  onValidationError,
   hasRows = false,
   onCopyHtml,
   onExportCsv,
@@ -79,7 +80,6 @@ const TaskTableQueryConfig = ({
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
-  const [validationError, setValidationError] = useState<string | null>(null)
   const [speedDialOpen, setSpeedDialOpen] = useState(false)
   
   const exactSearchSet = useMemo(() => {
@@ -147,7 +147,6 @@ const TaskTableQueryConfig = ({
       ...prev,
       statuses: value,
     }))
-    setValidationError(null)
   }
 
   const handleDivisionsChange = (value: TaskTableRow['division'][]) => {
@@ -155,7 +154,6 @@ const TaskTableQueryConfig = ({
       ...prev,
       divisions: value,
     }))
-    setValidationError(null)
   }
 
   const handleDomainsChange = (value: TaskTableRow['domainId'][]) => {
@@ -163,7 +161,6 @@ const TaskTableQueryConfig = ({
       ...prev,
       domains: value,
     }))
-    setValidationError(null)
   }
 
   const handleCapabilitiesChange = (value: TaskSkillCode[]) => {
@@ -171,7 +168,6 @@ const TaskTableQueryConfig = ({
       ...prev,
       capabilities: value,
     }))
-    setValidationError(null)
   }
 
   const handleResponseCodesChange = (value: TaskTableRow['responseCode'][]) => {
@@ -179,7 +175,6 @@ const TaskTableQueryConfig = ({
       ...prev,
       responseCodes: value,
     }))
-    setValidationError(null)
   }
 
   const handleCommitTypesChange = (value: TaskTableRow['commitType'][]) => {
@@ -187,14 +182,12 @@ const TaskTableQueryConfig = ({
       ...prev,
       commitTypes: value,
     }))
-    setValidationError(null)
   }
 
   const handleImpactValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value.replace(/\D/g, '').slice(0, 3)
     const val = raw === '' ? null : Number(raw)
     setDraftQuery((prev) => ({ ...prev, impactValue: val }))
-    setValidationError(null)
   }
 
   const handleDateRangeChange = (nextRange: DateRangeValue) => {
@@ -207,35 +200,60 @@ const TaskTableQueryConfig = ({
 
   const handleApply = () => {
     setHasQueried(true)
-    const trimmedSearch = draftQuery.searchTerm.trim()
-    const hasGlobalSearch = trimmedSearch.length > 0
     const hasStatusSelection = draftQuery.statuses.length > 0
 
-    // New validation: require either a global search OR a status selection.
-    // Global search works independently and bypasses all other filters
-    if (!hasGlobalSearch && !hasStatusSelection) {
-      setValidationError('Enter a global search or select at least one Status.')
+    // Search button uses ONLY local/advanced filters - require at least one Status
+    if (!hasStatusSelection) {
+      const errorMsg = 'Select at least one Status.'
+      onValidationError?.(errorMsg)
       return
     }
 
-    // If global search is present, enforce exact match when exact set provided.
-    if (hasGlobalSearch && exactSearchSet && !exactSearchSet.has(trimmedSearch.toLowerCase())) {
-      setValidationError('Global search must exactly match a Task ID, Work ID, or Resource ID.')
+    // Create a query with NO global search for local filters only
+    // This ensures filter logic applies local filters without global search interference
+    const localOnlyQuery = {
+      ...draftQuery,
+      searchTerm: '', // Clear from query sent to parent
+    }
+
+    // Keep draftQuery intact with all values for UI display
+    onApply(localOnlyQuery)
+  }
+
+  const handleGlobalSearch = () => {
+    setHasQueried(true)
+    const trimmedSearch = draftQuery.searchTerm.trim()
+
+    // Global search via icon: enforce exact match when exact set provided
+    if (exactSearchSet && !exactSearchSet.has(trimmedSearch.toLowerCase())) {
+      const errorMsg = 'Global search must exactly match a Task ID, Work ID, or Resource ID.'
+      onValidationError?.(errorMsg)
       return
     }
 
-    const nextQuery = hasGlobalSearch && trimmedSearch !== draftQuery.searchTerm
-      ? { ...draftQuery, searchTerm: trimmedSearch }
-      : draftQuery
+    // Create a query with NO local filters for global search only
+    // This ensures filter logic applies global search without local filter interference
+    const globalOnlyQuery = {
+      ...draftQuery,
+      divisions: [],
+      domains: [],
+      statuses: [],
+      capabilities: [],
+      responseCodes: [],
+      commitTypes: [],
+      updatedFrom: null,
+      updatedTo: null,
+      impactOperator: null,
+      impactValue: null,
+      searchTerm: trimmedSearch,
+    }
 
-    setDraftQuery(nextQuery)
-    setValidationError(null)
-    onApply(nextQuery)
+    // Keep draftQuery intact with all values for UI display
+    onApply(globalOnlyQuery)
   }
 
   const handleReset = () => {
     setDraftQuery(resolvedDefaultQuery)
-    setValidationError(null)
   }
 
   return (
@@ -283,15 +301,14 @@ const TaskTableQueryConfig = ({
                 ...prev,
                 searchTerm: newValue,
               }))
-              setValidationError(null)
             }}
-            onSearch={handleApply}
+            onSearch={handleGlobalSearch}
             placeholder="Global search..."
             localStorageKey="taskSearchHistory"
+            showSearchIcon={true}
             showSearchButton={true}
             sx={{
-              minWidth: { xs: '100%', sm: 200, md: 260 },
-              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+              width: { xs: '100%', md: 300, lg: 400 },
               '& .MuiOutlinedInput-root': {
                 borderRadius: 0,
               },
@@ -307,8 +324,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '3fr 2fr 2.8fr 2.5fr 1.2fr',
-                lg: '3fr 2fr 2.8fr 2.5fr 1.2fr',
+                md: '1.5fr 1.2fr 1.5fr 1.2fr 1fr',
+                lg: '1.8fr 1.2fr 1.5fr 1.2fr 1fr',
               },
             }}
           >
@@ -420,24 +437,6 @@ const TaskTableQueryConfig = ({
               onChange={handleCommitTypesChange}
             />
           </Box>
-        )}
-
-        <Divider sx={{ my: 2 }} light />
-
-        {validationError && (
-          <Typography
-            variant="body2"
-            color="error.main"
-            sx={{
-              px: 0.5,
-              py: 1,
-              backgroundColor: 'rgba(229, 57, 53, 0.08)',
-              borderRadius: 0,
-              pl: 1.5,
-            }}
-          >
-            {validationError}
-          </Typography>
         )}
 
         <Stack

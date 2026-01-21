@@ -10,6 +10,7 @@ import LiveGantt from "./App - Pannels/Live - Gantt";
 import LiveMap from "./App - Pannels/Live - Map";
 import LivePeople from "./App - Pannels/Live - People";
 import LiveTask from "./App - Pannels/Live - Task";
+import { useSelectionUI } from "../Selection - UI";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
 import type { TaskTableRow } from "../../App - Data Tables/Task - Table";
@@ -37,6 +38,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
   const [activeMobileTab, setActiveMobileTab] = useState(0);
+
+  // Get selected task IDs from selection context
+  const { selectedTaskIds } = useSelectionUI();
 
   // Memoize layout key to avoid unnecessary re-renders
   const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
@@ -115,12 +119,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const visiblePanels = useMemo(() => {
     const panels = [
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
-      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks } },
+      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, clearSorting, openTaskDialog]);
+  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   const clampedActiveMobileTab = useMemo(() => {
@@ -350,7 +354,58 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         padding: 0,
       }}
     >
-      {visiblePanels.length === 0 ? (
+      {/* No Results Message */}
+      {(searchTerm || searchFilters) && filteredTasks.length === 0 && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              fontSize: '3rem',
+              opacity: 0.5,
+            }}
+          >
+            ⚲
+          </Box>
+          <Box
+            sx={{
+              textAlign: 'center',
+            }}
+          >
+            <Box
+              sx={{
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                color: 'text.primary',
+                mb: 1,
+              }}
+            >
+              No results found
+            </Box>
+            <Box
+              sx={{
+                fontSize: '0.9rem',
+                color: 'text.secondary',
+              }}
+            >
+              {searchTerm && `No tasks match the search term "${searchTerm}"`}
+              {searchFilters && !searchTerm && 'No tasks match the current filters. Try adjusting your search criteria.'}
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Grid Layout - Only shown when there are results */}
+      {!(searchTerm || searchFilters) || filteredTasks.length > 0 ? (
+        <>
+          {visiblePanels.length === 0 ? (
         <Box sx={{
           display: 'flex',
           alignItems: 'center',
@@ -720,6 +775,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
           })}
         </Box>
       )}
+        </>
+      ) : null}
     </Box>
   );
 }

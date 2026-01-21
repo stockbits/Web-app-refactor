@@ -36,6 +36,7 @@ interface LiveMapProps {
   minimized?: boolean;
   layoutKey?: number;
   filteredTasks?: TaskTableRow[];
+  selectedTaskIds?: string[];
 }
 
 interface MapClickHandlerProps {
@@ -62,6 +63,45 @@ function MapClickHandler({ popupState, setPopupState, ignoreNextMapClickRef }: M
       }
     },
   });
+  return null;
+}
+
+// Component to handle zooming to selected tasks
+interface ZoomToSelectionProps {
+  selectedTaskIds: string[];
+  filteredTasks?: TaskTableRow[];
+}
+
+function ZoomToSelection({ selectedTaskIds, filteredTasks }: ZoomToSelectionProps) {
+  const map = useMap();
+  const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
+
+  useEffect(() => {
+    if (selectedTaskIds.length === 0) return;
+
+    // Get coordinates for selected tasks
+    const selectedTasks = tasksToDisplay.filter(task => selectedTaskIds.includes(task.taskId));
+    if (selectedTasks.length === 0) return;
+
+    // Single task: zoom to that location with zoom level 14
+    if (selectedTasks.length === 1) {
+      const task = selectedTasks[0];
+      map.setView([task.taskLatitude, task.taskLongitude], 14, {
+        animate: true,
+        duration: 0.5
+      });
+      return;
+    }
+
+    // Multiple tasks: calculate bounds and fit to show all
+    const bounds = L.latLngBounds(selectedTasks.map(task => [task.taskLatitude, task.taskLongitude]));
+    map.fitBounds(bounds, {
+      padding: [50, 50],
+      animate: true,
+      duration: 0.5
+    });
+  }, [selectedTaskIds, map, tasksToDisplay]);
+
   return null;
 }
 
@@ -718,6 +758,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               popupState={popupState}
               setPopupState={setPopupState}
               ignoreNextMapClickRef={ignoreNextMapClickRef}
+            />
+
+            {/* Zoom to selected tasks */}
+            <ZoomToSelection
+              selectedTaskIds={selectedTaskIds}
+              filteredTasks={filteredTasks}
             />
 
             {/* Render markers based on zoom level to prevent overlap */}

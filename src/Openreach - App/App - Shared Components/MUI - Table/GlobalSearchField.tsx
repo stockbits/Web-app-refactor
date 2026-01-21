@@ -98,7 +98,7 @@ const GlobalSearchField = ({
           }}
         />
       )}
-      sx={sx}
+      sx={showSearchButton ? { flex: 1 } : sx}
     />
   )
 
@@ -115,6 +115,7 @@ const GlobalSearchField = ({
             border: 1, 
             borderColor: 'divider',
             borderRadius: 1,
+            flexShrink: 0,
             '&:hover': {
               borderColor: 'primary.main',
               bgcolor: 'action.hover',
@@ -128,7 +129,7 @@ const GlobalSearchField = ({
   ) : null
 
   return showSearchButton ? (
-    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ width: '100%', ...sx }}>
+    <Stack direction="row" spacing={1.5} alignItems="center" sx={sx}>
       {searchField}
       {searchButton}
     </Stack>

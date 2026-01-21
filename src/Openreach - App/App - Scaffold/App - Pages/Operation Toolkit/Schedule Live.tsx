@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button, Divider } from '@mui/material'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
@@ -38,8 +38,15 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
     const trimmed = searchInput.trim()
     if (trimmed) {
       setActiveSearchTerm(trimmed)
+      setSearchFilters(null) // Clear search tool filters when using global search
     }
   }, [searchInput])
+
+  // Handle search tool results
+  const handleSearchToolResults = useCallback((filters: SearchFilters | null) => {
+    setSearchFilters(filters)
+    setActiveSearchTerm('') // Clear global search when using search tool
+  }, [])
 
   // Clear handler - memoized to prevent unnecessary re-renders
   const handleClear = useCallback(() => {
@@ -79,18 +86,17 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         }}
       >
         <Stack 
-          direction="row"
-          alignItems="center"
+          direction={{ xs: 'column', md: 'row' }}
+          alignItems={{ xs: 'stretch', md: 'center' }}
+          spacing={1.5}
           sx={{ 
-            flexWrap: 'wrap',
-            gap: { xs: 1, sm: 1.5 },
+            width: '100%'
           }}
         >
           {/* Filters */}
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 200, md: 260 },
-              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+              width: { xs: '100%', md: 200, lg: 280 },
             }}
             options={divisionOptions}
             value={selectedDivision}
@@ -102,8 +108,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 140, md: 145 },
-              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+              width: { xs: '100%', md: 140 },
             }}
             options={domainOptions}
             value={selectedDomain}
@@ -123,76 +128,83 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             showSearchButton={true}
             inputRef={searchRef}
             sx={{ 
-              minWidth: { xs: '100%', sm: 200, md: 260 },
-              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+              width: { xs: '100%', md: 280, lg: 360 },
             }}
           />
 
+          {/* Action Buttons */}
           <Button 
             variant="contained" 
             size="small"
             onClick={() => setSearchToolOpen(true)}
-            sx={{ 
-              minWidth: 80,
-              px: 1.5,
-              whiteSpace: 'nowrap',
-              flex: { xs: '1 1 auto', sm: '0 0 auto' },
-            }}
+            sx={{ whiteSpace: 'nowrap' }}
           >
             Search Tool
           </Button>
+
           <Button 
             variant="outlined" 
             size="small"
             onClick={handleClear}
             disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
-            sx={{ 
-              minWidth: 70,
-              px: 1.5,
-              whiteSpace: 'nowrap',
-              flex: { xs: '1 1 auto', sm: '0 0 auto' },
-            }}
+            sx={{ whiteSpace: 'nowrap' }}
           >
             Clear
           </Button>
-          <Tooltip title="Legend Key Menu">
-            <IconButton 
-              size="small"
-              onClick={() => setLegendOpen(true)}
-              sx={{ 
-                border: 1, 
-                borderColor: 'divider',
-                '&:hover': {
-                  borderColor: 'primary.main',
-                  bgcolor: 'action.hover',
-                }
-              }}
-            >
-              <VpnKeyIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
 
-          {/* Docked Panel Icons */}
-          {dockedPanels.length > 0 && dockedPanels.map((panel) => (
-            <Tooltip key={panel.id} title={panel.title}>
-              <IconButton
+          {/* Right side: Legend and Docked Panels - pushed to far right */}
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ 
+              ml: 'auto',
+              mr: { xs: 0, md: -1.5 },
+              pr: { xs: 0, md: 1.5 },
+              flexShrink: 0,
+              display: { xs: 'none', md: 'flex' }
+            }}
+          >
+            <Tooltip title="Legend Key Menu">
+              <IconButton 
                 size="small"
-                onClick={() => handleUndockPanel(panel.id)}
-                sx={{
-                  border: 1,
+                onClick={() => setLegendOpen(true)}
+                sx={{ 
+                  border: 1, 
                   borderColor: 'divider',
-                  color: 'text.secondary',
                   '&:hover': {
-                    borderColor: 'error.main',
-                    color: 'error.main',
+                    borderColor: 'primary.main',
                     bgcolor: 'action.hover',
                   }
                 }}
               >
-                {panel.icon}
+                <VpnKeyIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-          ))}
+
+            <Divider orientation="vertical" flexItem sx={{ my: 0.5 }} />
+
+            {/* Docked Panel Icons */}
+            {dockedPanels.map((panel) => (
+              <Tooltip key={panel.id} title={panel.title}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleUndockPanel(panel.id)}
+                  sx={{
+                    border: 1,
+                    borderColor: 'divider',
+                    color: 'text.secondary',
+                    '&:hover': {
+                      borderColor: 'error.main',
+                      color: 'error.main',
+                      bgcolor: 'action.hover',
+                    }
+                  }}
+                >
+                  {panel.icon}
+                </IconButton>
+              </Tooltip>
+            ))}
+          </Stack>
         </Stack>
       </Box>
 
@@ -200,15 +212,22 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
       <MUI4Panel
         dockedPanels={dockedPanels}
         onDockedPanelsChange={onDockedPanelsChange}
-        selectedDivision={selectedDivision}
-        selectedDomain={selectedDomain}
+        selectedDivision={searchFilters?.division || null}
+        selectedDomain={searchFilters?.domain || null}
         searchTerm={activeSearchTerm}
         searchFilters={searchFilters}
         clearSorting={clearTrigger}
         openTaskDialog={openTaskDialog}
       />
       
-      <AppSearchTool open={searchToolOpen} onClose={() => setSearchToolOpen(false)} onSearch={setSearchFilters} clearTrigger={clearTrigger} />
+      <AppSearchTool 
+        open={searchToolOpen} 
+        onClose={() => setSearchToolOpen(false)} 
+        onSearch={handleSearchToolResults} 
+        clearTrigger={clearTrigger}
+        selectedDivision={selectedDivision}
+        selectedDomain={selectedDomain}
+      />
       <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
         <DialogContent>

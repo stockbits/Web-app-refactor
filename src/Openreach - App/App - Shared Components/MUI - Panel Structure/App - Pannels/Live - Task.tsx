@@ -6,7 +6,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
-import type { GridColDef, GridCellParams } from '@mui/x-data-grid';
+import type { GridColDef, GridCellParams, GridSortModel } from '@mui/x-data-grid';
 import { TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
@@ -188,14 +188,14 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const apiRef = useGridApiRef();
 
   // Track sort model state to control DataGrid sorting
-  const [sortModel, setSortModel] = useState<any[]>([]);
+  const [sortModel, setSortModel] = useState<GridSortModel>([]);
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
     const baseTasks = filteredTasks || [];
     
     // Apply manual sorting if sortModel exists
-    let sortedTasks = [...baseTasks];
+    const sortedTasks = [...baseTasks];
     if (sortModel && sortModel.length > 0) {
       const { field, sort } = sortModel[0];
       sortedTasks.sort((a, b) => {
@@ -252,7 +252,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   }, [toggleTaskSelection, rangeSelectTasks, filteredRows, contextMenu])
 
   // Handle sort requests - clear selection when user sorts
-  const handleSortModelChange = useCallback((newModel: any) => {
+  const handleSortModelChange = useCallback((newModel: GridSortModel) => {
     setSortModel(newModel);
     clearSelectionOnSort();
   }, [clearSelectionOnSort]);
