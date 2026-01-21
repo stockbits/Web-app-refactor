@@ -113,30 +113,26 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             )}
           />
 
-          {/* Global Search with integrated action buttons */}
+          {/* Global Search */}
+          <GlobalSearchField
+            value={searchInput}
+            onChange={setSearchInput}
+            onSearch={handleSearch}
+            placeholder="Global search..."
+            localStorageKey="scheduleLiveSearchHistory"
+            showSearchButton={true}
+            inputRef={searchRef}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 200, md: 260 },
+              flex: { xs: '1 1 100%', sm: '0 0 auto' },
+            }}
+          />
+
           <Stack 
             direction="row" 
             spacing={0.75}
             alignItems="center"
-            sx={{ 
-              flex: { xs: '1 1 100%', sm: '1 1 auto' },
-              minWidth: { xs: '100%', sm: 200 },
-              maxWidth: { md: 420 },
-            }}
           >
-            <GlobalSearchField
-              value={searchInput}
-              onChange={setSearchInput}
-              onSearch={handleSearch}
-              placeholder="Global search..."
-              localStorageKey="scheduleLiveSearchHistory"
-              showSearchButton={true}
-              inputRef={searchRef}
-              sx={{ 
-                flex: 1,
-                maxWidth: 400,
-              }}
-            />
             <Button 
               variant="contained" 
               size="small"

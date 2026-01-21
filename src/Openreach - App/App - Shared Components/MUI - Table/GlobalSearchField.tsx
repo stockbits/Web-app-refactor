@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Autocomplete, TextField, InputAdornment, IconButton, Tooltip } from '@mui/material'
+import { Autocomplete, TextField, InputAdornment, IconButton, Tooltip, Stack } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import type { SxProps, Theme } from '@mui/material/styles'
 
@@ -75,7 +75,7 @@ const GlobalSearchField = ({
     }
   }, [handleSearch])
 
-  return (
+  const searchField = (
     <Autocomplete
       freeSolo
       options={searchHistory}
@@ -95,31 +95,43 @@ const GlobalSearchField = ({
                 <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
               </InputAdornment>
             ) : params.InputProps.startAdornment,
-            endAdornment: showSearchButton ? (
-              <>
-                <InputAdornment position="end">
-                  <Tooltip title="Search" arrow>
-                    <span>
-                      <IconButton
-                        size="small"
-                        onClick={handleSearch}
-                        disabled={!value.trim()}
-                        edge="end"
-                        sx={{ mr: 2.5 }}
-                      >
-                        <SearchRoundedIcon fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </InputAdornment>
-                {params.InputProps.endAdornment}
-              </>
-            ) : params.InputProps.endAdornment,
           }}
         />
       )}
       sx={sx}
     />
+  )
+
+  const searchButton = showSearchButton ? (
+    <Tooltip title="Search" arrow>
+      <span>
+        <IconButton
+          size="small"
+          onClick={handleSearch}
+          disabled={!value.trim()}
+          sx={{ 
+            border: 1, 
+            borderColor: 'divider',
+            borderRadius: 1,
+            '&:hover': {
+              borderColor: 'primary.main',
+              bgcolor: 'action.hover',
+            },
+          }}
+        >
+          <SearchRoundedIcon fontSize="small" />
+        </IconButton>
+      </span>
+    </Tooltip>
+  ) : null
+
+  return showSearchButton ? (
+    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ width: '100%' }}>
+      {searchField}
+      {searchButton}
+    </Stack>
+  ) : (
+    searchField
   )
 }
 
