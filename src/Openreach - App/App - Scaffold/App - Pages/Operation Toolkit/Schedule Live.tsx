@@ -132,7 +132,10 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               localStorageKey="scheduleLiveSearchHistory"
               showSearchButton={true}
               inputRef={searchRef}
-              sx={{ flex: 1 }}
+              sx={{ 
+                flex: 1,
+                maxWidth: 400,
+              }}
             />
             <Button 
               variant="contained" 

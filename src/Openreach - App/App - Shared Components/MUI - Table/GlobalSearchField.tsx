@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Autocomplete, TextField, InputAdornment, IconButton } from '@mui/material'
+import { Autocomplete, TextField, InputAdornment, IconButton, Tooltip } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import type { SxProps, Theme } from '@mui/material/styles'
 
@@ -98,15 +98,24 @@ const GlobalSearchField = ({
             endAdornment: showSearchButton ? (
               <>
                 <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={handleSearch}
-                    disabled={!value.trim()}
-                    edge="end"
-                    sx={{ mr: 4.0 }}
-                  >
-                    <SearchRoundedIcon fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Search" arrow>
+                    <span>
+                      <IconButton
+                        size="small"
+                        onClick={handleSearch}
+                        disabled={!value.trim()}
+                        edge="end"
+                        sx={{ 
+                          mr: 0.5,
+                          '&:hover': {
+                            bgcolor: 'transparent',
+                          },
+                        }}
+                      >
+                        <SearchRoundedIcon fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                 </InputAdornment>
                 {params.InputProps.endAdornment}
               </>
