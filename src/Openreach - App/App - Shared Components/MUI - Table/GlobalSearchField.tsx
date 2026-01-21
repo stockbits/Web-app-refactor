@@ -105,12 +105,7 @@ const GlobalSearchField = ({
                         onClick={handleSearch}
                         disabled={!value.trim()}
                         edge="end"
-                        sx={{ 
-                          mr: 0.5,
-                          '&:hover': {
-                            bgcolor: 'transparent',
-                          },
-                        }}
+                        sx={{ mr: 2.5 }}
                       >
                         <SearchRoundedIcon fontSize="small" />
                       </IconButton>
