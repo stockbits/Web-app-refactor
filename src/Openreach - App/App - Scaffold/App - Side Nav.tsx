@@ -242,12 +242,12 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
 
   const noMatches = showTreeResults && filteredGroups.length === 0
 
-  const handleGroupSelect = useCallback((group: TaskForceMenuGroup) => {
+  const handleChildSelect = useCallback((child: TaskForceMenuChild, group: TaskForceMenuGroup) => {
     onSelect?.({
-      id: group.id,
-      label: group.label,
+      id: child.id,
+      label: child.label,
       icon: group.icon,
-      description: `${group.children.length} tools`,
+      description: child.description,
     })
     onClose()
   }, [onSelect, onClose])
@@ -561,7 +561,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                         {group.children.map((child) => (
                           <ListItemButton
                             key={child.id}
-                            onClick={() => handleGroupSelect(group)}
+                            onClick={() => handleChildSelect(child, group)}
                             sx={{
                               borderRadius: 1.5,
                               mb: 0.75,

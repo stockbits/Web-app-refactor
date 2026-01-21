@@ -7,9 +7,9 @@ import {
   Card,
   CardActionArea,
   Chip,
-  CircularProgress,
   IconButton,
   Popover,
+  Skeleton,
   Stack,
   Tooltip,
   Typography,
@@ -516,12 +516,38 @@ function App() {
   );
 
   const handleNavSelection = useCallback((itemId: string) => {
-    setSelectedMenuId(itemId);
-    setShowWelcome(false);
-    const nextGroup = MENU_GROUPS.find((group) => group.id === itemId);
-    setActivePage((current) =>
-      current && current.menuLabel === nextGroup?.label ? current : null
-    );
+    // First, try to find if this is a direct group/menu ID
+    const directGroup = MENU_GROUPS.find((group) => group.id === itemId);
+    
+    if (directGroup) {
+      // It's a top-level menu group
+      setSelectedMenuId(itemId);
+      setShowWelcome(false);
+      setActivePage((current) =>
+        current && current.menuLabel === directGroup.label ? current : null
+      );
+    } else {
+      // It might be a child card/tool - search for it in all groups
+      for (const group of MENU_GROUPS) {
+        const matchingCard = group.cards.find(
+          (card) => card.name.toLowerCase().replace(/\s+/g, '-') === itemId
+        );
+        if (matchingCard) {
+          // Found the tool - set both the parent menu and the active page
+          setSelectedMenuId(group.id);
+          setActivePage({
+            menuLabel: group.label,
+            cardName: matchingCard.name,
+          });
+          setShowWelcome(false);
+          return;
+        }
+      }
+      // If not found anywhere, treat as a group ID (fallback)
+      setSelectedMenuId(itemId);
+      setShowWelcome(false);
+      setActivePage(null);
+    }
   }, []);
 
   return (
@@ -852,11 +878,21 @@ function App() {
                   return (
                     <Suspense
                       fallback={
-                        <Stack alignItems="center" py={6} spacing={2}>
-                          <CircularProgress size={28} thickness={4} />
-                          <Typography color="text.secondary" fontWeight={500}>
-                            Loading...
-                          </Typography>
+                        <Stack spacing={2} sx={{ p: 3 }}>
+                          {/* Page header skeleton */}
+                          <Stack direction="row" spacing={2} alignItems="center">
+                            <Skeleton variant="rectangular" width={120} height={40} sx={{ borderRadius: 1 }} />
+                            <Skeleton variant="rectangular" width={120} height={40} sx={{ borderRadius: 1 }} />
+                            <Box sx={{ flex: 1 }} />
+                            <Skeleton variant="circular" width={40} height={40} />
+                          </Stack>
+                          
+                          {/* Content area skeleton */}
+                          <Skeleton variant="rectangular" width="100%" height={60} sx={{ borderRadius: 1 }} />
+                          
+                          <Stack spacing={1.5}>
+                            <Skeleton variant="rectangular" width="100%" height={400} sx={{ borderRadius: 1 }} />
+                          </Stack>
                         </Stack>
                       }
                     >

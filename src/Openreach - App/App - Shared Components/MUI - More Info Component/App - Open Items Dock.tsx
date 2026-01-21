@@ -25,6 +25,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 import { MultiTaskDialog } from './App - Multi Task Dialog'
 
@@ -75,13 +76,14 @@ export const OpenItemsDock = ({
   // Memoize combined items list
   const allItems = useMemo(
     () => [
-      ...items,
+      ...items.map(item => ({ ...item, source: 'dock' as const })),
       ...minimizedTasks.map(({ id, task }) => ({
         id,
         title: task.taskId,
         type: 'task' as const,
         subtitle: task.status,
         task,
+        source: 'minimized' as const,
       })),
     ],
     [items, minimizedTasks]
@@ -133,11 +135,14 @@ export const OpenItemsDock = ({
   const handleItemRemove = useCallback(
     (item: typeof allItems[0], event: React.MouseEvent) => {
       event.stopPropagation()
-      if ('task' in item && item.task && onMinimizedTaskRemove) {
+      event.preventDefault()
+      if (item.source === 'minimized' && onMinimizedTaskRemove) {
         onMinimizedTaskRemove(item.id)
       } else if (onDelete) {
         onDelete(item.id)
       }
+      // Also remove from selection if it was selected
+      setSelectedIds((prev) => prev.filter((id) => id !== item.id))
     },
     [onDelete, onMinimizedTaskRemove]
   )
@@ -405,42 +410,44 @@ export const OpenItemsDock = ({
                 <Box key={item.id}>
                   <ListItem
                     disablePadding
-                    secondaryAction={
-                      <IconButton
-                        edge="end"
-                        onClick={(e) => handleItemRemove(item, e)}
-                        sx={{
-                          color: 'text.secondary',
-                          '&:hover': {
-                            color: 'error.main',
-                            bgcolor: alpha(theme.palette.error.main, 0.1),
-                          },
-                        }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    }
+                    sx={{
+                      '&:hover .action-icons': {
+                        opacity: 1,
+                      },
+                    }}
                   >
                     <ListItemButton
-                      onClick={() => handleItemClick(item)}
                       selected={selectedIds.includes(item.id)}
                       sx={{
                         py: 1.25,
                         px: 2,
+                        pr: 1,
+                        cursor: 'default',
                         '&:hover': {
                           bgcolor: alpha(theme.palette.primary.main, 0.04),
                         },
                       }}
                     >
-                      <Checkbox
-                        edge="start"
-                        checked={selectedIds.includes(item.id)}
-                        disabled={!selectedIds.includes(item.id) && selectedIds.length >= MAX_SELECTION}
-                        onClick={(event) => handleCheckboxToggle(item.id, event, MAX_SELECTION)}
-                        tabIndex={-1}
-                        disableRipple
-                        sx={{ mr: 1, p: 0 }}
-                      />
+                      {/* Order number badge */}
+                      <Box
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: '50%',
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          color: 'primary.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          mr: 1.5,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {index + 1}
+                      </Box>
+                      
                       <ListItemIcon sx={{ minWidth: 36 }}>
                         {getItemIcon(item.type)}
                       </ListItemIcon>
@@ -457,8 +464,80 @@ export const OpenItemsDock = ({
                             </Typography>
                           )
                         }
-                        sx={{ my: 0 }}
+                        sx={{ my: 0, flex: 1, pr: 1 }}
                       />
+                      
+                      {/* Action icons group */}
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        alignItems="center"
+                        className="action-icons"
+                        sx={{
+                          ml: 'auto',
+                          flexShrink: 0,
+                          transition: 'opacity 0.2s',
+                          opacity: selectedIds.includes(item.id) ? 1 : 0.7,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Multi-select checkbox */}
+                        <Tooltip title={selectedIds.includes(item.id) ? 'Deselect' : 'Select to compare'} placement="top">
+                          <Checkbox
+                            checked={selectedIds.includes(item.id)}
+                            disabled={!selectedIds.includes(item.id) && selectedIds.length >= MAX_SELECTION}
+                            onClick={(event) => handleCheckboxToggle(item.id, event, MAX_SELECTION)}
+                            tabIndex={-1}
+                            size="small"
+                            sx={{ 
+                              p: 0.5,
+                              color: 'text.secondary',
+                              '&.Mui-checked': {
+                                color: 'primary.main',
+                              },
+                            }}
+                          />
+                        </Tooltip>
+
+                        {/* Single open icon */}
+                        <Tooltip title="Open item" placement="top">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleItemClick(item)
+                            }}
+                            sx={{
+                              color: 'text.secondary',
+                              p: 0.5,
+                              '&:hover': {
+                                color: 'primary.main',
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              },
+                            }}
+                          >
+                            <OpenInNewIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+
+                        {/* Close/Remove icon */}
+                        <Tooltip title="Remove item" placement="top">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleItemRemove(item, e)}
+                            sx={{
+                              color: 'text.secondary',
+                              p: 0.5,
+                              '&:hover': {
+                                color: 'error.main',
+                                bgcolor: alpha(theme.palette.error.main, 0.1),
+                              },
+                            }}
+                          >
+                            <CloseIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
                     </ListItemButton>
                   </ListItem>
                   {index < filteredItems.length - 1 && <Divider />}
