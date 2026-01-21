@@ -70,6 +70,8 @@ export const OpenItemsDock = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [multiTaskDialogOpen, setMultiTaskDialogOpen] = useState(false)
 
+  const MAX_SELECTION = 3
+
   // Memoize combined items list
   const allItems = useMemo(
     () => [
@@ -117,10 +119,20 @@ export const OpenItemsDock = ({
     [onClick, onMinimizedTaskClick]
   )
 
-  const handleCheckboxToggle = useCallback((itemId: string, event: React.MouseEvent) => {
-    event.stopPropagation()
-    setSelectedIds((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
-  }, [])
+  const handleCheckboxToggle = useCallback(
+    (itemId: string, event: React.MouseEvent, maxSelection: number) => {
+      event.stopPropagation()
+      setSelectedIds((prev) => {
+        if (prev.includes(itemId)) {
+          return prev.filter((id) => id !== itemId)
+        } else if (prev.length < maxSelection) {
+          return [...prev, itemId]
+        }
+        return prev
+      })
+    },
+    []
+  )
 
   const handleItemRemove = useCallback(
     (item: typeof allItems[0], event: React.MouseEvent) => {
@@ -430,7 +442,8 @@ export const OpenItemsDock = ({
                       <Checkbox
                         edge="start"
                         checked={selectedIds.includes(item.id)}
-                        onClick={(event) => handleCheckboxToggle(item.id, event)}
+                        disabled={!selectedIds.includes(item.id) && selectedIds.length >= MAX_SELECTION}
+                        onClick={(event) => handleCheckboxToggle(item.id, event, MAX_SELECTION)}
                         tabIndex={-1}
                         disableRipple
                         size="small"
@@ -472,9 +485,11 @@ export const OpenItemsDock = ({
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>
-              {selectedIds.length > 0 
-                ? `${selectedIds.length} selected • Select 2+ to compare`
-                : 'Click item to open • Check boxes to compare multiple'}
+              {selectedIds.length > 0
+                ? selectedIds.length >= MAX_SELECTION
+                  ? `Max ${MAX_SELECTION} selected • Select 2+ to compare`
+                  : `${selectedIds.length} selected • Select up to ${MAX_SELECTION} to compare`
+                : `Click item to open • Check up to ${MAX_SELECTION} to compare`}
             </Typography>
           </Box>
         </Box>
