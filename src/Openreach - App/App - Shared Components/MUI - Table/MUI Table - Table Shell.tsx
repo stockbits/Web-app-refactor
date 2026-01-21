@@ -25,6 +25,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   enablePagination?: boolean
   enableQuickFilter?: boolean
   disableSorting?: boolean
+  sortModel?: any[]
   pageSizeOptions?: number[]
   initialPageSize?: number
   emptyState?: ReactNode
@@ -32,6 +33,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   apiRef?: ReturnType<typeof useGridApiRef>
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
+  onSortModelChange?: (model: any) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
   sx?: SxProps<Theme>
   contextMenuItems?: Array<{
@@ -63,6 +65,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   enablePagination = true,
   enableQuickFilter = false,
   disableSorting = false,
+  sortModel,
   pageSizeOptions,
   initialPageSize = 16,
   emptyState,
@@ -70,6 +73,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   apiRef: externalApiRef,
   onCellClick,
   onCellDoubleClick,
+  onSortModelChange,
   getRowClassName,
   sx,
   contextMenuItems,
@@ -187,22 +191,6 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
                 : 'rgba(25, 118, 210, 0.12)',
             },
           },
-          '& .last-interacted-row': {
-            borderLeft: `3px solid ${theme.palette.primary.main}`,
-            borderRight: `3px solid ${theme.palette.primary.main}`,
-          },
-          '& .selected-row.last-interacted-row': {
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(144, 202, 249, 0.16)' 
-              : 'rgba(25, 118, 210, 0.10)',
-            borderLeft: `3px solid ${theme.palette.primary.main}`,
-            borderRight: `3px solid ${theme.palette.primary.main}`,
-            '&:hover': {
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? 'rgba(144, 202, 249, 0.22)' 
-                : 'rgba(25, 118, 210, 0.14)',
-            },
-          },
           '& .MuiDataGrid-row.Mui-selected': {
             backgroundColor: theme.palette.mode === 'dark' 
               ? 'rgba(144, 202, 249, 0.12) !important' 
@@ -232,6 +220,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         loading={loading}
         hideFooter={hideFooter || !enablePagination}
         autoHeight={false}
+        {...(sortModel !== undefined && {
+          sortingMode: 'server' as const,
+          sortModel,
+        })}
         {...(enablePagination && {
           pagination: true as const,
           pageSizeOptions: resolvedPageSizeOptions,
@@ -241,6 +233,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         disableRowSelectionOnClick={true}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
+        onSortModelChange={onSortModelChange}
         aria-label="Interactive data table"
         slots={{
           toolbar: ToolbarComponent,

@@ -1,0 +1,352 @@
+# MUI Table Selection Logic Documentation
+
+## Overview
+This system provides flexible row selection for MUI DataGrid tables with support for:
+- Single-click selection
+- Multi-select (Ctrl/Cmd + click)
+- Range selection (Shift + click)
+- Map-to-table coordination (selected map tasks appear at top of table)
+
+---
+
+## Architecture
+
+### Core Components
+
+#### 1. **Selection Context** (`Selection - UI.tsx`)
+**Location:** `src/Openreach - App/App - Shared Components/Selection - UI.tsx`
+
+**Purpose:** Centralized state management for task selection across the application
+
+**Custom Logic:**
+- `SelectionUIProvider` - React Context provider that manages selection state
+- `selectedTaskIds` - Array of selected task IDs
+- `selectionSource` - Tracks whether selection came from 'map' or 'table'
+- `getPrioritizedTasks()` - Custom function that moves map-selected tasks to top of list
+
+**MUI Components Used:**
+- None (pure React Context)
+
+**Key Functions:**
+```typescript
+toggleTaskSelection(taskId, multiSelect, source)
+  - Single/multi select toggle
+  - multiSelect: true for Ctrl+click, false for single click
+  
+rangeSelectTasks(taskId, allTaskIds, additive, source)
+  - Range selection for Shift+click
+  - additive: true for Ctrl+Shift, false for Shift only
+  
+clearSelectionOnSort()
+  - Clears selection when user requests a new sort
+  
+getPrioritizedTasks(allTasks)
+  - Returns tasks with selected ones at top (only when source='map')
+```
+
+---
+
+#### 2. **Table Selection Hook** (`useTaskTableSelection`)
+**Location:** `src/Openreach - App/App - Shared Components/Selection - UI.tsx`
+
+**Purpose:** Provides table-specific selection utilities
+
+**Exports:**
+- `getPrioritizedTasks` - Reorder function for map selections
+- `selectedTaskIds` - Currently selected task IDs
+- `isTaskSelected` - Check if task is selected (O(1) lookup)
+- `toggleTaskSelection` - Single/multi select
+- `rangeSelectTasks` - Shift-click range select
+- `clearSelectionOnSort` - Clear on sort request
+
+---
+
+#### 3. **Map Selection Hook** (`useMapSelection`)
+**Location:** `src/Openreach - App/App - Shared Components/Selection - UI.tsx`
+
+**Purpose:** Simplified interface for map components
+
+**Exports:**
+- `selectTaskFromMap(taskId, multiSelect)` - Automatically sets source='map'
+- `selectMultipleTasksFromMap(taskIds)` - Bulk selection from map
+
+---
+
+## Implementation Examples
+
+### Example 1: Task Management Table (Table-Only Selection)
+**Location:** `src/Openreach - App/App - Scaffold/App - Pages/Operations Management/Task Management.tsx`
+
+**Features:**
+- ✅ Single-click selection
+- ✅ Ctrl+click multi-select
+- ✅ Shift+click range selection
+- ❌ No map integration
+- ❌ No task prioritization
+
+**Custom Logic:**
+```typescript
+// Get selection hooks (no getPrioritizedTasks needed)
+const { selectedTaskIds, toggleTaskSelection, rangeSelectTasks } = useTaskTableSelection()
+
+// Row click handler
+const handleRowClick = useCallback((params, event) => {
+  const isCtrlPressed = event.ctrlKey || event.metaKey
+  const isShiftPressed = event.shiftKey
+  
+  if (isShiftPressed) {
+    event.preventDefault() // Prevent text selection
+    // Get sorted row order from DataGrid API
+    const sortedRowIds = apiRef.current?.getSortedRowIds?.() || filteredRows.map(row => row.taskId)
+    const visibleRowIds = sortedRowIds.map(id => 
+      apiRef.current?.getRow(id)?.taskId
+    ).filter(Boolean)
+    rangeSelectTasks(params.row.taskId, visibleRowIds, isCtrlPressed, 'table')
+  } else {
+    toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table')
+  }
+}, [toggleTaskSelection, rangeSelectTasks, filteredRows, apiRef])
+
+// Row styling
+const getRowClassName = useCallback((params) => {
+  return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : ''
+}, [selectedTaskIds])
+```
+
+**MUI Components Used:**
+- `DataGrid` from `@mui/x-data-grid`
+- `useGridApiRef` - Access to DataGrid API for `getSortedRowIds()`
+
+**CSS Styling:**
+```css
+.selected-row {
+  background-color: rgba(144, 202, 249, 0.12) /* Blue highlight */
+}
+```
+
+---
+
+### Example 2: Live Task Panel (Map + Table Selection)
+**Location:** `src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - Task.tsx`
+
+**Features:**
+- ✅ Single-click table selection
+- ✅ Ctrl+click multi-select
+- ✅ Shift+click range selection
+- ✅ Map integration - selected tasks jump to top
+- ✅ Manual sorting with prioritization
+
+**Custom Logic:**
+```typescript
+// Get full selection hooks including prioritization
+const { 
+  getPrioritizedTasks, 
+  toggleTaskSelection, 
+  rangeSelectTasks,
+  selectedTaskIds,
+  clearSelectionOnSort
+} = useTaskTableSelection()
+
+// Track sort model to apply manual sorting
+const [sortModel, setSortModel] = useState([])
+
+// Apply manual sorting + prioritization
+const filteredRows = useMemo(() => {
+  const baseTasks = filteredTasks || []
+  
+  // Step 1: Apply manual sorting if sort is active
+  let sortedTasks = [...baseTasks]
+  if (sortModel?.length > 0) {
+    const { field, sort } = sortModel[0]
+    sortedTasks.sort((a, b) => {
+      const aVal = a[field]
+      const bVal = b[field]
+      
+      if (aVal == null && bVal == null) return 0
+      if (aVal == null) return 1
+      if (bVal == null) return -1
+      
+      const comparison = aVal < bVal ? -1 : 1
+      return sort === 'asc' ? comparison : -comparison
+    })
+  }
+  
+  // Step 2: Prepend map-selected tasks to top
+  return getPrioritizedTasks(sortedTasks)
+}, [filteredTasks, sortModel, getPrioritizedTasks])
+
+// Handle sort change
+const handleSortModelChange = useCallback((newModel) => {
+  setSortModel(newModel)
+  clearSelectionOnSort() // Clear map selections when user sorts
+}, [clearSelectionOnSort])
+```
+
+**MUI Components Used:**
+- `DataGrid` with `sortingMode="server"` (when sortModel is provided)
+- `useGridApiRef`
+
+**Key Difference from Task Management:**
+- Uses `getPrioritizedTasks()` to move selected tasks to top
+- Manual sorting applied before prioritization
+- `sortingMode="server"` tells DataGrid to not re-sort our pre-sorted rows
+
+---
+
+### Example 3: Map Component (Selection Source)
+**Location:** `src/Openreach - App/App - Shared Components/MUI - Panel Structure/App - Pannels/Live - Map.tsx`
+
+**Features:**
+- ✅ Click map icon to select task
+- ✅ Ctrl+click for multi-select
+- ✅ Visual highlight on selected map icons
+
+**Custom Logic:**
+```typescript
+// Use simplified map selection hook
+const { selectTaskFromMap } = useMapSelection()
+const { selectedTaskIds } = useSelectionUI()
+
+// Create Set for O(1) lookups
+const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds])
+
+// Map icon click handler
+const handleIconClick = (event, task) => {
+  const isCtrlPressed = event.ctrlKey || event.metaKey
+  selectTaskFromMap(task.taskId, isCtrlPressed)
+}
+
+// Check if icon should be highlighted
+const isSelected = selectedSet.has(task.taskId)
+```
+
+**MUI Components Used:**
+- Custom map icons (not MUI)
+
+---
+
+## Styling System
+
+### CSS Classes (from `MUI Table - Table Shell.tsx`)
+**Location:** `src/Openreach - App/App - Shared Components/MUI - Table/MUI Table - Table Shell.tsx`
+
+**Custom Styles:**
+```typescript
+'& .selected-row': {
+  backgroundColor: theme.palette.mode === 'dark' 
+    ? 'rgba(144, 202, 249, 0.12)'  // Dark mode blue
+    : 'rgba(25, 118, 210, 0.08)',   // Light mode blue
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'dark' 
+      ? 'rgba(144, 202, 249, 0.18)' 
+      : 'rgba(25, 118, 210, 0.12)',
+  },
+}
+```
+
+**MUI Built-in Styles:**
+- `.MuiDataGrid-row.Mui-selected` - MUI's default selected row style (overridden)
+- `.MuiDataGrid-cell:focus` - Cell focus outline
+- `.MuiDataGrid-columnHeader:focus` - Header focus outline
+
+---
+
+## Key Behaviors
+
+### 1. Single Click
+- **What happens:** Selects single task, deselects others
+- **Source:** `toggleTaskSelection(taskId, false)`
+
+### 2. Ctrl/Cmd + Click
+- **What happens:** Toggles task in/out of selection (keeps others selected)
+- **Source:** `toggleTaskSelection(taskId, true)`
+
+### 3. Shift + Click
+- **What happens:** Selects all tasks between last clicked and current
+- **Source:** `rangeSelectTasks(taskId, visibleRowIds, false)`
+- **Custom Logic:** Uses `apiRef.current.getSortedRowIds()` to respect current sort order
+
+### 4. Ctrl + Shift + Click
+- **What happens:** Adds range to existing selection (union)
+- **Source:** `rangeSelectTasks(taskId, visibleRowIds, true)`
+
+### 5. Map Icon Click
+- **What happens:** Selects task, jumps to top of table
+- **Source:** `selectTaskFromMap(taskId)` → sets `selectionSource='map'`
+- **Custom Logic:** `getPrioritizedTasks()` moves selected tasks to position 0
+
+### 6. User Sorts Column
+- **What happens:** Clears map selection, applies new sort
+- **Source:** `clearSelectionOnSort()` called in `onSortModelChange`
+
+---
+
+## Performance Optimizations
+
+### Custom Optimizations:
+1. **Set-based lookups:** `selectedTaskIdsSet` for O(1) `isTaskSelected()` checks
+2. **Memoized callbacks:** All handlers use `useCallback` to prevent re-renders
+3. **Memoized derived state:** `getPrioritizedTasks` uses `useMemo`
+4. **Stable references:** Context value memoized to prevent consumer re-renders
+
+### MUI DataGrid Optimizations:
+1. **`getRowId`:** Custom row ID function prevents full re-renders
+2. **`getRowClassName`:** Memoized to reduce style recalculations
+3. **`apiRef`:** Direct API access avoids prop drilling
+
+---
+
+## Data Flow
+
+```
+Map Icon Click
+    ↓
+selectTaskFromMap(taskId, multiSelect)
+    ↓
+Sets: selectionSource = 'map', selectedTaskIds = [taskId]
+    ↓
+Live Task table re-renders
+    ↓
+filteredRows = getPrioritizedTasks(sortedTasks)
+    ↓
+Selected tasks moved to top, displayed with .selected-row class
+    ↓
+User sees task at top with blue highlight ✅
+```
+
+```
+Table Row Click (Shift)
+    ↓
+rangeSelectTasks(taskId, visibleRowIds, false, 'table')
+    ↓
+Sets: selectionSource = 'table', selectedTaskIds = [id1, id2, id3...]
+    ↓
+Table re-renders with multiple .selected-row classes
+    ↓
+User sees all selected rows highlighted ✅
+```
+
+---
+
+## Summary: Custom vs MUI
+
+### Custom Code:
+- ✅ Selection state management (Context)
+- ✅ Range selection logic
+- ✅ Map-to-table prioritization
+- ✅ Selection source tracking
+- ✅ Manual sorting before prioritization
+- ✅ Blue highlight styling
+
+### From MUI:
+- ✅ DataGrid component
+- ✅ `useGridApiRef` hook
+- ✅ `getSortedRowIds()` API
+- ✅ `onCellClick` event handler
+- ✅ `getRowClassName` prop
+- ✅ Theme system for colors
+
+### Hybrid (Custom + MUI):
+- ✅ Sort model control (`sortingMode="server"` + custom sorting)
+- ✅ Row click handlers (MUI events + custom logic)
+- ✅ Visual styling (MUI theme + custom classes)

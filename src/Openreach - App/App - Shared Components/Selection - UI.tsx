@@ -10,12 +10,13 @@
  * - Selected tasks appear at top of task tables regardless of current sort
  * - Visual highlighting of selected tasks on map and in tables
  * - Centralized state management with React Context
+ * - Sort clears selection; map re-selection re-activates prioritization
  *
  * Usage:
  * 1. Wrap your app/page with SelectionUIProvider
  * 2. Use useMapSelection in map components
  * 3. Use useTaskTableSelection in task table components
- * 4. Selected tasks will automatically sync between components
+ * 4. Call clearSelectionOnSort in table's onSortModelChange
  */
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
@@ -24,14 +25,15 @@ import type { TaskTableRow } from '../App - Data Tables/Task - Table';
 interface SelectionUIContextType {
   selectedTaskIds: string[];
   lastInteractedTaskId: string | null;
+  selectionSource: 'map' | 'table' | null;
   isTaskSelected: (taskId: string) => boolean;
   isLastInteracted: (taskId: string) => boolean;
   toggleTaskSelection: (taskId: string, multiSelect?: boolean, source?: 'map' | 'table') => void;
-  rangeSelectTasks: (taskId: string, allTaskIds: string[], source?: 'map' | 'table') => void;
+  rangeSelectTasks: (taskId: string, allTaskIds: string[], additive?: boolean, source?: 'map' | 'table') => void;
   clearSelection: () => void;
+  clearSelectionOnSort: () => void;
   selectTasks: (taskIds: string[], source?: 'map' | 'table') => void;
   getPrioritizedTasks: (allTasks: TaskTableRow[]) => TaskTableRow[];
-  selectionSource: 'map' | 'table' | null;
 }
 
 const SelectionUIContext = createContext<SelectionUIContextType | undefined>(undefined);
@@ -46,78 +48,48 @@ export const useSelectionUI = () => {
 
 interface SelectionUIProviderProps {
   children: React.ReactNode;
-  // Removed allTasks - no longer needed since we removed selectedTasks computation
 }
 
-export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
-  children
-}) => {
+export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ children }) => {
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [lastInteractedTaskId, setLastInteractedTaskId] = useState<string | null>(null);
   const [selectionSource, setSelectionSource] = useState<'map' | 'table' | null>(null);
 
-  // Use Set for O(1) lookups instead of O(n) includes()
+  // Use Set for O(1) lookups
   const selectedTaskIdsSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
-  // Remove expensive selectedTasks computation from context - compute only when needed
-  // const selectedTasks = useMemo(() => {
-  //   return allTasks.filter(task => selectedTaskIdsSet.has(task.taskId));
-  // }, [allTasks, selectedTaskIdsSet]);
-
   // Check if a task is selected - O(1) lookup
-  const isTaskSelected = useCallback((taskId: string) => {
-    return selectedTaskIdsSet.has(taskId);
-  }, [selectedTaskIdsSet]);
+  const isTaskSelected = useCallback((taskId: string) => selectedTaskIdsSet.has(taskId), [selectedTaskIdsSet]);
 
-  // Check if task is the last interacted - for visual feedback
-  const isLastInteracted = useCallback((taskId: string) => {
-    return taskId === lastInteractedTaskId;
-  }, [lastInteractedTaskId]);
+  // Check if task is the last interacted
+  const isLastInteracted = useCallback((taskId: string) => taskId === lastInteractedTaskId, [lastInteractedTaskId]);
 
   // Toggle task selection (supports multi-select with multiSelect flag)
   const toggleTaskSelection = useCallback((taskId: string, multiSelect = false, source: 'map' | 'table' = 'table') => {
     setLastInteractedTaskId(taskId);
     setSelectedTaskIds(prev => {
-      const isCurrentlySelected = selectedTaskIdsSet.has(taskId);
+      const isCurrentlySelected = prev.includes(taskId);
 
       if (multiSelect) {
         // Multi-select mode: add/remove from selection
-        if (isCurrentlySelected) {
-          // Remove taskId from array
-          const index = prev.indexOf(taskId);
-          if (index > -1) {
-            const newArray = [...prev];
-            newArray.splice(index, 1);
-            return newArray;
-          }
-          return prev;
-        } else {
-          // Add taskId to array
-          return [...prev, taskId];
-        }
+        return isCurrentlySelected ? prev.filter(id => id !== taskId) : [...prev, taskId];
       } else {
         // Single select mode: select only this task
-        if (isCurrentlySelected && prev.length === 1) {
-          // If only this task is selected, deselect it
-          return [];
-        } else {
-          // Select only this one
-          return [taskId];
-        }
+        return isCurrentlySelected && prev.length === 1 ? [] : [taskId];
       }
     });
     setSelectionSource(source);
-  }, [selectedTaskIdsSet]);
+  }, []);
 
   // Range select tasks (Shift-click)
-  const rangeSelectTasks = useCallback((taskId: string, allTaskIds: string[], source: 'map' | 'table' = 'table') => {
+  // additive=true for CTRL+SHIFT (union), additive=false for SHIFT only (replace)
+  const rangeSelectTasks = useCallback((taskId: string, allTaskIds: string[], additive = false, source: 'map' | 'table' = 'table') => {
     setLastInteractedTaskId(taskId);
     
     if (!lastInteractedTaskId || !allTaskIds.includes(lastInteractedTaskId)) {
-      // No previous selection or previous not in current list, just select this one
       setSelectedTaskIds([taskId]);
     } else {
-      // Find indices of last and current
+      // Find indices in CURRENT VISIBLE ORDER
       const lastIndex = allTaskIds.indexOf(lastInteractedTaskId);
       const currentIndex = allTaskIds.indexOf(taskId);
       
@@ -126,17 +98,24 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
       const endIndex = Math.max(lastIndex, currentIndex);
       const rangeIds = allTaskIds.slice(startIndex, endIndex + 1);
       
-      // Add range to existing selection
-      const newSelection = [...new Set([...selectedTaskIds, ...rangeIds])];
-      setSelectedTaskIds(newSelection);
+      setSelectedTaskIds(prev => 
+        additive ? [...new Set([...prev, ...rangeIds])] : rangeIds
+      );
     }
     setSelectionSource(source);
-  }, [lastInteractedTaskId, selectedTaskIds]);
+  }, [lastInteractedTaskId]);
 
   // Clear all selections
   const clearSelection = useCallback(() => {
     setSelectedTaskIds([]);
     setLastInteractedTaskId(null);
+  }, []);
+
+  // Clear selection when user sorts table - resets to default behavior
+  const clearSelectionOnSort = useCallback(() => {
+    setSelectedTaskIds([]);
+    setLastInteractedTaskId(null);
+    setSelectionSource(null);
   }, []);
 
   // Select multiple tasks at once
@@ -152,57 +131,46 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({
       return tasks;
     }
 
-    // Create task lookup map for O(1) access
     const taskMap = new Map<string, TaskTableRow>();
-    for (let i = 0; i < tasks.length; i++) {
-      taskMap.set(tasks[i].taskId, tasks[i]);
-    }
+    tasks.forEach(task => taskMap.set(task.taskId, task));
 
     // Build selected tasks in reverse order (most recently selected first)
     const selectedTasks: TaskTableRow[] = [];
     for (let i = selectedTaskIds.length - 1; i >= 0; i--) {
       const task = taskMap.get(selectedTaskIds[i]);
-      if (task) {
-        selectedTasks.push(task);
-      }
+      if (task) selectedTasks.push(task);
     }
 
     // Build unselected tasks
-    const unselectedTasks: TaskTableRow[] = [];
-    for (let i = 0; i < tasks.length; i++) {
-      const task = tasks[i];
-      if (!selectedTaskIdsSet.has(task.taskId)) {
-        unselectedTasks.push(task);
-      }
-    }
+    const unselectedTasks = tasks.filter(task => !selectedTaskIdsSet.has(task.taskId));
 
-    // Return concatenated result - most recently selected at top
-    return selectedTasks.concat(unselectedTasks);
+    return [...selectedTasks, ...unselectedTasks];
   }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
 
-  // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     selectedTaskIds,
     lastInteractedTaskId,
+    selectionSource,
     isTaskSelected,
     isLastInteracted,
     toggleTaskSelection,
     rangeSelectTasks,
     clearSelection,
+    clearSelectionOnSort,
     selectTasks,
-    getPrioritizedTasks,
-    selectionSource
+    getPrioritizedTasks
   }), [
     selectedTaskIds,
     lastInteractedTaskId,
+    selectionSource,
     isTaskSelected,
     isLastInteracted,
     toggleTaskSelection,
     rangeSelectTasks,
     clearSelection,
+    clearSelectionOnSort,
     selectTasks,
-    getPrioritizedTasks,
-    selectionSource
+    getPrioritizedTasks
   ]);
 
   return (
@@ -236,56 +204,83 @@ export const useTaskTableSelection = () => {
     getPrioritizedTasks, 
     selectedTaskIds, 
     lastInteractedTaskId,
+    selectionSource,
     isTaskSelected, 
     isLastInteracted,
     toggleTaskSelection, 
     rangeSelectTasks,
-    selectionSource 
+    clearSelectionOnSort
   } = useSelectionUI();
 
   return useMemo(() => ({
     getPrioritizedTasks,
     selectedTaskIds,
     lastInteractedTaskId,
+    selectionSource,
     isTaskSelected,
     isLastInteracted,
     toggleTaskSelection,
     rangeSelectTasks,
-    selectionSource
+    clearSelectionOnSort
   }), [
     getPrioritizedTasks,
     selectedTaskIds,
     lastInteractedTaskId,
+    selectionSource,
     isTaskSelected,
     isLastInteracted,
     toggleTaskSelection,
     rangeSelectTasks,
-    selectionSource
+    clearSelectionOnSort
   ]);
 };
 
-// Example usage in a Task Table component:
+// Example usage in MUI DataGrid with proper selection coordination:
 /*
 import { useTaskTableSelection } from '../Selection - UI';
+import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
 
 function TaskTable({ tasks }: { tasks: TaskTableRow[] }) {
-  const { getPrioritizedTasks, selectedTaskIds, isTaskSelected, toggleTaskSelection } = useTaskTableSelection();
+  const apiRef = useGridApiRef();
+  const { 
+    getPrioritizedTasks, 
+    isTaskSelected, 
+    toggleTaskSelection, 
+    rangeSelectTasks,
+    clearSelectionOnSort 
+  } = useTaskTableSelection();
 
-  // Get tasks with selected tasks prioritized (moved to top)
   const displayTasks = getPrioritizedTasks(tasks);
 
+  const handleSortModelChange = () => {
+    clearSelectionOnSort(); // Resets selection, allows map to re-prioritize later
+  };
+
+  const handleRowClick = (params: GridRowParams, event: React.MouseEvent) => {
+    const taskId = params.row.taskId;
+    
+    // Get visible row IDs in current display order
+    const visibleRowIds = apiRef.current.getSortedRowIds().map(id => 
+      apiRef.current.getRow(id)?.taskId
+    ).filter(Boolean) as string[];
+
+    if (event.shiftKey) {
+      rangeSelectTasks(taskId, visibleRowIds, event.ctrlKey || event.metaKey, 'table');
+    } else {
+      toggleTaskSelection(taskId, event.ctrlKey || event.metaKey, 'table');
+    }
+  };
+
   return (
-    <div>
-      {displayTasks.map(task => (
-        <div
-          key={task.taskId}
-          className={isTaskSelected(task.taskId) ? 'selected' : ''}
-          onClick={() => toggleTaskSelection(task.taskId)}
-        >
-          {task.taskId} - {task.commitType}
-        </div>
-      ))}
-    </div>
+    <DataGrid
+      apiRef={apiRef}
+      rows={displayTasks}
+      onSortModelChange={handleSortModelChange}
+      onRowClick={handleRowClick}
+      getRowClassName={(params) => 
+        isTaskSelected(params.row.taskId) ? 'selected-row' : ''
+      }
+    />
   );
 }
 */

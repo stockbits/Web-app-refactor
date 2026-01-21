@@ -24,12 +24,11 @@ const TaskManagementPage = ({
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
   const apiRef = useGridApiRef();
 
-  // Selection UI integration
+  // Selection UI integration for table row selection only
   const { 
     selectedTaskIds,
     toggleTaskSelection, 
     rangeSelectTasks,
-    isLastInteracted,
   } = useTaskTableSelection()
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -486,14 +485,8 @@ const TaskManagementPage = ({
 
   // Row styling for selected tasks
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
-    const isSelected = selectedTaskIds.includes(params.row.taskId);
-    const isLast = isLastInteracted(params.row.taskId);
-    
-    if (isSelected && isLast) return 'selected-row last-interacted-row';
-    if (isSelected) return 'selected-row';
-    if (isLast) return 'last-interacted-row';
-    return '';
-  }, [selectedTaskIds, isLastInteracted]);
+    return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
+  }, [selectedTaskIds]);
 
   const handleExportCsv = useCallback(() => {
     if (!filteredRows.length) {
@@ -538,10 +531,12 @@ const TaskManagementPage = ({
     if (isShiftPressed) {
       // Prevent default text selection when shift-clicking
       event.preventDefault();
-      // Shift-click: range select - use DataGrid's actual visible row order
-      // This respects sorting and ensures range matches what user sees
-      const allVisibleRowIds = apiRef.current?.getAllRowIds() || filteredRows.map(row => row.taskId);
-      rangeSelectTasks(params.row.taskId, allVisibleRowIds as string[], 'table');
+      // Shift-click: range select - use DataGrid's sorted row order
+      const sortedRowIds = apiRef.current?.getSortedRowIds?.() || filteredRows.map(row => row.taskId);
+      const visibleRowIds = sortedRowIds.map(id => 
+        apiRef.current?.getRow(id)?.taskId
+      ).filter(Boolean) as string[];
+      rangeSelectTasks(params.row.taskId, visibleRowIds, isCtrlPressed, 'table');
     } else {
       // Regular or Ctrl-click
       toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');

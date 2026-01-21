@@ -46,9 +46,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     getPrioritizedTasks, 
     toggleTaskSelection, 
     rangeSelectTasks,
-    isLastInteracted,
-    selectionSource, 
-    selectedTaskIds 
+    selectedTaskIds,
+    clearSelectionOnSort
   } = useTaskTableSelection();
 
   // Right-click context menu
@@ -184,32 +183,37 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           : 'rgba(25, 118, 210, 0.12)',
       },
     },
-    '& .last-interacted-row': {
-      borderLeft: `3px solid ${theme.palette.primary.main}`,
-      borderRight: `3px solid ${theme.palette.primary.main}`,
-    },
-    '& .selected-row.last-interacted-row': {
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(144, 202, 249, 0.16)' 
-        : 'rgba(25, 118, 210, 0.10)',
-      borderLeft: `3px solid ${theme.palette.primary.main}`,
-      borderRight: `3px solid ${theme.palette.primary.main}`,
-      '&:hover': {
-        backgroundColor: theme.palette.mode === 'dark' 
-          ? 'rgba(144, 202, 249, 0.22)' 
-          : 'rgba(25, 118, 210, 0.14)',
-      },
-    },
-  }), [theme.palette.mode, theme.palette.primary.main]);
+  }), [theme.palette.mode]);
+
+  const apiRef = useGridApiRef();
+
+  // Track sort model state to control DataGrid sorting
+  const [sortModel, setSortModel] = useState<any[]>([]);
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
     const baseTasks = filteredTasks || [];
-    // Apply prioritization only when selected from map for visibility
-    return getPrioritizedTasks(baseTasks);
-  }, [filteredTasks, getPrioritizedTasks]);
-
-  const apiRef = useGridApiRef();
+    
+    // Apply manual sorting if sortModel exists
+    let sortedTasks = [...baseTasks];
+    if (sortModel && sortModel.length > 0) {
+      const { field, sort } = sortModel[0];
+      sortedTasks.sort((a, b) => {
+        const aVal = a[field as keyof TaskTableRow];
+        const bVal = b[field as keyof TaskTableRow];
+        
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        
+        const comparison = aVal < bVal ? -1 : 1;
+        return sort === 'asc' ? comparison : -comparison;
+      });
+    }
+    
+    // Apply prioritization to sorted tasks
+    return getPrioritizedTasks(sortedTasks);
+  }, [filteredTasks, sortModel, getPrioritizedTasks]);
 
   // Clear sorting when clearSorting prop changes
   useEffect(() => {
@@ -220,14 +224,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   // Row styling for selected tasks - optimized to reduce re-renders
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
-    const isSelected = selectedTaskIds.includes(params.row.taskId);
-    const isLast = isLastInteracted(params.row.taskId);
-    
-    if (isSelected && isLast) return 'selected-row last-interacted-row';
-    if (isSelected) return 'selected-row';
-    if (isLast) return 'last-interacted-row';
-    return '';
-  }, [selectedTaskIds, isLastInteracted]);
+    return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
+  }, [selectedTaskIds]);
 
   // Handle row clicks for task selection and context menu
   const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
@@ -246,12 +244,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       event.preventDefault();
       // Shift-click: range select
       const allTaskIds = filteredRows.map(row => row.taskId);
-      rangeSelectTasks(params.row.taskId, allTaskIds, 'table');
+      rangeSelectTasks(params.row.taskId, allTaskIds, isCtrlPressed, 'table');
     } else {
       // Regular or Ctrl-click
       toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
     }
   }, [toggleTaskSelection, rangeSelectTasks, filteredRows, contextMenu])
+
+  // Handle sort requests - clear selection when user sorts
+  const handleSortModelChange = useCallback((newModel: any) => {
+    setSortModel(newModel);
+    clearSelectionOnSort();
+  }, [clearSelectionOnSort]);
 
   const handleCellDoubleClick = useCallback((params: GridCellParams<TaskTableRow>) => {
     openTaskDialog?.(params.row);
@@ -374,11 +378,12 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             density="compact"
             enablePagination={false}
             enableQuickFilter
-            disableSorting={selectionSource === 'map' && selectedTaskIds.length > 0}
+            sortModel={sortModel}
             height={isExpanded ? '100%' : tableHeight}
             apiRef={apiRef}
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
+            onSortModelChange={handleSortModelChange}
             sx={tableSx}
             contextMenuItems={[
               {
