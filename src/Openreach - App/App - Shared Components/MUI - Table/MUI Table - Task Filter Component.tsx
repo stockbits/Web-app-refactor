@@ -314,8 +314,8 @@ const TaskTableQueryConfig = ({
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: 'repeat(2, minmax(0, 1fr))',
-                md: '2.2fr 1.6fr 2.4fr 1.8fr 1fr',
-                lg: '2.2fr 1.6fr 2.4fr 1.8fr 1fr',
+                md: '2.5fr 2fr 2.6fr 2fr 1.2fr',
+                lg: '2.5fr 2fr 2.6fr 2fr 1.2fr',
               },
             }}
           >
@@ -1353,19 +1353,31 @@ const BulkSelectableMultiSelect = <TValue extends string>({
           {...params}
           label={label}
           placeholder={value.length ? undefined : 'Filter list'}
-          size="small"
           InputProps={{
             ...params.InputProps,
+            sx: {
+              paddingRight: '9px !important',
+            },
             endAdornment: (
-              <>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  right: 9,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.25,
+                }}
+              >
                 {shouldShowSelectAllIcon && (
                   <Tooltip title={bulkTooltipLabel} placement="top">
                     <span>
                       <IconButton
-                        size="small"
                         onClick={handleBulkSelect}
                         disabled={isBulkActionDisabled}
                         aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
+                        sx={{ padding: '4px' }}
                       >
                         <DoneAllRoundedIcon fontSize="small" />
                       </IconButton>
@@ -1376,10 +1388,10 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   <Tooltip title="Clear selection" placement="top">
                     <span>
                       <IconButton
-                        size="small"
                         onClick={handleClearSelection}
                         aria-label="Clear selection"
                         disabled={!value.length}
+                        sx={{ padding: '4px' }}
                       >
                         <CloseRoundedIcon fontSize="small" />
                       </IconButton>
@@ -1387,7 +1399,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   </Tooltip>
                 )}
                 {params.InputProps.endAdornment}
-              </>
+              </Box>
             ),
           }}
         />

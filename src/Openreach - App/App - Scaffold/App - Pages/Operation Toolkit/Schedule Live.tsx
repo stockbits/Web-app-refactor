@@ -77,7 +77,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           {/* Filters */}
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 160, md: 140 },
+              minWidth: { xs: '100%', sm: 180, md: 180 },
               width: { xs: '100%', sm: 'auto' },
               order: { xs: 1, sm: 1 }
             }}
@@ -91,7 +91,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 140, md: 120 },
+              minWidth: { xs: '100%', sm: 145, md: 145 },
               width: { xs: '100%', sm: 'auto' },
               order: { xs: 2, sm: 2 }
             }}
@@ -110,7 +110,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             alignItems="center"
             sx={{ 
               flex: { xs: '1 1 100%', md: 1 },
-              maxWidth: { md: 500 },
+              maxWidth: { md: 420 },
               order: { xs: 3, sm: 3 }
             }}
           >
