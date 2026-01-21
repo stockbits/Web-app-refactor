@@ -285,12 +285,12 @@ const TaskTableQueryConfig = ({
               }))
               setValidationError(null)
             }}
+            onSearch={handleApply}
             placeholder="Global search..."
             localStorageKey="taskSearchHistory"
             showSearchIcon={true}
             showSearchButton={true}
             sx={{
-              flex: 1,
               maxWidth: 400,
               '& .MuiOutlinedInput-root': {
                 borderRadius: 0,

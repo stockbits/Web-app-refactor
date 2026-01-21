@@ -110,6 +110,8 @@ const GlobalSearchField = ({
           onClick={handleSearch}
           disabled={!value.trim()}
           sx={{ 
+            height: 40,
+            width: 40,
             border: 1, 
             borderColor: 'divider',
             borderRadius: 1,
@@ -126,7 +128,7 @@ const GlobalSearchField = ({
   ) : null
 
   return showSearchButton ? (
-    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ width: '100%' }}>
+    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ width: '100%', ...sx }}>
       {searchField}
       {searchButton}
     </Stack>
