@@ -1023,7 +1023,13 @@ export const darkTheme = createTheme({
           },
         },
         endAdornment: {
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
           gap: '4px',
+          right: 'auto',
+          top: 'auto',
+          transform: 'none',
         },
         popupIndicator: {
           color: darkTokens.text.secondary,

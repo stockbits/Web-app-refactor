@@ -1349,9 +1349,6 @@ const BulkSelectableMultiSelect = <TValue extends string>({
         )
       }}
       renderInput={(params) => {
-        // Extract the original endAdornment children (chevron icon)
-        const originalEndAdornment = params.InputProps.endAdornment;
-        
         return (
           <TextField
             {...params}
@@ -1364,7 +1361,9 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
+                    gap: '8px',
+                    position: 'relative',
+                    pr: 1,
                   }}
                 >
                   {shouldShowSelectAllIcon && (
@@ -1374,7 +1373,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                           onClick={handleBulkSelect}
                           disabled={isBulkActionDisabled}
                           aria-label={hasSearchTerm ? 'Select all filtered options' : 'Select all options'}
-                          sx={{ padding: '4px' }}
+                          sx={{ padding: '4px', mr: 4.0 }}
                         >
                           <DoneAllRoundedIcon fontSize="small" />
                         </IconButton>
@@ -1388,14 +1387,14 @@ const BulkSelectableMultiSelect = <TValue extends string>({
                           onClick={handleClearSelection}
                           aria-label="Clear selection"
                           disabled={!value.length}
-                          sx={{ padding: '4px' }}
+                          sx={{ padding: '4px', mr: 4.0 }}
                         >
                           <CloseRoundedIcon fontSize="small" />
                         </IconButton>
                       </span>
                     </Tooltip>
                   )}
-                  {originalEndAdornment}
+                  {params.InputProps.endAdornment}
                 </Box>
               ),
             }}
