@@ -130,6 +130,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               onSearch={handleSearch}
               placeholder="Global search..."
               localStorageKey="scheduleLiveSearchHistory"
+              showSearchButton={true}
               inputRef={searchRef}
               sx={{ flex: 1 }}
             />

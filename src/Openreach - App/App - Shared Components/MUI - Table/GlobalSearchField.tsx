@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Autocomplete, TextField, InputAdornment } from '@mui/material'
+import { Autocomplete, TextField, InputAdornment, IconButton } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import type { SxProps, Theme } from '@mui/material/styles'
 
@@ -11,6 +11,7 @@ interface GlobalSearchFieldProps {
   localStorageKey: string
   maxHistoryItems?: number
   showSearchIcon?: boolean
+  showSearchButton?: boolean
   sx?: SxProps<Theme>
   size?: 'small' | 'medium'
   inputRef?: React.Ref<HTMLInputElement>
@@ -24,6 +25,7 @@ const GlobalSearchField = ({
   localStorageKey,
   maxHistoryItems = 10,
   showSearchIcon = false,
+  showSearchButton = false,
   sx,
   size = 'small',
   inputRef,
@@ -56,17 +58,22 @@ const GlobalSearchField = ({
     })
   }, [localStorageKey, maxHistoryItems])
 
+  // Handle search action
+  const handleSearch = useCallback(() => {
+    const trimmed = value.trim()
+    if (trimmed) {
+      addToSearchHistory(trimmed)
+      onSearch?.()
+    }
+  }, [value, addToSearchHistory, onSearch])
+
   // Handle Enter key
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (event.key === 'Enter') {
       event.preventDefault()
-      const trimmed = value.trim()
-      if (trimmed) {
-        addToSearchHistory(trimmed)
-        onSearch?.()
-      }
+      handleSearch()
     }
-  }, [value, addToSearchHistory, onSearch])
+  }, [handleSearch])
 
   return (
     <Autocomplete
@@ -90,6 +97,24 @@ const GlobalSearchField = ({
                     <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
                   </InputAdornment>
                   {params.InputProps.startAdornment}
+                </>
+              ),
+            }),
+            ...(showSearchButton && {
+              endAdornment: (
+                <>
+                  {params.InputProps.endAdornment}
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={handleSearch}
+                      disabled={!value.trim()}
+                      edge="end"
+                      sx={{ mr: -0.5 }}
+                    >
+                      <SearchRoundedIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
                 </>
               ),
             }),

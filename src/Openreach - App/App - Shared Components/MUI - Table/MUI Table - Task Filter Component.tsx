@@ -146,8 +146,6 @@ const TaskTableQueryConfig = ({
     setDraftQuery((prev) => ({
       ...prev,
       statuses: value,
-      // Mutual exclusivity: if user selects any status, clear global search
-      searchTerm: value.length > 0 ? '' : prev.searchTerm,
     }))
     setValidationError(null)
   }
@@ -281,18 +279,16 @@ const TaskTableQueryConfig = ({
           <GlobalSearchField
             value={draftQuery.searchTerm}
             onChange={(newValue) => {
-              const hasSearchValue = newValue.trim().length > 0
               setDraftQuery((prev) => ({
                 ...prev,
                 searchTerm: newValue,
-                // Mutual exclusivity: if global search entered, clear status selection only
-                statuses: hasSearchValue ? [] : prev.statuses,
               }))
               setValidationError(null)
             }}
             placeholder="Global search..."
             localStorageKey="taskSearchHistory"
             showSearchIcon={true}
+            showSearchButton={true}
             sx={{
               flex: 1,
               maxWidth: 400,
