@@ -307,25 +307,24 @@ export const OpenItemsDock = ({
                 >
                   Compare ({selectedIds.length})
                 </Button>
-                {/* Clear selection button */}
-                {selectedIds.length > 0 && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={<CloseIcon sx={{ fontSize: 16 }} />}
-                    onClick={handleClearSelection}
-                    fullWidth
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.75rem',
-                      py: 0.5,
-                      justifyContent: 'flex-start',
-                    }}
-                  >
-                    Clear Selection
-                  </Button>
-                )}
+                {/* Clear selection button - always visible, disabled when none selected */}
+                <Button
+                  size="small"
+                  variant="text"
+                  color="secondary"
+                  disabled={selectedIds.length === 0}
+                  startIcon={<CloseIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleClearSelection}
+                  fullWidth
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    py: 0.5,
+                    justifyContent: 'flex-start',
+                  }}
+                >
+                  Clear Selection
+                </Button>
                 {/* Clear all button */}
                 {onClearAll && (
                   <Button
