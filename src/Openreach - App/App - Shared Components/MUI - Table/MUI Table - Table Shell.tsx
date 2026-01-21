@@ -163,8 +163,8 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           '& .MuiDataGrid-cell': {
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
+            padding: 0,
+            height: '100%',
           },
           '& .MuiDataGrid-columnHeader': {
             fontSize: '0.75rem', // 12px - same as caption variant
