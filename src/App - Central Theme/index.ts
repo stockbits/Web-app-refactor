@@ -334,51 +334,199 @@ export const lightTheme = createTheme({
         },
       },
     },
+    // ============================================================
+    // FORM INPUT CONSISTENCY
+    // Standard: size="small", consistent height ~40px, borderRadius: 2
+    // ============================================================
     MuiTextField: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
             backgroundColor: lightTokens.input.bg,
+            borderRadius: 2,
             '& fieldset': {
               borderColor: lightTokens.input.border,
+              borderWidth: '1px',
             },
             '&:hover fieldset': {
               borderColor: lightTokens.input.borderFocus,
             },
             '&.Mui-focused fieldset': {
               borderColor: lightTokens.input.borderFocus,
+              borderWidth: '2px',
             },
+          },
+          '& .MuiInputLabel-root': {
+            color: lightTokens.text.secondary,
+            fontSize: '0.875rem',
+            '&.Mui-focused': {
+              color: lightTokens.input.borderFocus,
+            },
+          },
+          '& .MuiFormHelperText-root': {
+            fontSize: '0.75rem',
+            marginLeft: 2,
+            marginRight: 2,
+            marginTop: 4,
           },
         },
       },
     },
     MuiOutlinedInput: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           backgroundColor: lightTokens.input.bg,
+          borderRadius: 2,
+          fontSize: '0.875rem',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: lightTokens.input.border,
+            borderWidth: '1px',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: lightTokens.input.borderFocus,
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderColor: lightTokens.input.borderFocus,
+            borderWidth: '2px',
           },
         },
         input: {
           color: lightTokens.input.text,
+          padding: '8.5px 14px', // Consistent padding for ~40px height
+          fontSize: '0.875rem',
+          lineHeight: 1.5,
           '&::placeholder': {
             color: lightTokens.input.placeholder,
             opacity: 1,
           },
         },
+        // Ensure consistent height for all input sizes
+        sizeSmall: {
+          fontSize: '0.875rem',
+          '& input': {
+            padding: '8.5px 14px',
+          },
+        },
       },
     },
     MuiInputBase: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           color: lightTokens.input.text,
+          fontSize: '0.875rem',
+          borderRadius: 2,
+        },
+        input: {
+          fontSize: '0.875rem',
+          '&::placeholder': {
+            color: lightTokens.input.placeholder,
+            opacity: 1,
+          },
+        },
+        sizeSmall: {
+          fontSize: '0.875rem',
+        },
+      },
+    },
+    MuiInputLabel: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          color: lightTokens.text.secondary,
+          fontSize: '0.875rem',
+          '&.Mui-focused': {
+            color: lightTokens.input.borderFocus,
+          },
+        },
+        sizeSmall: {
+          fontSize: '0.875rem',
+          transform: 'translate(14px, 9px) scale(1)',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
+    MuiFormControl: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiInputBase-root': {
+            borderRadius: 2,
+          },
+        },
+      },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          fontSize: '0.75rem',
+          marginLeft: 2,
+          marginRight: 2,
+          marginTop: 4,
+        },
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
+      styleOverrides: {
+        select: {
+          padding: '8.5px 14px',
+          fontSize: '0.875rem',
+          lineHeight: 1.5,
+          borderRadius: 2,
+        },
+        icon: {
+          color: lightTokens.text.secondary,
+        },
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            padding: '4px 9px',
+            '& input': {
+              padding: '4.5px 5px',
+            },
+          },
+        },
+        input: {
+          fontSize: '0.875rem',
+        },
+        inputRoot: {
+          fontSize: '0.875rem',
+          padding: '4px 9px !important',
+          '&[class*="MuiOutlinedInput-root"]': {
+            padding: '4px 9px',
+          },
+        },
+        endAdornment: {
+          top: 'calc(50% - 14px)',
+        },
+        popupIndicator: {
+          color: lightTokens.text.secondary,
         },
       },
     },
@@ -647,75 +795,200 @@ export const darkTheme = createTheme({
         },
       },
     },
+    // ============================================================
+    // FORM INPUT CONSISTENCY
+    // Standard: size="small", consistent height ~40px, borderRadius: 2
+    // ============================================================
     MuiTextField: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
             backgroundColor: darkTokens.input.bg,
             color: darkTokens.input.text,
+            borderRadius: 2,
             '& fieldset': {
               borderColor: darkTokens.input.border,
+              borderWidth: '1px',
             },
             '&:hover fieldset': {
               borderColor: darkTokens.input.borderFocus,
             },
             '&.Mui-focused fieldset': {
               borderColor: darkTokens.input.borderFocus,
+              borderWidth: '2px',
             },
           },
           '& .MuiInputLabel-root': {
             color: darkTokens.text.secondary,
+            fontSize: '0.875rem',
           },
           '& .MuiInputLabel-root.Mui-focused': {
             color: darkTokens.input.borderFocus,
+          },
+          '& .MuiFormHelperText-root': {
+            fontSize: '0.75rem',
+            marginLeft: 2,
+            marginRight: 2,
+            marginTop: 4,
           },
         },
       },
     },
     MuiOutlinedInput: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           backgroundColor: darkTokens.input.bg,
           color: darkTokens.input.text,
+          borderRadius: 2,
+          fontSize: '0.875rem',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: darkTokens.input.border,
+            borderWidth: '1px',
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: darkTokens.input.borderFocus,
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
             borderColor: darkTokens.input.borderFocus,
+            borderWidth: '2px',
           },
         },
         input: {
           color: darkTokens.input.text,
+          padding: '8.5px 14px', // Consistent padding for ~40px height
+          fontSize: '0.875rem',
+          lineHeight: 1.5,
           '&::placeholder': {
             color: darkTokens.input.placeholder,
             opacity: 1,
+          },
+        },
+        sizeSmall: {
+          fontSize: '0.875rem',
+          '& input': {
+            padding: '8.5px 14px',
           },
         },
       },
     },
     MuiInputBase: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           color: darkTokens.input.text,
+          fontSize: '0.875rem',
+          borderRadius: 2,
         },
         input: {
+          fontSize: '0.875rem',
           '&::placeholder': {
             color: darkTokens.input.placeholder,
             opacity: 1,
           },
         },
+        sizeSmall: {
+          fontSize: '0.875rem',
+        },
       },
     },
     MuiInputLabel: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           color: darkTokens.text.secondary,
+          fontSize: '0.875rem',
           '&.Mui-focused': {
             color: darkTokens.input.borderFocus,
           },
+        },
+        sizeSmall: {
+          fontSize: '0.875rem',
+          transform: 'translate(14px, 9px) scale(1)',
+          '&.MuiInputLabel-shrink': {
+            transform: 'translate(14px, -9px) scale(0.75)',
+          },
+        },
+      },
+    },
+    MuiFormControl: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiInputBase-root': {
+            borderRadius: 2,
+          },
+        },
+      },
+    },
+    MuiFormHelperText: {
+      styleOverrides: {
+        root: {
+          fontSize: '0.75rem',
+          marginLeft: 2,
+          marginRight: 2,
+          marginTop: 4,
+        },
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        size: 'small',
+        variant: 'outlined',
+      },
+      styleOverrides: {
+        select: {
+          padding: '8.5px 14px',
+          fontSize: '0.875rem',
+          lineHeight: 1.5,
+          borderRadius: 2,
+        },
+        icon: {
+          color: darkTokens.text.secondary,
+        },
+      },
+    },
+    MuiAutocomplete: {
+      defaultProps: {
+        size: 'small',
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            padding: '4px 9px',
+            '& input': {
+              padding: '4.5px 5px',
+            },
+          },
+        },
+        input: {
+          fontSize: '0.875rem',
+        },
+        inputRoot: {
+          fontSize: '0.875rem',
+          padding: '4px 9px !important',
+          '&[class*="MuiOutlinedInput-root"]': {
+            padding: '4px 9px',
+          },
+        },
+        endAdornment: {
+          top: 'calc(50% - 14px)',
+        },
+        popupIndicator: {
+          color: darkTokens.text.secondary,
         },
       },
     },
