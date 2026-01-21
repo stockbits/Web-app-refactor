@@ -335,8 +335,13 @@ export const lightTheme = createTheme({
       },
     },
     // ============================================================
+    // ============================================================
     // FORM INPUT CONSISTENCY
-    // Standard: size="small", consistent height ~40px, borderRadius: 2
+    // ============================================================
+    // Ensures consistent 40px height across ALL input types:
+    // - TextField, Select, Autocomplete, DatePicker
+    // - Responsive font sizing (clamp for viewport adaptation)
+    // - Uniform padding and border radius
     // ============================================================
     MuiTextField: {
       defaultProps: {
@@ -348,6 +353,7 @@ export const lightTheme = createTheme({
           '& .MuiOutlinedInput-root': {
             backgroundColor: lightTokens.input.bg,
             borderRadius: 2,
+            minHeight: '40px',
             '& fieldset': {
               borderColor: lightTokens.input.border,
               borderWidth: '1px',
@@ -362,13 +368,13 @@ export const lightTheme = createTheme({
           },
           '& .MuiInputLabel-root': {
             color: lightTokens.text.secondary,
-            fontSize: '0.875rem',
+            fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
             '&.Mui-focused': {
               color: lightTokens.input.borderFocus,
             },
           },
           '& .MuiFormHelperText-root': {
-            fontSize: '0.75rem',
+            fontSize: 'clamp(0.6875rem, 1.5vw, 0.75rem)',
             marginLeft: 2,
             marginRight: 2,
             marginTop: 4,
@@ -384,7 +390,7 @@ export const lightTheme = createTheme({
         root: {
           backgroundColor: lightTokens.input.bg,
           borderRadius: 2,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: lightTokens.input.border,
             borderWidth: '1px',
@@ -399,19 +405,20 @@ export const lightTheme = createTheme({
         },
         input: {
           color: lightTokens.input.text,
-          padding: '8.5px 14px', // Consistent padding for ~40px height
-          fontSize: '0.875rem',
+          padding: '6.5px 14px',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           lineHeight: 1.5,
+          minHeight: 'auto',
+          height: 'auto',
           '&::placeholder': {
             color: lightTokens.input.placeholder,
             opacity: 1,
           },
         },
-        // Ensure consistent height for all input sizes
         sizeSmall: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '& input': {
-            padding: '8.5px 14px',
+            padding: '6.5px 14px',
           },
         },
       },
@@ -423,18 +430,19 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           color: lightTokens.input.text,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           borderRadius: 2,
         },
         input: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+          padding: '6.5px 14px',
           '&::placeholder': {
             color: lightTokens.input.placeholder,
             opacity: 1,
           },
         },
         sizeSmall: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         },
       },
     },
@@ -445,13 +453,13 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           color: lightTokens.text.secondary,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '&.Mui-focused': {
             color: lightTokens.input.borderFocus,
           },
         },
         sizeSmall: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           transform: 'translate(14px, 9px) scale(1)',
           '&.MuiInputLabel-shrink': {
             transform: 'translate(14px, -9px) scale(0.75)',
@@ -489,10 +497,12 @@ export const lightTheme = createTheme({
       },
       styleOverrides: {
         select: {
-          padding: '8.5px 14px',
-          fontSize: '0.875rem',
+          padding: '6.5px 14px',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           lineHeight: 1.5,
           borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
         },
         icon: {
           color: lightTokens.text.secondary,
@@ -507,32 +517,36 @@ export const lightTheme = createTheme({
           popupIndicator: {
             disableRipple: true,
             disableTouchRipple: true,
-            title: '', // Disable tooltip
+            title: '',
           },
           clearIndicator: {
             disableRipple: true,
             disableTouchRipple: true,
-            title: '', // Disable tooltip
+            title: '',
           },
         },
       },
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            padding: '4px 9px',
+            minHeight: '40px',
+            padding: '0px 9px',
             '& input': {
-              padding: '4.5px 5px',
+              padding: '8.5px 5px',
+              fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
             },
           },
         },
         input: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         },
         inputRoot: {
-          fontSize: '0.875rem',
-          padding: '4px 9px !important',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+          minHeight: '40px',
+          padding: '0px 9px !important',
           '&[class*="MuiOutlinedInput-root"]': {
-            padding: '4px 9px',
+            padding: '0px 9px',
+            minHeight: '40px',
           },
         },
         endAdornment: {
@@ -840,8 +854,13 @@ export const darkTheme = createTheme({
       },
     },
     // ============================================================
+    // ============================================================
     // FORM INPUT CONSISTENCY
-    // Standard: size="small", consistent height ~40px, borderRadius: 2
+    // ============================================================
+    // Ensures consistent 40px height across ALL input types:
+    // - TextField, Select, Autocomplete, DatePicker
+    // - Responsive font sizing (clamp for viewport adaptation)
+    // - Uniform padding and border radius
     // ============================================================
     MuiTextField: {
       defaultProps: {
@@ -854,6 +873,7 @@ export const darkTheme = createTheme({
             backgroundColor: darkTokens.input.bg,
             color: darkTokens.input.text,
             borderRadius: 2,
+            minHeight: '40px',
             '& fieldset': {
               borderColor: darkTokens.input.border,
               borderWidth: '1px',
@@ -868,13 +888,13 @@ export const darkTheme = createTheme({
           },
           '& .MuiInputLabel-root': {
             color: darkTokens.text.secondary,
-            fontSize: '0.875rem',
+            fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           },
           '& .MuiInputLabel-root.Mui-focused': {
             color: darkTokens.input.borderFocus,
           },
           '& .MuiFormHelperText-root': {
-            fontSize: '0.75rem',
+            fontSize: 'clamp(0.6875rem, 1.5vw, 0.75rem)',
             marginLeft: 2,
             marginRight: 2,
             marginTop: 4,
@@ -891,7 +911,7 @@ export const darkTheme = createTheme({
           backgroundColor: darkTokens.input.bg,
           color: darkTokens.input.text,
           borderRadius: 2,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: darkTokens.input.border,
             borderWidth: '1px',
@@ -906,18 +926,20 @@ export const darkTheme = createTheme({
         },
         input: {
           color: darkTokens.input.text,
-          padding: '8.5px 14px', // Consistent padding for ~40px height
-          fontSize: '0.875rem',
+          padding: '6.5px 14px',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           lineHeight: 1.5,
+          minHeight: 'auto',
+          height: 'auto',
           '&::placeholder': {
             color: darkTokens.input.placeholder,
             opacity: 1,
           },
         },
         sizeSmall: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '& input': {
-            padding: '8.5px 14px',
+            padding: '6.5px 14px',
           },
         },
       },
@@ -929,18 +951,19 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           color: darkTokens.input.text,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           borderRadius: 2,
         },
         input: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+          padding: '6.5px 14px',
           '&::placeholder': {
             color: darkTokens.input.placeholder,
             opacity: 1,
           },
         },
         sizeSmall: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         },
       },
     },
@@ -951,14 +974,14 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           color: darkTokens.text.secondary,
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           '&.Mui-focused': {
             color: darkTokens.input.borderFocus,
           },
         },
         sizeSmall: {
-          fontSize: '0.875rem',
-          transform: 'translate(14px, 9px) scale(1)',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+          transform: 'translate(14px, 7.5px) scale(1)',
           '&.MuiInputLabel-shrink': {
             transform: 'translate(14px, -9px) scale(0.75)',
           },
@@ -981,7 +1004,7 @@ export const darkTheme = createTheme({
     MuiFormHelperText: {
       styleOverrides: {
         root: {
-          fontSize: '0.75rem',
+          fontSize: 'clamp(0.6875rem, 1.5vw, 0.75rem)',
           marginLeft: 2,
           marginRight: 2,
           marginTop: 4,
@@ -995,10 +1018,12 @@ export const darkTheme = createTheme({
       },
       styleOverrides: {
         select: {
-          padding: '8.5px 14px',
-          fontSize: '0.875rem',
+          padding: '6.5px 14px',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
           lineHeight: 1.5,
           borderRadius: 2,
+          display: 'flex',
+          alignItems: 'center',
         },
         icon: {
           color: darkTokens.text.secondary,
@@ -1013,32 +1038,36 @@ export const darkTheme = createTheme({
           popupIndicator: {
             disableRipple: true,
             disableTouchRipple: true,
-            title: '', // Disable tooltip
+            title: '',
           },
           clearIndicator: {
             disableRipple: true,
             disableTouchRipple: true,
-            title: '', // Disable tooltip
+            title: '',
           },
         },
       },
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            padding: '4px 9px',
+            minHeight: '40px',
+            padding: '0px 9px',
             '& input': {
-              padding: '4.5px 5px',
+              padding: '8.5px 5px',
+              fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
             },
           },
         },
         input: {
-          fontSize: '0.875rem',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
         },
         inputRoot: {
-          fontSize: '0.875rem',
-          padding: '4px 9px !important',
+          fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+          minHeight: '40px',
+          padding: '0px 9px !important',
           '&[class*="MuiOutlinedInput-root"]': {
-            padding: '4px 9px',
+            padding: '0px 9px',
+            minHeight: '40px',
           },
         },
         endAdornment: {

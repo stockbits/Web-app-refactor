@@ -130,7 +130,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
                 whiteSpace: 'nowrap'
               }}
             >
-              Search
+              Search Tool
             </Button>
             <Button 
               variant="outlined" 
@@ -145,17 +145,6 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             >
               Clear
             </Button>
-          </Stack>
-
-          {/* Utility Icons */}
-          <Stack 
-            direction="row" 
-            spacing={0.75}
-            sx={{ 
-              flexShrink: 0,
-              ml: { sm: 'auto !important' }
-            }}
-          >
             <Tooltip title="Legend Key Menu">
               <IconButton 
                 size="small"
@@ -169,14 +158,23 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
                   }
                 }}
               >
-                <VpnKeyIcon sx={{ fontSize: 20 }} />
+                <VpnKeyIcon fontSize="small" />
               </IconButton>
             </Tooltip>
+          </Stack>
 
+          {/* Utility Icons */}
+          <Stack 
+            direction="row" 
+            spacing={0.75}
+            sx={{ 
+              flexShrink: 0,
+              ml: { sm: 'auto !important' }
+            }}
+          >
             {/* Docked Panel Icons */}
             {dockedPanels.length > 0 && (
               <>
-                <Box sx={{ width: '1px', height: 24, bgcolor: 'divider', mx: 0.5 }} />
                 {dockedPanels.map((panel) => (
                   <Tooltip key={panel.id} title={panel.title}>
                     <IconButton

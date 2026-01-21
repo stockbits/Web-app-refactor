@@ -554,9 +554,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                         height: '48px',
                         backgroundColor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
                           ? theme.palette.primary.main
-                          : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
+                          : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.25)',
                         borderRadius: '3px',
-                        opacity: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 1 : 0.4,
+                        opacity: 1,
                         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'absolute',
                         top: '50%',
@@ -651,9 +651,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                     width: '48px',
                     backgroundColor: (isResizing?.type === 'row' && isResizing?.index === r)
                       ? theme.palette.primary.main
-                      : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
+                      : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.25)',
                     borderRadius: '3px',
-                    opacity: (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0.4,
+                    opacity: 1,
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'absolute',
                     top: '50%',
