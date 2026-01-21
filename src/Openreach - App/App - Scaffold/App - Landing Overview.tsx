@@ -11,7 +11,6 @@ import {
   IconButton,
   InputAdornment,
   Paper,
-  Popover,
   Stack,
   TextField,
   Tooltip,
@@ -43,7 +42,6 @@ export interface LandingOverviewProps {
 export const LandingOverview = ({ 
   groups, 
   onToolClick,
-  infoIconOpen,
   onInfoIconClick,
   infoIconId
 }: LandingOverviewProps) => {

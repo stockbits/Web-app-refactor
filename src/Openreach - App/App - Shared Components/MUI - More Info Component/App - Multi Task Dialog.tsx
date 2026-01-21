@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useMemo, useCallback, useEffect } from 'react'
+import { type ReactNode, useState, useMemo, useCallback } from 'react'
 import {
   Dialog,
   DialogActions,
@@ -42,14 +42,6 @@ export function MultiTaskDialog({
   const [fieldNotesExpanded, setFieldNotesExpanded] = useState(false)
   const [progressNotesExpanded, setProgressNotesExpanded] = useState(false)
 
-  // Reset expansion state when dialog opens
-  useEffect(() => {
-    if (open) {
-      setFieldNotesExpanded(false)
-      setProgressNotesExpanded(false)
-    }
-  }, [open])
-
   const handleAddNote = useCallback(
     (index: number, type: 'field' | 'progress', text: string) => {
       const task = tasks[index]
@@ -61,7 +53,7 @@ export function MultiTaskDialog({
   )
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby="multi-task-dialog-title">
+    <Dialog key={open ? 'open' : 'closed'} open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby="multi-task-dialog-title">
       <DialogTitle id="multi-task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 6, pb: 1 }}>
         <Typography variant="h6" component="div" fontWeight={700}>
           Task Comparison ({tasks.length} tasks)

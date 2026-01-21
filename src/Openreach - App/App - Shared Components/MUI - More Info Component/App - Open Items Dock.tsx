@@ -103,10 +103,6 @@ export const OpenItemsDock = ({
     [allItems]
   )
 
-  if (totalCount === 0) {
-    return null
-  }
-
   const handleItemClick = useCallback(
     (item: typeof allItems[0]) => {
       if ('task' in item && item.task && onMinimizedTaskClick) {
@@ -166,7 +162,7 @@ export const OpenItemsDock = ({
   const getSelectedTasks = useCallback((): TaskTableRow[] => {
     return allItems
       .filter((item) => selectedIds.includes(item.id) && 'task' in item && item.task)
-      .map((item: any) => item.task)
+      .map((item) => (item as { task: TaskTableRow }).task)
   }, [allItems, selectedIds])
 
   const getItemIcon = useCallback((type: string) => {
@@ -179,6 +175,11 @@ export const OpenItemsDock = ({
         return <FolderOpenIcon sx={{ color: 'text.secondary' }} />
     }
   }, [])
+
+  // Early return AFTER all hooks
+  if (totalCount === 0) {
+    return null
+  }
 
   return (
     <>
