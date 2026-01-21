@@ -314,9 +314,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         >
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {React.createElement(expandedPanel.component as unknown as React.ComponentType<any>, {
+            ...expandedPanel.props,
             onExpand: () => handleExpandPanel(expandedPanel.id),
             onCollapse: handleCollapsePanel,
-            isExpanded: true
+            isExpanded: true,
           })}
         </Box>
       );

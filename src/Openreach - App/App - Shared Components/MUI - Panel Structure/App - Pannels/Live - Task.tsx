@@ -71,6 +71,9 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const [tableHeight, setTableHeight] = useState(400);
 
   useEffect(() => {
+    // Skip ResizeObserver when expanded - use CSS height instead
+    if (isExpanded) return;
+
     const element = tableContainerRef.current;
     if (!element) return;
 
@@ -78,7 +81,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       for (const entry of entries) {
         const { height } = entry.contentRect;
         // Only update height if it's a meaningful change (avoid 0 height)
-        if (height > 50) {
+        // Also prevent infinite growth by capping at a reasonable max
+        if (height > 50 && height < 10000) {
           setTableHeight(height);
         }
       }
@@ -86,26 +90,30 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
     resizeObserver.observe(element);
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [isExpanded]);
 
   // Force height recalculation when component mounts or becomes visible
   useEffect(() => {
+    if (isExpanded) return;
+    
     const element = tableContainerRef.current;
     if (element) {
       const { height } = element.getBoundingClientRect();
-      if (height > 50) {
+      if (height > 50 && height < 10000) {
         setTableHeight(height);
       }
     }
-  }, []);
+  }, [isExpanded]);
 
   // Recalculate height when window resizes or when component becomes visible
   useEffect(() => {
+    if (isExpanded) return;
+
     const handleResize = () => {
       const element = tableContainerRef.current;
       if (element) {
         const { height } = element.getBoundingClientRect();
-        if (height > 50) {
+        if (height > 50 && height < 10000) {
           setTableHeight(height);
         }
       }
@@ -119,7 +127,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
     };
-  }, []);
+  }, [isExpanded]);
 
   // --- Columns (copied from Task Management) ---
   const statusMetadata = useMemo(() => ({ ACT: { label: TASK_STATUS_LABELS.ACT }, AWI: { label: TASK_STATUS_LABELS.AWI }, ISS: { label: TASK_STATUS_LABELS.ISS }, EXC: { label: TASK_STATUS_LABELS.EXC }, COM: { label: TASK_STATUS_LABELS.COM } }), []);
@@ -160,6 +168,39 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     { field: 'linkedTask', headerName: 'Linked task', flex: 0.6, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}</Typography>) },
     { field: 'postCode', headerName: 'Post code', flex: 0.6, minWidth: 90, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.postCode}</Typography>) },
   ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.background?.alt, tokens.chip?.bg, tokens.chip?.border, tokens.chip?.hover?.bg, tokens.chip?.text, tokens.secondary?.light, tokens.secondary?.main, theme.palette.text, theme.palette.mode, openCallout]);
+
+  // Memoize table styles to prevent recreation
+  const tableSx = useMemo(() => ({
+    '& .MuiDataGrid-root': {
+      userSelect: 'none',
+    },
+    '& .selected-row': {
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(144, 202, 249, 0.12)' 
+        : 'rgba(25, 118, 210, 0.08)',
+      '&:hover': {
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(144, 202, 249, 0.18)' 
+          : 'rgba(25, 118, 210, 0.12)',
+      },
+    },
+    '& .last-interacted-row': {
+      borderLeft: `3px solid ${theme.palette.primary.main}`,
+      borderRight: `3px solid ${theme.palette.primary.main}`,
+    },
+    '& .selected-row.last-interacted-row': {
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? 'rgba(144, 202, 249, 0.16)' 
+        : 'rgba(25, 118, 210, 0.10)',
+      borderLeft: `3px solid ${theme.palette.primary.main}`,
+      borderRight: `3px solid ${theme.palette.primary.main}`,
+      '&:hover': {
+        backgroundColor: theme.palette.mode === 'dark' 
+          ? 'rgba(144, 202, 249, 0.22)' 
+          : 'rgba(25, 118, 210, 0.14)',
+      },
+    },
+  }), [theme.palette.mode, theme.palette.primary.main]);
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
@@ -211,6 +252,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
     }
   }, [toggleTaskSelection, rangeSelectTasks, filteredRows, contextMenu])
+
+  const handleCellDoubleClick = useCallback((params: GridCellParams<TaskTableRow>) => {
+    openTaskDialog?.(params.row);
+  }, [openTaskDialog]);
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -330,41 +375,11 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             enablePagination={false}
             enableQuickFilter
             disableSorting={selectionSource === 'map' && selectedTaskIds.length > 0}
-            height={tableHeight}
+            height={isExpanded ? '100%' : tableHeight}
             apiRef={apiRef}
             getRowClassName={getRowClassName}
             onCellClick={handleRowClick}
-            sx={{
-              '& .MuiDataGrid-root': {
-                userSelect: 'none',
-              },
-              '& .selected-row': {
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(144, 202, 249, 0.12)' 
-                  : 'rgba(25, 118, 210, 0.08)',
-                '&:hover': {
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(144, 202, 249, 0.18)' 
-                    : 'rgba(25, 118, 210, 0.12)',
-                },
-              },
-              '& .last-interacted-row': {
-                borderLeft: `3px solid ${theme.palette.primary.main}`,
-                borderRight: `3px solid ${theme.palette.primary.main}`,
-              },
-              '& .selected-row.last-interacted-row': {
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(144, 202, 249, 0.16)' 
-                  : 'rgba(25, 118, 210, 0.10)',
-                borderLeft: `3px solid ${theme.palette.primary.main}`,
-                borderRight: `3px solid ${theme.palette.primary.main}`,
-                '&:hover': {
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(144, 202, 249, 0.22)' 
-                    : 'rgba(25, 118, 210, 0.14)',
-                },
-              },
-            }}
+            sx={tableSx}
             contextMenuItems={[
               {
                 label: 'Open Task Details',
@@ -375,9 +390,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                 },
               },
             ]}
-            onCellDoubleClick={(params) => {
-              openTaskDialog?.(params.row);
-            }}
+            onCellDoubleClick={handleCellDoubleClick}
           />
         ) : (
           <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>

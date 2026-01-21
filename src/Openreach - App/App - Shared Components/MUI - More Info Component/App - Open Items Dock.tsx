@@ -19,6 +19,7 @@ import {
   Checkbox,
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import DescriptionIcon from '@mui/icons-material/Description'
 import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
@@ -218,7 +219,7 @@ export const OpenItemsDock = ({
               },
             }}
           >
-            <FolderOpenIcon />
+            <DescriptionIcon />
           </Badge>
         </IconButton>
       </Tooltip>
