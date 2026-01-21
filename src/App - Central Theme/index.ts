@@ -607,11 +607,16 @@ export const lightTheme = createTheme({
       },
     },
     MuiButton: {
+      defaultProps: {
+        size: 'small',
+        disableElevation: true,
+      },
       styleOverrides: {
         root: {
           textTransform: 'none',
           fontWeight: 600,
           borderRadius: 2,
+          fontSize: '0.875rem',
         },
         contained: {
           boxShadow: 'none',
@@ -634,6 +639,14 @@ export const lightTheme = createTheme({
           '&:hover': {
             borderWidth: '1.5px',
           },
+        },
+        sizeSmall: {
+          padding: '6px 16px',
+          fontSize: '0.875rem',
+        },
+        sizeMedium: {
+          padding: '8px 20px',
+          fontSize: '0.9375rem',
         },
       },
     },
@@ -658,12 +671,18 @@ export const lightTheme = createTheme({
       },
     },
     MuiIconButton: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           borderRadius: 2,
           '&:hover': {
             backgroundColor: `rgba(67, 176, 114, 0.08)`,
           },
+        },
+        sizeSmall: {
+          padding: 8,
         },
       },
     },
@@ -1100,11 +1119,16 @@ export const darkTheme = createTheme({
       },
     },
     MuiButton: {
+      defaultProps: {
+        size: 'small',
+        disableElevation: true,
+      },
       styleOverrides: {
         root: {
           textTransform: 'none',
           fontWeight: 600,
           borderRadius: 2,
+          fontSize: '0.875rem',
         },
         contained: {
           boxShadow: 'none',
@@ -1127,6 +1151,14 @@ export const darkTheme = createTheme({
           '&:hover': {
             borderWidth: '1.5px',
           },
+        },
+        sizeSmall: {
+          padding: '6px 16px',
+          fontSize: '0.875rem',
+        },
+        sizeMedium: {
+          padding: '8px 20px',
+          fontSize: '0.9375rem',
         },
       },
     },
@@ -1151,12 +1183,18 @@ export const darkTheme = createTheme({
       },
     },
     MuiIconButton: {
+      defaultProps: {
+        size: 'small',
+      },
       styleOverrides: {
         root: {
           borderRadius: 2,
           '&:hover': {
             backgroundColor: `rgba(82, 190, 132, 0.12)`,
           },
+        },
+        sizeSmall: {
+          padding: 8,
         },
       },
     },

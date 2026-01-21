@@ -124,6 +124,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
     if (count === 1) return { rows: 1, cols: 1, areas: [[visiblePanels[0].id]] };
     if (count === 2) return { rows: 1, cols: 2, areas: [[visiblePanels[0].id, visiblePanels[1].id]] };
     if (count === 3) {
+      // When 3 panels, top row has 2, bottom row has 1 that spans full width
       return {
         rows: 2, cols: 2,
         areas: [
@@ -425,11 +426,21 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
             // Find the position of this panel in the grid
             let rowIndex = -1;
             let colIndex = -1;
+            let colSpan = 1;
             for (let r = 0; r < gridLayout.rows; r++) {
               for (let c = 0; c < gridLayout.cols; c++) {
                 if (gridLayout.areas[r] && gridLayout.areas[r][c] === panel.id) {
                   rowIndex = r;
                   colIndex = c;
+                  // Calculate column span by counting consecutive cells with same panel id
+                  colSpan = 1;
+                  for (let spanCheck = c + 1; spanCheck < gridLayout.cols; spanCheck++) {
+                    if (gridLayout.areas[r][spanCheck] === panel.id) {
+                      colSpan++;
+                    } else {
+                      break;
+                    }
+                  }
                   break;
                 }
               }
@@ -442,7 +453,15 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
             const rowStart = rowSizes.slice(0, rowIndex).reduce((a, b) => a + b, 0);
             const rowHeight = rowSizes[rowIndex];
             const colStart = colSizes[rowIndex]?.slice(0, colIndex).reduce((a, b) => a + b, 0) || (colIndex * (100 / gridLayout.cols));
-            const colWidth = colSizes[rowIndex]?.[colIndex] || (100 / gridLayout.cols);
+            // Sum up the widths of all spanned columns
+            let colWidth = 0;
+            if (colSizes[rowIndex]) {
+              for (let i = 0; i < colSpan; i++) {
+                colWidth += colSizes[rowIndex][colIndex + i] || (100 / gridLayout.cols);
+              }
+            } else {
+              colWidth = (100 / gridLayout.cols) * colSpan;
+            }
 
             return (
               <Box key={panel.id} sx={{ 
@@ -503,15 +522,19 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                       left: `${colStart}%`,
                       top: `${rowStart}%`,
                       height: `${rowHeight}%`,
-                      width: '8px',
+                      width: '12px',
                       zIndex: 1000,
                       transform: 'translateX(-50%)',
                       pointerEvents: 'auto',
                       background: 'none',
-                      cursor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 'grabbing' : 'grab',
+                      cursor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 'col-resize' : 'col-resize',
                       display: { xs: 'none', sm: 'flex' },
                       alignItems: 'center',
                       justifyContent: 'center',
+                      '&:hover .handle-indicator': {
+                        opacity: 1,
+                        transform: 'translate(-50%, -50%) scale(1)',
+                      },
                     }}
                     tabIndex={0}
                     onPointerDown={handlePointerDown('col', c, r)}
@@ -524,29 +547,63 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                     onMouseLeave={() => setHoveredHandle(null)}
                   >
                     <Box
-                      className="mui4panel-handle-block"
+                      className="handle-indicator"
                       sx={{
-                        width: '4px',
-                        height: '20%',
-                        minHeight: '32px',
-                        maxHeight: '100%',
-                        backgroundColor: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
-                                        (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
+                        width: '6px',
+                        height: '48px',
+                        backgroundColor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
                           ? theme.palette.primary.main
-                          : theme.palette.divider,
-                        borderRadius: 2,
-                        opacity: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
-                                (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 1 : 0,
-                        transition: 'background 0.2s, opacity 0.2s',
+                          : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
+                        borderRadius: '3px',
+                        opacity: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? 1 : 0.4,
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) 
+                          ? 'translate(-50%, -50%) scale(1.1)' 
+                          : 'translate(-50%, -50%) scale(0.95)',
                         boxShadow: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
-                                  (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) ? theme.shadows[2] : 0,
+                                  (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) 
+                          ? `0 0 8px ${theme.palette.primary.main}40` 
+                          : 'none',
                         pointerEvents: 'none',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '3px',
+                        '&::before, &::after': {
+                          content: '""',
+                          width: '2px',
+                          height: '2px',
+                          borderRadius: '50%',
+                          backgroundColor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
+                            ? theme.palette.primary.contrastText
+                            : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+                          position: 'absolute',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                        },
+                        '&::before': {
+                          top: '30%',
+                        },
+                        '&::after': {
+                          bottom: '30%',
+                        },
                       }}
-                    />
+                    >
+                      <Box
+                        sx={{
+                          width: '2px',
+                          height: '2px',
+                          borderRadius: '50%',
+                          backgroundColor: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r)
+                            ? theme.palette.primary.contrastText
+                            : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+                        }}
+                      />
+                    </Box>
                   </Box>
                 );
               }
@@ -566,15 +623,19 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                   top: `${rowStart}%`,
                   left: 0,
                   width: '100%',
-                  height: '8px',
+                  height: '12px',
                   zIndex: 1000,
                   transform: 'translateY(-50%)',
                   pointerEvents: 'auto',
                   background: 'none',
-                  cursor: (isResizing?.type === 'row' && isResizing?.index === r) ? 'grabbing' : 'grab',
+                  cursor: (isResizing?.type === 'row' && isResizing?.index === r) ? 'row-resize' : 'row-resize',
                   display: { xs: 'none', sm: 'flex' },
                   justifyContent: 'center',
                   alignItems: 'center',
+                  '&:hover .handle-indicator': {
+                    opacity: 1,
+                    transform: 'translate(-50%, -50%) scale(1)',
+                  },
                 }}
                 tabIndex={0}
                 onPointerDown={handlePointerDown('row', r)}
@@ -583,29 +644,63 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                 onMouseLeave={() => setHoveredHandle(null)}
               >
                 <Box
-                  className="mui4panel-handle-block"
+                  className="handle-indicator"
                   sx={{
-                    height: '4px',
-                    width: '20%',
-                    minWidth: '32px',
-                    maxWidth: '100%',
-                    backgroundColor: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
-                                    (isResizing?.type === 'row' && isResizing?.index === r)
+                    height: '6px',
+                    width: '48px',
+                    backgroundColor: (isResizing?.type === 'row' && isResizing?.index === r)
                       ? theme.palette.primary.main
-                      : theme.palette.divider,
-                    borderRadius: 2,
-                    opacity: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
-                            (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0,
-                    transition: 'background 0.2s, opacity 0.2s',
+                      : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.12)',
+                    borderRadius: '3px',
+                    opacity: (isResizing?.type === 'row' && isResizing?.index === r) ? 1 : 0.4,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    transform: 'translate(-50%, -50%)',
+                    transform: (isResizing?.type === 'row' && isResizing?.index === r)
+                      ? 'translate(-50%, -50%) scale(1.1)'
+                      : 'translate(-50%, -50%) scale(0.95)',
                     boxShadow: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
-                              (isResizing?.type === 'row' && isResizing?.index === r) ? theme.shadows[2] : 0,
+                              (isResizing?.type === 'row' && isResizing?.index === r)
+                      ? `0 0 8px ${theme.palette.primary.main}40`
+                      : 'none',
                     pointerEvents: 'none',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '3px',
+                    '&::before, &::after': {
+                      content: '""',
+                      width: '2px',
+                      height: '2px',
+                      borderRadius: '50%',
+                      backgroundColor: (isResizing?.type === 'row' && isResizing?.index === r)
+                        ? theme.palette.primary.contrastText
+                        : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+                      position: 'absolute',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                    },
+                    '&::before': {
+                      left: '30%',
+                    },
+                    '&::after': {
+                      right: '30%',
+                    },
                   }}
-                />
+                >
+                  <Box
+                    sx={{
+                      width: '2px',
+                      height: '2px',
+                      borderRadius: '50%',
+                      backgroundColor: (isResizing?.type === 'row' && isResizing?.index === r)
+                        ? theme.palette.primary.contrastText
+                        : theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+                    }}
+                  />
+                </Box>
               </Box>
             );
           })}

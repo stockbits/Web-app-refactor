@@ -774,13 +774,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       size="small"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive label size
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input size
+                          borderRadius: 2,
                         },
                       }}
                     />
@@ -797,13 +791,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       size="small"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: { xs: '0.75rem', sm: '0.875rem' }, // Responsive label size
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          fontSize: { xs: '0.875rem', sm: '1rem' }, // Responsive input size
+                          borderRadius: 2,
                         },
                       }}
                     />

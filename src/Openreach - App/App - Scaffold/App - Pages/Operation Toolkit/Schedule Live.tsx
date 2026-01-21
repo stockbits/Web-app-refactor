@@ -59,8 +59,8 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
       <Box 
         sx={{ 
           flexShrink: 0,
-          px: { xs: 1.5, sm: 2 },
-          py: 1.25,
+          px: { xs: 1, sm: 2 },
+          py: { xs: 1, sm: 1.25 },
           borderBottom: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
@@ -68,38 +68,36 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
       >
         <Stack 
           direction="row"
-          spacing={1.5}
           alignItems="center"
           sx={{ 
-            flexWrap: { xs: 'wrap', md: 'nowrap' },
+            flexWrap: 'wrap',
+            gap: { xs: 1, sm: 1.5 },
           }}
         >
           {/* Filters */}
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 260, md: 260 },
-              width: { xs: '100%', sm: 'auto' },
-              order: { xs: 1, sm: 1 }
+              minWidth: { xs: '100%', sm: 200, md: 260 },
+              flex: { xs: '1 1 100%', sm: '0 0 auto' },
             }}
             options={divisionOptions}
             value={selectedDivision}
             onChange={(_, newValue) => setSelectedDivision(newValue)}
             renderInput={(params) => (
-              <TextField {...params} label="Division" placeholder="Select division" />
+              <TextField {...params} label="Division" placeholder="Select division" size="small" />
             )}
           />
           
           <Autocomplete
             sx={{ 
-              minWidth: { xs: '100%', sm: 145, md: 145 },
-              width: { xs: '100%', sm: 'auto' },
-              order: { xs: 2, sm: 2 }
+              minWidth: { xs: '100%', sm: 140, md: 145 },
+              flex: { xs: '1 1 100%', sm: '0 0 auto' },
             }}
             options={domainOptions}
             value={selectedDomain}
             onChange={(_, newValue) => setSelectedDomain(newValue)}
             renderInput={(params) => (
-              <TextField {...params} label="Domain" placeholder="Select domain" />
+              <TextField {...params} label="Domain" placeholder="Select domain" size="small" />
             )}
           />
 
@@ -109,9 +107,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             spacing={0.75}
             alignItems="center"
             sx={{ 
-              flex: { xs: '1 1 100%', md: 1 },
+              flex: { xs: '1 1 100%', sm: '1 1 auto' },
+              minWidth: { xs: '100%', sm: 200 },
               maxWidth: { md: 420 },
-              order: { xs: 3, sm: 3 }
             }}
           >
             <TextField
@@ -120,6 +118,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               inputRef={searchRef}
+              size="small"
             />
             <Button 
               variant="contained" 
@@ -127,7 +126,8 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               onClick={() => setSearchToolOpen(true)}
               sx={{ 
                 minWidth: 80,
-                px: 1.5
+                px: 1.5,
+                whiteSpace: 'nowrap'
               }}
             >
               Search
@@ -139,7 +139,8 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               disabled={!searchFilters && selectedDivision === null && selectedDomain === null && searchInput === '' && selectedTaskIds.length === 0}
               sx={{ 
                 minWidth: 70,
-                px: 1.5
+                px: 1.5,
+                whiteSpace: 'nowrap'
               }}
             >
               Clear
@@ -152,8 +153,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             spacing={0.75}
             sx={{ 
               flexShrink: 0,
-              order: { xs: 4, sm: 4 },
-              ml: { md: 'auto !important' }
+              ml: { sm: 'auto !important' }
             }}
           >
             <Tooltip title="Legend Key Menu">

@@ -169,6 +169,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({ open, onClose, onSearch, 
             }}>
               <TextField
                 label="Score"
+                size="small"
                 value={impactValue ?? ''}
                 onChange={(e) => setImpactValue(e.target.value ? Number(e.target.value) : null)}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}

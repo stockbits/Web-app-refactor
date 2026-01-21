@@ -455,6 +455,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
             {onAddNote && !loading && (
               <Stack spacing={0.5}>
                 <TextField
+                  size="small"
                   value={fieldNoteDraft}
                   onChange={(e) => setFieldNoteDraft(e.target.value)}
                   placeholder="Add a field note..."
@@ -464,7 +465,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       bgcolor: theme.palette.background.default,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontSize: '0.875rem',
                     }
                   }}
                 />
@@ -621,6 +622,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
             {onAddNote && !loading && (
               <Stack spacing={0.5}>
                 <TextField
+                  size="small"
                   value={progressNoteDraft}
                   onChange={(e) => setProgressNoteDraft(e.target.value)}
                   placeholder="Add a progress note..."
@@ -630,7 +632,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       bgcolor: theme.palette.background.default,
-                      fontSize: { xs: '0.875rem', sm: '1rem' },
+                      fontSize: '0.875rem',
                     }
                   }}
                 />
