@@ -24,7 +24,7 @@ import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow } from "../../../App - Data Tables/Task - Table";
 
 interface LiveGanttProps {
@@ -49,7 +49,8 @@ interface TechnicianDayRow {
 const FIXED_COLUMN_WIDTH = 220;
 const HOUR_WIDTH = 50; // pixels per hour
 const ROW_HEIGHT = 36;
-const HEADER_HEIGHT = 32;
+const HEADER_HEIGHT = 32; // Timeline header with hour markers
+const TOOLBAR_HEIGHT = 40; // Main toolbar - matches LiveMap
 
 type DateRangePreset = 'today' | 'tomorrow' | '3-days' | '1-week' | '2-weeks' | '1-month';
 
@@ -98,6 +99,23 @@ export default function LiveGantt({
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to 5am on initial load
+  useEffect(() => {
+    const scrollTo5AM = () => {
+      const scrollPosition = 5 * HOUR_WIDTH; // 5 hours * 50px = 250px
+      if (timelineRef.current) {
+        timelineRef.current.scrollLeft = scrollPosition;
+      }
+      if (timelineBodyRef.current) {
+        timelineBodyRef.current.scrollLeft = scrollPosition;
+      }
+    };
+
+    // Small delay to ensure refs are mounted
+    const timer = setTimeout(scrollTo5AM, 0);
+    return () => clearTimeout(timer);
+  }, []); // Empty dependency array = run only on mount
 
   // Generate date range
   const dateRange = useMemo(() => {
@@ -204,10 +222,6 @@ export default function LiveGantt({
     return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
   };
 
-  const formatDayOfWeek = (date: Date) => {
-    return date.toLocaleDateString('en-GB', { weekday: 'short' });
-  };
-
   if (minimized) {
     return (
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -242,14 +256,14 @@ export default function LiveGantt({
         elevation={0}
         sx={{
           backgroundColor: headerBg,
-          minHeight: HEADER_HEIGHT,
+          minHeight: TOOLBAR_HEIGHT,
           '& .MuiToolbar-root': {
-            minHeight: HEADER_HEIGHT,
+            minHeight: TOOLBAR_HEIGHT,
             px: 1,
           }
         }}
       >
-        <Toolbar variant="dense" sx={{ justifyContent: 'space-between', minHeight: `${HEADER_HEIGHT}px !important`, px: 2, gap: 2 }}>
+        <Toolbar variant="dense" sx={{ justifyContent: 'space-between', minHeight: `${TOOLBAR_HEIGHT}px !important`, px: 2, gap: 2 }}>
           {/* Left side - Date navigation and range selector */}
           <Stack direction="row" spacing={1.5} alignItems="center">
             {/* Navigation button group */}
@@ -399,13 +413,13 @@ export default function LiveGantt({
           </Stack>
 
           {/* Right side for secondary actions */}
-          <Stack direction="row" spacing={0.75} alignItems="center">
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
-                  p: 0.5,
+                  p: 0.25,
                   borderRadius: 1,
                   color: theme.openreach.energyAccent,
                   border: `1px solid ${theme.palette.divider}`,
@@ -424,7 +438,7 @@ export default function LiveGantt({
                   size="small"
                   onClick={onExpand}
                   sx={{
-                    p: 0.5,
+                    p: 0.25,
                     borderRadius: 1,
                     color: theme.openreach.energyAccent,
                     border: `1px solid ${theme.palette.divider}`,
@@ -444,7 +458,7 @@ export default function LiveGantt({
                   size="small"
                   onClick={onCollapse}
                   sx={{
-                    p: 0.5,
+                    p: 0.25,
                     borderRadius: 1,
                     color: theme.openreach.energyAccent,
                     border: `1px solid ${theme.palette.divider}`,
@@ -559,7 +573,7 @@ export default function LiveGantt({
                 }}
               >
                 {/* Hour markers for each hour of the day */}
-                {dateRange.map((date, dayIdx) => (
+                {dateRange.map((_date, dayIdx) => (
                   <Box key={dayIdx} sx={{ display: 'flex', position: 'relative' }}>
                     {Array.from({ length: 24 }).map((_, hourIdx) => (
                       <Box

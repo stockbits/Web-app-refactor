@@ -466,7 +466,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   sx={{
                     ...multilineTextFieldSx,
                     '& .MuiOutlinedInput-root': {
-                      ...((multilineTextFieldSx as any)['& .MuiOutlinedInput-root'] || {}),
+                      ...((multilineTextFieldSx as Record<string, unknown>)['& .MuiOutlinedInput-root'] || {}),
                       bgcolor: theme.palette.background.default,
                       fontSize: '0.875rem',
                     }
@@ -635,7 +635,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   sx={{
                     ...multilineTextFieldSx,
                     '& .MuiOutlinedInput-root': {
-                      ...((multilineTextFieldSx as any)['& .MuiOutlinedInput-root'] || {}),
+                      ...((multilineTextFieldSx as Record<string, unknown>)['& .MuiOutlinedInput-root'] || {}),
                       bgcolor: theme.palette.background.default,
                       fontSize: '0.875rem',
                     }

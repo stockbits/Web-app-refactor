@@ -304,24 +304,24 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
           <Box />
-          <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
-                  p: 0.75,
-                  border: 'none',
-                  backgroundColor: 'transparent',
+                  p: 0.25,
+                  borderRadius: 1,
                   color: iconColor,
+                  border: `1px solid ${theme.palette.divider}`,
                   '&:hover': {
-                    backgroundColor: 'transparent',
-                    boxShadow: 'none',
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: iconColor,
                   },
                 }}
                 aria-label={isDocked ? "Undock panel" : "Dock panel"}
               >
-                <ChecklistIcon sx={{ fontSize: 20, color: iconColor }} />
+                <ChecklistIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
             {!isExpanded && (
@@ -330,18 +330,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   size="small"
                   onClick={onExpand}
                   sx={{
-                    p: 0.75,
-                    border: 'none',
-                    backgroundColor: 'transparent',
+                    p: 0.25,
+                    borderRadius: 1,
                     color: iconColor,
+                    border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: iconColor,
                     },
                   }}
                   aria-label="Expand to full screen"
                 >
-                  <OpenInFullIcon sx={{ fontSize: 20, color: iconColor }} />
+                  <OpenInFullIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -351,18 +351,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                   size="small"
                   onClick={onCollapse}
                   sx={{
-                    p: 0.75,
-                    border: 'none',
-                    backgroundColor: 'transparent',
+                    p: 0.25,
+                    borderRadius: 1,
                     color: iconColor,
+                    border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: iconColor,
                     },
                   }}
                   aria-label="Collapse to normal view"
                 >
-                  <CloseFullscreenIcon sx={{ fontSize: 20, color: iconColor }} />
+                  <CloseFullscreenIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
             )}

@@ -531,28 +531,23 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'flex-end' }}>
           {/* Right side actions */}
-          <Stack direction="row" spacing={0.5} sx={{ pr: 2 }}>
+          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
                 onClick={isDocked ? onUndock : onDock}
                 sx={{
-                  p: 0.5,
-                  border: 'none',
-                  backgroundColor: 'transparent',
+                  p: 0.25,
+                  borderRadius: 1,
                   color: theme.openreach.energyAccent,
+                  border: `1px solid ${theme.palette.divider}`,
                   '&:hover': {
-                    backgroundColor: 'transparent',
-                    boxShadow: 'none',
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: theme.openreach.energyAccent,
                   },
                 }}
               >
-                <MapIcon
-                  sx={{
-                    fontSize: 20,
-                    color: theme.openreach.energyAccent,
-                  }}
-                />
+                <MapIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
             {!isExpanded && (
@@ -561,17 +556,17 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                   size="small"
                   onClick={onExpand}
                   sx={{
-                    p: 0.5,
-                    border: 'none',
-                    backgroundColor: 'transparent',
+                    p: 0.25,
+                    borderRadius: 1,
                     color: theme.openreach.energyAccent,
+                    border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: theme.openreach.energyAccent,
                     },
                   }}
                 >
-                  <OpenInFullIcon sx={{ fontSize: 24, color: 'inherit' }} />
+                  <OpenInFullIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
             )}
@@ -581,17 +576,17 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                   size="small"
                   onClick={onCollapse}
                   sx={{
-                    p: 0.5,
-                    border: 'none',
-                    backgroundColor: 'transparent',
+                    p: 0.25,
+                    borderRadius: 1,
                     color: theme.openreach.energyAccent,
+                    border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
-                      backgroundColor: 'transparent',
-                      boxShadow: 'none',
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: theme.openreach.energyAccent,
                     },
                   }}
                 >
-                  <CloseFullscreenIcon sx={{ fontSize: 24, color: 'inherit' }} />
+                  <CloseFullscreenIcon sx={{ fontSize: 16 }} />
                 </IconButton>
               </Tooltip>
             )}

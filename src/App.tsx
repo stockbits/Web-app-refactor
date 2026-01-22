@@ -1,5 +1,6 @@
-import { Suspense, useMemo, useState, useEffect, useCallback } from "react";
+import { Suspense, useMemo, useState, useEffect, useCallback, lazy } from "react";
 import type { ElementType, JSX } from "react";
+import * as React from "react";
 import "./App.css";
 import {
   alpha,
@@ -342,24 +343,34 @@ const MENU_GROUPS: MenuGroup[] = [
 
 type PageComponent = () => JSX.Element;
 type PageModule = { default: PageComponent };
+type PageLoader = () => Promise<PageModule>;
 
 const pageModules = import.meta.glob<PageModule>(
-  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx",
-  { eager: true }
-) as Record<string, PageModule>;
+  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx"
+) as Record<string, PageLoader>;
 
 const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
-  Record<string, Record<string, PageComponent>>
->((acc, [path, module]) => {
+  Record<string, Record<string, PageLoader>>
+>((acc, [path, loader]) => {
   const segments = path.split("/");
   const folderName = segments[segments.length - 2];
   const fileName = segments[segments.length - 1].replace(".tsx", "");
   if (!acc[folderName]) {
     acc[folderName] = {};
   }
-  acc[folderName][fileName] = module.default;
+  acc[folderName][fileName] = loader;
   return acc;
 }, {});
+
+// Cache for lazy components - created once per page loader
+const lazyComponentCache = new Map<PageLoader, React.LazyExoticComponent<PageComponent>>();
+
+function getLazyComponent(loader: PageLoader): React.LazyExoticComponent<PageComponent> {
+  if (!lazyComponentCache.has(loader)) {
+    lazyComponentCache.set(loader, lazy(() => loader()));
+  }
+  return lazyComponentCache.get(loader)!;
+}
 
 function App() {
   const theme = useTheme();
@@ -859,11 +870,9 @@ function App() {
                   sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', bgcolor: theme.palette.background.default, overflow: 'hidden' }}
                 >
                 {(() => {
-                  const ActivePageComponent =
-                    PAGE_COMPONENTS[activePage.menuLabel]?.[
-                      activePage.cardName
-                    ];
-                  if (!ActivePageComponent) {
+                  const pageLoader =
+                    PAGE_COMPONENTS[activePage.menuLabel]?.[activePage.cardName];
+                  if (!pageLoader) {
                     return (
                       <Typography color="text.secondary">
                         No page scaffold wired for {activePage.cardName}{' '}
@@ -871,6 +880,9 @@ function App() {
                       </Typography>
                     );
                   }
+                  
+                  const LazyPageComponent = getLazyComponent(pageLoader);
+                  
                   return (
                     <Suspense
                       fallback={
@@ -894,22 +906,20 @@ function App() {
                     >
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
-                            <SelectionUIProvider>
-                              <ActivePageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog } as Record<string, unknown>)} />
-                            </SelectionUIProvider>
-                          ) : activePage?.cardName === 'Task Management' ? (
-                            <SelectionUIProvider>
-                              <ActivePageComponent {...({
-                                openTaskDialog,
-                              } as Record<string, unknown>)} />
-                            </SelectionUIProvider>
-                          ) : (
-                            <ActivePageComponent />
-                          )}
-                        </Box>
-                      </Suspense>
-                    );
-                  })()}
+                          <SelectionUIProvider>
+                            <LazyPageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog } as Record<string, unknown>)} />
+                          </SelectionUIProvider>
+                        ) : activePage?.cardName === 'Task Management' ? (
+                          <SelectionUIProvider>
+                            <LazyPageComponent {...({ openTaskDialog } as Record<string, unknown>)} />
+                          </SelectionUIProvider>
+                        ) : (
+                          <LazyPageComponent />
+                        )}
+                      </Box>
+                    </Suspense>
+                  );
+                })()}
               </Box>
             )}
           </Box>
