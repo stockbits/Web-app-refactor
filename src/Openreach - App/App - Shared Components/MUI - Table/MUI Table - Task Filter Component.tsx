@@ -21,6 +21,7 @@ import {
 } from '@mui/material'
 import { createFilterOptions, type AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import type { SxProps, Theme } from '@mui/material/styles'
+import { STANDARD_INPUT_PROPS } from '../../../AppCentralTheme/input-config.ts'
 import { LocalizationProvider, StaticDatePicker } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
@@ -637,6 +638,9 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
               </IconButton>
             </InputAdornment>
           }
+          sx={{
+            minHeight: '40px',
+          }}
         />
 
         <Modal
@@ -752,6 +756,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                     spacing={2}
                   >
                     <TextField
+                      {...STANDARD_INPUT_PROPS}
                       label="Start time"
                       type="time"
                       value={formatTimeInput(draftRange.start)}
@@ -760,8 +765,6 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ step: 300 }}
                       fullWidth
-                      variant="outlined"
-                      size="small"
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           borderRadius: 2,
@@ -769,6 +772,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       }}
                     />
                     <TextField
+                      {...STANDARD_INPUT_PROPS}
                       label="End time"
                       type="time"
                       value={formatTimeInput(draftRange.end)}
@@ -777,8 +781,6 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ step: 300 }}
                       fullWidth
-                      variant="outlined"
-                      size="small"
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           borderRadius: 2,
@@ -1320,6 +1322,7 @@ const BulkSelectableMultiSelect = <TValue extends string>({
         return (
           <TextField
             {...params}
+            {...STANDARD_INPUT_PROPS}
             label={label}
             placeholder={value.length ? undefined : 'Filter list'}
             InputProps={{

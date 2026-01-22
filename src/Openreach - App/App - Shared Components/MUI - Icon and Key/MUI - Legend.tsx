@@ -1,6 +1,6 @@
 import { Box, Stack, Typography, useTheme } from '@mui/material';
 import { TaskIcon } from './MUI - Icon';
-import { TASK_ICON_COLORS } from '../../../App - Central Theme/Icon-Colors';
+import { TASK_ICON_COLORS } from '../../../AppCentralTheme/Icon-Colors';
 
 interface TaskStatusLegendProps {
   /**

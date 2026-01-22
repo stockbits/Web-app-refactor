@@ -65,20 +65,20 @@ const fallbackNavItems: OpenreachNavItem[] = [
   { id: 'general-settings', label: 'General Settings', icon: <SettingsApplicationsRoundedIcon />, description: 'System preferences and integrations.' },
 ]
 
-interface TaskForceMenuChild {
+interface TaskforceMenuChild {
   id: string
   label: string
   description: string
 }
 
-interface TaskForceMenuGroup {
+interface TaskforceMenuGroup {
   id: string
   label: string
   icon: ReactNode
-  children: TaskForceMenuChild[]
+  children: TaskforceMenuChild[]
 }
 
-const taskForceMenuGroups: TaskForceMenuGroup[] = [
+const taskforceMenuGroups: TaskforceMenuGroup[] = [
   {
     id: 'operations-management',
     label: 'Operations Management',
@@ -225,10 +225,10 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
 
   const filteredGroups = useMemo(() => {
     if (!trimmedQuery) {
-      return taskForceMenuGroups
+      return taskforceMenuGroups
     }
     const value = trimmedQuery.toLowerCase()
-    return taskForceMenuGroups
+    return taskforceMenuGroups
       .map((group) => ({
         ...group,
         children: group.children.filter(
@@ -242,7 +242,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
 
   const noMatches = showTreeResults && filteredGroups.length === 0
 
-  const handleChildSelect = useCallback((child: TaskForceMenuChild, group: TaskForceMenuGroup) => {
+  const handleChildSelect = useCallback((child: TaskforceMenuChild, group: TaskforceMenuGroup) => {
     onSelect?.({
       id: child.id,
       label: child.label,

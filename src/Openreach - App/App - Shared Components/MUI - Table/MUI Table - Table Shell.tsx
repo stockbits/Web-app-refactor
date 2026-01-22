@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useMemo, memo, type ReactNode } from 'react'
 import { Box, Stack, Switch, Typography, useTheme, type SxProps, type Theme, Autocomplete, TextField } from '@mui/material'
+import { STANDARD_INPUT_PROPS, STANDARD_AUTOCOMPLETE_PROPS } from '../../../AppCentralTheme/input-config.ts'
 import {
   DataGrid,
   useGridApiRef,
@@ -319,6 +320,7 @@ function QuickFilterToolbar({
     >
       <Box flex={1} maxWidth={400}>
         <Autocomplete
+          {...STANDARD_AUTOCOMPLETE_PROPS}
           freeSolo
           options={searchHistory}
           value={searchValue}
@@ -326,7 +328,7 @@ function QuickFilterToolbar({
           renderInput={(params) => (
             <TextField
               {...params}
-              size="small"
+              {...STANDARD_INPUT_PROPS}
               placeholder="Quick filter..."
               onKeyDown={handleKeyDown}
               InputProps={{

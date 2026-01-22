@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { Autocomplete, TextField, InputAdornment, IconButton, Tooltip, Stack } from '@mui/material'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import type { SxProps, Theme } from '@mui/material/styles'
+import { STANDARD_AUTOCOMPLETE_PROPS } from '../../../AppCentralTheme/input-config.ts'
 
 interface GlobalSearchFieldProps {
   value: string
@@ -77,6 +78,7 @@ const GlobalSearchField = ({
 
   const searchField = (
     <Autocomplete
+      {...STANDARD_AUTOCOMPLETE_PROPS}
       freeSolo
       options={searchHistory}
       value={value}

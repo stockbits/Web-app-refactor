@@ -14,6 +14,7 @@ import {
   useTheme,
   Alert,
 } from '@mui/material'
+import { STANDARD_INPUT_PROPS } from '../../../../AppCentralTheme/input-config.ts'
 import { TASK_TABLE_ROWS, TASK_STATUS_LABELS } from '../../../App - Data Tables/Task - Table'
 import type { TaskSkillCode, TaskStatusCode, TaskResponseCode, TaskCommitType, TaskDomainId } from '../../../App - Data Tables/Task - Table'
 import { BulkSelectableMultiSelect, TaskDateWindowField } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
@@ -188,8 +189,8 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({
               justifyContent: { xs: 'flex-end', sm: 'flex-start' }
             }}>
               <TextField
+                {...STANDARD_INPUT_PROPS}
                 label="Score"
-                size="small"
                 value={impactValue ?? ''}
                 onChange={(e) => setImpactValue(e.target.value ? Number(e.target.value) : null)}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*', maxLength: 3 }}

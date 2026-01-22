@@ -1288,3 +1288,6 @@ export const createDarkTheme = () => darkTheme;
 
 // Export design tokens for direct access if needed
 export { brandColors, lightTokens, darkTokens };
+
+// Export input configuration utilities
+export * from './input-config';

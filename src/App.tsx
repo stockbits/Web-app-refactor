@@ -35,7 +35,7 @@ import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing 
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { OpenItemsDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Open Items Dock";
-import { useMinimizedTasks } from "./App - Central Theme/MinimizedTaskContext";
+import { useMinimizedTasks } from "./AppCentralTheme/MinimizedTaskContext";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
@@ -580,7 +580,7 @@ function App() {
         >
           <Box component="header" sx={{ position: 'relative', zIndex: 1 }}>
             <OpenreachTopBanner
-              title="Task Force"
+              title="Taskforce"
               subtitle="Day-to-day operational tool for Openreach operations."
               userInitials="JD"
               userName="Jordan Davies"

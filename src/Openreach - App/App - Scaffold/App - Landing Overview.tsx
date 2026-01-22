@@ -21,6 +21,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SearchIcon from '@mui/icons-material/Search'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import { STANDARD_INPUT_PROPS, searchTextFieldSx } from '../../AppCentralTheme/input-config.ts'
 
 export interface LandingMenuGroup {
   id: string
@@ -149,8 +150,8 @@ export const LandingOverview = ({
 
           {/* Search */}
           <TextField
+            {...STANDARD_INPUT_PROPS}
             fullWidth
-            size="small"
             placeholder="Search toolkits and tools..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -164,13 +165,8 @@ export const LandingOverview = ({
               },
             }}
             sx={{
+              ...searchTextFieldSx,
               maxWidth: 500,
-              '& .MuiOutlinedInput-root': {
-                bgcolor: 'background.default',
-                '&:hover': {
-                  bgcolor: 'background.default',
-                },
-              },
             }}
           />
         </Stack>

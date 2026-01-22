@@ -13,6 +13,7 @@ import {
   useTheme,
   TextField,
 } from '@mui/material'
+import { STANDARD_INPUT_PROPS, multilineTextFieldSx } from '../../../AppCentralTheme/input-config.ts'
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded'
 import RoomRoundedIcon from '@mui/icons-material/RoomRounded'
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
@@ -455,7 +456,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
             {onAddNote && !loading && (
               <Stack spacing={0.5}>
                 <TextField
-                  size="small"
+                  {...STANDARD_INPUT_PROPS}
                   value={fieldNoteDraft}
                   onChange={(e) => setFieldNoteDraft(e.target.value)}
                   placeholder="Add a field note..."
@@ -463,7 +464,9 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   minRows={1}
                   fullWidth
                   sx={{
+                    ...multilineTextFieldSx,
                     '& .MuiOutlinedInput-root': {
+                      ...((multilineTextFieldSx as any)['& .MuiOutlinedInput-root'] || {}),
                       bgcolor: theme.palette.background.default,
                       fontSize: '0.875rem',
                     }
@@ -622,7 +625,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
             {onAddNote && !loading && (
               <Stack spacing={0.5}>
                 <TextField
-                  size="small"
+                  {...STANDARD_INPUT_PROPS}
                   value={progressNoteDraft}
                   onChange={(e) => setProgressNoteDraft(e.target.value)}
                   placeholder="Add a progress note..."
@@ -630,7 +633,9 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
                   minRows={1}
                   fullWidth
                   sx={{
+                    ...multilineTextFieldSx,
                     '& .MuiOutlinedInput-root': {
+                      ...((multilineTextFieldSx as any)['& .MuiOutlinedInput-root'] || {}),
                       bgcolor: theme.palette.background.default,
                       fontSize: '0.875rem',
                     }

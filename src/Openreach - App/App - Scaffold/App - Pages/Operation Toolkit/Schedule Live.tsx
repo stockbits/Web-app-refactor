@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button, Divider } from '@mui/material'
+import { STANDARD_INPUT_PROPS, STANDARD_AUTOCOMPLETE_PROPS } from '../../../../AppCentralTheme/input-config.ts'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
@@ -95,6 +96,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         >
           {/* Filters */}
           <Autocomplete
+            {...STANDARD_AUTOCOMPLETE_PROPS}
             sx={{ 
               width: { xs: '100%', md: 200, lg: 280 },
             }}
@@ -102,11 +104,12 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             value={selectedDivision}
             onChange={(_, newValue) => setSelectedDivision(newValue)}
             renderInput={(params) => (
-              <TextField {...params} label="Division" placeholder="Select division" size="small" />
+              <TextField {...params} {...STANDARD_INPUT_PROPS} label="Division" placeholder="Select division" />
             )}
           />
           
           <Autocomplete
+            {...STANDARD_AUTOCOMPLETE_PROPS}
             sx={{ 
               width: { xs: '100%', md: 140 },
             }}
@@ -114,7 +117,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             value={selectedDomain}
             onChange={(_, newValue) => setSelectedDomain(newValue)}
             renderInput={(params) => (
-              <TextField {...params} label="Domain" placeholder="Select domain" size="small" />
+              <TextField {...params} {...STANDARD_INPUT_PROPS} label="Domain" placeholder="Select domain" />
             )}
           />
 

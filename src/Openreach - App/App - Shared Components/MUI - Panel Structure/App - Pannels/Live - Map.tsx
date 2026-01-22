@@ -14,7 +14,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
-import { TASK_ICON_COLORS } from '../../../../App - Central Theme/Icon-Colors';
+import { TASK_ICON_COLORS } from '../../../../AppCentralTheme/Icon-Colors';
 import { TASK_TABLE_ROWS, type TaskCommitType, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 import { useMapSelection, useSelectionUI } from '../../Selection - UI';
 
