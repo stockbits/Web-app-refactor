@@ -1,5 +1,5 @@
-import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from "react";
-import type { ElementType, JSX, LazyExoticComponent } from "react";
+import { Suspense, useMemo, useState, useEffect, useCallback } from "react";
+import type { ElementType, JSX } from "react";
 import "./App.css";
 import {
   alpha,
@@ -342,26 +342,22 @@ const MENU_GROUPS: MenuGroup[] = [
 
 type PageComponent = () => JSX.Element;
 type PageModule = { default: PageComponent };
-type PageModuleLoader = () => Promise<PageModule>;
-type LazyPageComponent = LazyExoticComponent<PageComponent>;
 
 const pageModules = import.meta.glob<PageModule>(
-  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx"
-) as Record<string, PageModuleLoader>;
+  "./Openreach - App/App - Scaffold/App - Pages/**/*.tsx",
+  { eager: true }
+) as Record<string, PageModule>;
 
 const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
-  Record<string, Record<string, LazyPageComponent>>
->((acc, [path, loader]) => {
+  Record<string, Record<string, PageComponent>>
+>((acc, [path, module]) => {
   const segments = path.split("/");
   const folderName = segments[segments.length - 2];
   const fileName = segments[segments.length - 1].replace(".tsx", "");
   if (!acc[folderName]) {
     acc[folderName] = {};
   }
-  acc[folderName][fileName] = lazy(async () => {
-    const module = await loader();
-    return { default: module.default };
-  });
+  acc[folderName][fileName] = module.default;
   return acc;
 }, {});
 

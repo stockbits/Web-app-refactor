@@ -6,10 +6,10 @@ import PeopleIcon from "@mui/icons-material/People";
 import MapIcon from "@mui/icons-material/Map";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 
-import LiveGantt from "./App - Pannels/Live - Gantt";
-import LiveMap from "./App - Pannels/Live - Map";
-import LivePeople from "./App - Pannels/Live - People";
-import LiveTask from "./App - Pannels/Live - Task";
+import LiveGantt from "./App - Pannels/LiveGantt";
+import LiveMap from "./App - Pannels/LiveMap";
+import LivePeople from "./App - Pannels/LivePeople";
+import LiveTask from "./App - Pannels/LiveTask";
 import { useSelectionUI } from "../Selection - UI";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
@@ -118,13 +118,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   // Get list of visible panels (not docked) - memoized to prevent recreation
   const visiblePanels = useMemo(() => {
     const panels = [
-      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" /> } },
+      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, selectedDivision, selectedDomain } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog]);
+  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog, selectedDivision, selectedDomain]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   const clampedActiveMobileTab = useMemo(() => {
