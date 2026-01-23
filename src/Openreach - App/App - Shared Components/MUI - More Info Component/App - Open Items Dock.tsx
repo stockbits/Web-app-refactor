@@ -16,7 +16,6 @@ import {
   useTheme,
   Divider,
   Stack,
-  Checkbox,
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -24,11 +23,8 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
-import IndeterminateCheckBoxIcon from '@mui/icons-material/IndeterminateCheckBox'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
-import { MultiTaskDialog } from './App - Multi Task Dialog'
 
 type FilterType = 'all' | 'task' | 'resource'
 
@@ -51,7 +47,7 @@ export interface OpenItemsDockProps {
   onClick?: (id: string) => void
   onDelete?: (id: string) => void
   onClearAll?: () => void
-  onMinimizedTaskClick?: (task: TaskTableRow) => void
+  onMinimizedTaskClick?: (task: TaskTableRow | TaskTableRow[]) => void
   onMinimizedTaskRemove?: (taskId: string) => void
   maxItems?: number
 }
@@ -70,9 +66,6 @@ export const OpenItemsDock = ({
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState<FilterType>('all')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [multiTaskDialogOpen, setMultiTaskDialogOpen] = useState(false)
-
-  const MAX_SELECTION = 3
 
   // Memoize combined items list
   const allItems = useMemo(
@@ -106,6 +99,52 @@ export const OpenItemsDock = ({
     [allItems]
   )
 
+  // Memoize selected tasks for comparison
+  const selectedTasks = useMemo(
+    () => allItems
+      .filter(i => selectedIds.includes(i.id) && i.task)
+      .map(i => i.task as TaskTableRow)
+      .slice(0, 3),
+    [allItems, selectedIds]
+  )
+
+  const handleItemSelect = useCallback(
+    (item: typeof allItems[0], event: React.MouseEvent) => {
+      // Ctrl+click for multi-select (max 3)
+      if (event.ctrlKey || event.metaKey) {
+        setSelectedIds(prev => {
+          if (prev.includes(item.id)) {
+            // Deselect
+            return prev.filter(id => id !== item.id)
+          } else if (prev.length < 3) {
+            // Select (max 3)
+            return [...prev, item.id]
+          }
+          // Already at max, don't select
+          return prev
+        })
+      } else {
+        // Regular click - open task(s)
+        if (selectedIds.length >= 2 && selectedIds.includes(item.id)) {
+          // If clicking on a selected item and we have 2+ selected, open multi-task dialog
+          if (selectedTasks.length >= 2 && onMinimizedTaskClick) {
+            onMinimizedTaskClick(selectedTasks)
+          }
+        } else {
+          // Single task open
+          if ('task' in item && item.task && onMinimizedTaskClick) {
+            onMinimizedTaskClick(item.task as TaskTableRow)
+          } else if (onClick) {
+            onClick(item.id)
+          }
+        }
+        setSelectedIds([])
+        setOpen(false)
+      }
+    },
+    [onClick, onMinimizedTaskClick, selectedTasks, selectedIds]
+  )
+
   const handleItemClick = useCallback(
     (item: typeof allItems[0]) => {
       if ('task' in item && item.task && onMinimizedTaskClick) {
@@ -118,21 +157,6 @@ export const OpenItemsDock = ({
     [onClick, onMinimizedTaskClick]
   )
 
-  const handleCheckboxToggle = useCallback(
-    (itemId: string, event: React.MouseEvent, maxSelection: number) => {
-      event.stopPropagation()
-      setSelectedIds((prev) => {
-        if (prev.includes(itemId)) {
-          return prev.filter((id) => id !== itemId)
-        } else if (prev.length < maxSelection) {
-          return [...prev, itemId]
-        }
-        return prev
-      })
-    },
-    []
-  )
-
   const handleItemRemove = useCallback(
     (item: typeof allItems[0], event: React.MouseEvent) => {
       event.stopPropagation()
@@ -142,8 +166,6 @@ export const OpenItemsDock = ({
       } else if (onDelete) {
         onDelete(item.id)
       }
-      // Also remove from selection if it was selected
-      setSelectedIds((prev) => prev.filter((id) => id !== item.id))
     },
     [onDelete, onMinimizedTaskRemove]
   )
@@ -154,22 +176,6 @@ export const OpenItemsDock = ({
     }
     setOpen(false)
   }, [onClearAll])
-
-  const handleCompareSelected = useCallback(() => {
-    if (selectedIds.length >= 2) {
-      setMultiTaskDialogOpen(true)
-    }
-  }, [selectedIds.length])
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedIds([])
-  }, [])
-
-  const getSelectedTasks = useCallback((): TaskTableRow[] => {
-    return allItems
-      .filter((item) => selectedIds.includes(item.id) && 'task' in item && item.task)
-      .map((item) => (item as { task: TaskTableRow }).task)
-  }, [allItems, selectedIds])
 
   const getItemIcon = useCallback((type: string) => {
     switch (type) {
@@ -314,59 +320,55 @@ export const OpenItemsDock = ({
             </Stack>
 
             {/* Action buttons */}
-            {totalCount > 0 && (
-              <Stack spacing={0.5}>
-                {/* Compare button - always visible */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  disabled={selectedIds.length < 2}
-                  startIcon={<CompareArrowsIcon sx={{ fontSize: 16 }} />}
-                  onClick={handleCompareSelected}
-                  fullWidth
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '0.75rem',
-                    py: 0.5,
-                  }}
-                >
-                  Compare ({selectedIds.length})
-                </Button>
-                {/* Clear selection button - always visible, disabled when none selected */}
+            {onClearAll && totalCount > 0 && (
+              <Stack direction="row" spacing={0.5} sx={{ mt: 1.5 }}>
+                {/* Compare selected button - active when 2-3 selected */}
+                <Tooltip title={selectedIds.length >= 2 ? `Compare ${selectedIds.length} tasks` : "Select 2-3 tasks to compare"} placement="top">
+                  <span style={{ flex: 1 }}>
+                    <Button
+                      variant="text"
+                      color="primary"
+                      disabled={selectedIds.length < 2}
+                      startIcon={<OpenInNewIcon sx={{ fontSize: 16 }} />}
+                      onClick={() => {
+                        if (selectedTasks.length >= 2 && onMinimizedTaskClick) {
+                          onMinimizedTaskClick(selectedTasks)
+                        }
+                        setSelectedIds([])
+                        setOpen(false)
+                      }}
+                      fullWidth
+                      sx={{
+                        textTransform: 'none',
+                        fontSize: '0.75rem',
+                        py: 0.5,
+                        justifyContent: 'flex-start',
+                        '&.Mui-disabled': {
+                          color: 'text.disabled',
+                        },
+                      }}
+                    >
+                      {selectedIds.length >= 2 ? `Tasks ${selectedIds.length}` : 'Tasks'}
+                    </Button>
+                  </span>
+                </Tooltip>
+                {/* Clear all button */}
                 <Button
                   variant="text"
-                  color="secondary"
-                  disabled={selectedIds.length === 0}
-                  startIcon={<IndeterminateCheckBoxIcon sx={{ fontSize: 16 }} />}
-                  onClick={handleClearSelection}
+                  color="error"
+                  startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleClearAll}
                   fullWidth
                   sx={{
                     textTransform: 'none',
                     fontSize: '0.75rem',
                     py: 0.5,
                     justifyContent: 'flex-start',
+                    flex: 1,
                   }}
                 >
-                  Clear Selection
+                  Clear All
                 </Button>
-                {/* Clear all button */}
-                {onClearAll && (
-                  <Button
-                    variant="text"
-                    color="error"
-                    startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
-                    onClick={handleClearAll}
-                    fullWidth
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '0.75rem',
-                      py: 0.5,
-                      justifyContent: 'flex-start',
-                    }}
-                  >
-                    Clear All Items
-                  </Button>
-                )}
               </Stack>
             )}
 
@@ -419,13 +421,20 @@ export const OpenItemsDock = ({
                   >
                     <ListItemButton
                       selected={selectedIds.includes(item.id)}
+                      onClick={(e) => handleItemSelect(item, e)}
                       sx={{
                         py: 1.25,
                         px: 2,
                         pr: 1,
-                        cursor: 'default',
+                        cursor: 'pointer',
                         '&:hover': {
                           bgcolor: alpha(theme.palette.primary.main, 0.04),
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.16),
+                          },
                         },
                       }}
                     >
@@ -478,47 +487,35 @@ export const OpenItemsDock = ({
                           ml: 'auto',
                           flexShrink: 0,
                           transition: 'opacity 0.2s',
-                          opacity: selectedIds.includes(item.id) ? 1 : 0.7,
+                          opacity: 0.7,
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Multi-select checkbox */}
-                        <Tooltip title={selectedIds.includes(item.id) ? 'Deselect' : 'Select to compare'} placement="top">
-                          <Checkbox
-                            checked={selectedIds.includes(item.id)}
-                            disabled={!selectedIds.includes(item.id) && selectedIds.length >= MAX_SELECTION}
-                            onClick={(event) => handleCheckboxToggle(item.id, event, MAX_SELECTION)}
-                            tabIndex={-1}
-                            size="small"
-                            sx={{ 
-                              p: 0.5,
-                              color: 'text.secondary',
-                              '&.Mui-checked': {
-                                color: 'primary.main',
-                              },
-                            }}
-                          />
-                        </Tooltip>
-
-                        {/* Single open icon */}
-                        <Tooltip title="Open item" placement="top">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleItemClick(item)
-                            }}
-                            sx={{
-                              color: 'text.secondary',
-                              p: 0.5,
-                              '&:hover': {
-                                color: 'primary.main',
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              },
-                            }}
-                          >
-                            <OpenInNewIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
+                        {/* Open icon - disabled when multiple items selected */}
+                        <Tooltip title={selectedIds.length >= 2 ? "Use compare icon above" : "Open"} placement="top">
+                          <span>
+                            <IconButton
+                              size="small"
+                              disabled={selectedIds.length >= 2}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleItemClick(item)
+                              }}
+                              sx={{
+                                color: 'text.secondary',
+                                p: 0.5,
+                                '&:hover': {
+                                  color: 'primary.main',
+                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                },
+                                '&.Mui-disabled': {
+                                  color: 'text.disabled',
+                                },
+                              }}
+                            >
+                              <OpenInNewIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </span>
                         </Tooltip>
 
                         {/* Close/Remove icon */}
@@ -557,29 +554,13 @@ export const OpenItemsDock = ({
             }}
           >
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>
-              {selectedIds.length > 0
-                ? selectedIds.length >= MAX_SELECTION
-                  ? `Max ${MAX_SELECTION} selected • Select 2+ to compare`
-                  : `${selectedIds.length} selected • Select up to ${MAX_SELECTION} to compare`
-                : `Click item to open • Check up to ${MAX_SELECTION} to compare`}
+              {selectedIds.length > 0 
+                ? `${selectedIds.length} selected • Click any to compare${selectedIds.length < 3 ? ' • Ctrl+click for more' : ''}`
+                : 'Click to open • Ctrl+click to select (max 3)'}
             </Typography>
           </Box>
         </Box>
       </Drawer>
-
-      {/* Multi-task comparison dialog */}
-      <MultiTaskDialog
-        open={multiTaskDialogOpen}
-        onClose={() => {
-          setMultiTaskDialogOpen(false)
-          setSelectedIds([])
-        }}
-        tasks={getSelectedTasks()}
-        onMinimize={() => {
-          setMultiTaskDialogOpen(false)
-          setSelectedIds([])
-        }}
-      />
     </>
   )
 }

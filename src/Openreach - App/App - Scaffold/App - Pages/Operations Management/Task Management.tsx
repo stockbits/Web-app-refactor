@@ -1,34 +1,28 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Alert, Box, Chip, IconButton, Snackbar, Stack, Typography, useTheme } from '@mui/material'
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import CalloutCompodent from '../../../App - Shared Components/MUI - Callout MGT/Callout - Compodent'
 import { useCalloutMgt } from './useCalloutMgt'
-import type { GridColDef, GridCellParams } from '@mui/x-data-grid'
-import { useGridApiRef } from '@mui/x-data-grid'
-import SharedMuiTable from '../../../App - Shared Components/MUI - Table/MUI Table - Table Shell'
+import type { GridColDef } from '@mui/x-data-grid'
+import { TaskTableShell } from '../../../App - Shared Components/MUI - Table'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
-import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow } from '../../../App - Data Tables/Task - Table'
-import { TableContextMenu } from '../../../App - Shared Components/MUI - Table'
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
 import { useTaskTableSelection } from '../../../App - Shared Components/Selection - UI'
 
-const TaskManagementPage = ({
-  openTaskDialog,
-}: {
-  openTaskDialog?: (task: TaskTableRow) => void
-}) => {
+interface TaskManagementPageProps {
+  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
+}
+
+const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
   const { callout, openCallout, closeCallout } = useCalloutMgt();
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
-  const apiRef = useGridApiRef();
 
   // Selection UI integration for table row selection only
   const { 
     selectedTaskIds,
-    toggleTaskSelection, 
-    rangeSelectTasks,
   } = useTaskTableSelection()
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
@@ -40,21 +34,6 @@ const TaskManagementPage = ({
   const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
     setSnackbar({ open: true, message, severity })
   }, [])
-
-  // Right-click context menu
-  const contextMenu = TableContextMenu<TaskTableRow>({
-    additionalItems: [
-      {
-        label: 'Open Task Details',
-        icon: <OpenInNewIcon fontSize="small" />,
-        onClick: () => {
-          if (contextMenu.contextMenuState?.rowData) {
-            openTaskDialog?.(contextMenu.contextMenuState.rowData)
-          }
-        },
-      },
-    ],
-  })
 
   const statusMetadata: Record<TaskTableRow['status'], { label: string }> = useMemo(
     () => ({
@@ -523,26 +502,6 @@ const TaskManagementPage = ({
     setHasAppliedQuery(true)
   }
 
-  // Handle row clicks for selection with Ctrl/Shift support
-  const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
-    const isCtrlPressed = event.ctrlKey || event.metaKey;
-    const isShiftPressed = event.shiftKey;
-    
-    if (isShiftPressed) {
-      // Prevent default text selection when shift-clicking
-      event.preventDefault();
-      // Shift-click: range select - use DataGrid's sorted row order
-      const sortedRowIds = apiRef.current?.getSortedRowIds?.() || filteredRows.map(row => row.taskId);
-      const visibleRowIds = sortedRowIds.map(id => 
-        apiRef.current?.getRow(id)?.taskId
-      ).filter(Boolean) as string[];
-      rangeSelectTasks(params.row.taskId, visibleRowIds, isCtrlPressed, 'table');
-    } else {
-      // Regular or Ctrl-click
-      toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
-    }
-  }, [toggleTaskSelection, rangeSelectTasks, filteredRows, apiRef]);
-
   return (
     <>
       <Stack
@@ -583,7 +542,7 @@ const TaskManagementPage = ({
         {/* Table Section */}
         <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', px: { xs: 2, sm: 3 }, py: 2 }}>
           {hasAppliedQuery ? (
-            <SharedMuiTable<TaskTableRow>
+            <TaskTableShell<TaskTableRow>
               columns={columns}
               rows={filteredRows}
               getRowId={(row) => row.taskId}
@@ -593,22 +552,23 @@ const TaskManagementPage = ({
               enablePagination={true}
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
-              apiRef={apiRef}
               getRowClassName={getRowClassName}
-              onCellClick={handleRowClick}
-              contextMenuItems={[
-                {
-                  label: 'Open Task Details',
-                  onClick: () => {
-                    if (contextMenu.contextMenuState?.rowData) {
-                      openTaskDialog?.(contextMenu.contextMenuState.rowData)
-                    }
-                  },
-                },
-              ]}
-              onCellDoubleClick={(params) => {
-                openTaskDialog?.(params.row)
+              onProgressTask={(tasks) => {
+                console.log('Progress tasks:', tasks)
+                // TODO: Implement progress task logic
               }}
+              onAddQuickNote={(tasks) => {
+                console.log('Add quick note to tasks:', tasks)
+                // TODO: Implement quick note logic
+              }}
+              onAddToDock={onAddToDock ? (task) => {
+                onAddToDock({
+                  id: task.taskId,
+                  title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+                  commitType: task.commitType,
+                  task,
+                })
+              } : undefined}
             />
           ) : (
             <Box
@@ -669,7 +629,6 @@ const TaskManagementPage = ({
         </Snackbar>
       </Stack>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
-      {contextMenu.contextMenuComponent}
     </>
   )
 }

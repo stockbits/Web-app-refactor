@@ -3,11 +3,10 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography 
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import SharedMuiTable from '../../MUI - Table/MUI Table - Table Shell';
-import type { GridColDef, GridCellParams, GridSortModel } from '@mui/x-data-grid';
-import { TASK_STATUS_LABELS, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
+import { TaskTableShell } from '../../MUI - Table';
+import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
+import { TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { Chip } from '@mui/material';
@@ -15,7 +14,6 @@ import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { useTaskTableSelection } from '../../Selection - UI';
-import { TableContextMenu } from '../../MUI - Table';
 
 interface LiveTaskProps {
   onDock?: () => void;
@@ -27,10 +25,10 @@ interface LiveTaskProps {
   minimized?: boolean;
   filteredTasks?: TaskTableRow[];
   clearSorting?: number;
-  openTaskDialog?: (task: TaskTableRow) => void;
+  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting, openTaskDialog }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting, onAddToDock }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -43,27 +41,10 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   // Selection UI integration - use prioritization when selected from map
   const { 
-    getPrioritizedTasks, 
-    toggleTaskSelection, 
-    rangeSelectTasks,
+    getPrioritizedTasks,
     selectedTaskIds,
     clearSelectionOnSort
   } = useTaskTableSelection();
-
-  // Right-click context menu
-  const contextMenu = TableContextMenu<TaskTableRow>({
-    additionalItems: [
-      {
-        label: 'Open Task Details',
-        icon: <OpenInNewIcon fontSize="small" />,
-        onClick: () => {
-          if (contextMenu.contextMenuState?.rowData) {
-            openTaskDialog?.(contextMenu.contextMenuState.rowData)
-          }
-        },
-      },
-    ],
-  })
 
   // Resize observer for table height - handle mobile tab changes
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -168,23 +149,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     { field: 'postCode', headerName: 'Post code', flex: 0.6, minWidth: 90, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.postCode}</Typography>) },
   ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.background?.alt, tokens.chip?.bg, tokens.chip?.border, tokens.chip?.hover?.bg, tokens.chip?.text, tokens.secondary?.light, tokens.secondary?.main, theme.palette.text, theme.palette.mode, openCallout]);
 
-  // Memoize table styles to prevent recreation
-  const tableSx = useMemo(() => ({
-    '& .MuiDataGrid-root': {
-      userSelect: 'none',
-    },
-    '& .selected-row': {
-      backgroundColor: theme.palette.mode === 'dark' 
-        ? 'rgba(144, 202, 249, 0.12)' 
-        : 'rgba(25, 118, 210, 0.08)',
-      '&:hover': {
-        backgroundColor: theme.palette.mode === 'dark' 
-          ? 'rgba(144, 202, 249, 0.18)' 
-          : 'rgba(25, 118, 210, 0.12)',
-      },
-    },
-  }), [theme.palette.mode]);
-
   const apiRef = useGridApiRef();
 
   // Track sort model state to control DataGrid sorting
@@ -227,39 +191,11 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
   }, [selectedTaskIds]);
 
-  // Handle row clicks for task selection and context menu
-  const handleRowClick = useCallback((params: GridCellParams<TaskTableRow>, event: React.MouseEvent) => {
-    // Handle right-click for context menu
-    if (event.button === 2) {
-      contextMenu.handleCellRightClick(params, event)
-      return
-    }
-
-    // Handle left-click for task selection
-    const isCtrlPressed = event.ctrlKey || event.metaKey;
-    const isShiftPressed = event.shiftKey;
-    
-    // Prevent default text selection when shift-clicking
-    if (isShiftPressed) {
-      event.preventDefault();
-      // Shift-click: range select
-      const allTaskIds = filteredRows.map(row => row.taskId);
-      rangeSelectTasks(params.row.taskId, allTaskIds, isCtrlPressed, 'table');
-    } else {
-      // Regular or Ctrl-click
-      toggleTaskSelection(params.row.taskId, isCtrlPressed, 'table');
-    }
-  }, [toggleTaskSelection, rangeSelectTasks, filteredRows, contextMenu])
-
   // Handle sort requests - clear selection when user sorts
   const handleSortModelChange = useCallback((newModel: GridSortModel) => {
     setSortModel(newModel);
     clearSelectionOnSort();
   }, [clearSelectionOnSort]);
-
-  const handleCellDoubleClick = useCallback((params: GridCellParams<TaskTableRow>) => {
-    openTaskDialog?.(params.row);
-  }, [openTaskDialog]);
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -371,7 +307,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
       </AppBar>
       <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
         {filteredRows.length > 0 ? (
-          <SharedMuiTable
+          <TaskTableShell
             columns={columns}
             rows={filteredRows}
             getRowId={(row) => row.taskId}
@@ -380,22 +316,24 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             enableQuickFilter
             sortModel={sortModel}
             height={isExpanded ? '100%' : tableHeight}
-            apiRef={apiRef}
             getRowClassName={getRowClassName}
-            onCellClick={handleRowClick}
             onSortModelChange={handleSortModelChange}
-            sx={tableSx}
-            contextMenuItems={[
-              {
-                label: 'Open Task Details',
-                onClick: () => {
-                  if (contextMenu.contextMenuState?.rowData) {
-                    openTaskDialog?.(contextMenu.contextMenuState.rowData)
-                  }
-                },
-              },
-            ]}
-            onCellDoubleClick={handleCellDoubleClick}
+            onProgressTask={(tasks) => {
+              console.log('Progress tasks:', tasks)
+              // TODO: Implement progress task logic
+            }}
+            onAddQuickNote={(tasks) => {
+              console.log('Add quick note to tasks:', tasks)
+              // TODO: Implement quick note logic
+            }}
+            onAddToDock={onAddToDock ? (task) => {
+              onAddToDock({
+                id: task.taskId,
+                title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+                commitType: task.commitType,
+                task,
+              })
+            } : undefined}
           />
         ) : (
           <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>

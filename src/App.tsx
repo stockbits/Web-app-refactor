@@ -38,6 +38,7 @@ import { OpenItemsDock } from "./Openreach - App/App - Shared Components/MUI - M
 import { useMinimizedTasks } from "./AppCentralTheme/MinimizedTaskContext";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
+import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Multi Task Dialog";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
 import { TASK_TABLE_ROWS } from "./Openreach - App/App - Data Tables/Task - Table";
 import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/Selection - UI";
@@ -456,10 +457,21 @@ function App() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null);
 
+  // Multi-task dialog state
+  const [multiDialogOpen, setMultiDialogOpen] = useState(false);
+  const [multiDialogTasks, setMultiDialogTasks] = useState<TaskTableRow[]>([]);
+
   // Global task dialog functions
-  const openTaskDialog = useCallback((task: TaskTableRow) => {
-    setDialogTask(task);
-    setDialogOpen(true);
+  const openTaskDialog = useCallback((task: TaskTableRow | TaskTableRow[]) => {
+    if (Array.isArray(task)) {
+      // Multi-task dialog
+      setMultiDialogTasks(task.slice(0, 3));
+      setMultiDialogOpen(true);
+    } else {
+      // Single task dialog
+      setDialogTask(task);
+      setDialogOpen(true);
+    }
   }, []);
 
   const closeTaskDialog = useCallback((keepInDock = false) => {
@@ -471,6 +483,11 @@ function App() {
       return null;
     });
     setDialogOpen(false);
+  }, []);
+
+  const closeMultiTaskDialog = useCallback(() => {
+    setMultiDialogTasks([]);
+    setMultiDialogOpen(false);
   }, []);
 
   const handleAddNote = useCallback(
@@ -904,11 +921,11 @@ function App() {
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
                           <SelectionUIProvider>
-                            <LazyPageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog } as Record<string, unknown>)} />
+                            <LazyPageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog, onAddToDock: handleAddTaskDockItem } as Record<string, unknown>)} />
                           </SelectionUIProvider>
                         ) : activePage?.cardName === 'Task Management' ? (
                           <SelectionUIProvider>
-                            <LazyPageComponent {...({ openTaskDialog } as Record<string, unknown>)} />
+                            <LazyPageComponent {...({ openTaskDialog, onAddToDock: handleAddTaskDockItem } as Record<string, unknown>)} />
                           </SelectionUIProvider>
                         ) : (
                           <LazyPageComponent />
@@ -969,6 +986,28 @@ function App() {
           });
           closeTaskDialog(true); // Keep task in dock when minimizing
         } : undefined}
+      />
+
+      {/* Multi-task comparison dialog */}
+      <MultiTaskDialog
+        open={multiDialogOpen}
+        onClose={closeMultiTaskDialog}
+        tasks={multiDialogTasks}
+        onAddNote={(taskId: string, type: 'field' | 'progress', text: string) => {
+          console.log('Add note:', type, text, 'to task:', taskId);
+          // TODO: Implement note addition logic
+        }}
+        onMinimize={() => {
+          multiDialogTasks.forEach(task => {
+            handleAddTaskDockItem({
+              id: task.taskId,
+              title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+              commitType: task.commitType,
+              task,
+            });
+          });
+          closeMultiTaskDialog();
+        }}
       />
     </>
   );

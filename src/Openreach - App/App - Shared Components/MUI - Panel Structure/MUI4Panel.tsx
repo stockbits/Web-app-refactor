@@ -13,7 +13,7 @@ import LiveTask from "./App - Pannels/LiveTask";
 import { useSelectionUI } from "../Selection - UI";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
-import type { TaskTableRow } from "../../App - Data Tables/Task - Table";
+import type { TaskTableRow, TaskCommitType } from "../../App - Data Tables/Task - Table";
 
 export interface DockedPanel {
   id: string;
@@ -30,10 +30,11 @@ export interface MUI4PanelProps {
   searchTerm?: string;
   searchFilters?: SearchFilters | null;
   clearSorting?: number;
-  openTaskDialog?: (task: TaskTableRow) => void;
+  openTaskDialog?: (task: TaskTableRow | TaskTableRow[]) => void;
+  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void;
 }
 
-export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchTerm = '', searchFilters, clearSorting, openTaskDialog }: MUI4PanelProps = {}) {
+export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], selectedDivision, selectedDomain, searchTerm = '', searchFilters, clearSorting, openTaskDialog, onAddToDock }: MUI4PanelProps = {}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
@@ -121,10 +122,10 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, selectedDivision, selectedDomain } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" /> } },
-      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog } },
+      { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog, onAddToDock } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog, selectedDivision, selectedDomain]);
+  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog, onAddToDock, selectedDivision, selectedDomain]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   const clampedActiveMobileTab = useMemo(() => {

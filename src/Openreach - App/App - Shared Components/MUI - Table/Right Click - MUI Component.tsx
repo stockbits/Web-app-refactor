@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, type ReactNode } from 'react'
+import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react'
 import { Menu, MenuItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import { ContentCopy as ContentCopyIcon } from '@mui/icons-material'
 import { type GridCellParams, type GridRenderCellParams, type MuiEvent, type GridColDef } from '@mui/x-data-grid'
@@ -47,13 +47,17 @@ export interface ContextMenuItem {
   divider?: boolean
 }
 
-export interface TableContextMenuProps {
+export interface TableContextMenuProps<T = Record<string, unknown>> {
   /** Additional menu items to show in the context menu */
-  additionalItems?: ContextMenuItem[]
+  additionalItems?: ContextMenuItem[] | ((rowData: T, selectedRows: (string | number)[]) => ContextMenuItem[])
   /** Callback when the context menu is closed */
   onClose?: () => void
   /** Custom styling for the menu */
   menuSx?: object
+  /** Selected row IDs for multi-selection context */
+  selectedRows?: (string | number)[]
+  /** Callback to get row data by ID */
+  getRowData?: (rowId: string | number) => T | null
 }
 
 export interface TableContextMenuState<T = Record<string, unknown>> {
@@ -63,6 +67,7 @@ export interface TableContextMenuState<T = Record<string, unknown>> {
   field: string
   rowId: string | number
   rowData?: T
+  selectedRows?: (string | number)[]
 }
 
 /**
@@ -74,6 +79,8 @@ export function TableContextMenu<T = Record<string, unknown>>({
   onClose,
   menuSx = {},
   longPressDelay = 500, // ms
+  selectedRows = [],
+
 }: TableContextMenuProps & { longPressDelay?: number }) {
   const [contextMenu, setContextMenu] = useState<TableContextMenuState<T> | null>(null)
   const [longPressTimer, setLongPressTimer] = useState<number | null>(null)
@@ -84,9 +91,7 @@ export function TableContextMenu<T = Record<string, unknown>>({
     event: MuiEvent<React.MouseEvent>
   ) => {
     if (event.button === 2) { // Right-click
-      event.preventDefault()
-      event.stopPropagation()
-
+      // Always set new context menu state immediately for snappy response
       setContextMenu({
         mouseX: event.clientX - 2,
         mouseY: event.clientY - 4,
@@ -94,21 +99,20 @@ export function TableContextMenu<T = Record<string, unknown>>({
         field: params.field,
         rowId: params.id,
         rowData: params.row,
+        selectedRows: selectedRows,
       })
     }
-  }, [])
+  }, [selectedRows])
 
   const handleCellTouchStart = useCallback((
     params: GridCellParams,
     event: React.TouchEvent
   ) => {
-    console.log('TableContextMenu: handleCellTouchStart called', params, event)
     const touch = event.touches[0]
     setTouchStartPos({ x: touch.clientX, y: touch.clientY })
 
     // Start long-press timer
     const timer = window.setTimeout(() => {
-      console.log('TableContextMenu: Long press timer triggered, showing context menu')
       setContextMenu({
         mouseX: touch.clientX - 2,
         mouseY: touch.clientY - 4,
@@ -147,7 +151,6 @@ export function TableContextMenu<T = Record<string, unknown>>({
 
   const handleClose = useCallback(() => {
     setContextMenu(null)
-    // Clear any pending long-press timer
     if (longPressTimer) {
       clearTimeout(longPressTimer)
       setLongPressTimer(null)
@@ -177,18 +180,31 @@ export function TableContextMenu<T = Record<string, unknown>>({
     handleClose()
   }, [contextMenu?.value, handleClose])
 
+  // Compute menu items dynamically based on context
+  const computedAdditionalItems = useMemo(() => {
+    if (!contextMenu) return []
+    if (typeof additionalItems === 'function') {
+      // Dynamic items based on row data and selection
+      return additionalItems(contextMenu.rowData!, contextMenu.selectedRows ?? [])
+    }
+    return Array.isArray(additionalItems) ? additionalItems : []
+  }, [additionalItems, contextMenu])
+
   // Default menu items
-  const defaultItems: ContextMenuItem[] = [
+  const defaultItems: ContextMenuItem[] = useMemo(() => [
     {
       label: `Copy "${contextMenu?.value || '(empty)'}"`,
       icon: <ContentCopyIcon fontSize="small" />,
       onClick: handleCopyValue,
       disabled: !contextMenu?.value,
     },
-  ]
+  ], [contextMenu?.value, handleCopyValue])
 
   // Combine default and additional items
-  const allItems = [...defaultItems, ...additionalItems]
+  const allItems = useMemo(() => {
+    const additional = Array.isArray(computedAdditionalItems) ? computedAdditionalItems : []
+    return [...defaultItems, ...additional]
+  }, [defaultItems, computedAdditionalItems])
 
   // Helper function to wrap column renderCell with touch event handlers
   const wrapColumnWithTouchEvents = useCallback(<T extends GridColDef>(column: T): T => {
@@ -232,6 +248,7 @@ export function TableContextMenu<T = Record<string, unknown>>({
             ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
             : undefined
         }
+        transitionDuration={150}
         sx={{
           '& .MuiPaper-root': {
             minWidth: 200,
@@ -239,10 +256,13 @@ export function TableContextMenu<T = Record<string, unknown>>({
           },
         }}
       >
-        {allItems.map((item, index) => (
+        {allItems.map((item: ContextMenuItem, index: number) => (
           <div key={index}>
             <MenuItem
-              onClick={item.onClick}
+              onClick={() => {
+                item.onClick()
+                handleClose()
+              }}
               disabled={item.disabled}
               sx={{
                 fontSize: '0.875rem',

@@ -11,16 +11,18 @@ import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 import { useSelectionUI } from '../../../App - Shared Components/Selection - UI'
 import GlobalSearchField from '../../../App - Shared Components/MUI - Table/GlobalSearchField'
+import type { TaskCommitType } from '../../../App - Data Tables/Task - Table'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 
 interface ScheduleLivePageProps {
   dockedPanels?: DockedPanel[]
   onDockedPanelsChange?: (panels: DockedPanel[]) => void
-  openTaskDialog?: (task: TaskTableRow) => void
+  openTaskDialog?: (task: TaskTableRow | TaskTableRow[]) => void
+  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
 }
 
-const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDialog }: ScheduleLivePageProps = {}) => {
+const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDialog, onAddToDock }: ScheduleLivePageProps = {}) => {
   const searchRef = useRef<HTMLInputElement>(null)
   const [selectedDivision, setSelectedDivision] = useState<DivisionType | null>(null)
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
@@ -221,6 +223,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         searchFilters={searchFilters}
         clearSorting={clearTrigger}
         openTaskDialog={openTaskDialog}
+        onAddToDock={onAddToDock}
       />
       
       <AppSearchTool 

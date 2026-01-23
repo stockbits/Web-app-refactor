@@ -4,14 +4,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
   Button,
   useTheme,
   Typography,
   Box,
   Stack,
 } from '@mui/material'
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import CallToActionRoundedIcon from '@mui/icons-material/CallToActionRounded'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 import { TaskDetails } from './App - Task Details'
@@ -54,28 +52,10 @@ export function MultiTaskDialog({
 
   return (
     <Dialog key={open ? 'open' : 'closed'} open={open} onClose={onClose} fullWidth maxWidth="xl" aria-labelledby="multi-task-dialog-title">
-      <DialogTitle id="multi-task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pr: 6, pb: 1 }}>
+      <DialogTitle id="multi-task-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
         <Typography variant="h6" component="div" fontWeight={700}>
           Task Comparison ({tasks.length} tasks)
         </Typography>
-        <IconButton
-          aria-label="Close dialog"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 12,
-            top: 12,
-            color: theme.palette.text.secondary,
-            bgcolor: 'transparent',
-            '&:hover': { color: theme.palette.text.primary, bgcolor: 'transparent' },
-            '&:focus-visible': {
-              outline: `2px solid ${theme.palette.primary.main}`,
-              outlineOffset: 2,
-            },
-          }}
-        >
-          <CloseRoundedIcon />
-        </IconButton>
       </DialogTitle>
 
       <DialogContent dividers sx={{ bgcolor: theme.palette.background.default, p: 2 }}>

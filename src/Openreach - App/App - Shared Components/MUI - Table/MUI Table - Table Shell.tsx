@@ -11,6 +11,7 @@ import {
   type MuiEvent,
   type GridCellParams,
   type GridSortModel,
+  type GridRowSelectionModel,
 } from '@mui/x-data-grid'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 import TableContextMenu from './Right Click - MUI Component'
@@ -42,7 +43,19 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
     label: string
     onClick: () => void
     divider?: boolean
-  }>
+    icon?: ReactNode
+    disabled?: boolean
+  }> | ((rowData: T, selectedRowIds: GridRowId[]) => Array<{
+    label: string
+    onClick: () => void
+    divider?: boolean
+    icon?: ReactNode
+    disabled?: boolean
+  }>)
+  checkboxSelection?: boolean
+  rowSelectionModel?: GridRowSelectionModel
+  onRowSelectionModelChange?: (model: GridRowSelectionModel) => void
+  externalSelectedIds?: string[]
 }
 
 // Memoized NoRowsOverlay to prevent recreation
@@ -79,6 +92,10 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   getRowClassName,
   sx,
   contextMenuItems,
+  checkboxSelection = false,
+  rowSelectionModel,
+  onRowSelectionModelChange,
+  externalSelectedIds,
 }: SharedMuiTableProps<T>) {
   const theme = useTheme()
   const internalApiRef = useGridApiRef()
@@ -99,9 +116,29 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     page: 0,
   })
 
-  // Context menu using the reusable hook
-  const contextMenu = TableContextMenu<T>({
-    additionalItems: contextMenuItems,
+  // Get selected row IDs - handle GridRowSelectionModel structure or external selection
+  const selectedRowArray = useMemo(() => {
+    // Prioritize external selected IDs (from Selection UI context)
+    if (externalSelectedIds && externalSelectedIds.length > 0) {
+      return externalSelectedIds
+    }
+    
+    // Fallback to rowSelectionModel for components not using external selection
+    if (!rowSelectionModel) return []
+    // GridRowSelectionModel is { type: 'include' | 'exclude', ids: Set<GridRowId> }
+    if (typeof rowSelectionModel === 'object' && 'ids' in rowSelectionModel) {
+      const modelWithIds = rowSelectionModel as { ids: Set<GridRowId> }
+      return Array.from(modelWithIds.ids).map((id: GridRowId) => String(id))
+    }
+    // Fallback for potential legacy array format
+    const modelArray = rowSelectionModel as GridRowId[]
+    return Array.isArray(modelArray) ? modelArray.map((id: GridRowId) => String(id)) : []
+  }, [rowSelectionModel, externalSelectedIds])
+
+  // Context menu using the reusable hook with dynamic items
+  const contextMenu = TableContextMenu({
+    additionalItems: contextMenuItems as unknown as Parameters<typeof TableContextMenu>[0]['additionalItems'],
+    selectedRows: selectedRowArray,
   })
 
   // Extract stable methods to avoid dependency warnings
@@ -117,14 +154,12 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     return cols
   }, [columns, disableSorting, wrapColumnWithTouchEvents])
 
-  // Combined cell click handler for both context menu and custom clicks - stabilized
+  // Combined cell click handler for custom clicks
   const handleCellClick = useCallback((params: GridCellParams, event: MuiEvent<React.MouseEvent>) => {
-    if (event.button === 2) { // Right-click
-      handleCellRightClick(params, event)
-    } else if (onCellClick) {
+    if (onCellClick) {
       onCellClick(params, event)
     }
-  }, [handleCellRightClick, onCellClick])
+  }, [onCellClick])
 
   useEffect(() => {
     setDensityMode(density)
@@ -149,12 +184,55 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
     );
   }, [enableQuickFilter, densityMode, handleDensityToggle, apiRef]);
 
+  // Native context menu handler to intercept right-clicks
+  const handleNativeContextMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault() // Prevent browser's default context menu
+    
+    const target = event.target as HTMLElement
+    const cell = target.closest('.MuiDataGrid-cell')
+    
+    if (!cell || !apiRef.current) return
+    
+    const cellElement = cell as HTMLElement
+    const field = cellElement.getAttribute('data-field')
+    const rowId = cellElement.parentElement?.getAttribute('data-id')
+    
+    if (!field || !rowId) return
+    
+    const row = apiRef.current.getRow(rowId)
+    const column = apiRef.current.getColumn(field)
+    
+    if (!row || !column) return
+    
+    const params: GridCellParams = {
+      id: rowId,
+      field: field,
+      value: row[field],
+      row: row,
+      colDef: column,
+      cellMode: 'view',
+      hasFocus: false,
+      tabIndex: -1,
+      rowNode: apiRef.current.getRowNode(rowId)!,
+      api: apiRef.current,
+      getValue: (id: GridRowId, f: string) => apiRef.current?.getCellValue(id, f) ?? null,
+    } as GridCellParams
+    
+    const syntheticEvent = {
+      ...event,
+      defaultMuiPrevented: false,
+    } as MuiEvent<React.MouseEvent>
+    
+    handleCellRightClick(params, syntheticEvent)
+  }, [apiRef, handleCellRightClick])
+
   return (
     <>
       <Box
         sx={{ width: '100%' }}
         role="region"
         aria-label="Data table"
+        onContextMenu={handleNativeContextMenu}
       >
         <DataGrid
         sx={{
@@ -233,6 +311,9 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
           paginationModel,
           onPaginationModelChange: setPaginationModel,
         })}
+        checkboxSelection={checkboxSelection}
+        rowSelectionModel={rowSelectionModel}
+        onRowSelectionModelChange={onRowSelectionModelChange}
         disableRowSelectionOnClick={true}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
