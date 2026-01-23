@@ -610,13 +610,27 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           },
           '& .leaflet-tile': {
             border: 'none !important',
-            boxShadow: 'none',
+            outline: 'none !important',
+            boxShadow: 'none !important',
             backgroundColor: 'transparent',
             willChange: 'transform', // hardware acceleration
+            imageRendering: '-webkit-optimize-contrast', // Better tile rendering
+            WebkitBackfaceVisibility: 'hidden', // Prevent gaps
+            backfaceVisibility: 'hidden',
+            transform: 'translateZ(0)', // Force GPU acceleration
+            margin: '-0.5px !important', // Overlap tiles slightly to hide seams
+          },
+          '& .leaflet-tile-container': {
+            margin: '0 !important',
+            padding: '0 !important',
           },
           '& .leaflet-container': {
             background: '#E5E3DF', // Match tile background
             willChange: 'transform', // hardware acceleration
+            imageRendering: '-webkit-optimize-contrast',
+          },
+          '& .leaflet-layer': {
+            imageRendering: '-webkit-optimize-contrast',
           },
           '& .custom-task-icon': {
             background: 'none',
