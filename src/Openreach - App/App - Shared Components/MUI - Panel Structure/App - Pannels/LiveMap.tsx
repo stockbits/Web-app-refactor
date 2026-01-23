@@ -606,35 +606,40 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           overflow: 'hidden', // Prevent white borders from showing
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
-            willChange: 'transform', // hardware acceleration
-            transform: 'translate3d(0, 0, 0)', // Force GPU layer
+            willChange: 'transform',
+            transform: 'translate3d(0, 0, 0) scale(1.002)', // Slight scale to cover gaps
           },
           '& .leaflet-tile': {
             border: 'none !important',
             outline: 'none !important',
             boxShadow: 'none !important',
             backgroundColor: 'transparent',
-            willChange: 'transform', // hardware acceleration
-            imageRendering: '-webkit-optimize-contrast', // Better tile rendering
-            WebkitBackfaceVisibility: 'hidden', // Prevent gaps
+            willChange: 'transform',
+            imageRendering: '-webkit-optimize-contrast',
+            WebkitBackfaceVisibility: 'hidden',
             backfaceVisibility: 'hidden',
-            transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
-            margin: '-1px !important', // Overlap tiles to hide seams (increased from -0.5px)
-            maxWidth: 'calc(100% + 2px) !important', // Compensate for negative margin
-            maxHeight: 'calc(100% + 2px) !important',
-            WebkitFontSmoothing: 'antialiased',
-            MozOsxFontSmoothing: 'grayscale',
+            transform: 'translate3d(0, 0, 0)',
+            margin: '-2px !important', // Increased overlap
+            width: 'calc(100% + 4px) !important', // Compensate for negative margin
+            height: 'calc(100% + 4px) !important',
+            maxWidth: 'none !important',
+            maxHeight: 'none !important',
+            WebkitFontSmoothing: 'subpixel-antialiased', // Better for tiles
+            MozOsxFontSmoothing: 'auto',
+            position: 'relative !important',
           },
           '& .leaflet-tile-container': {
             margin: '0 !important',
             padding: '0 !important',
             transform: 'translate3d(0, 0, 0)',
+            width: '100% !important',
+            height: '100% !important',
           },
           '& .leaflet-container': {
             background: '#E5E3DF', // Match tile background
-            willChange: 'transform', // hardware acceleration
+            willChange: 'transform',
             imageRendering: '-webkit-optimize-contrast',
-            WebkitFontSmoothing: 'antialiased',
+            WebkitFontSmoothing: 'subpixel-antialiased',
           },
           '& .leaflet-layer': {
             imageRendering: '-webkit-optimize-contrast',
