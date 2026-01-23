@@ -15,6 +15,7 @@ import {
 } from '@mui/material'
 import EngineeringRoundedIcon from '@mui/icons-material/EngineeringRounded'
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
 export interface DockedPanel {
   id: string;
@@ -141,6 +142,30 @@ export const OpenreachTopBanner = ({
           }}
         >
           {actions}
+
+          <Tooltip title="Refresh task dates (Dev Tool)">
+            <IconButton
+              aria-label="Refresh task dates"
+              onClick={() => {
+                window.location.reload();
+                // Note: In production, this would call an API endpoint
+                // For now, you can run: node scripts/update-task-dates.js
+              }}
+              sx={{
+                p: 1,
+                color: brand.energyAccent,
+                border: `1px solid ${alpha(brand.energyAccent, 0.3)}`,
+                borderRadius: 1,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: alpha(brand.energyAccent, 0.1),
+                  borderColor: brand.energyAccent,
+                },
+              }}
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
 
           <Tooltip title="Profile settings">
             <IconButton

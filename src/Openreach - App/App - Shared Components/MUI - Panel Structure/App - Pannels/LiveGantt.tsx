@@ -13,7 +13,8 @@ import {
   FormControl,
   Avatar,
   Chip,
-  Divider
+  Divider,
+  alpha
 } from "@mui/material";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
@@ -24,8 +25,78 @@ import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { useState, useMemo, useRef, useEffect } from "react";
-import { TASK_TABLE_ROWS, type TaskTableRow } from "../../../App - Data Tables/Task - Table";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType } from "../../../App - Data Tables/Task - Table";
+import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
+import { useMapSelection, useSelectionUI } from "../../Selection - UI";
+import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
+
+// Calculate distance between two coordinates using Haversine formula (in km)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Calculate travel time in hours (assuming average speed of 40 km/h in urban areas)
+const calculateTravelTime = (distanceKm: number): number => {
+  const averageSpeedKmh = 40;
+  return distanceKm / averageSpeedKmh;
+};
+
+// Parse time string "HH:MM" to decimal hours
+const parseTime = (timeStr: string): number => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours + (minutes / 60);
+};
+
+// Parse duration string "H:MM" or "HH:MM" to decimal hours
+const parseDuration = (duration: string): number => {
+  const [hours, minutes] = duration.split(':').map(Number);
+  return hours + (minutes / 60);
+};
+
+// Convert decimal hours to "HH:MM" format
+const formatTime = (decimalHours: number): string => {
+  const hours = Math.floor(decimalHours);
+  const minutes = Math.round((decimalHours - hours) * 60);
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+};
+
+// Get task block color based on commit type
+const getCommitTypeColor = (commitType: TaskCommitType): string => {
+  switch (commitType) {
+    case 'APPOINTMENT':
+      return TASK_ICON_COLORS.appointment; // Amber/Orange
+    case 'START BY':
+      return TASK_ICON_COLORS.startBy; // Green
+    case 'COMPLETE BY':
+      return TASK_ICON_COLORS.completeBy; // Blue
+    case 'TAIL':
+      return TASK_ICON_COLORS.failedSLA; // Grey
+    default:
+      return TASK_ICON_COLORS.appointment;
+  }
+};
+
+interface ScheduledBlock {
+  type: 'travel' | 'task';
+  taskId?: string;
+  startTime: number; // Decimal hours from midnight
+  duration: number; // Decimal hours
+  dayOffset: number; // 0 for same day, 1 for next day, etc.
+  task?: TaskTableRow;
+  fromLocation?: { lat: number; lon: number };
+  toLocation?: { lat: number; lon: number };
+  distanceKm?: number;
+}
 
 interface LiveGanttProps {
   onDock?: () => void;
@@ -44,6 +115,14 @@ interface TechnicianDayRow {
   technicianName: string;
   date: Date;
   tasks: TaskTableRow[];
+  shift?: string;
+  shiftStart?: string;
+  shiftEnd?: string;
+  workingStatus?: 'Signed on' | 'Signed on no work' | 'Not Signed on' | 'Absent' | 'Rostered off';
+  homeLatitude?: number;
+  homeLongitude?: number;
+  scheduledBlocks?: ScheduledBlock[]; // Scheduled travel and task blocks
+  visibleTaskCount?: number;
 }
 
 const FIXED_COLUMN_WIDTH = 220;
@@ -100,6 +179,34 @@ export default function LiveGantt({
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
 
+  // Selection UI integration
+  const { selectTaskFromMap, selectMultipleTasksFromMap } = useMapSelection();
+  const { selectedTaskIds, selectTasks } = useSelectionUI();
+  const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
+
+  // Handler to select all visible tasks for a technician - memoized for performance
+  const handleSelectTechnicianTasks = useCallback((row: TechnicianDayRow, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    // Get all task IDs from the technician's scheduled blocks within the visible date range
+    const taskIds = row.scheduledBlocks
+      ?.filter(block => block.type === 'task' && block.taskId)
+      .filter(block => block.dayOffset < visibleDays) // Only tasks within visible days
+      .map(block => block.taskId!)
+      .filter((id, index, arr) => arr.indexOf(id) === index) || []; // Remove duplicates
+    
+    // If Ctrl/Cmd is pressed, add to selection, otherwise replace
+    const isCtrlPressed = event.ctrlKey || event.metaKey;
+    if (isCtrlPressed) {
+      // Add to existing selection
+      const newSelection = Array.from(new Set([...selectedTaskIds, ...taskIds]));
+      selectTasks(newSelection, 'map');
+    } else {
+      // Replace selection - use selectMultipleTasksFromMap to properly set source as 'map'
+      selectMultipleTasksFromMap(taskIds);
+    }
+  }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap]);
+
   // Scroll to 5am on initial load
   useEffect(() => {
     const scrollTo5AM = () => {
@@ -128,7 +235,121 @@ export default function LiveGantt({
     return dates;
   }, [startDate, visibleDays]);
 
-  // Extract unique technicians from filtered tasks
+  // Schedule tasks with travel time for each technician
+  const scheduleTasksWithTravel = (
+    tasks: TaskTableRow[],
+    homeLatitude: number,
+    homeLongitude: number,
+    shiftStart: string,
+    shiftEnd: string
+  ): ScheduledBlock[] => {
+    const blocks: ScheduledBlock[] = [];
+    if (!tasks.length) return blocks;
+
+    // Parse shift times
+    const shiftStartHours = parseTime(shiftStart);
+    const shiftEndHours = parseTime(shiftEnd);
+    const dailyWorkingHours = shiftEndHours - shiftStartHours;
+
+    // Sort tasks by commit date
+    const sortedTasks = [...tasks].sort((a, b) => 
+      new Date(a.commitDate).getTime() - new Date(b.commitDate).getTime()
+    );
+
+    let currentTime = shiftStartHours; // Start at beginning of shift
+    let currentDayOffset = 0;
+    let currentLocation = { lat: homeLatitude, lon: homeLongitude };
+
+    sortedTasks.forEach((task) => {
+      const taskDuration = parseDuration(task.taskDuration);
+      const taskLocation = { lat: task.taskLatitude, lon: task.taskLongitude };
+
+      // Calculate travel time from current location to task
+      const distanceKm = calculateDistance(
+        currentLocation.lat,
+        currentLocation.lon,
+        taskLocation.lat,
+        taskLocation.lon
+      );
+      const travelTime = calculateTravelTime(distanceKm);
+
+      // Check if travel + task fits in current day's remaining time
+      const timeNeeded = travelTime + taskDuration;
+      const timeRemaining = shiftEndHours - currentTime;
+
+      // If doesn't fit, move to next day
+      if (currentTime + timeNeeded > shiftEndHours && timeRemaining < dailyWorkingHours) {
+        currentDayOffset++;
+        currentTime = shiftStartHours;
+        // Reset location to home at start of new day
+        currentLocation = { lat: homeLatitude, lon: homeLongitude };
+        
+        // Recalculate travel from home
+        const newDistanceKm = calculateDistance(
+          currentLocation.lat,
+          currentLocation.lon,
+          taskLocation.lat,
+          taskLocation.lon
+        );
+        const newTravelTime = calculateTravelTime(newDistanceKm);
+        
+        // Add travel block
+        if (newTravelTime > 0.05) { // Only show if > 3 minutes
+          blocks.push({
+            type: 'travel',
+            startTime: currentTime,
+            duration: newTravelTime,
+            dayOffset: currentDayOffset,
+            fromLocation: currentLocation,
+            toLocation: taskLocation,
+            distanceKm: newDistanceKm,
+          });
+          currentTime += newTravelTime;
+        }
+      } else {
+        // Add travel block for current day
+        if (travelTime > 0.05) { // Only show if > 3 minutes
+          blocks.push({
+            type: 'travel',
+            startTime: currentTime,
+            duration: travelTime,
+            dayOffset: currentDayOffset,
+            fromLocation: currentLocation,
+            toLocation: taskLocation,
+            distanceKm: distanceKm,
+          });
+          currentTime += travelTime;
+        }
+      }
+
+      // Add task block
+      blocks.push({
+        type: 'task',
+        taskId: task.taskId,
+        startTime: currentTime,
+        duration: taskDuration,
+        dayOffset: currentDayOffset,
+        task: task,
+        toLocation: taskLocation,
+      });
+
+      currentTime += taskDuration;
+      currentLocation = taskLocation;
+    });
+
+    return blocks;
+  };
+
+  // Pre-compute date range set for faster lookups
+  const dateRangeSet = useMemo(() => {
+    return new Set(dateRange.map(d => {
+      const rangeDate = new Date(d);
+      rangeDate.setHours(0, 0, 0, 0);
+      return rangeDate.getTime();
+    }));
+  }, [dateRange]);
+
+  // Extract technicians from Resource Table and match with filtered tasks
   const technicianDayRows = useMemo(() => {
     if (!selectedDivision && !selectedDomain) {
       return [];
@@ -143,44 +364,56 @@ export default function LiveGantt({
       filteredTasks = filteredTasks.filter(task => task.domainId === selectedDomain);
     }
 
-    // Group by unique technician (resourceId)
-    const technicianMap = new Map<string, { id: string; name: string }>();
-    filteredTasks.forEach(task => {
-      if (!technicianMap.has(task.resourceId)) {
-        technicianMap.set(task.resourceId, {
-          id: task.resourceId,
-          name: task.resourceName || task.resourceId
-        });
-      }
+    // Get unique resource IDs from filtered tasks
+    const taskResourceIds = new Set(filteredTasks.map(task => task.resourceId));
+
+    // Filter resources that have tasks and match division filter
+    const relevantResources = RESOURCE_TABLE_ROWS.filter(resource => {
+      const hasMatchingTasks = taskResourceIds.has(resource.resourceId);
+      const matchesDivision = !selectedDivision || resource.division === selectedDivision;
+      return hasMatchingTasks && matchesDivision;
     });
 
-    // Create rows: one per technician per day
+    // Create rows: one per resource (showing all their tasks across all days)
     const rows: TechnicianDayRow[] = [];
-    technicianMap.forEach((tech) => {
-      dateRange.forEach(date => {
-        const dayStart = new Date(date);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(date);
-        dayEnd.setHours(23, 59, 59, 999);
+    relevantResources.forEach((resource) => {
+      // Get all tasks for this resource across all days in the date range
+      const resourceTasks = filteredTasks.filter(task => task.resourceId === resource.resourceId);
 
-        // Find tasks for this technician on this day
-        const dayTasks = filteredTasks.filter(task => {
-          if (task.resourceId !== tech.id) return false;
-          const taskDate = new Date(task.commitDate);
-          return taskDate >= dayStart && taskDate <= dayEnd;
-        });
+      // Schedule tasks with travel time
+      const scheduledBlocks = scheduleTasksWithTravel(
+        resourceTasks,
+        resource.homeLatitude,
+        resource.homeLongitude,
+        resource.startTime,
+        resource.endTime
+      );
 
-        rows.push({
-          technicianId: tech.id,
-          technicianName: tech.name,
-          date: new Date(date),
-          tasks: dayTasks
-        });
+      // Pre-calculate visible task count for tooltip
+      const visibleTaskCount = resourceTasks.filter(t => {
+        const taskDate = new Date(t.commitDate);
+        taskDate.setHours(0, 0, 0, 0);
+        return dateRangeSet.has(taskDate.getTime());
+      }).length;
+
+      rows.push({
+        technicianId: resource.resourceId,
+        technicianName: resource.resourceName,
+        date: dateRange[0], // Use first day for reference
+        tasks: resourceTasks,
+        shift: resource.scheduleShift,
+        shiftStart: resource.startTime,
+        shiftEnd: resource.endTime,
+        workingStatus: resource.workingStatus,
+        homeLatitude: resource.homeLatitude,
+        homeLongitude: resource.homeLongitude,
+        scheduledBlocks: scheduledBlocks,
+        visibleTaskCount: visibleTaskCount,
       });
     });
 
     return rows;
-  }, [selectedDivision, selectedDomain, dateRange]);
+  }, [selectedDivision, selectedDomain, dateRange, dateRangeSet]);
 
   // Navigation handlers
   const handlePreviousDay = () => {
@@ -646,29 +879,41 @@ export default function LiveGantt({
                     gap: 1,
                     backgroundColor: theme.palette.background.paper,
                     boxSizing: 'border-box',
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                    },
                   }}
                 >
-                  <Avatar 
-                    sx={{ 
-                      width: 28, 
-                      height: 28,
-                      bgcolor: theme.openreach.energyAccent,
-                      flexShrink: 0,
-                    }}
+                  <Tooltip 
+                    title={`Click to select all ${row.visibleTaskCount} visible tasks for ${row.technicianName || row.technicianId}`}
+                    placement="right"
+                    arrow
                   >
-                    <PersonIcon sx={{ fontSize: 18, color: '#fff' }} />
-                  </Avatar>
+                    <Avatar 
+                      onClick={(e) => handleSelectTechnicianTasks(row, e)}
+                      sx={{ 
+                        width: 24, 
+                        height: 24,
+                        bgcolor: theme.openreach.energyAccent,
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s ease',
+                        '&:hover': {
+                          transform: 'scale(1.15)',
+                          boxShadow: theme.shadows[4],
+                        },
+                      }}
+                    >
+                      <PersonIcon sx={{ fontSize: 16, color: '#fff' }} />
+                    </Avatar>
+                  </Tooltip>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.85rem', lineHeight: 1.3 }}>
+                    <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.75rem', lineHeight: 1.1 }}>
                       {row.technicianName || row.technicianId}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: 0.5, lineHeight: 1 }}>
-                      <AccessTimeIcon sx={{ fontSize: 10 }} />
-                      08:00 - 17:00
-                    </Typography>
+                    {visibleDays === 1 && row.shiftStart && row.shiftEnd && (
+                      <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary, fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                        <AccessTimeIcon sx={{ fontSize: 9 }} />
+                        {row.shiftStart}-{row.shiftEnd}
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
               ))}
@@ -816,7 +1061,25 @@ export default function LiveGantt({
                 })()}
 
                 {/* Rows with task blocks */}
-                {technicianDayRows.map((row) => (
+                {technicianDayRows.map((row) => {
+                  // Calculate shift time bars for each day (show shift hours across all days)
+                  const shiftBars: Array<{ left: number; width: number }> = [];
+                  
+                  if (row.shiftStart && row.shiftEnd) {
+                    const [startHour, startMin] = row.shiftStart.split(':').map(Number);
+                    const [endHour, endMin] = row.shiftEnd.split(':').map(Number);
+                    const startMinutes = startHour * 60 + startMin;
+                    const endMinutes = endHour * 60 + endMin;
+                    const shiftDuration = ((endMinutes - startMinutes) / 60) * HOUR_WIDTH;
+                    
+                    // Create shift bar for each day
+                    dateRange.forEach((_, dayIndex) => {
+                      const left = (dayIndex * 24 * HOUR_WIDTH) + ((startMinutes / 60) * HOUR_WIDTH);
+                      shiftBars.push({ left, width: shiftDuration });
+                    });
+                  }
+
+                  return (
                   <Box
                     key={`${row.technicianId}-${row.date.getTime()}`}
                     sx={{
@@ -832,73 +1095,152 @@ export default function LiveGantt({
                       },
                     }}
                   >
-                    {/* Task blocks for this row */}
-                    {row.tasks.map((task) => {
-                      // Position task within the day (simplified - assumes tasks are at noon)
-                      const taskDate = new Date(task.commitDate);
-                      const dayIndex = dateRange.findIndex(d => 
-                        d.getDate() === taskDate.getDate() &&
-                        d.getMonth() === taskDate.getMonth() &&
-                        d.getFullYear() === taskDate.getFullYear()
-                      );
+                    {/* Shift time background bars for each day */}
+                    {shiftBars.map((bar, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          position: 'absolute',
+                          left: bar.left,
+                          width: bar.width,
+                          height: '100%',
+                          backgroundColor: alpha(theme.palette.info.main, 0.15),
+                          pointerEvents: 'none',
+                          zIndex: 0,
+                        }}
+                      />
+                    ))}
+                    
+                    {/* Scheduled blocks (travel and tasks) for this row */}
+                    {row.scheduledBlocks?.map((block, blockIdx) => {
+                      // Calculate position based on day offset and start time
+                      const left = (block.dayOffset * 24 * HOUR_WIDTH) + (block.startTime * HOUR_WIDTH);
+                      const width = block.duration * HOUR_WIDTH;
                       
-                      if (dayIndex === -1) return null;
-
-                      // Position at 12:00 (noon) by default, with 2-hour width
-                      const startHour = 12;
-                      const durationHours = 2;
-                      const left = (dayIndex * 24 + startHour) * HOUR_WIDTH;
-                      const width = durationHours * HOUR_WIDTH;
-
-                      return (
-                        <Tooltip
-                          key={task.taskId}
-                          title={
-                            <Box>
-                              <Typography variant="caption" fontWeight={600}>{task.taskId}</Typography>
-                              <Typography variant="caption" display="block">{task.status}</Typography>
-                              <Typography variant="caption" display="block">{task.postCode}</Typography>
-                            </Box>
-                          }
-                        >
-                          <Paper
-                            sx={{
-                              position: 'absolute',
-                              left: left,
-                              top: '50%',
-                              transform: 'translateY(-50%)',
-                              width: width,
-                              height: ROW_HEIGHT - 16,
-                              backgroundColor: theme.openreach.energyAccent,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              px: 1,
-                              '&:hover': {
-                                opacity: 0.8,
-                                boxShadow: theme.shadows[4],
-                              },
-                            }}
-                            elevation={2}
+                      if (block.type === 'travel') {
+                        // Render travel block
+                        return (
+                          <Tooltip
+                            key={`travel-${blockIdx}`}
+                            title={
+                              <Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                  <DirectionsCarIcon sx={{ fontSize: '0.9rem' }} />
+                                  <Typography variant="caption" fontWeight={600}>Travel</Typography>
+                                </Box>
+                                <Typography variant="caption" display="block">
+                                  Distance: {block.distanceKm?.toFixed(1)} km
+                                </Typography>
+                                <Typography variant="caption" display="block">
+                                  Duration: {formatTime(block.duration)}
+                                </Typography>
+                                <Typography variant="caption" display="block">
+                                  {formatTime(block.startTime)} - {formatTime(block.startTime + block.duration)}
+                                </Typography>
+                              </Box>
+                            }
                           >
-                            <Typography 
-                              variant="caption" 
-                              noWrap 
-                              sx={{ 
-                                color: '#fff',
-                                fontWeight: 600,
-                                fontSize: '0.7rem'
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                left: left,
+                                top: '50%',
+                                width: width,
+                                height: 0,
+                                borderTop: `3px dashed ${alpha(theme.palette.warning.main, 0.7)}`,
+                                cursor: 'help',
+                                '&::before': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  left: 0,
+                                  top: '-6px',
+                                  width: '8px',
+                                  height: '8px',
+                                  backgroundColor: theme.palette.warning.main,
+                                  borderRadius: '50%',
+                                  border: `2px solid ${theme.palette.background.paper}`,
+                                },
+                                '&::after': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  right: 0,
+                                  top: '-6px',
+                                  width: '8px',
+                                  height: '8px',
+                                  backgroundColor: theme.palette.warning.main,
+                                  borderRadius: '50%',
+                                  border: `2px solid ${theme.palette.background.paper}`,
+                                },
+                                '&:hover': {
+                                  borderTopWidth: '4px',
+                                  borderTopColor: theme.palette.warning.main,
+                                },
                               }}
-                            >
-                              {task.taskId}
-                            </Typography>
-                          </Paper>
-                        </Tooltip>
-                      );
+                            />
+                          </Tooltip>
+                        );
+                      } else {
+                        // Render task block
+                        const task = block.task!;
+                        const isSelected = selectedSet.has(task.taskId);
+                        const commitTypeColor = getCommitTypeColor(task.commitType);
+                        
+                        return (
+                          <Tooltip
+                            key={`task-${task.taskId}`}
+                            title={
+                              <Box>
+                                <Typography variant="caption" fontWeight={600}>{task.taskId}</Typography>
+                                <Typography variant="caption" display="block">{task.commitType}</Typography>
+                                <Typography variant="caption" display="block">{task.status}</Typography>
+                                <Typography variant="caption" display="block">{task.postCode}</Typography>
+                                <Typography variant="caption" display="block">
+                                  Duration: {task.taskDuration}
+                                </Typography>
+                                <Typography variant="caption" display="block">
+                                  {formatTime(block.startTime)} - {formatTime(block.startTime + block.duration)}
+                                </Typography>
+                              </Box>
+                            }
+                          >
+                            <Paper
+                              onClick={(e) => {
+                                const isCtrlPressed = e.ctrlKey || e.metaKey;
+                                selectTaskFromMap(task.taskId, isCtrlPressed);
+                              }}
+                              sx={{
+                                position: 'absolute',
+                                left: left,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                width: width,
+                                height: ROW_HEIGHT - 16,
+                                backgroundColor: commitTypeColor,
+                                cursor: 'pointer',
+                                border: isSelected 
+                                  ? `4px solid ${theme.palette.primary.main}` 
+                                  : `2px solid ${alpha('#000', 0.25)}`,
+                                borderRadius: 1.5,
+                                boxSizing: 'border-box',
+                                transition: 'all 0.2s ease',
+                                outline: isSelected ? `2px solid ${theme.palette.background.paper}` : 'none',
+                                outlineOffset: '-1px',
+                                '&:hover': {
+                                  opacity: 0.9,
+                                  boxShadow: theme.shadows[6],
+                                  filter: 'brightness(1.15)',
+                                  transform: 'translateY(-50%) scale(1.02)',
+                                },
+                              }}
+                              elevation={isSelected ? 6 : 3}
+                            />
+                          </Tooltip>
+                        );
+                      }
                     })}
                   </Box>
-                ))}
+                  );
+                })}
               </Box>
             </Box>
           </Box>

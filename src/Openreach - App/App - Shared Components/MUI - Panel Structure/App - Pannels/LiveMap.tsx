@@ -292,7 +292,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   // Create Set for O(1) lookups - memoized for performance
   const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
-  const getIconVariant = (commitType: TaskCommitType): TaskIconVariant => {
+  // Memoize icon variant lookup
+  const getIconVariant = useCallback((commitType: TaskCommitType): TaskIconVariant => {
     switch (commitType) {
       case 'APPOINTMENT':
         return 'appointment';
@@ -305,7 +306,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       default:
         return 'appointment';
     }
-  };
+  }, []);
   
   // Persist map layer selection in localStorage
   const [mapLayer, setMapLayer] = useState<MapLayerType>(() => {
@@ -358,14 +359,15 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
         {isSelected && (
           <div style={{
             position: 'absolute',
-            top: '-4px',
-            left: '-4px',
-            right: '-4px',
-            bottom: '-4px',
-            border: `2px solid ${theme.openreach.energyAccent}`,
-            borderRadius: '6px',
-            backgroundColor: alpha(theme.openreach.energyAccent, 0.1),
-            pointerEvents: 'none'
+            top: '-5px',
+            left: '-5px',
+            right: '-5px',
+            bottom: '-5px',
+            border: '3px solid #DC2626',
+            borderRadius: '8px',
+            backgroundColor: 'rgba(220, 38, 38, 0.15)',
+            pointerEvents: 'none',
+            boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2)'
           }} />
         )}
       </div>
@@ -378,7 +380,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       iconAnchor: [markerSize / 2, markerSize],
       popupAnchor: [0, -markerSize],
     });
-  }, [taskColors, theme]);
+  }, [taskColors]);
 
   // Memoize cluster icon creation for better performance
   const createClusterIcon = useCallback((cluster: { getChildCount: () => number }) => {
@@ -416,7 +418,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       icons[key] = createMarkerIcon(variant, isSelected);
     }
     return icons;
-  }, [createMarkerIcon, selectedSet, tasksToDisplay]);
+  }, [createMarkerIcon, selectedSet, tasksToDisplay, getIconVariant]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -762,11 +764,11 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             />
 
             {/* Render markers based on zoom level to prevent overlap */}
-            {currentZoom < 12 ? (
+            {currentZoom < 10 ? (
               <MarkerClusterGroup
                 chunkedLoading
                 maxClusterRadius={150}
-                disableClusteringAtZoom={12}
+                disableClusteringAtZoom={10}
                 spiderfyOnMaxZoom={false}
                 showCoverageOnHover={false}
                 zoomToBoundsOnClick={false}
