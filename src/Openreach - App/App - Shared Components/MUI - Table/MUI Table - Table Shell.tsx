@@ -36,6 +36,7 @@ interface SharedMuiTableProps<T extends GridValidRowModel = GridValidRowModel> {
   apiRef?: ReturnType<typeof useGridApiRef>
   onCellClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
   onCellDoubleClick?: (params: GridCellParams<T>, event: MuiEvent<React.MouseEvent>) => void
+  onRowClick?: (params: { row: T }, event: MuiEvent<React.MouseEvent>) => void
   onSortModelChange?: (model: GridSortModel) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
   sx?: SxProps<Theme>
@@ -88,6 +89,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   apiRef: externalApiRef,
   onCellClick,
   onCellDoubleClick,
+  onRowClick,
   onSortModelChange,
   getRowClassName,
   sx,
@@ -317,6 +319,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
         disableRowSelectionOnClick={true}
         onCellClick={handleCellClick}
         onCellDoubleClick={onCellDoubleClick}
+        onRowClick={onRowClick}
         onSortModelChange={onSortModelChange}
         aria-label="Interactive data table"
         slots={{

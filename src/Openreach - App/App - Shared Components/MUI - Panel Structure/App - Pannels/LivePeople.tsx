@@ -6,6 +6,7 @@ import { SharedMuiTable } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
 import { RESOURCE_TABLE_ROWS, type ResourceTableRow } from '../../../App - Data Tables/Resource - Table';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useResourceTableSelection } from '../../Selection - UI';
 
 interface LivePeopleProps {
   onDock?: () => void;
@@ -267,6 +268,14 @@ export default function LivePeople({
 
   // Track sort model state
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  
+  // Use resource selection system
+  const { 
+    getPrioritizedResources, 
+    isResourceSelected, 
+    toggleResourceSelection, 
+    clearResourceSelectionOnSort 
+  } = useResourceTableSelection();
 
   // Filter resources based on selected division and domain
   const filteredRows = useMemo(() => {
@@ -303,10 +312,17 @@ export default function LivePeople({
     return sortedResources;
   }, [selectedDivision, selectedDomain, sortModel]);
 
+  // Apply prioritization from map selection
+  const displayRows = useMemo(() => 
+    getPrioritizedResources(filteredRows),
+    [getPrioritizedResources, filteredRows]
+  );
+
   // Handle sort requests
   const handleSortModelChange = useCallback((newModel: GridSortModel) => {
     setSortModel(newModel);
-  }, []);
+    clearResourceSelectionOnSort(); // Clear selection when sorting
+  }, [clearResourceSelectionOnSort]);
 
   if (minimized) {
     return (
@@ -415,7 +431,7 @@ export default function LivePeople({
         {filteredRows.length > 0 ? (
           <SharedMuiTable
             columns={columns}
-            rows={filteredRows}
+            rows={displayRows}
             getRowId={(row) => row.resourceId}
             density="compact"
             enablePagination={false}
@@ -423,6 +439,14 @@ export default function LivePeople({
             sortModel={sortModel}
             height={isExpanded ? '100%' : tableHeight}
             onSortModelChange={handleSortModelChange}
+            onRowClick={(params, event) => {
+              const resourceId = params.row.resourceId;
+              const isCtrlPressed = event.ctrlKey || event.metaKey;
+              toggleResourceSelection(resourceId, isCtrlPressed, 'table');
+            }}
+            getRowClassName={(params) => 
+              isResourceSelected(params.row.resourceId) ? 'Mui-selected' : ''
+            }
           />
         ) : (
           <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 2 }}>

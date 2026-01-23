@@ -300,8 +300,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   const taskColors = theme.openreach?.darkTokens?.mapTaskColors; // Always use dark mode colors for task icons
 
   // Selection UI integration - separate hooks for different concerns
-  const { selectTaskFromMap } = useMapSelection();
-  const { selectedTaskIds } = useSelectionUI();
+  const { selectTaskFromMap, selectResourceFromMap } = useMapSelection();
+  const { selectedTaskIds, selectedResourceIds } = useSelectionUI();
 
   // Use filteredTasks if provided, otherwise fall back to all tasks
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
@@ -412,8 +412,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     });
   }, [taskColors]);
 
-  // Create resource marker icons with MUI PersonPinCircle icon and status color
-  const createResourceMarkerIcon = useCallback((resource: ResourceTableRow) => {
+  // Create resource marker icons with MUI PersonPinCircle icon - white background with colored person
+  const createResourceMarkerIcon = useCallback((resource: ResourceTableRow, isSelected: boolean) => {
     const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
     
     const getStatusColor = () => {
@@ -426,7 +426,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
         case 'Absent':
           return tokens?.state?.error || '#F44336';
         case 'Rostered off':
-          return theme.palette.text.secondary;
+          return theme.palette.text.secondary || '#9E9E9E';
         default:
           return '#9E9E9E';
       }
@@ -435,14 +435,25 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     const markerSize = 40;
     const statusColor = getStatusColor();
     const iconHtml = `
-      <svg width="${markerSize}" height="${markerSize}" viewBox="0 0 24 24" style="filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.4));">
-        <path fill="${statusColor}" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 2c1.1 0 2 .9 2 2 0 1.11-.9 2-2 2s-2-.89-2-2c0-1.1.9-2 2-2zm0 10c-1.67 0-3.14-.85-4-2.15.02-1.32 2.67-2.05 4-2.05s3.98.73 4 2.05c-.86 1.3-2.33 2.15-4 2.15z"/>
-      </svg>
+      <div class="${isSelected ? 'marker-selected' : ''}" style="width: ${markerSize}px; height: ${markerSize}px; position: relative;">
+        <svg width="${markerSize}" height="${markerSize}" viewBox="0 0 24 24">
+          <!-- White teardrop background with jet black outline -->
+          <path fill="white" stroke="#000000" stroke-width="1.5" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z"/>
+          <!-- Person silhouette in status color -->
+          <g fill="${statusColor}">
+            <circle cx="12" cy="6" r="2"/>
+            <path d="M12 9.8c-2 0-3.98.73-4 2.05.86 1.3 2.33 2.15 4 2.15s3.14-.85 4-2.15c-.02-1.32-2-2.05-4-2.05z"/>
+          </g>
+        </svg>
+        ${isSelected ? `
+          <div class="marker-selection-ring" style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 3px solid #DC2626; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2);"></div>
+        ` : ''}
+      </div>
     `;
 
     return L.divIcon({
       html: iconHtml,
-      className: 'custom-resource-icon',
+      className: `custom-resource-icon ${isSelected ? 'selected' : ''}`,
       iconSize: [markerSize, markerSize],
       iconAnchor: [markerSize / 2, markerSize],
       popupAnchor: [0, -markerSize],
@@ -489,13 +500,16 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
   // Memoize icons for each resource to prevent recreation on every render
   const resourceIcons = useMemo(() => {
+    const selectedResourceSet = new Set(selectedResourceIds);
     const icons: Record<string, L.DivIcon> = {};
     for (let i = 0; i < resourcesToDisplay.length; i++) {
       const resource = resourcesToDisplay[i];
-      icons[resource.resourceId] = createResourceMarkerIcon(resource);
+      const isSelected = selectedResourceSet.has(resource.resourceId);
+      const key = `${resource.resourceId}-${isSelected}`;
+      icons[key] = createResourceMarkerIcon(resource, isSelected);
     }
     return icons;
-  }, [createResourceMarkerIcon, resourcesToDisplay]);
+  }, [createResourceMarkerIcon, resourcesToDisplay, selectedResourceIds]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -1218,13 +1232,31 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             )}
             
             {/* Render resource markers - resources don't cluster */}
-            {resourcesToDisplay.map((resource: ResourceTableRow) => (
-              <Marker
-                key={`resource-${resource.resourceId}`}
-                position={[resource.homeLatitude, resource.homeLongitude]}
-                icon={resourceIcons[resource.resourceId]}
-                eventHandlers={{
-                  dblclick: () => {
+            {resourcesToDisplay.map((resource: ResourceTableRow) => {
+              const isSelected = selectedResourceIds.includes(resource.resourceId);
+              const iconKey = `${resource.resourceId}-${isSelected}`;
+              
+              return (
+                <Marker
+                  key={`resource-${resource.resourceId}`}
+                  position={[resource.homeLatitude, resource.homeLongitude]}
+                  icon={resourceIcons[iconKey]}
+                  eventHandlers={{
+                    click: (e) => {
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
+
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                    },
+                    mousedown: (e) => {
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
+
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                    },
+                    dblclick: () => {
                     ignoreNextMapClickRef.current = true;
                     setTimeout(() => {
                       ignoreNextMapClickRef.current = false;
@@ -1277,7 +1309,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                   }
                 }}
               />
-            ))}
+              );
+            })}
             
             {/* Single reusable popup - stays open until explicitly closed */}
             {popupState.isOpen && popupState.position && (

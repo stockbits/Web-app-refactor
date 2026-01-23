@@ -21,6 +21,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import type { TaskTableRow } from '../App - Data Tables/Task - Table';
+import type { ResourceTableRow } from '../App - Data Tables/Resource - Table';
 
 interface SelectionUIContextType {
   selectedTaskIds: string[];
@@ -34,6 +35,19 @@ interface SelectionUIContextType {
   clearSelectionOnSort: () => void;
   selectTasks: (taskIds: string[], source?: 'map' | 'table') => void;
   getPrioritizedTasks: (allTasks: TaskTableRow[]) => TaskTableRow[];
+  
+  // Resource selection
+  selectedResourceIds: string[];
+  lastInteractedResourceId: string | null;
+  resourceSelectionSource: 'map' | 'table' | null;
+  isResourceSelected: (resourceId: string) => boolean;
+  isLastResourceInteracted: (resourceId: string) => boolean;
+  toggleResourceSelection: (resourceId: string, multiSelect?: boolean, source?: 'map' | 'table') => void;
+  rangeSelectResources: (resourceId: string, allResourceIds: string[], additive?: boolean, source?: 'map' | 'table') => void;
+  clearResourceSelection: () => void;
+  clearResourceSelectionOnSort: () => void;
+  selectResources: (resourceIds: string[], source?: 'map' | 'table') => void;
+  getPrioritizedResources: (allResources: ResourceTableRow[]) => ResourceTableRow[];
 }
 
 const SelectionUIContext = createContext<SelectionUIContextType | undefined>(undefined);
@@ -55,14 +69,25 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
   const [lastInteractedTaskId, setLastInteractedTaskId] = useState<string | null>(null);
   const [selectionSource, setSelectionSource] = useState<'map' | 'table' | null>(null);
 
+  const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
+  const [lastInteractedResourceId, setLastInteractedResourceId] = useState<string | null>(null);
+  const [resourceSelectionSource, setResourceSelectionSource] = useState<'map' | 'table' | null>(null);
+
   // Use Set for O(1) lookups
   const selectedTaskIdsSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
+  const selectedResourceIdsSet = useMemo(() => new Set(selectedResourceIds), [selectedResourceIds]);
 
   // Check if a task is selected - O(1) lookup
   const isTaskSelected = useCallback((taskId: string) => selectedTaskIdsSet.has(taskId), [selectedTaskIdsSet]);
 
   // Check if task is the last interacted
   const isLastInteracted = useCallback((taskId: string) => taskId === lastInteractedTaskId, [lastInteractedTaskId]);
+
+  // Check if a resource is selected - O(1) lookup
+  const isResourceSelected = useCallback((resourceId: string) => selectedResourceIdsSet.has(resourceId), [selectedResourceIdsSet]);
+
+  // Check if resource is the last interacted
+  const isLastResourceInteracted = useCallback((resourceId: string) => resourceId === lastInteractedResourceId, [lastInteractedResourceId]);
 
   // Toggle task selection (supports multi-select with multiSelect flag)
   const toggleTaskSelection = useCallback((taskId: string, multiSelect = false, source: 'map' | 'table' = 'table') => {
@@ -147,6 +172,76 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
     return [...selectedTasks, ...unselectedTasks];
   }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
 
+  // Resource selection methods
+  const toggleResourceSelection = useCallback((resourceId: string, multiSelect = false, source: 'map' | 'table' = 'table') => {
+    setLastInteractedResourceId(resourceId);
+    setSelectedResourceIds(prev => {
+      const isCurrentlySelected = prev.includes(resourceId);
+
+      if (multiSelect) {
+        return isCurrentlySelected ? prev.filter(id => id !== resourceId) : [...prev, resourceId];
+      } else {
+        return isCurrentlySelected && prev.length === 1 ? [] : [resourceId];
+      }
+    });
+    setResourceSelectionSource(source);
+  }, []);
+
+  const rangeSelectResources = useCallback((resourceId: string, allResourceIds: string[], additive = false, source: 'map' | 'table' = 'table') => {
+    setLastInteractedResourceId(resourceId);
+    
+    if (!lastInteractedResourceId || !allResourceIds.includes(lastInteractedResourceId)) {
+      setSelectedResourceIds([resourceId]);
+    } else {
+      const lastIndex = allResourceIds.indexOf(lastInteractedResourceId);
+      const currentIndex = allResourceIds.indexOf(resourceId);
+      
+      const startIndex = Math.min(lastIndex, currentIndex);
+      const endIndex = Math.max(lastIndex, currentIndex);
+      const rangeIds = allResourceIds.slice(startIndex, endIndex + 1);
+      
+      setSelectedResourceIds(prev => 
+        additive ? [...new Set([...prev, ...rangeIds])] : rangeIds
+      );
+    }
+    setResourceSelectionSource(source);
+  }, [lastInteractedResourceId]);
+
+  const clearResourceSelection = useCallback(() => {
+    setSelectedResourceIds([]);
+    setLastInteractedResourceId(null);
+  }, []);
+
+  const clearResourceSelectionOnSort = useCallback(() => {
+    setSelectedResourceIds([]);
+    setLastInteractedResourceId(null);
+    setResourceSelectionSource(null);
+  }, []);
+
+  const selectResources = useCallback((resourceIds: string[], source: 'map' | 'table' = 'table') => {
+    setSelectedResourceIds(resourceIds);
+    setResourceSelectionSource(source);
+  }, []);
+
+  const getPrioritizedResources = useCallback((resources: ResourceTableRow[]) => {
+    if (selectedResourceIds.length === 0 || resourceSelectionSource !== 'map') {
+      return resources;
+    }
+
+    const resourceMap = new Map<string, ResourceTableRow>();
+    resources.forEach(resource => resourceMap.set(resource.resourceId, resource));
+
+    const selectedResources: ResourceTableRow[] = [];
+    for (let i = selectedResourceIds.length - 1; i >= 0; i--) {
+      const resource = resourceMap.get(selectedResourceIds[i]);
+      if (resource) selectedResources.push(resource);
+    }
+
+    const unselectedResources = resources.filter(resource => !selectedResourceIdsSet.has(resource.resourceId));
+
+    return [...selectedResources, ...unselectedResources];
+  }, [selectedResourceIds, selectedResourceIdsSet, resourceSelectionSource]);
+
   const value = useMemo(() => ({
     selectedTaskIds,
     lastInteractedTaskId,
@@ -158,7 +253,18 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
     clearSelection,
     clearSelectionOnSort,
     selectTasks,
-    getPrioritizedTasks
+    getPrioritizedTasks,
+    selectedResourceIds,
+    lastInteractedResourceId,
+    resourceSelectionSource,
+    isResourceSelected,
+    isLastResourceInteracted,
+    toggleResourceSelection,
+    rangeSelectResources,
+    clearResourceSelection,
+    clearResourceSelectionOnSort,
+    selectResources,
+    getPrioritizedResources
   }), [
     selectedTaskIds,
     lastInteractedTaskId,
@@ -170,7 +276,18 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
     clearSelection,
     clearSelectionOnSort,
     selectTasks,
-    getPrioritizedTasks
+    getPrioritizedTasks,
+    selectedResourceIds,
+    lastInteractedResourceId,
+    resourceSelectionSource,
+    isResourceSelected,
+    isLastResourceInteracted,
+    toggleResourceSelection,
+    rangeSelectResources,
+    clearResourceSelection,
+    clearResourceSelectionOnSort,
+    selectResources,
+    getPrioritizedResources
   ]);
 
   return (
@@ -182,7 +299,7 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
 
 // Hook for map components to easily select tasks
 export const useMapSelection = () => {
-  const { toggleTaskSelection, selectTasks } = useSelectionUI();
+  const { toggleTaskSelection, selectTasks, toggleResourceSelection, selectResources } = useSelectionUI();
 
   const selectTaskFromMap = useCallback((taskId: string, multiSelect = false) => {
     toggleTaskSelection(taskId, multiSelect, 'map');
@@ -192,10 +309,20 @@ export const useMapSelection = () => {
     selectTasks(taskIds, 'map');
   }, [selectTasks]);
 
+  const selectResourceFromMap = useCallback((resourceId: string, multiSelect = false) => {
+    toggleResourceSelection(resourceId, multiSelect, 'map');
+  }, [toggleResourceSelection]);
+
+  const selectMultipleResourcesFromMap = useCallback((resourceIds: string[]) => {
+    selectResources(resourceIds, 'map');
+  }, [selectResources]);
+
   return useMemo(() => ({
     selectTaskFromMap,
-    selectMultipleTasksFromMap
-  }), [selectTaskFromMap, selectMultipleTasksFromMap]);
+    selectMultipleTasksFromMap,
+    selectResourceFromMap,
+    selectMultipleResourcesFromMap
+  }), [selectTaskFromMap, selectMultipleTasksFromMap, selectResourceFromMap, selectMultipleResourcesFromMap]);
 };
 
 // Hook for task table components to get prioritized task list
@@ -232,6 +359,43 @@ export const useTaskTableSelection = () => {
     toggleTaskSelection,
     rangeSelectTasks,
     clearSelectionOnSort
+  ]);
+};
+
+// Hook for resource table components to get prioritized resource list
+export const useResourceTableSelection = () => {
+  const { 
+    getPrioritizedResources, 
+    selectedResourceIds, 
+    lastInteractedResourceId,
+    resourceSelectionSource,
+    isResourceSelected, 
+    isLastResourceInteracted,
+    toggleResourceSelection, 
+    rangeSelectResources,
+    clearResourceSelectionOnSort
+  } = useSelectionUI();
+
+  return useMemo(() => ({
+    getPrioritizedResources,
+    selectedResourceIds,
+    lastInteractedResourceId,
+    resourceSelectionSource,
+    isResourceSelected,
+    isLastResourceInteracted,
+    toggleResourceSelection,
+    rangeSelectResources,
+    clearResourceSelectionOnSort
+  }), [
+    getPrioritizedResources,
+    selectedResourceIds,
+    lastInteractedResourceId,
+    resourceSelectionSource,
+    isResourceSelected,
+    isLastResourceInteracted,
+    toggleResourceSelection,
+    rangeSelectResources,
+    clearResourceSelectionOnSort
   ]);
 };
 
