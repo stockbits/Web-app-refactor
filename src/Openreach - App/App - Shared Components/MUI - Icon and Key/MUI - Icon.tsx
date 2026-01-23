@@ -52,7 +52,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
   const isDark = theme.palette.mode === 'dark'
   const strokeColor = theme.openreach?.coreBlock ?? '#000000'
   
-  // Determine status indicator color based on working status
+  // Determine fill color based on working status
   const getStatusColor = () => {
     if (statusColor) return statusColor
     
@@ -73,7 +73,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
     }
   }
 
-  const statusIndicatorColor = getStatusColor()
+  const fillColor = getStatusColor()
 
   return (
     <svg
@@ -85,35 +85,33 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       role="img"
       style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
-      {/* White/light map marker teardrop with black outline */}
+      {/* Solid colored map marker teardrop with black outline - same as task icons */}
       <path
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-        fill="white"
+        fill={fillColor}
         stroke={strokeColor}
         strokeWidth="2"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      {/* Colored circle background behind person icon for status indication */}
-      <circle
-        cx="12"
-        cy="7"
-        r="3.5"
-        fill={statusIndicatorColor}
-      />
-      {/* Person icon centered in the pin */}
+      {/* White person icon for high contrast */}
       <g>
         {/* Head */}
         <circle
           cx="12"
-          cy="5.8"
-          r="1.3"
+          cy="6.5"
+          r="1.5"
           fill="white"
+          stroke={strokeColor}
+          strokeWidth="0.5"
         />
-        {/* Body */}
+        {/* Body/shoulders */}
         <path
-          d="M 9.5 9.5 Q 9.5 7.5 12 7.5 Q 14.5 7.5 14.5 9.5 Z"
+          d="M 9 11 Q 9 8.5 12 8.5 Q 15 8.5 15 11 L 15 12 L 9 12 Z"
           fill="white"
+          stroke={strokeColor}
+          strokeWidth="0.5"
+          strokeLinejoin="round"
         />
       </g>
     </svg>
