@@ -480,18 +480,15 @@ function LiveGantt({
 
   // Extract technicians from Resource Table and match with filtered tasks
   const technicianDayRows = useMemo(() => {
-    if (!selectedDivision && !selectedDomain) {
+    // Only show data when both division and domain are selected
+    if (!selectedDivision || !selectedDomain) {
       return [];
     }
 
     // Filter tasks by division and domain
     let filteredTasks = TASK_TABLE_ROWS;
-    if (selectedDivision) {
-      filteredTasks = filteredTasks.filter(task => task.division === selectedDivision);
-    }
-    if (selectedDomain) {
-      filteredTasks = filteredTasks.filter(task => task.domainId === selectedDomain);
-    }
+    filteredTasks = filteredTasks.filter(task => task.division === selectedDivision);
+    filteredTasks = filteredTasks.filter(task => task.domainId === selectedDomain);
 
     // Get unique resource IDs from filtered tasks
     const taskResourceIds = new Set(filteredTasks.map(task => task.resourceId));
@@ -1162,7 +1159,7 @@ function LiveGantt({
       </AppBar>
 
       {/* Main Gantt Content */}
-      {(!selectedDivision && !selectedDomain) || technicianDayRows.length === 0 ? (
+      {(!selectedDivision || !selectedDomain) || technicianDayRows.length === 0 ? (
         <Box
           sx={{
             flex: 1,
@@ -1176,14 +1173,14 @@ function LiveGantt({
           <Box sx={{ textAlign: 'center' }}>
             <TimelineIcon sx={{ fontSize: 48, color: bodyIconColor, mb: 2, opacity: 0.5 }} />
             <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
-              {!selectedDivision && !selectedDomain 
-                ? 'Select Division and Domain'
+              {(!selectedDivision || !selectedDomain)
+                ? 'Team Gant'
                 : 'No Engineers found'
               }
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              {!selectedDivision && !selectedDomain
-                ? 'Choose a division and domain to view Engineer schedules'
+              {(!selectedDivision || !selectedDomain)
+                ? 'Please select both Division and Domain to view resources'
                 : 'No Engineers available for the selected filters'
               }
             </Typography>
