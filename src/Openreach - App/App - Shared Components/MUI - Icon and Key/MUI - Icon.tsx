@@ -1,4 +1,5 @@
 import { useTheme } from '@mui/material'
+import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle'
 import type { WorkingStatus } from '../../App - Data Tables/Resource - Table'
 
 export type TaskIconVariant = 'appointment' | 'startBy' | 'completeBy' | 'failedSLA' | 'taskGroup'
@@ -49,9 +50,8 @@ interface ResourceIconProps {
 
 export function ResourceIcon({ workingStatus, size = 32, statusColor }: ResourceIconProps) {
   const theme = useTheme()
-  const strokeColor = theme.openreach?.coreBlock ?? '#000000'
   
-  // Determine person icon color based on working status
+  // Determine icon color based on working status
   const getStatusColor = () => {
     if (statusColor) return statusColor
     
@@ -72,35 +72,16 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
     }
   }
 
-  const personColor = getStatusColor()
+  const iconColor = getStatusColor()
 
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      focusable="false"
-      role="img"
-      style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
-    >
-      {/* White teardrop with jet black outline */}
-      <path
-        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-        fill="white"
-        stroke={strokeColor}
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-      />
-      {/* Larger colored person icon - status color indicates working state */}
-      <g transform="translate(12, 7.5)" fill={personColor} stroke={strokeColor} strokeWidth="0.4">
-        {/* Head */}
-        <circle cx="0" cy="-2.2" r="2.2" />
-        {/* Body with arms and legs - larger and more prominent */}
-        <path d="M -3.5 6 L -3.5 1.8 Q -3.5 0.6 -1.8 0.6 L 1.8 0.6 Q 3.5 0.6 3.5 1.8 L 3.5 6 L 2.3 6 L 2.3 2.2 L 0.6 2.2 L 0.6 6 L -0.6 6 L -0.6 2.2 L -2.3 2.2 L -2.3 6 Z" />
-      </g>
-    </svg>
+    <PersonPinCircleIcon 
+      sx={{ 
+        fontSize: size,
+        color: iconColor,
+        filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))'
+      }} 
+    />
   )
 }
 
