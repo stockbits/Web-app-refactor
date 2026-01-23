@@ -607,6 +607,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
             willChange: 'transform', // hardware acceleration
+            transform: 'translate3d(0, 0, 0)', // Force GPU layer
           },
           '& .leaflet-tile': {
             border: 'none !important',
@@ -617,20 +618,27 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             imageRendering: '-webkit-optimize-contrast', // Better tile rendering
             WebkitBackfaceVisibility: 'hidden', // Prevent gaps
             backfaceVisibility: 'hidden',
-            transform: 'translateZ(0)', // Force GPU acceleration
-            margin: '-0.5px !important', // Overlap tiles slightly to hide seams
+            transform: 'translate3d(0, 0, 0)', // Force GPU acceleration
+            margin: '-1px !important', // Overlap tiles to hide seams (increased from -0.5px)
+            maxWidth: 'calc(100% + 2px) !important', // Compensate for negative margin
+            maxHeight: 'calc(100% + 2px) !important',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
           },
           '& .leaflet-tile-container': {
             margin: '0 !important',
             padding: '0 !important',
+            transform: 'translate3d(0, 0, 0)',
           },
           '& .leaflet-container': {
             background: '#E5E3DF', // Match tile background
             willChange: 'transform', // hardware acceleration
             imageRendering: '-webkit-optimize-contrast',
+            WebkitFontSmoothing: 'antialiased',
           },
           '& .leaflet-layer': {
             imageRendering: '-webkit-optimize-contrast',
+            transform: 'translate3d(0, 0, 0)',
           },
           '& .custom-task-icon': {
             background: 'none',
