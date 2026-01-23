@@ -52,7 +52,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
   const isDark = theme.palette.mode === 'dark'
   const strokeColor = theme.openreach?.coreBlock ?? '#000000'
   
-  // Determine pin color based on working status
+  // Determine status indicator circle color based on working status
   const getStatusColor = () => {
     if (statusColor) return statusColor
     
@@ -73,10 +73,15 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
     }
   }
 
-  const fillColor = getStatusColor()
+  const statusIndicatorColor = getStatusColor()
   const personIconSize = size * 0.5
   const personX = size / 2
   const personY = size * 0.35
+  
+  // Status indicator circle position (top-right of pin)
+  const statusCircleX = size * 0.72
+  const statusCircleY = size * 0.15
+  const statusCircleRadius = size * 0.15
 
   return (
     <svg
@@ -88,10 +93,10 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       role="img"
       style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
-      {/* Map marker pin shape */}
+      {/* White/light map marker teardrop with black outline */}
       <path
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-        fill={fillColor}
+        fill="white"
         stroke={strokeColor}
         strokeWidth="2"
         strokeLinejoin="round"
@@ -110,6 +115,15 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
           fill="black"
         />
       </g>
+      {/* Status indicator circle */}
+      <circle
+        cx={statusCircleX}
+        cy={statusCircleY}
+        r={statusCircleRadius}
+        fill={statusIndicatorColor}
+        stroke={strokeColor}
+        strokeWidth="1"
+      />
     </svg>
   )
 }
