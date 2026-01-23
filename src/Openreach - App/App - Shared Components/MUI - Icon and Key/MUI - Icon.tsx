@@ -78,10 +78,10 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
   const personX = size / 2
   const personY = size * 0.35
   
-  // Status indicator circle position (top-right of pin)
-  const statusCircleX = size * 0.72
-  const statusCircleY = size * 0.15
-  const statusCircleRadius = size * 0.15
+  // Status indicator circle position (inside the pin, top-right area)
+  const statusCircleX = 17
+  const statusCircleY = 4
+  const statusCircleRadius = 2.5
 
   return (
     <svg
@@ -91,7 +91,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       aria-hidden="true"
       focusable="false"
       role="img"
-      style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
+      style={{ display: 'inline-block', paintOrder: 'stroke fill', overflow: 'visible' }}
     >
       {/* White/light map marker teardrop with black outline */}
       <path
