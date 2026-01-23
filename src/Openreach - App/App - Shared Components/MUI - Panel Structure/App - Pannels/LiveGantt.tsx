@@ -178,6 +178,21 @@ export default function LiveGantt({
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Calculate dynamic hour width based on expanded mode and visible days
+  const hourWidth = useMemo(() => {
+    // In expanded mode with 1 day, fit 24 hours in the viewport
+    if (isExpanded && visibleDays === 1 && containerRef.current) {
+      const containerWidth = containerRef.current.offsetWidth;
+      const availableWidth = containerWidth - FIXED_COLUMN_WIDTH - 40; // Subtract fixed column and padding
+      const calculatedWidth = Math.floor(availableWidth / 24);
+      // Use calculated width but ensure minimum of 40px per hour for usability
+      return Math.max(40, calculatedWidth);
+    }
+    // Default hour width for normal mode or multi-day view
+    return HOUR_WIDTH;
+  }, [isExpanded, visibleDays]);
 
   // Selection UI integration
   const { selectTaskFromMap, selectMultipleTasksFromMap } = useMapSelection();
@@ -210,7 +225,7 @@ export default function LiveGantt({
   // Scroll to 4am on initial load
   useEffect(() => {
     const scrollTo4AM = () => {
-      const scrollPosition = 4 * HOUR_WIDTH; // 4 hours * 50px = 200px
+      const scrollPosition = 4 * hourWidth;
       if (timelineRef.current) {
         timelineRef.current.scrollLeft = scrollPosition;
       }
@@ -222,7 +237,22 @@ export default function LiveGantt({
     // Small delay to ensure refs are mounted
     const timer = setTimeout(scrollTo4AM, 0);
     return () => clearTimeout(timer);
-  }, []); // Empty dependency array = run only on mount
+  }, [hourWidth]); // Re-run when hourWidth changes
+
+  // Trigger recalculation on window resize in expanded mode
+  useEffect(() => {
+    if (!isExpanded || visibleDays !== 1) return;
+
+    const handleResize = () => {
+      // Force re-render to recalculate hourWidth
+      if (containerRef.current) {
+        containerRef.current.style.width = containerRef.current.offsetWidth + 'px';
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isExpanded, visibleDays]);
 
   // Generate date range
   const dateRange = useMemo(() => {
@@ -473,6 +503,7 @@ export default function LiveGantt({
 
   return (
     <Box
+      ref={containerRef}
       sx={{
         height: '100%',
         width: '100%',
@@ -801,7 +832,7 @@ export default function LiveGantt({
               <Box
                 sx={{
                   display: 'flex',
-                  minWidth: dateRange.length * 24 * HOUR_WIDTH,
+                  minWidth: dateRange.length * 24 * hourWidth,
                   height: '100%',
                 }}
               >
@@ -812,7 +843,7 @@ export default function LiveGantt({
                       <Box
                         key={hourIdx}
                         sx={{
-                          width: HOUR_WIDTH,
+                          width: hourWidth,
                           borderRight: `1px solid ${theme.palette.divider}`,
                           display: 'flex',
                           alignItems: 'center',
@@ -970,7 +1001,7 @@ export default function LiveGantt({
             >
               <Box
                 sx={{
-                  minWidth: dateRange.length * 24 * HOUR_WIDTH,
+                  minWidth: dateRange.length * 24 * hourWidth,
                   position: 'relative',
                 }}
               >
@@ -990,7 +1021,7 @@ export default function LiveGantt({
                     <Box
                       key={dayIdx}
                       sx={{
-                        width: 24 * HOUR_WIDTH,
+                        width: 24 * hourWidth,
                         flexShrink: 0,
                         borderRight: `1px solid ${borderColor}`,
                         display: 'flex',
@@ -1000,7 +1031,7 @@ export default function LiveGantt({
                         <Box
                           key={hourIdx}
                           sx={{
-                            width: HOUR_WIDTH,
+                            width: hourWidth,
                             borderRight: hourIdx < 23 ? `1px solid ${theme.palette.divider}` : 'none',
                             opacity: 0.3,
                           }}
@@ -1023,8 +1054,8 @@ export default function LiveGantt({
                     const hours = now.getHours();
                     const minutes = now.getMinutes();
                     const totalMinutes = hours * 60 + minutes;
-                    const pixelsFromDayStart = (totalMinutes / (24 * 60)) * (24 * HOUR_WIDTH);
-                    const leftPosition = todayIndex * 24 * HOUR_WIDTH + pixelsFromDayStart;
+                    const pixelsFromDayStart = (totalMinutes / (24 * 60)) * (24 * hourWidth);
+                    const leftPosition = todayIndex * 24 * hourWidth + pixelsFromDayStart;
                     
                     return (
                       <Box
@@ -1070,11 +1101,11 @@ export default function LiveGantt({
                     const [endHour, endMin] = row.shiftEnd.split(':').map(Number);
                     const startMinutes = startHour * 60 + startMin;
                     const endMinutes = endHour * 60 + endMin;
-                    const shiftDuration = ((endMinutes - startMinutes) / 60) * HOUR_WIDTH;
+                    const shiftDuration = ((endMinutes - startMinutes) / 60) * hourWidth;
                     
                     // Create shift bar for each day
                     dateRange.forEach((_, dayIndex) => {
-                      const left = (dayIndex * 24 * HOUR_WIDTH) + ((startMinutes / 60) * HOUR_WIDTH);
+                      const left = (dayIndex * 24 * hourWidth) + ((startMinutes / 60) * hourWidth);
                       shiftBars.push({ left, width: shiftDuration });
                     });
                   }
@@ -1114,8 +1145,8 @@ export default function LiveGantt({
                     {/* Scheduled blocks (travel and tasks) for this row */}
                     {row.scheduledBlocks?.map((block, blockIdx) => {
                       // Calculate position based on day offset and start time
-                      const left = (block.dayOffset * 24 * HOUR_WIDTH) + (block.startTime * HOUR_WIDTH);
-                      const width = block.duration * HOUR_WIDTH;
+                      const left = (block.dayOffset * 24 * hourWidth) + (block.startTime * hourWidth);
+                      const width = block.duration * hourWidth;
                       
                       if (block.type === 'travel') {
                         // Render travel block
