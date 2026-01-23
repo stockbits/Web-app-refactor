@@ -1,4 +1,6 @@
 export type WorkingStatus = 'Signed on' | 'Signed on no work' | 'Not Signed on' | 'Absent' | 'Rostered off'
+export type WorkPreference = 'X' | 'B' | 'U' // (X) Default, (B) Batches, (U) Underground
+export type DomainId = 'ZA' | 'ZB' | 'ZC' | 'ZE' | 'MG' | 'MF' | 'MH'
 
 export interface ResourceTableRow {
   resourceId: string
@@ -10,6 +12,9 @@ export interface ResourceTableRow {
   homeLongitude: number
   division: 'Service Delivery' | 'Complex Engineering' | 'Admin'
   workingStatus: WorkingStatus
+  domainId: DomainId
+  ecbt: string // Engineer Committed By Time - currently set to shift start
+  workPreference: WorkPreference
 }
 
 // Generated realistic engineer names and data based on unique resource IDs from Task Table
@@ -24,6 +29,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4437,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZA',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWQJX19',
@@ -35,6 +43,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4425,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZA',
+    ecbt: '08:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWBLN04',
@@ -46,6 +57,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4512,
     division: 'Service Delivery',
     workingStatus: 'Signed on no work',
+    domainId: 'ZB',
+    ecbt: '14:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWZTR08',
@@ -57,6 +71,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4301,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZB',
+    ecbt: '06:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWMME21',
@@ -68,6 +85,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4389,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZC',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWAVE11',
@@ -79,6 +99,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4456,
     division: 'Service Delivery',
     workingStatus: 'Not Signed on',
+    domainId: 'ZC',
+    ecbt: '08:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWVIC07',
@@ -90,6 +113,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4523,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZE',
+    ecbt: '06:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWKLY04',
@@ -101,6 +127,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4412,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZE',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWCTL29',
@@ -112,6 +141,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4378,
     division: 'Service Delivery',
     workingStatus: 'Absent',
+    domainId: 'MG',
+    ecbt: '14:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWANK03',
@@ -123,6 +155,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4490,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MG',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWKIL02',
@@ -134,6 +169,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4345,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MF',
+    ecbt: '08:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWZED14',
@@ -145,6 +183,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4501,
     division: 'Service Delivery',
     workingStatus: 'Rostered off',
+    domainId: 'MF',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWPCM17',
@@ -156,6 +197,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4423,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MH',
+    ecbt: '06:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWFLE05',
@@ -167,6 +211,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4367,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MH',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWQAC12',
@@ -178,6 +225,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4489,
     division: 'Service Delivery',
     workingStatus: 'Signed on no work',
+    domainId: 'ZA',
+    ecbt: '14:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWGLS33',
@@ -189,6 +239,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4534,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZA',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWPRB06',
@@ -200,6 +253,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4312,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZB',
+    ecbt: '08:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWRBI18',
@@ -211,6 +267,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4445,
     division: 'Service Delivery',
     workingStatus: 'Not Signed on',
+    domainId: 'ZB',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWISC22',
@@ -222,6 +281,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4401,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZC',
+    ecbt: '06:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWQAT10',
@@ -233,6 +295,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4478,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZC',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWLTN41',
@@ -244,6 +309,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4356,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZE',
+    ecbt: '14:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWCBR18',
@@ -255,6 +323,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4512,
     division: 'Service Delivery',
     workingStatus: 'Absent',
+    domainId: 'ZE',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWISD31',
@@ -266,6 +337,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4423,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MG',
+    ecbt: '08:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWSYN12',
@@ -277,6 +351,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4389,
     division: 'Service Delivery',
     workingStatus: 'Signed on no work',
+    domainId: 'MG',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWQAX05',
@@ -288,6 +365,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4467,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MF',
+    ecbt: '06:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWBZT26',
@@ -299,6 +379,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4334,
     division: 'Service Delivery',
     workingStatus: 'Rostered off',
+    domainId: 'MF',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWJUP14',
@@ -310,6 +393,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4501,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MH',
+    ecbt: '14:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWCLF19',
@@ -321,6 +407,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4412,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MH',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWVPR25',
@@ -332,6 +421,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4445,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZA',
+    ecbt: '08:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWQAC18',
@@ -343,6 +435,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4378,
     division: 'Service Delivery',
     workingStatus: 'Not Signed on',
+    domainId: 'ZA',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWLNK02',
@@ -354,6 +449,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4490,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZB',
+    ecbt: '06:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWORN08',
@@ -365,6 +463,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4356,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZB',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWISN11',
@@ -376,6 +477,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4423,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZC',
+    ecbt: '14:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWWAV44',
@@ -387,6 +491,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4467,
     division: 'Service Delivery',
     workingStatus: 'Absent',
+    domainId: 'ZC',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWQAC30',
@@ -398,6 +505,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4389,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'ZE',
+    ecbt: '08:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWBLT18',
@@ -409,6 +519,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4512,
     division: 'Service Delivery',
     workingStatus: 'Signed on no work',
+    domainId: 'ZE',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWCMB13',
@@ -420,6 +533,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4334,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MG',
+    ecbt: '06:00',
+    workPreference: 'B',
   },
   {
     resourceId: 'SWPNX09',
@@ -431,6 +547,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4445,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MG',
+    ecbt: '08:00',
+    workPreference: 'X',
   },
   {
     resourceId: 'SWHRT04',
@@ -442,6 +561,9 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4401,
     division: 'Service Delivery',
     workingStatus: 'Rostered off',
+    domainId: 'MF',
+    ecbt: '14:00',
+    workPreference: 'U',
   },
   {
     resourceId: 'SWQAC27',
@@ -453,5 +575,8 @@ export const RESOURCE_TABLE_ROWS: ResourceTableRow[] = [
     homeLongitude: -3.4478,
     division: 'Service Delivery',
     workingStatus: 'Signed on',
+    domainId: 'MH',
+    ecbt: '06:00',
+    workPreference: 'X',
   },
 ]

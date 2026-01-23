@@ -170,6 +170,28 @@ export default function LivePeople({
       ) 
     },
     { 
+      field: 'domainId', 
+      headerName: 'Domain', 
+      flex: 0.6, 
+      minWidth: 90, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Chip 
+          label={params.row.domainId} 
+          size="small" 
+          variant="filled" 
+          sx={{ 
+            backgroundColor: theme.palette.mode === 'dark' ? tokens.chip?.bg : tokens.background?.alt,
+            color: theme.palette.mode === 'dark' ? tokens.chip?.text : theme.palette.text.primary,
+            fontWeight: 600, 
+            fontSize: '0.6875rem',
+            fontFamily: "'IBM Plex Mono', monospace"
+          }} 
+        />
+      ) 
+    },
+    { 
       field: 'scheduleShift', 
       headerName: 'Shift', 
       flex: 0.8, 
@@ -208,6 +230,39 @@ export default function LivePeople({
         </Typography>
       ) 
     },
+    { 
+      field: 'ecbt', 
+      headerName: 'ECBT', 
+      flex: 0.6, 
+      minWidth: 90, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.ecbt}
+        </Typography>
+      ) 
+    },
+    { 
+      field: 'workPreference', 
+      headerName: 'Work Preference', 
+      flex: 0.9, 
+      minWidth: 130, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => {
+        const preferenceLabels: Record<string, string> = {
+          'X': '(X) Default',
+          'B': '(B) Batches',
+          'U': '(U) Underground'
+        };
+        return (
+          <Typography variant="caption" fontWeight={500} noWrap>
+            {preferenceLabels[params.row.workPreference]}
+          </Typography>
+        );
+      } 
+    },
   ], [workingStatusMetadata, tokens.chip?.border, tokens.chip?.bg, tokens.chip?.text, tokens.secondary?.main, tokens.background?.alt, theme.palette.mode]);
 
   // Track sort model state
@@ -224,6 +279,9 @@ export default function LivePeople({
     
     // Filter by division
     filtered = filtered.filter(resource => resource.division === selectedDivision);
+    
+    // Filter by domain
+    filtered = filtered.filter(resource => resource.domainId === selectedDomain);
     
     // Apply manual sorting if sortModel exists
     const sortedResources = [...filtered];
