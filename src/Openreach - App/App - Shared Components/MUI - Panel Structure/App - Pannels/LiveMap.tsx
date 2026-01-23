@@ -601,8 +601,9 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       <Box
         sx={{
           flex: 1,
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: '#E5E3DF', // Leaflet map tile background color
           position: 'relative',
+          overflow: 'hidden', // Prevent white borders from showing
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
             willChange: 'transform', // hardware acceleration
@@ -614,7 +615,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             willChange: 'transform', // hardware acceleration
           },
           '& .leaflet-container': {
-            background: 'transparent',
+            background: '#E5E3DF', // Match tile background
             willChange: 'transform', // hardware acceleration
           },
           '& .custom-task-icon': {
@@ -749,11 +750,14 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
         <MapContainer
           center={[54.5, -2.5]} // Center of UK
           zoom={6}
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: '100%', width: '100%', display: 'block' }}
           key={mapLayer} // Force remount only when layer changes
           attributionControl={false}
           zoomControl={false}
           preferCanvas={true}
+          minZoom={1}
+          maxBounds={[[-90, -180], [90, 180]]} // World bounds
+          maxBoundsViscosity={0.5} // Smooth bounce back
         >
             {/* Position ZoomControl at bottom-left */}
             <ZoomControl 
@@ -767,8 +771,11 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               url={tileConfig.url}
               maxZoom={19}
               maxNativeZoom={18}
+              minZoom={1}
               opacity={1}
               className="smooth-tiles"
+              noWrap={false}
+              bounds={[[-90, -180], [90, 180]]}
             />
             {/* Map click handler to close popup */}
             <MapClickHandler
