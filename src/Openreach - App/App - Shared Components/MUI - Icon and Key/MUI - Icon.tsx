@@ -85,7 +85,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       role="img"
       style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
-      {/* Solid colored map marker teardrop with black outline - same as task icons */}
+      {/* Solid colored map marker teardrop with black outline */}
       <path
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
         fill={fillColor}
@@ -94,25 +94,12 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      {/* White person icon for high contrast */}
-      <g>
+      {/* MUI Person icon - more recognizable standard person silhouette */}
+      <g transform="translate(12, 7)" fill="white" stroke={strokeColor} strokeWidth="0.5">
         {/* Head */}
-        <circle
-          cx="12"
-          cy="6.5"
-          r="1.5"
-          fill="white"
-          stroke={strokeColor}
-          strokeWidth="0.5"
-        />
-        {/* Body/shoulders */}
-        <path
-          d="M 9 11 Q 9 8.5 12 8.5 Q 15 8.5 15 11 L 15 12 L 9 12 Z"
-          fill="white"
-          stroke={strokeColor}
-          strokeWidth="0.5"
-          strokeLinejoin="round"
-        />
+        <circle cx="0" cy="-1.5" r="1.8" />
+        {/* Body - classic person icon shape */}
+        <path d="M -3 5 L -3 1.5 Q -3 0.5 -1.5 0.5 L 1.5 0.5 Q 3 0.5 3 1.5 L 3 5 L 2 5 L 2 2 L 0.5 2 L 0.5 5 L -0.5 5 L -0.5 2 L -2 2 L -2 5 Z" />
       </g>
     </svg>
   )
