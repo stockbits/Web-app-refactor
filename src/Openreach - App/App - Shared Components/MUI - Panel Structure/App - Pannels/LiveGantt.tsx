@@ -917,7 +917,7 @@ export default function LiveGantt({
                   }}
                 >
                   <Tooltip 
-                    title={`Click to select all ${row.visibleTaskCount} visible tasks for ${row.technicianName || row.technicianId}`}
+                    title="Select All"
                     placement="right"
                     arrow
                   >
