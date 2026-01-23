@@ -103,11 +103,11 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
           cx={personIconSize / 2}
           cy={personIconSize * 0.3}
           r={personIconSize * 0.25}
-          fill="white"
+          fill="black"
         />
         <path
           d={`M ${personIconSize * 0.15} ${personIconSize * 0.85} Q ${personIconSize * 0.15} ${personIconSize * 0.55} ${personIconSize / 2} ${personIconSize * 0.55} Q ${personIconSize * 0.85} ${personIconSize * 0.55} ${personIconSize * 0.85} ${personIconSize * 0.85} Z`}
-          fill="white"
+          fill="black"
         />
       </g>
     </svg>
