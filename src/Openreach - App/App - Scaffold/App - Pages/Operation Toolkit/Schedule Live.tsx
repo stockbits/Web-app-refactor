@@ -98,7 +98,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           <Autocomplete
             {...STANDARD_AUTOCOMPLETE_PROPS}
             sx={{ 
-              width: { xs: '100%', md: 200, lg: 280 },
+              width: { xs: '100%', md: 180, lg: 240 },
             }}
             options={divisionOptions}
             value={selectedDivision}
@@ -111,7 +111,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           <Autocomplete
             {...STANDARD_AUTOCOMPLETE_PROPS}
             sx={{ 
-              width: { xs: '100%', md: 140 },
+              width: { xs: '100%', md: 180, lg: 200 },
             }}
             options={domainOptions}
             value={selectedDomain}
@@ -131,7 +131,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
             showSearchButton={true}
             inputRef={searchRef}
             sx={{ 
-              width: { xs: '100%', md: 280, lg: 360 },
+              width: { xs: '100%', md: 240, lg: 320 },
             }}
           />
 

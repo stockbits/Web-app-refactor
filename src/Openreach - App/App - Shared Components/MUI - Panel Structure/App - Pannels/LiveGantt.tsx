@@ -207,10 +207,10 @@ export default function LiveGantt({
     }
   }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap]);
 
-  // Scroll to 5am on initial load
+  // Scroll to 4am on initial load
   useEffect(() => {
-    const scrollTo5AM = () => {
-      const scrollPosition = 5 * HOUR_WIDTH; // 5 hours * 50px = 250px
+    const scrollTo4AM = () => {
+      const scrollPosition = 4 * HOUR_WIDTH; // 4 hours * 50px = 200px
       if (timelineRef.current) {
         timelineRef.current.scrollLeft = scrollPosition;
       }
@@ -220,7 +220,7 @@ export default function LiveGantt({
     };
 
     // Small delay to ensure refs are mounted
-    const timer = setTimeout(scrollTo5AM, 0);
+    const timer = setTimeout(scrollTo4AM, 0);
     return () => clearTimeout(timer);
   }, []); // Empty dependency array = run only on mount
 
