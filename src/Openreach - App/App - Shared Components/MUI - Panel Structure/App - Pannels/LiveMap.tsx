@@ -2,7 +2,6 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography,
 import MapIcon from "@mui/icons-material/Map";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import TerrainIcon from "@mui/icons-material/Terrain";
 import SatelliteAltIcon from "@mui/icons-material/SatelliteAlt";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -23,8 +22,11 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { alpha } from '@mui/material/styles';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import ExploreIcon from '@mui/icons-material/Explore';
 
-type MapLayerType = 'roadmap' | 'satellite' | 'terrain' | 'hybrid';
+type MapLayerType = 'light' | 'dark' | 'voyager' | 'satellite';
 
 interface LiveMapProps {
   onDock?: () => void;
@@ -146,19 +148,31 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
 
   const handleZoomChange = (_event: Event, value: number | number[]) => {
     const zoom = value as number;
-    map.setZoom(zoom);
+    map.setView(map.getCenter(), zoom, {
+      animate: true,
+      duration: 0.25,
+      easeLinearity: 0.25
+    });
     onZoomChange(zoom);
   };
 
   const handleZoomIn = () => {
-    const newZoom = Math.min(currentZoom + 1, maxZoom);
-    map.setZoom(newZoom);
+    const newZoom = Math.min(currentZoom + 0.5, maxZoom); // Smoother 0.5 increments
+    map.setView(map.getCenter(), newZoom, {
+      animate: true,
+      duration: 0.25,
+      easeLinearity: 0.25
+    });
     onZoomChange(newZoom);
   };
 
   const handleZoomOut = () => {
-    const newZoom = Math.max(currentZoom - 1, minZoom);
-    map.setZoom(newZoom);
+    const newZoom = Math.max(currentZoom - 0.5, minZoom); // Smoother 0.5 increments
+    map.setView(map.getCenter(), newZoom, {
+      animate: true,
+      duration: 0.25,
+      easeLinearity: 0.25
+    });
     onZoomChange(newZoom);
   };
 
@@ -311,7 +325,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   // Persist map layer selection in localStorage
   const [mapLayer, setMapLayer] = useState<MapLayerType>(() => {
     const saved = localStorage.getItem('liveMapLayer');
-    return (saved as MapLayerType) || 'roadmap';
+    return (saved as MapLayerType) || 'voyager'; // Default to Voyager (balanced, soft colors)
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -425,29 +439,36 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
-    // Note: For production, you'd want to use a proper Google Maps API key
-    // These are alternative tile providers that work without API keys for development
+    // Multiple theme options for different visual preferences
     switch (mapLayer) {
+      case 'light':
+        // CartoDB Positron - clean light theme with subtle colors
+        return {
+          url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd'
+        };
+      case 'dark':
+        // CartoDB Dark Matter - smooth dark theme, easy on eyes
+        return {
+          url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd'
+        };
       case 'satellite':
+        // Esri Satellite - excellent quality, no seams
         return {
           url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+          attribution: '&copy; Esri',
+          subdomains: ''
         };
-      case 'terrain':
-        return {
-          url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-          attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
-        };
-      case 'hybrid':
-        return {
-          url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          attribution: 'Tiles &copy; Esri (Hybrid View)'
-        };
-      case 'roadmap':
+      case 'voyager':
       default:
+        // CartoDB Voyager - balanced, modern style with soft colors (RECOMMENDED)
         return {
-          url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd'
         };
     }
   };
@@ -456,10 +477,10 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
   const getMapLayerLabel = () => {
     const labels: Record<MapLayerType, string> = {
-      roadmap: 'Road',
-      satellite: 'Satellite',
-      terrain: 'Terrain',
-      hybrid: 'Hybrid'
+      light: 'Light',
+      dark: 'Dark',
+      voyager: 'Voyager',
+      satellite: 'Satellite'
     };
     return labels[mapLayer];
   };
@@ -605,24 +626,37 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           position: 'relative',
           overflow: 'hidden', // Prevent white borders from showing
           '& .leaflet-tile-pane': {
-            filter: 'contrast(1.05)',
             willChange: 'transform',
             transform: 'translate3d(0, 0, 0)',
+            // Slight blur to hide tile seams
+            filter: 'blur(0.3px) contrast(1.02)',
           },
           '& .leaflet-tile': {
             border: 'none !important',
             outline: 'none !important',
             boxShadow: 'none !important',
+            margin: '-0.5px !important', // Negative margin to overlap tiles slightly
             backgroundColor: 'transparent',
             willChange: 'transform',
-            imageRendering: 'auto',
             WebkitBackfaceVisibility: 'hidden',
             backfaceVisibility: 'hidden',
             transform: 'translate3d(0, 0, 0)',
+            // High quality rendering with anti-aliasing
+            imageRendering: '-webkit-optimize-contrast',
+            WebkitFontSmoothing: 'antialiased',
+            MozOsxFontSmoothing: 'grayscale',
+            // Prevent gaps
+            display: 'block',
+            maxWidth: 'none',
+            width: 'calc(100% + 1px)', // Slight overlap
+            height: 'calc(100% + 1px)',
           },
           '& .leaflet-tile-container': {
             margin: '0 !important',
             padding: '0 !important',
+            // Overlap tiles to hide seams
+            transform: 'scale(1.002)',
+            transformOrigin: 'center',
           },
           '& .leaflet-container': {
             background: '#E5E3DF', // Match tile background
@@ -710,19 +744,51 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           }}
         >
             <MenuItem
-              onClick={() => handleLayerSelect('roadmap')}
-              selected={mapLayer === 'roadmap'}
+              onClick={() => handleLayerSelect('voyager')}
+              selected={mapLayer === 'voyager'}
               sx={{
-                backgroundColor: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'transparent',
-                color: mapLayer === 'roadmap' ? theme.openreach.brand.white : theme.palette.text.primary,
+                backgroundColor: mapLayer === 'voyager' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'voyager' ? theme.openreach.brand.white : theme.palette.text.primary,
                 '&:hover': {
-                  backgroundColor: mapLayer === 'roadmap' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
+                  backgroundColor: mapLayer === 'voyager' ? theme.openreach.coreBlock : (isDark ? 'rgba(255,255,255,0.1)' : theme.palette.action.hover),
                 }
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <MapIcon sx={{ fontSize: 24, color: mapLayer === 'roadmap' ? theme.openreach.energyAccent : 'inherit' }} />
-                <Typography variant="body2">Road Map</Typography>
+                <ExploreIcon sx={{ fontSize: 24, color: mapLayer === 'voyager' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Voyager (Default)</Typography>
+              </Stack>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleLayerSelect('light')}
+              selected={mapLayer === 'light'}
+              sx={{
+                backgroundColor: mapLayer === 'light' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'light' ? theme.openreach.brand.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: mapLayer === 'light' ? theme.openreach.coreBlock : (isDark ? alpha(theme.palette.common.white, 0.1) : theme.palette.action.hover),
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                <LightModeIcon sx={{ fontSize: 24, color: mapLayer === 'light' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Light</Typography>
+              </Stack>
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleLayerSelect('dark')}
+              selected={mapLayer === 'dark'}
+              sx={{
+                backgroundColor: mapLayer === 'dark' ? theme.openreach.energyAccent : 'transparent',
+                color: mapLayer === 'dark' ? theme.openreach.brand.white : theme.palette.text.primary,
+                '&:hover': {
+                  backgroundColor: mapLayer === 'dark' ? theme.openreach.coreBlock : (isDark ? alpha(theme.palette.common.white, 0.1) : theme.palette.action.hover),
+                }
+              }}
+            >
+              <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                <DarkModeIcon sx={{ fontSize: 24, color: mapLayer === 'dark' ? theme.openreach.energyAccent : 'inherit' }} />
+                <Typography variant="body2">Dark</Typography>
               </Stack>
             </MenuItem>
             <MenuItem
@@ -741,22 +807,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                 <Typography variant="body2">Satellite</Typography>
               </Stack>
             </MenuItem>
-            <MenuItem
-              onClick={() => handleLayerSelect('terrain')}
-              selected={mapLayer === 'terrain'}
-              sx={{
-                backgroundColor: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'transparent',
-                color: mapLayer === 'terrain' ? theme.openreach.brand.white : theme.palette.text.primary,
-                '&:hover': {
-                  backgroundColor: mapLayer === 'terrain' ? theme.openreach.coreBlock : (isDark ? alpha(theme.palette.common.white, 0.1) : theme.palette.action.hover),
-                }
-              }}
-            >
-              <Stack direction="row" spacing={1} alignItems="center" width="100%">
-                <TerrainIcon sx={{ fontSize: 24, color: mapLayer === 'terrain' ? theme.openreach.energyAccent : 'inherit' }} />
-                <Typography variant="body2">Terrain</Typography>
-              </Stack>
-            </MenuItem>
           </Menu>
 
 
@@ -770,7 +820,15 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           preferCanvas={true}
           minZoom={1}
           maxBounds={[[-90, -180], [90, 180]]} // World bounds
-          maxBoundsViscosity={0.5} // Smooth bounce back
+          maxBoundsViscosity={0.5}
+          zoomSnap={0.25} // Ultra-smooth zoom increments (quarter steps)
+          zoomDelta={0.25} // Smaller steps for smoother transitions
+          wheelPxPerZoomLevel={60} // More sensitive wheel = smoother feel
+          wheelDebounceTime={40} // Debounce for smoother wheel zoom
+          zoomAnimation={true}
+          zoomAnimationThreshold={4}
+          fadeAnimation={true}
+          markerZoomAnimation={true}
         >
             {/* Position ZoomControl at bottom-left */}
             <ZoomControl 
@@ -789,6 +847,16 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               className="smooth-tiles"
               noWrap={false}
               bounds={[[-90, -180], [90, 180]]}
+              subdomains={(tileConfig as { subdomains?: string }).subdomains || 'abc'}
+              tileSize={(tileConfig as { tileSize?: number }).tileSize || 256}
+              zoomOffset={(tileConfig as { zoomOffset?: number }).zoomOffset || 0}
+              updateWhenIdle={false}
+              updateWhenZooming={false}
+              updateInterval={100}
+              keepBuffer={4}
+              crossOrigin={true}
+              detectRetina={true}
+              zIndex={1}
             />
             {/* Map click handler to close popup */}
             <MapClickHandler
