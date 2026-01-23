@@ -52,7 +52,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
   const isDark = theme.palette.mode === 'dark'
   const strokeColor = theme.openreach?.coreBlock ?? '#000000'
   
-  // Determine status indicator circle color based on working status
+  // Determine status indicator color based on working status
   const getStatusColor = () => {
     if (statusColor) return statusColor
     
@@ -74,14 +74,6 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
   }
 
   const statusIndicatorColor = getStatusColor()
-  const personIconSize = size * 0.5
-  const personX = size / 2
-  const personY = size * 0.35
-  
-  // Status indicator circle position (inside the pin, top-right area)
-  const statusCircleX = 17
-  const statusCircleY = 4
-  const statusCircleRadius = 2.5
 
   return (
     <svg
@@ -91,7 +83,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       aria-hidden="true"
       focusable="false"
       role="img"
-      style={{ display: 'inline-block', paintOrder: 'stroke fill', overflow: 'visible' }}
+      style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
       {/* White/light map marker teardrop with black outline */}
       <path
@@ -102,28 +94,28 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
+      {/* Colored circle background behind person icon for status indication */}
+      <circle
+        cx="12"
+        cy="7"
+        r="3.5"
+        fill={statusIndicatorColor}
+      />
       {/* Person icon centered in the pin */}
-      <g transform={`translate(${personX - personIconSize / 2}, ${personY - personIconSize / 2})`}>
+      <g>
+        {/* Head */}
         <circle
-          cx={personIconSize / 2}
-          cy={personIconSize * 0.3}
-          r={personIconSize * 0.25}
-          fill="black"
+          cx="12"
+          cy="5.8"
+          r="1.3"
+          fill="white"
         />
+        {/* Body */}
         <path
-          d={`M ${personIconSize * 0.15} ${personIconSize * 0.85} Q ${personIconSize * 0.15} ${personIconSize * 0.55} ${personIconSize / 2} ${personIconSize * 0.55} Q ${personIconSize * 0.85} ${personIconSize * 0.55} ${personIconSize * 0.85} ${personIconSize * 0.85} Z`}
-          fill="black"
+          d="M 9.5 9.5 Q 9.5 7.5 12 7.5 Q 14.5 7.5 14.5 9.5 Z"
+          fill="white"
         />
       </g>
-      {/* Status indicator circle */}
-      <circle
-        cx={statusCircleX}
-        cy={statusCircleY}
-        r={statusCircleRadius}
-        fill={statusIndicatorColor}
-        stroke={strokeColor}
-        strokeWidth="1"
-      />
     </svg>
   )
 }
