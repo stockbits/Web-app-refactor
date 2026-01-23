@@ -48,8 +48,6 @@ interface MenuCardTile {
   description: string;
 }
 
-export default App;
-
 interface MenuGroup {
   id: string;
   label: string;
@@ -976,3 +974,5 @@ function App() {
     </>
   );
 }
+
+export default App;
