@@ -49,14 +49,13 @@ interface ResourceIconProps {
 
 export function ResourceIcon({ workingStatus, size = 32, statusColor }: ResourceIconProps) {
   const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
   const strokeColor = theme.openreach?.coreBlock ?? '#000000'
   
-  // Determine fill color based on working status
+  // Determine person icon color based on working status
   const getStatusColor = () => {
     if (statusColor) return statusColor
     
-    const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
+    const tokens = theme.openreach?.darkTokens || theme.openreach?.lightTokens
     
     switch (workingStatus) {
       case 'Signed on':
@@ -67,13 +66,13 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       case 'Absent':
         return tokens?.state?.error || '#F44336'
       case 'Rostered off':
-        return theme.palette.text.secondary
+        return '#9E9E9E'
       default:
         return '#9E9E9E'
     }
   }
 
-  const fillColor = getStatusColor()
+  const personColor = getStatusColor()
 
   return (
     <svg
@@ -85,21 +84,21 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       role="img"
       style={{ display: 'inline-block', paintOrder: 'stroke fill' }}
     >
-      {/* Solid colored map marker teardrop with black outline */}
+      {/* White teardrop with jet black outline */}
       <path
         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
-        fill={fillColor}
+        fill="white"
         stroke={strokeColor}
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
-      {/* MUI Person icon - more recognizable standard person silhouette */}
-      <g transform="translate(12, 7)" fill="white" stroke={strokeColor} strokeWidth="0.5">
+      {/* Larger colored person icon - status color indicates working state */}
+      <g transform="translate(12, 7.5)" fill={personColor} stroke={strokeColor} strokeWidth="0.4">
         {/* Head */}
-        <circle cx="0" cy="-1.5" r="1.8" />
-        {/* Body - classic person icon shape */}
-        <path d="M -3 5 L -3 1.5 Q -3 0.5 -1.5 0.5 L 1.5 0.5 Q 3 0.5 3 1.5 L 3 5 L 2 5 L 2 2 L 0.5 2 L 0.5 5 L -0.5 5 L -0.5 2 L -2 2 L -2 5 Z" />
+        <circle cx="0" cy="-2.2" r="2.2" />
+        {/* Body with arms and legs - larger and more prominent */}
+        <path d="M -3.5 6 L -3.5 1.8 Q -3.5 0.6 -1.8 0.6 L 1.8 0.6 Q 3.5 0.6 3.5 1.8 L 3.5 6 L 2.3 6 L 2.3 2.2 L 0.6 2.2 L 0.6 6 L -0.6 6 L -0.6 2.2 L -2.3 2.2 L -2.3 6 Z" />
       </g>
     </svg>
   )
