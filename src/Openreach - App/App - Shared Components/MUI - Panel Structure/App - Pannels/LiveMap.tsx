@@ -1034,8 +1034,24 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                       }
                     });
 
-                    const count = cluster.layer.getChildCount();
-                    const tooltipText = `Tasks in Group (${count})`;
+                    // Count tasks vs resources in the cluster
+                    const markers = cluster.getAllChildMarkers();
+                    let taskCount = 0;
+                    let resourceCount = 0;
+                    
+                    markers.forEach((marker: { options: { icon?: { options?: { className?: string } } } }) => {
+                      const key = marker.options.icon?.options?.className || '';
+                      if (key.includes('resource')) {
+                        resourceCount++;
+                      } else {
+                        taskCount++;
+                      }
+                    });
+
+                    const totalCount = cluster.layer.getChildCount();
+                    const tooltipText = totalCount === 1 
+                      ? '1 Item' 
+                      : `${totalCount} Items (${taskCount} Task${taskCount !== 1 ? 's' : ''}, ${resourceCount} Resource${resourceCount !== 1 ? 's' : ''})`;
 
                     // Create MUI-styled tooltip with optimized styling
                     const tooltip = document.createElement('div');
