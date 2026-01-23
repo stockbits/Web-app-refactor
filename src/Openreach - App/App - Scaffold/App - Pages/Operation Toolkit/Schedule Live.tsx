@@ -217,8 +217,8 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
       <MUI4Panel
         dockedPanels={dockedPanels}
         onDockedPanelsChange={onDockedPanelsChange}
-        selectedDivision={searchFilters?.division || null}
-        selectedDomain={searchFilters?.domain || null}
+        selectedDivision={selectedDivision}
+        selectedDomain={selectedDomain}
         searchTerm={activeSearchTerm}
         searchFilters={searchFilters}
         clearSorting={clearTrigger}
