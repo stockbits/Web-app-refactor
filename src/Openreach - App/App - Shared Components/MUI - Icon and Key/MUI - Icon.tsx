@@ -13,7 +13,6 @@ interface TaskIconProps {
 export function TaskIcon({ variant, size = 32, color }: TaskIconProps) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
-  const strokeColor = theme.openreach?.coreBlock ?? '#000000'
 
   // Get colors from theme
   const colors = isDark ? theme.openreach?.darkTokens?.mapTaskColors : theme.openreach?.lightTokens?.mapTaskColors

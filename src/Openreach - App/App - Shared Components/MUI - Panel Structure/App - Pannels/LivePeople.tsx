@@ -264,7 +264,7 @@ export default function LivePeople({
         );
       } 
     },
-  ], [workingStatusMetadata, tokens.chip?.border, tokens.chip?.bg, tokens.chip?.text, tokens.secondary?.main, tokens.background?.alt, theme.palette.mode]);
+  ], [workingStatusMetadata, tokens.chip?.border, tokens.chip?.bg, tokens.chip?.text, tokens.secondary?.main, tokens.background?.alt, theme.palette.mode, theme.palette.text.primary]);
 
   // Track sort model state
   const [sortModel, setSortModel] = useState<GridSortModel>([]);

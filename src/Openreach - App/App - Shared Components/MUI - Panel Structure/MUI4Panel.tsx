@@ -460,9 +460,8 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                   transition: 'opacity 0.2s ease-in-out'
                 }}
               >
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Suspense fallback={<Box sx={{ p: 2 }}>Loading...</Box>}>
-                  {React.createElement(panel.component as unknown as React.ComponentType<any>, {
+                  {React.createElement(panel.component as unknown as React.ComponentType<Record<string, unknown>>, {
                     ...panel.props,
                     key: panel.id, // Maintain component identity to preserve state
                     onDock: () => handleDockPanel({
