@@ -9,7 +9,7 @@ import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/M
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
-import { useTaskTableSelection } from '../../../App - Shared Components/Selection - UI'
+import { useTaskTableSelection } from '../../../App - Shared Components/MUI - Table/Selection - UI'
 
 interface TaskManagementPageProps {
   onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void

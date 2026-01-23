@@ -16,7 +16,7 @@ import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - I
 import { TASK_ICON_COLORS } from '../../../../AppCentralTheme/Icon-Colors';
 import { TASK_TABLE_ROWS, type TaskCommitType, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
 import { RESOURCE_TABLE_ROWS, type ResourceTableRow } from '../../../App - Data Tables/Resource - Table';
-import { useMapSelection, useSelectionUI } from '../../Selection - UI';
+import { useMapSelection, useSelectionUI } from '../../MUI - Table/Selection - UI';
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';

@@ -20,8 +20,8 @@
  */
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import type { TaskTableRow } from '../App - Data Tables/Task - Table';
-import type { ResourceTableRow } from '../App - Data Tables/Resource - Table';
+import type { TaskTableRow } from '../../App - Data Tables/Task - Table';
+import type { ResourceTableRow } from '../../App - Data Tables/Resource - Table';
 
 interface SelectionUIContextType {
   selectedTaskIds: string[];

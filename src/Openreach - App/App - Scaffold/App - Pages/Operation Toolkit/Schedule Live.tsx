@@ -1,15 +1,17 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
-import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, Button, Divider } from '@mui/material'
+import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Button, Divider, Dialog, DialogTitle, DialogContent } from '@mui/material'
 import { STANDARD_INPUT_PROPS, STANDARD_AUTOCOMPLETE_PROPS } from '../../../../AppCentralTheme/input-config.ts'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import TuneIcon from '@mui/icons-material/Tune'
+import { TaskOptimizerDialog, type OptimizationOptions } from '../../../App - Shared Components/TaskOptimizerDialog'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
-import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
+import { RESOURCE_TABLE_ROWS } from '../../../App - Data Tables/Resource - Table'
 import type { TaskDomainId, TaskTableRow } from '../../../App - Data Tables/Task - Table'
 import AppSearchTool from './App - Search Tool'
 import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
-import { useSelectionUI } from '../../../App - Shared Components/Selection - UI'
+import { useSelectionUI } from '../../../App - Shared Components/MUI - Table/Selection - UI.tsx'
 import GlobalSearchField from '../../../App - Shared Components/MUI - Table/GlobalSearchField'
 import type { TaskCommitType } from '../../../App - Data Tables/Task - Table'
 
@@ -28,6 +30,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   const [selectedDomain, setSelectedDomain] = useState<TaskDomainId | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const [activeSearchTerm, setActiveSearchTerm] = useState('') // Currently applied search
+  const [optimizerOpen, setOptimizerOpen] = useState(false)
   const [searchToolOpen, setSearchToolOpen] = useState(false)
   const [legendOpen, setLegendOpen] = useState(false)
   const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null)
@@ -66,13 +69,33 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
     onDockedPanelsChange?.(dockedPanels.filter(p => p.id !== panelId))
   }, [dockedPanels, onDockedPanelsChange])
 
-  // Extract unique divisions and domains from DB data
+  // Optimize handler - memoized
+  const handleOptimize = useCallback((strategy: string, options: OptimizationOptions) => {
+    console.log('Optimizing with:', strategy, options)
+    // In production, this would call the backend API
+    // For now, refresh to show changes
+    setTimeout(() => window.location.reload(), 1000)
+  }, [])
+
+  // Close optimizer - memoized
+  const handleCloseOptimizer = useCallback(() => setOptimizerOpen(false), [])
+
+  // Close legend - memoized  
+  const handleCloseLegend = useCallback(() => setLegendOpen(false), [])
+
+  // Open optimizer - memoized
+  const handleOpenOptimizer = useCallback(() => setOptimizerOpen(true), [])
+
+  // Open legend - memoized
+  const handleOpenLegend = useCallback(() => setLegendOpen(true), [])
+
+  // Resource DB data to show all available options
   const divisionOptions = useMemo(() => 
-    Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), 
+    Array.from(new Set(RESOURCE_TABLE_ROWS.map((row) => row.division))).sort(), 
   [])
 
   const domainOptions = useMemo(() => 
-    Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.domainId))).sort((a, b) => a.localeCompare(b)), 
+    Array.from(new Set(RESOURCE_TABLE_ROWS.map((row) => row.domainId))).sort((a, b) => a.localeCompare(b)), 
   [])
 
   return (
@@ -169,10 +192,28 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
               display: { xs: 'none', md: 'flex' }
             }}
           >
+            <Tooltip title="Optimize Schedule & Travel">
+              <IconButton 
+                size="small"
+                onClick={handleOpenOptimizer}
+                sx={{ 
+                  border: 1, 
+                  borderColor: 'divider',
+                  color: 'primary.main',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'primary.lighter',
+                  }
+                }}
+              >
+                <TuneIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
             <Tooltip title="Legend Key Menu">
               <IconButton 
                 size="small"
-                onClick={() => setLegendOpen(true)}
+                onClick={handleOpenLegend}
                 sx={{ 
                   border: 1, 
                   borderColor: 'divider',
@@ -234,12 +275,21 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         selectedDivision={selectedDivision}
         selectedDomain={selectedDomain}
       />
-      <Dialog open={legendOpen} onClose={() => setLegendOpen(false)} maxWidth="sm" fullWidth>
+
+      {/* Task Status Legend Dialog */}
+      <Dialog open={legendOpen} onClose={handleCloseLegend} maxWidth="sm" fullWidth>
         <DialogTitle>Legend Key Menu</DialogTitle>
         <DialogContent>
           <TaskStatusLegend variant="full" showTitle={false} />
         </DialogContent>
       </Dialog>
+
+      {/* Task Optimizer Dialog */}
+      <TaskOptimizerDialog
+        open={optimizerOpen}
+        onClose={handleCloseOptimizer}
+        onOptimize={handleOptimize}
+      />
     </Stack>
   )
 }

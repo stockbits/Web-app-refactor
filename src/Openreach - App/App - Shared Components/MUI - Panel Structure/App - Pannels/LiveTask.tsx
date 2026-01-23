@@ -13,7 +13,7 @@ import { Chip } from '@mui/material';
 import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
-import { useTaskTableSelection } from '../../Selection - UI';
+import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
 
 interface LiveTaskProps {
   onDock?: () => void;

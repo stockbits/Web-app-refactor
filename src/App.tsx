@@ -41,7 +41,7 @@ import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More 
 import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Multi Task Dialog";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
 import { TASK_TABLE_ROWS } from "./Openreach - App/App - Data Tables/Task - Table";
-import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/Selection - UI";
+import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/MUI - Table/Selection - UI";
 
 interface MenuCardTile {
   name: string;

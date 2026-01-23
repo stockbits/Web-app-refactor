@@ -19,7 +19,7 @@ import { AppTaskDialog } from '../MUI - More Info Component/App - Task Dialog'
 import { MultiTaskDialog } from '../MUI - More Info Component/App - Multi Task Dialog'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 import type { ContextMenuItem } from './Right Click - MUI Component'
-import { useTaskTableSelection } from '../Selection - UI'
+import { useTaskTableSelection } from './Selection - UI'
 
 interface TaskTableShellProps<T extends GridValidRowModel & { taskId: string }> {
   columns: GridColDef[]

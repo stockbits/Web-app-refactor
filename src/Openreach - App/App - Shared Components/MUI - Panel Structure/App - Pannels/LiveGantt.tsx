@@ -29,7 +29,7 @@ import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
-import { useMapSelection, useSelectionUI } from "../../Selection - UI";
+import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
 
 // Simple status indicator - display short code
@@ -490,14 +490,11 @@ function LiveGantt({
     filteredTasks = filteredTasks.filter(task => task.division === selectedDivision);
     filteredTasks = filteredTasks.filter(task => task.domainId === selectedDomain);
 
-    // Get unique resource IDs from filtered tasks
-    const taskResourceIds = new Set(filteredTasks.map(task => task.resourceId));
-
-    // Filter resources that have tasks and match division filter
+    // Filter resources to show ALL resources in the selected division and domain
     const relevantResources = RESOURCE_TABLE_ROWS.filter(resource => {
-      const hasMatchingTasks = taskResourceIds.has(resource.resourceId);
-      const matchesDivision = !selectedDivision || resource.division === selectedDivision;
-      return hasMatchingTasks && matchesDivision;
+      const matchesDivision = resource.division === selectedDivision;
+      const matchesDomain = resource.domainId === selectedDomain;
+      return matchesDivision && matchesDomain;
     });
 
     // Create rows: one per resource (showing all their tasks across all days)

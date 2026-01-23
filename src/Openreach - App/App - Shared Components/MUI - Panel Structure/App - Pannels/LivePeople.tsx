@@ -4,9 +4,10 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { SharedMuiTable } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
+import { useGridApiRef } from '@mui/x-data-grid';
 import { RESOURCE_TABLE_ROWS, type ResourceTableRow } from '../../../App - Data Tables/Resource - Table';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
-import { useResourceTableSelection } from '../../Selection - UI';
+import { useResourceTableSelection } from '../../MUI - Table/Selection - UI';
 
 interface LivePeopleProps {
   onDock?: () => void;
@@ -268,12 +269,14 @@ export default function LivePeople({
 
   // Track sort model state
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  const apiRef = useGridApiRef();
   
   // Use resource selection system
   const { 
     getPrioritizedResources, 
     isResourceSelected, 
-    toggleResourceSelection, 
+    toggleResourceSelection,
+    rangeSelectResources,
     clearResourceSelectionOnSort 
   } = useResourceTableSelection();
 
@@ -284,13 +287,12 @@ export default function LivePeople({
       return [];
     }
     
-    let filtered = RESOURCE_TABLE_ROWS;
-    
-    // Filter by division
-    filtered = filtered.filter(resource => resource.division === selectedDivision);
-    
-    // Filter by domain
-    filtered = filtered.filter(resource => resource.domainId === selectedDomain);
+    // Filter resources to show ALL resources in the selected division and domain
+    const filtered = RESOURCE_TABLE_ROWS.filter(resource => {
+      const matchesDivision = resource.division === selectedDivision;
+      const matchesDomain = resource.domainId === selectedDomain;
+      return matchesDivision && matchesDomain;
+    });
     
     // Apply manual sorting if sortModel exists
     const sortedResources = [...filtered];
@@ -430,6 +432,7 @@ export default function LivePeople({
       <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
         {filteredRows.length > 0 ? (
           <SharedMuiTable
+            apiRef={apiRef}
             columns={columns}
             rows={displayRows}
             getRowId={(row) => row.resourceId}
@@ -442,7 +445,23 @@ export default function LivePeople({
             onRowClick={(params, event) => {
               const resourceId = params.row.resourceId;
               const isCtrlPressed = event.ctrlKey || event.metaKey;
-              toggleResourceSelection(resourceId, isCtrlPressed, 'table');
+              const isShiftPressed = event.shiftKey;
+              
+              if (isShiftPressed) {
+                // Prevent text selection on shift+click
+                event.stopPropagation();
+                event.preventDefault();
+                
+                // Get sorted row IDs in current display order
+                const sortedRowIds = apiRef.current?.getSortedRowIds?.() || displayRows.map(row => row.resourceId);
+                const visibleRowIds = sortedRowIds
+                  .map(id => apiRef.current?.getRow(id)?.resourceId)
+                  .filter(Boolean) as string[];
+                
+                rangeSelectResources(resourceId, visibleRowIds, isCtrlPressed, 'table');
+              } else {
+                toggleResourceSelection(resourceId, isCtrlPressed, 'table');
+              }
             }}
             getRowClassName={(params) => 
               isResourceSelected(params.row.resourceId) ? 'Mui-selected' : ''
