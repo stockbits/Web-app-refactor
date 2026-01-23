@@ -26,7 +26,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
 import { useMapSelection, useSelectionUI } from "../../Selection - UI";
@@ -126,10 +126,31 @@ interface TechnicianDayRow {
 }
 
 const FIXED_COLUMN_WIDTH = 220;
-const HOUR_WIDTH = 50; // pixels per hour
+const BASE_HOUR_WIDTH = 50; // Base pixels per hour
+const MIN_HOUR_WIDTH = 15; // Minimum zoom out
+const MAX_HOUR_WIDTH = 250; // Maximum zoom in
+const ZOOM_MULTIPLIER = 1.15; // Faster zoom response (15% per scroll)
 const ROW_HEIGHT = 36;
 const HEADER_HEIGHT = 32; // Timeline header with hour markers
 const TOOLBAR_HEIGHT = 40; // Main toolbar - matches LiveMap
+const DAY_HEADER_HEIGHT = 28; // Day date header
+
+// Determine hour label interval based on zoom level
+const getHourLabelInterval = (hourWidth: number): number => {
+  if (hourWidth < 20) return 6; // Show every 6 hours when zoomed out
+  if (hourWidth < 35) return 3; // Show every 3 hours
+  if (hourWidth < 50) return 2; // Show every 2 hours
+  return 1; // Show every hour when zoomed in
+};
+
+// Format date for day header
+const formatDateHeader = (date: Date): string => {
+  return date.toLocaleDateString('en-GB', { 
+    weekday: 'short', 
+    day: '2-digit', 
+    month: 'short' 
+  });
+};
 
 type DateRangePreset = 'today' | 'tomorrow' | '3-days' | '1-week' | '2-weeks' | '1-month';
 
@@ -174,25 +195,16 @@ export default function LiveGantt({
   });
   const [visibleDays, setVisibleDays] = useState(1);
   const [selectedPreset, setSelectedPreset] = useState<DateRangePreset>('today');
+  const [zoomLevel, setZoomLevel] = useState(BASE_HOUR_WIDTH);
+  const [isAutoFit, setIsAutoFit] = useState(true);
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Calculate dynamic hour width based on expanded mode and visible days
-  const hourWidth = useMemo(() => {
-    // In expanded mode with 1 day, fit 24 hours in the viewport
-    if (isExpanded && visibleDays === 1 && containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
-      const availableWidth = containerWidth - FIXED_COLUMN_WIDTH - 40; // Subtract fixed column and padding
-      const calculatedWidth = Math.floor(availableWidth / 24);
-      // Use calculated width but ensure minimum of 40px per hour for usability
-      return Math.max(40, calculatedWidth);
-    }
-    // Default hour width for normal mode or multi-day view
-    return HOUR_WIDTH;
-  }, [isExpanded, visibleDays]);
+  const currentHourWidthRef = useRef(BASE_HOUR_WIDTH);
+  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isZoomingRef = useRef(false);
 
   // Selection UI integration
   const { selectTaskFromMap, selectMultipleTasksFromMap } = useMapSelection();
@@ -428,6 +440,53 @@ export default function LiveGantt({
     return rows;
   }, [selectedDivision, selectedDomain, dateRange, dateRangeSet]);
 
+  // Calculate total hours needed to display all scheduled blocks
+  const totalScheduledHours = useMemo(() => {
+    if (!technicianDayRows || technicianDayRows.length === 0) return 24;
+    
+    let maxHours = 0;
+    technicianDayRows.forEach(row => {
+      row.scheduledBlocks?.forEach(block => {
+        const blockEndTime = block.startTime + block.duration;
+        const totalHours = (block.dayOffset * 24) + blockEndTime;
+        maxHours = Math.max(maxHours, totalHours);
+      });
+    });
+    
+    return Math.max(maxHours, 24); // At least 24 hours
+  }, [technicianDayRows]);
+
+  // Calculate dynamic hour width based on auto-fit, expanded mode, and manual zoom
+  const hourWidth = useMemo(() => {
+    // If we're zooming or just finished zooming, use the ref value (DOM is already updated)
+    if (isZoomingRef.current || !isAutoFit) {
+      return currentHourWidthRef.current;
+    }
+    
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.offsetWidth;
+      const availableWidth = containerWidth - FIXED_COLUMN_WIDTH - 40;
+      
+      // Single day view: stretch to fill full panel width
+      if (visibleDays === 1) {
+        const calculatedWidth = Math.floor(availableWidth / 24);
+        const width = Math.max(40, Math.min(MAX_HOUR_WIDTH, calculatedWidth));
+        currentHourWidthRef.current = width;
+        return width;
+      }
+      
+      // Multiple days: fit as many days as possible in the view
+      const totalHours = visibleDays * 24;
+      const calculatedWidth = Math.floor(availableWidth / totalHours);
+      const width = Math.max(MIN_HOUR_WIDTH, Math.min(MAX_HOUR_WIDTH, calculatedWidth));
+      currentHourWidthRef.current = width;
+      return width;
+    }
+    
+    // Fallback
+    return currentHourWidthRef.current;
+  }, [visibleDays, isAutoFit]);
+
   // Scroll to 4am when data loads (after search) and when layout changes
   useEffect(() => {
     // Only scroll if we have data (after user has searched)
@@ -448,6 +507,114 @@ export default function LiveGantt({
       requestAnimationFrame(scrollTo4AM);
     });
   }, [technicianDayRows.length, hourWidth, isExpanded, visibleDays]); // Re-run when data loads or layout changes
+
+  // Add Shift+Scroll wheel event listener (non-passive to allow preventDefault)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheelZoom = (event: WheelEvent) => {
+      // Check if Shift key is held
+      if (!event.shiftKey) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const timelineBody = timelineBodyRef.current;
+      if (!timelineBody) return;
+
+      // Mark that we're actively zooming
+      isZoomingRef.current = true;
+
+      const oldZoom = currentHourWidthRef.current;
+      const scrollLeft = timelineBody.scrollLeft;
+      const timelineBodyRect = timelineBody.getBoundingClientRect();
+      const cursorX = Math.max(0, event.clientX - timelineBodyRect.left);
+      
+      // Calculate new zoom
+      const isZoomIn = event.deltaY < 0;
+      const zoomFactor = isZoomIn ? ZOOM_MULTIPLIER : 1 / ZOOM_MULTIPLIER;
+      const effectiveMinWidth = visibleDays === 1 ? 40 : MIN_HOUR_WIDTH;
+      const newZoom = Math.max(effectiveMinWidth, Math.min(MAX_HOUR_WIDTH, oldZoom * zoomFactor));
+      
+      if (newZoom === oldZoom) return;
+
+      // Update ref
+      currentHourWidthRef.current = newZoom;
+
+      // Calculate new scroll position to keep cursor fixed
+      const contentPosUnderCursor = scrollLeft + cursorX;
+      const newScrollLeft = (contentPosUnderCursor * (newZoom / oldZoom)) - cursorX;
+
+      // Update DOM directly
+      const totalWidth = dateRange.length * 24 * newZoom;
+      
+      container.querySelectorAll('[data-day-container]').forEach((el) => {
+        (el as HTMLElement).style.width = `${24 * newZoom}px`;
+      });
+
+      container.querySelectorAll('[data-hour-cell]').forEach((el) => {
+        (el as HTMLElement).style.width = `${newZoom}px`;
+      });
+
+      container.querySelectorAll('[data-timeline-container]').forEach((el) => {
+        (el as HTMLElement).style.minWidth = `${totalWidth}px`;
+        (el as HTMLElement).style.maxWidth = `${totalWidth}px`;
+      });
+
+      // Update all gantt blocks (tasks and travel)
+      container.querySelectorAll('[data-gantt-block]').forEach((el) => {
+        const element = el as HTMLElement;
+        const dayOffset = parseFloat(element.getAttribute('data-day-offset') || '0');
+        const startTime = parseFloat(element.getAttribute('data-start-time') || '0');
+        const duration = parseFloat(element.getAttribute('data-duration') || '0');
+        
+        const left = (dayOffset * 24 * newZoom) + (startTime * newZoom);
+        const width = duration * newZoom;
+        
+        element.style.left = `${left}px`;
+        element.style.width = `${Math.max(2, width)}px`;
+      });
+
+      // Apply scroll
+      timelineBody.scrollLeft = Math.max(0, newScrollLeft);
+      if (timelineRef.current) {
+        timelineRef.current.scrollLeft = Math.max(0, newScrollLeft);
+      }
+
+      // Disable auto-fit once
+      if (isAutoFit) {
+        setIsAutoFit(false);
+      }
+
+      // Debounce state update - only after user stops zooming for 500ms
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+      updateTimeoutRef.current = setTimeout(() => {
+        isZoomingRef.current = false;
+        setZoomLevel(newZoom);
+      }, 500);
+    };
+
+    container.addEventListener('wheel', handleWheelZoom, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheelZoom);
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, [visibleDays, isAutoFit, dateRange.length]);
+
+  // Sync ref when state changes from other sources (but not during active zooming)
+  useEffect(() => {
+    // Never sync during manual zoom - DOM is already correct
+    if (isZoomingRef.current || !isAutoFit) {
+      return;
+    }
+    currentHourWidthRef.current = hourWidth;
+  }, [hourWidth, isAutoFit]);
 
   // Navigation handlers
   const handlePreviousDay = () => {
@@ -476,6 +643,9 @@ export default function LiveGantt({
     const config = DATE_PRESETS[preset];
     setSelectedPreset(preset);
     setVisibleDays(config.days);
+    
+    // Re-enable auto-fit when changing presets to ensure proper fit
+    setIsAutoFit(true);
     
     // Set start date based on offset
     const today = new Date();
@@ -782,12 +952,12 @@ export default function LiveGantt({
             minHeight: 0,
           }}
         >
-          {/* Timeline Header - with hour markers */}
+          {/* Timeline Header - Day headers + Hour markers */}
           <Box
             sx={{
               display: 'flex',
               borderBottom: `2px solid ${borderColor}`,
-              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.04)',
             }}
           >
             {/* Fixed column header */}
@@ -799,8 +969,8 @@ export default function LiveGantt({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                height: HEADER_HEIGHT,
-                minHeight: HEADER_HEIGHT,
+                height: DAY_HEADER_HEIGHT + HEADER_HEIGHT,
+                minHeight: DAY_HEADER_HEIGHT + HEADER_HEIGHT,
                 boxSizing: 'border-box',
               }}
             >
@@ -809,14 +979,15 @@ export default function LiveGantt({
               </Typography>
             </Box>
 
-            {/* Scrollable timeline header */}
+            {/* Scrollable timeline header with day dates + hour markers */}
             <Box
+              ref={timelineRef}
               sx={{
                 flex: 1,
-                overflowX: 'auto',
+                overflowX: 'scroll',
                 overflowY: 'hidden',
-                height: HEADER_HEIGHT,
-                minHeight: HEADER_HEIGHT,
+                height: DAY_HEADER_HEIGHT + HEADER_HEIGHT,
+                minHeight: DAY_HEADER_HEIGHT + HEADER_HEIGHT,
                 boxSizing: 'border-box',
                 '&::-webkit-scrollbar': {
                   height: 0,
@@ -825,7 +996,6 @@ export default function LiveGantt({
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
               }}
-              ref={timelineRef}
               onScroll={(e) => {
                 // Sync horizontal scroll with timeline body
                 if (timelineBodyRef.current) {
@@ -833,35 +1003,85 @@ export default function LiveGantt({
                 }
               }}
             >
-              <Box
-                sx={{
-                  display: 'flex',
-                  minWidth: dateRange.length * 24 * hourWidth,
-                  height: '100%',
-                }}
-              >
-                {/* Hour markers for each hour of the day */}
-                {dateRange.map((_date, dayIdx) => (
-                  <Box key={dayIdx} sx={{ display: 'flex', position: 'relative' }}>
-                    {Array.from({ length: 24 }).map((_, hourIdx) => (
+              <Box sx={{ display: 'flex', minWidth: dateRange.length * 24 * hourWidth }} data-timeline-container>
+                {/* Day headers and hour markers */}
+                {dateRange.map((date, dayIdx) => {
+                  const hourLabelInterval = getHourLabelInterval(hourWidth);
+                  return (
+                    <Box
+                      key={`day-header-${dayIdx}`}
+                      data-day-container
+                      sx={{
+                        width: 24 * hourWidth,
+                        flexShrink: 0,
+                        borderRight: `2px solid ${borderColor}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      {/* Day date header */}
                       <Box
-                        key={hourIdx}
                         sx={{
-                          width: hourWidth,
-                          borderRight: `1px solid ${theme.palette.divider}`,
+                          height: DAY_HEADER_HEIGHT,
+                          borderBottom: `1px solid ${borderColor}`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.65rem',
-                          color: theme.palette.text.secondary,
-                          fontWeight: hourIdx % 6 === 0 ? 600 : 400,
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.06)',
                         }}
                       >
-                        {hourIdx % 2 === 0 ? `${hourIdx.toString().padStart(2, '0')}:00` : ''}
+                        <Typography 
+                          variant="caption" 
+                          fontWeight={700}
+                          sx={{ 
+                            color: bodyTextColor, 
+                            fontSize: '0.75rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                          }}
+                        >
+                          {formatDateHeader(date)}
+                        </Typography>
                       </Box>
-                    ))}
-                  </Box>
-                ))}
+
+                      {/* Hour markers */}
+                      <Box sx={{ display: 'flex', height: HEADER_HEIGHT }}>
+                        {Array.from({ length: 24 }).map((_, hourIdx) => {
+                          const showLabel = hourIdx % hourLabelInterval === 0;
+                          const isMajorHour = hourIdx % 6 === 0;
+                          return (
+                            <Box
+                              key={hourIdx}
+                              data-hour-cell
+                              sx={{
+                                width: hourWidth,
+                                flexShrink: 0,
+                                borderRight: isMajorHour ? `2px solid ${theme.palette.divider}` : `1px solid ${theme.palette.divider}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                position: 'relative',
+                              }}
+                            >
+                              {showLabel && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.65rem',
+                                    color: theme.palette.text.secondary,
+                                    fontWeight: 500,
+                                  }}
+                                >
+                                  {`${hourIdx.toString().padStart(2, '0')}:00`}
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Box>
+                  );
+                })}
               </Box>
             </Box>
           </Box>
@@ -940,15 +1160,9 @@ export default function LiveGantt({
                     </Avatar>
                   </Tooltip>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.75rem', lineHeight: 1.1 }}>
+                    <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.85rem' }}>
                       {row.technicianName || row.technicianId}
                     </Typography>
-                    {visibleDays === 1 && row.shiftStart && row.shiftEnd && (
-                      <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary, fontSize: '0.65rem', display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                        <AccessTimeIcon sx={{ fontSize: 9 }} />
-                        {row.shiftStart}-{row.shiftEnd}
-                      </Typography>
-                    )}
                   </Box>
                 </Box>
               ))}
@@ -1004,13 +1218,14 @@ export default function LiveGantt({
               }}
             >
               <Box
+                data-timeline-container
                 sx={{
                   minWidth: dateRange.length * 24 * hourWidth,
                   maxWidth: dateRange.length * 24 * hourWidth,
                   position: 'relative',
                 }}
               >
-                {/* Hour grid lines */}
+                {/* Hour grid lines and day separators */}
                 <Box
                   sx={{
                     position: 'absolute',
@@ -1025,23 +1240,29 @@ export default function LiveGantt({
                   {dateRange.map((_, dayIdx) => (
                     <Box
                       key={dayIdx}
+                      data-day-container
                       sx={{
                         width: 24 * hourWidth,
                         flexShrink: 0,
-                        borderRight: `1px solid ${borderColor}`,
+                        borderRight: `2px solid ${borderColor}`,
                         display: 'flex',
+                        backgroundColor: dayIdx % 2 === 0 ? 'transparent' : theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.02)',
                       }}
                     >
-                      {Array.from({ length: 24 }).map((_, hourIdx) => (
-                        <Box
-                          key={hourIdx}
-                          sx={{
-                            width: hourWidth,
-                            borderRight: hourIdx < 23 ? `1px solid ${theme.palette.divider}` : 'none',
-                            opacity: 0.3,
-                          }}
-                        />
-                      ))}
+                      {Array.from({ length: 24 }).map((_, hourIdx) => {
+                        const isMajorHour = hourIdx % 6 === 0;
+                        return (
+                          <Box
+                            key={hourIdx}
+                            data-hour-cell
+                            sx={{
+                              width: hourWidth,
+                              borderRight: isMajorHour ? `2px solid ${theme.palette.divider}` : `1px solid ${theme.palette.divider}`,
+                              opacity: hourWidth < 20 ? 0.15 : hourWidth < 35 ? 0.2 : 0.25,
+                            }}
+                          />
+                        );
+                      })}
                     </Box>
                   ))}
                 </Box>
@@ -1143,6 +1364,7 @@ export default function LiveGantt({
                           backgroundColor: alpha(theme.palette.info.main, 0.15),
                           pointerEvents: 'none',
                           zIndex: 0,
+                          transition: 'left 0.3s ease-out, width 0.3s ease-out', // Smooth zoom transition
                         }}
                       />
                     ))}
@@ -1154,9 +1376,10 @@ export default function LiveGantt({
                       // Calculate position based on day offset and start time
                       const left = (block.dayOffset * 24 * hourWidth) + (block.startTime * hourWidth);
                       const width = block.duration * hourWidth;
+                      const minWidthToShowText = 30; // Minimum width to show block text/label
                       
                       if (block.type === 'travel') {
-                        // Render travel block
+                        // Render travel block - dashed line indicator
                         return (
                           <Tooltip
                             key={`travel-${blockIdx}`}
@@ -1179,49 +1402,32 @@ export default function LiveGantt({
                             }
                           >
                             <Box
+                              data-gantt-block
+                              data-day-offset={block.dayOffset}
+                              data-start-time={block.startTime}
+                              data-duration={block.duration}
                               sx={{
                                 position: 'absolute',
-                                left: left,
+                                left: `${left}px`,
                                 top: '50%',
-                                width: width,
+                                width: `${Math.max(2, width)}px`,
                                 height: 0,
-                                borderTop: `3px dashed ${alpha(theme.palette.warning.main, 0.7)}`,
+                                borderTop: `2px dashed ${alpha(theme.palette.warning.main, 0.6)}`,
                                 cursor: 'help',
-                                '&::before': {
-                                  content: '""',
-                                  position: 'absolute',
-                                  left: 0,
-                                  top: '-6px',
-                                  width: '8px',
-                                  height: '8px',
-                                  backgroundColor: theme.palette.warning.main,
-                                  borderRadius: '50%',
-                                  border: `2px solid ${theme.palette.background.paper}`,
-                                },
-                                '&::after': {
-                                  content: '""',
-                                  position: 'absolute',
-                                  right: 0,
-                                  top: '-6px',
-                                  width: '8px',
-                                  height: '8px',
-                                  backgroundColor: theme.palette.warning.main,
-                                  borderRadius: '50%',
-                                  border: `2px solid ${theme.palette.background.paper}`,
-                                },
                                 '&:hover': {
-                                  borderTopWidth: '4px',
                                   borderTopColor: theme.palette.warning.main,
+                                  borderTopWidth: '3px',
                                 },
                               }}
                             />
                           </Tooltip>
                         );
                       } else {
-                        // Render task block
+                        // Render task block - colored rectangle
                         const task = block.task!;
                         const isSelected = selectedSet.has(task.taskId);
                         const commitTypeColor = getCommitTypeColor(task.commitType);
+                        const isCondensed = width < minWidthToShowText;
                         
                         return (
                           <Tooltip
@@ -1242,36 +1448,62 @@ export default function LiveGantt({
                             }
                           >
                             <Paper
+                              data-gantt-block
+                              data-day-offset={block.dayOffset}
+                              data-start-time={block.startTime}
+                              data-duration={block.duration}
                               onClick={(e) => {
                                 const isCtrlPressed = e.ctrlKey || e.metaKey;
                                 selectTaskFromMap(task.taskId, isCtrlPressed);
                               }}
                               sx={{
                                 position: 'absolute',
-                                left: left,
+                                left: `${left}px`,
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                width: width,
-                                height: ROW_HEIGHT - 16,
+                                width: `${Math.max(3, width)}px`,
+                                height: ROW_HEIGHT - 12,
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
-                                  ? `4px solid ${theme.palette.primary.main}` 
-                                  : `2px solid ${alpha('#000', 0.25)}`,
-                                borderRadius: 1.5,
+                                  ? `3px solid ${theme.palette.primary.main}` 
+                                  : `2px solid ${alpha('#000', 0.2)}`,
+                                borderRadius: 1,
                                 boxSizing: 'border-box',
-                                transition: 'all 0.2s ease',
+                                transition: 'all 0.2s ease, left 0.3s ease-out, width 0.3s ease-out',
                                 outline: isSelected ? `2px solid ${theme.palette.background.paper}` : 'none',
-                                outlineOffset: '-1px',
+                                outlineOffset: '-2px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
                                 '&:hover': {
-                                  opacity: 0.9,
-                                  boxShadow: theme.shadows[6],
-                                  filter: 'brightness(1.15)',
-                                  transform: 'translateY(-50%) scale(1.02)',
+                                  opacity: 0.95,
+                                  boxShadow: theme.shadows[8],
+                                  filter: 'brightness(1.1)',
+                                  zIndex: 50,
                                 },
                               }}
-                              elevation={isSelected ? 6 : 3}
-                            />
+                              elevation={isSelected ? 6 : 2}
+                            >
+                              {!isCondensed && width > 50 && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    color: 'rgba(0,0,0,0.7)',
+                                    textAlign: 'center',
+                                    px: 0.5,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}
+                                >
+                                  {task.taskId}
+                                </Typography>
+                              )}
+                            </Paper>
                           </Tooltip>
                         );
                       }
