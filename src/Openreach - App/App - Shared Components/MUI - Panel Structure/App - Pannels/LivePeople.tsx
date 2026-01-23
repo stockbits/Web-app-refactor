@@ -1,7 +1,11 @@
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Chip } from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import { SharedMuiTable } from '../../MUI - Table';
+import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
+import { RESOURCE_TABLE_ROWS, type ResourceTableRow } from '../../../App - Data Tables/Resource - Table';
+import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 
 interface LivePeopleProps {
   onDock?: () => void;
@@ -11,19 +15,240 @@ interface LivePeopleProps {
   isDocked?: boolean;
   isExpanded?: boolean;
   minimized?: boolean;
+  selectedDivision?: string | null;
+  selectedDomain?: string | null;
 }
 
-export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized }: LivePeopleProps = {}) {
+export default function LivePeople({ 
+  onDock, 
+  onUndock, 
+  onExpand, 
+  onCollapse, 
+  isDocked, 
+  isExpanded, 
+  minimized,
+  selectedDivision
+}: LivePeopleProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
-  const bodyIconColor = theme.openreach.energyAccent;
-  const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
+  const iconColor = theme.openreach.energyAccent;
+
+  const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+
+  // Resize observer for table height
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [tableHeight, setTableHeight] = useState(400);
+
+  useEffect(() => {
+    if (isExpanded) return;
+
+    const element = tableContainerRef.current;
+    if (!element) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { height } = entry.contentRect;
+        if (height > 50 && height < 10000) {
+          setTableHeight(height);
+        }
+      }
+    });
+
+    resizeObserver.observe(element);
+    return () => resizeObserver.disconnect();
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (isExpanded) return;
+    
+    const element = tableContainerRef.current;
+    if (element) {
+      const { height } = element.getBoundingClientRect();
+      if (height > 50 && height < 10000) {
+        setTableHeight(height);
+      }
+    }
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (isExpanded) return;
+
+    const handleResize = () => {
+      const element = tableContainerRef.current;
+      if (element) {
+        const { height } = element.getBoundingClientRect();
+        if (height > 50 && height < 10000) {
+          setTableHeight(height);
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    const timeoutId = setTimeout(handleResize, 100);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [isExpanded]);
+
+  // Working status metadata
+  const workingStatusMetadata = useMemo(() => ({
+    'Signed on': { label: 'Signed on', color: tokens.success?.main || '#4CAF50' },
+    'Signed on no work': { label: 'Signed on (No Work)', color: tokens.state?.warning || '#FF9800' },
+    'Not Signed on': { label: 'Not Signed on', color: tokens.state?.error || '#F44336' },
+    'Absent': { label: 'Absent', color: tokens.state?.error || '#F44336' },
+    'Rostered off': { label: 'Rostered off', color: theme.palette.text.secondary }
+  }), [tokens.success?.main, tokens.state?.warning, tokens.state?.error, theme.palette.text.secondary]);
+
+  // Columns definition
+  const columns: GridColDef<ResourceTableRow>[] = useMemo(() => [
+    { 
+      field: 'resourceId', 
+      headerName: 'Resource ID', 
+      flex: 0.8, 
+      minWidth: 120, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.resourceId}
+        </Typography>
+      ) 
+    },
+    { 
+      field: 'resourceName', 
+      headerName: 'Resource Name', 
+      flex: 1.2, 
+      minWidth: 150, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontWeight={600} noWrap>
+          {params.row.resourceName}
+        </Typography>
+      ) 
+    },
+    { 
+      field: 'workingStatus', 
+      headerName: 'Working Status', 
+      flex: 1.0, 
+      minWidth: 150, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => {
+        const status = workingStatusMetadata[params.row.workingStatus];
+        return (
+          <Typography variant="caption" sx={{ fontWeight: 600, color: status.color }} noWrap>
+            {status.label}
+          </Typography>
+        );
+      } 
+    },
+    { 
+      field: 'division', 
+      headerName: 'Division', 
+      flex: 1.0, 
+      minWidth: 140, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Chip 
+          label={params.row.division} 
+          size="small" 
+          variant="outlined" 
+          sx={{ 
+            borderColor: theme.palette.mode === 'dark' ? tokens.chip?.border : tokens.secondary?.main,
+            color: theme.palette.mode === 'dark' ? tokens.chip?.text : tokens.secondary?.main,
+            backgroundColor: theme.palette.mode === 'dark' ? tokens.chip?.bg : tokens.background?.alt,
+            fontWeight: 500, 
+            fontSize: '0.6875rem' 
+          }} 
+        />
+      ) 
+    },
+    { 
+      field: 'scheduleShift', 
+      headerName: 'Shift', 
+      flex: 0.8, 
+      minWidth: 110, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontWeight={500} noWrap>
+          {params.row.scheduleShift}
+        </Typography>
+      ) 
+    },
+    { 
+      field: 'startTime', 
+      headerName: 'Start Time', 
+      flex: 0.6, 
+      minWidth: 90, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.startTime}
+        </Typography>
+      ) 
+    },
+    { 
+      field: 'endTime', 
+      headerName: 'End Time', 
+      flex: 0.6, 
+      minWidth: 90, 
+      align: 'left', 
+      headerAlign: 'left', 
+      renderCell: (params) => (
+        <Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>
+          {params.row.endTime}
+        </Typography>
+      ) 
+    },
+  ], [workingStatusMetadata, tokens.chip?.border, tokens.chip?.bg, tokens.chip?.text, tokens.secondary?.main, tokens.background?.alt, theme.palette.mode]);
+
+  // Track sort model state
+  const [sortModel, setSortModel] = useState<GridSortModel>([]);
+
+  // Filter resources based on selected division
+  const filteredRows = useMemo(() => {
+    let filtered = RESOURCE_TABLE_ROWS;
+    
+    if (selectedDivision) {
+      filtered = filtered.filter(resource => resource.division === selectedDivision);
+    }
+    
+    // Apply manual sorting if sortModel exists
+    const sortedResources = [...filtered];
+    if (sortModel && sortModel.length > 0) {
+      const { field, sort } = sortModel[0];
+      sortedResources.sort((a, b) => {
+        const aVal = a[field as keyof ResourceTableRow];
+        const bVal = b[field as keyof ResourceTableRow];
+        
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        
+        const comparison = aVal < bVal ? -1 : 1;
+        return sort === 'asc' ? comparison : -comparison;
+      });
+    }
+    
+    return sortedResources;
+  }, [selectedDivision, sortModel]);
+
+  // Handle sort requests
+  const handleSortModelChange = useCallback((newModel: GridSortModel) => {
+    setSortModel(newModel);
+  }, []);
 
   if (minimized) {
     return (
       <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <PeopleIcon sx={{ fontSize: 16, color: theme.openreach.energyAccent }} />
+        <PeopleIcon sx={{ fontSize: 20, color: iconColor }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {/* Minimized content */}
         </Box>
@@ -57,10 +282,7 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
         }}
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
-          {/* Left side reserved for main tools */}
           <Box />
-
-          {/* Right side for secondary actions */}
           <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
@@ -69,13 +291,14 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
                 sx={{
                   p: 0.25,
                   borderRadius: 1,
-                  color: theme.openreach.energyAccent,
+                  color: iconColor,
                   border: `1px solid ${theme.palette.divider}`,
                   '&:hover': {
                     backgroundColor: theme.palette.action.hover,
-                    borderColor: theme.openreach.energyAccent,
+                    borderColor: iconColor,
                   },
                 }}
+                aria-label={isDocked ? "Undock panel" : "Dock panel"}
               >
                 <PeopleIcon sx={{ fontSize: 16 }} />
               </IconButton>
@@ -88,13 +311,14 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
                   sx={{
                     p: 0.25,
                     borderRadius: 1,
-                    color: theme.openreach.energyAccent,
+                    color: iconColor,
                     border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
                       backgroundColor: theme.palette.action.hover,
-                      borderColor: theme.openreach.energyAccent,
+                      borderColor: iconColor,
                     },
                   }}
+                  aria-label="Expand to full screen"
                 >
                   <OpenInFullIcon sx={{ fontSize: 16 }} />
                 </IconButton>
@@ -108,13 +332,14 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
                   sx={{
                     p: 0.25,
                     borderRadius: 1,
-                    color: theme.openreach.energyAccent,
+                    color: iconColor,
                     border: `1px solid ${theme.palette.divider}`,
                     '&:hover': {
                       backgroundColor: theme.palette.action.hover,
-                      borderColor: theme.openreach.energyAccent,
+                      borderColor: iconColor,
                     },
                   }}
+                  aria-label="Collapse to normal view"
                 >
                   <CloseFullscreenIcon sx={{ fontSize: 16 }} />
                 </IconButton>
@@ -123,21 +348,27 @@ export default function LivePeople({ onDock, onUndock, onExpand, onCollapse, isD
           </Stack>
         </Toolbar>
       </AppBar>
-      <Box
-        sx={{
-          flex: 1,
-          backgroundColor: theme.palette.background.paper,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Box sx={{ textAlign: 'center' }}>
-          <PeopleIcon sx={{ fontSize: 48, color: bodyIconColor, mb: 2 }} />
-          <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
-            Team Status
-          </Typography>
-        </Box>
+      <Box sx={{ flex: 1, height: '100%', backgroundColor: theme.palette.background.paper, minHeight: 0 }} ref={tableContainerRef}>
+        {filteredRows.length > 0 ? (
+          <SharedMuiTable
+            columns={columns}
+            rows={filteredRows}
+            getRowId={(row) => row.resourceId}
+            density="compact"
+            enablePagination={false}
+            enableQuickFilter
+            sortModel={sortModel}
+            height={isExpanded ? '100%' : tableHeight}
+            onSortModelChange={handleSortModelChange}
+          />
+        ) : (
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <PeopleIcon sx={{ fontSize: 48, color: iconColor, mb: 1 }} />
+            <Typography variant="h6" gutterBottom sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary }}>
+              Team Status
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Box>
   );
