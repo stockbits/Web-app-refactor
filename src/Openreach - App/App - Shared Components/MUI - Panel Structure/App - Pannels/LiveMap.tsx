@@ -607,7 +607,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           '& .leaflet-tile-pane': {
             filter: 'contrast(1.05)',
             willChange: 'transform',
-            transform: 'translate3d(0, 0, 0) scale(1.002)', // Slight scale to cover gaps
+            transform: 'translate3d(0, 0, 0)',
           },
           '& .leaflet-tile': {
             border: 'none !important',
@@ -615,35 +615,21 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             boxShadow: 'none !important',
             backgroundColor: 'transparent',
             willChange: 'transform',
-            imageRendering: '-webkit-optimize-contrast',
+            imageRendering: 'auto',
             WebkitBackfaceVisibility: 'hidden',
             backfaceVisibility: 'hidden',
             transform: 'translate3d(0, 0, 0)',
-            margin: '-2px !important', // Increased overlap
-            width: 'calc(100% + 4px) !important', // Compensate for negative margin
-            height: 'calc(100% + 4px) !important',
-            maxWidth: 'none !important',
-            maxHeight: 'none !important',
-            WebkitFontSmoothing: 'subpixel-antialiased', // Better for tiles
-            MozOsxFontSmoothing: 'auto',
-            position: 'relative !important',
           },
           '& .leaflet-tile-container': {
             margin: '0 !important',
             padding: '0 !important',
-            transform: 'translate3d(0, 0, 0)',
-            width: '100% !important',
-            height: '100% !important',
           },
           '& .leaflet-container': {
             background: '#E5E3DF', // Match tile background
             willChange: 'transform',
-            imageRendering: '-webkit-optimize-contrast',
-            WebkitFontSmoothing: 'subpixel-antialiased',
           },
           '& .leaflet-layer': {
-            imageRendering: '-webkit-optimize-contrast',
-            transform: 'translate3d(0, 0, 0)',
+            imageRendering: 'auto',
           },
           '& .custom-task-icon': {
             background: 'none',
