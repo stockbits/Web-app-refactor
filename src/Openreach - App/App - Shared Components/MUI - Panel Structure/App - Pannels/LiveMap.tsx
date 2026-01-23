@@ -1035,11 +1035,11 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     });
 
                     // Count tasks vs resources in the cluster
-                    const markers = cluster.getAllChildMarkers();
+                    const markers = cluster.getAllChildMarkers() as Array<{ options: { icon?: { options?: { className?: string } } } }>;
                     let taskCount = 0;
                     let resourceCount = 0;
                     
-                    markers.forEach((marker: { options: { icon?: { options?: { className?: string } } } }) => {
+                    markers.forEach((marker) => {
                       const key = marker.options.icon?.options?.className || '';
                       if (key.includes('resource')) {
                         resourceCount++;
