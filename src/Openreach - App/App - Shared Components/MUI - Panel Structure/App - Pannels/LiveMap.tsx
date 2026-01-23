@@ -1055,12 +1055,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
                     // Create MUI-styled tooltip with optimized styling
                     const tooltip = document.createElement('div');
-                    tooltip.textContent = tooltipText; // Use textContent instead of innerHTML for security
-                    tooltip.setAttribute('data-tooltip', 'cluster-tooltip'); // Add identifier for cleanup
+                    tooltip.textContent = tooltipText;
+                    tooltip.setAttribute('data-tooltip', 'cluster-tooltip');
 
                     // Pre-compute style object for better performance
                     const tooltipStyle = {
-                      position: 'absolute',
+                      position: 'fixed' as const, // Use fixed positioning for better reliability
                       backgroundColor: 'rgba(97, 97, 97, 0.9)',
                       color: 'white',
                       padding: '8px 12px',
@@ -1071,8 +1071,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                       lineHeight: '1.4',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                       zIndex: '10000',
-                      pointerEvents: 'none',
-                      whiteSpace: 'nowrap',
+                      pointerEvents: 'none' as const,
+                      whiteSpace: 'nowrap' as const,
                       opacity: '0',
                       transition: 'opacity 0.15s ease-out, transform 0.15s ease-out',
                       transform: 'translateY(5px)'
@@ -1080,12 +1080,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
                     Object.assign(tooltip.style, tooltipStyle);
 
-                    // Position tooltip anchored to cluster icon
+                    // Position tooltip anchored to cluster icon using fixed positioning
                     const map = cluster.target._map;
                     const clusterCenter = cluster.layer.getBounds().getCenter();
                     const pixelPoint = map.latLngToContainerPoint(clusterCenter);
 
-                    // Position relative to map container
+                    // Get map container position for fixed positioning
                     const mapContainer = map.getContainer();
                     const mapRect = mapContainer.getBoundingClientRect();
 
@@ -1096,8 +1096,10 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
                     // Trigger fade-in animation
                     requestAnimationFrame(() => {
-                      tooltip.style.opacity = '1';
-                      tooltip.style.transform = 'translateY(0)';
+                      if (tooltip.parentNode) { // Check tooltip is still attached
+                        tooltip.style.opacity = '1';
+                        tooltip.style.transform = 'translateY(0)';
+                      }
                     });
 
                     // Store reference for cleanup
