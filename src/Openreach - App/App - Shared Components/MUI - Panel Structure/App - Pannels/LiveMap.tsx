@@ -1026,7 +1026,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                 animateAddingMarkers={false}
                 iconCreateFunction={createClusterIcon}
                 eventHandlers={{
-                  clustermouseover: (cluster: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; layer: { getChildCount: () => number; getBounds: () => { getCenter: () => unknown }; _customTooltip?: HTMLElement }; target: { _map: { latLngToContainerPoint: (latlng: unknown) => { x: number; y: number }; getContainer: () => HTMLElement } } }) => {
+                  clustermouseover: (cluster: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; layer: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; getBounds: () => { getCenter: () => unknown }; _customTooltip?: HTMLElement }; target: { _map: { latLngToContainerPoint: (latlng: unknown) => { x: number; y: number }; getContainer: () => HTMLElement } } }) => {
                     // Clear any existing tooltips before creating a new one
                     document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
                       if (tooltip.parentNode) {
@@ -1035,7 +1035,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     });
 
                     // Count tasks vs resources in the cluster
-                    const markers = cluster.getAllChildMarkers() as Array<{ options: { icon?: { options?: { className?: string } } } }>;
+                    const markers = cluster.layer.getAllChildMarkers() as Array<{ options: { icon?: { options?: { className?: string } } } }>;
                     let taskCount = 0;
                     let resourceCount = 0;
                     
