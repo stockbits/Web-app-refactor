@@ -1,6 +1,5 @@
 import { Suspense, useMemo, useState, useEffect, useCallback, lazy } from "react";
-import type { ElementType, JSX } from "react";
-import * as React from "react";
+import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
   alpha,
@@ -361,9 +360,9 @@ const PAGE_COMPONENTS = Object.entries(pageModules).reduce<
 }, {});
 
 // Cache for lazy components - created once per page loader
-const lazyComponentCache = new Map<PageLoader, React.LazyExoticComponent<PageComponent>>();
+const lazyComponentCache = new Map<PageLoader, LazyExoticComponent<PageComponent>>();
 
-function getLazyComponent(loader: PageLoader): React.LazyExoticComponent<PageComponent> {
+function getLazyComponent(loader: PageLoader): LazyExoticComponent<PageComponent> {
   if (!lazyComponentCache.has(loader)) {
     lazyComponentCache.set(loader, lazy(() => loader()));
   }

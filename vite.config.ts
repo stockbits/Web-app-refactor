@@ -18,31 +18,41 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks - split large dependencies
           if (id.includes('node_modules')) {
-            // MUI in its own chunk (large library)
+            // MUI in its own chunk (large library ~860KB)
             if (id.includes('@mui')) {
               return 'vendor-mui';
             }
-            // React ecosystem (react, react-dom, scheduler together to avoid circular deps)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-              return 'vendor-react';
-            }
-            // Other node_modules
+            // All other vendor libraries together to prevent circular chunk dependencies
+            // This includes React, other libraries, and their dependencies
             return 'vendor-libs';
           }
           // Admin pages - split by category for better caching
-          // Note: Keep shared components together to avoid circular references
+          // Only split pages that don't import from each other to avoid circular refs
           if (id.includes('App - Pages/')) {
             const match = id.match(/App - Pages\/([^/]+)/);
             if (match) {
               const category = match[1].toLowerCase().replace(/\s+/g, '-');
-              // Group smaller admin sections together
-              if (['schedule-admin', 'task-admin', 'user-admin', 'system-admin', 
-                   'general-settings', 'self-service-admin', 'jeopardy-admin',
-                   'domain-admin', 'resource-admin'].includes(category)) {
+              // Keep related admin sections together to prevent circular dependencies
+              // Group 1: Operation-related
+              if (['operation-toolkit', 'operations-management'].includes(category)) {
+                return 'admin-operations';
+              }
+              // Group 2: Domain & Resource
+              if (['domain-admin', 'resource-admin'].includes(category)) {
+                return 'admin-domain-resource';
+              }
+              // Group 3: Task & Schedule
+              if (['task-admin', 'schedule-admin'].includes(category)) {
+                return 'admin-task-schedule';
+              }
+              // Group 4: System & Settings
+              if (['system-admin', 'general-settings'].includes(category)) {
+                return 'admin-system-settings';
+              }
+              // Individual chunks for isolated sections
+              if (['user-admin', 'jeopardy-admin', 'self-service-admin'].includes(category)) {
                 return `admin-${category}`;
               }
-              // Larger sections get their own chunks
-              return `admin-${category}`;
             }
           }
         },
