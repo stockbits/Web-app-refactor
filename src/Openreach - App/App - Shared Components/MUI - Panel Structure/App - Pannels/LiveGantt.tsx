@@ -26,11 +26,29 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import { useState, useMemo, useRef, useEffect, useCallback, useLayoutEffect } from "react";
-import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType } from "../../../App - Data Tables/Task - Table";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
 import { useMapSelection, useSelectionUI } from "../../Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
+
+// Simple status indicator - display short code
+const getTaskStatusIndicator = (status: TaskStatusCode) => {
+  return (
+    <Typography
+      variant="caption"
+      sx={{
+        color: '#000000', // Jet black for contrast with commit type colors
+        fontWeight: 'bold',
+        lineHeight: 1,
+        flexShrink: 0,
+        fontSize: '0.65rem',
+      }}
+    >
+      {status}
+    </Typography>
+  );
+};
 
 // Calculate distance between two coordinates using Haversine formula (in km)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -127,20 +145,56 @@ interface TechnicianDayRow {
 
 const FIXED_COLUMN_WIDTH = 220;
 const BASE_HOUR_WIDTH = 50; // Base pixels per hour
-const MIN_HOUR_WIDTH = 15; // Minimum zoom out
-const MAX_HOUR_WIDTH = 250; // Maximum zoom in
+const MIN_HOUR_WIDTH = 20; // Minimum zoom out - increased for better positioning
+const MAX_HOUR_WIDTH = 200; // Maximum zoom in - reduced to prevent overflow
 const ZOOM_MULTIPLIER = 1.15; // Faster zoom response (15% per scroll)
 const ROW_HEIGHT = 36;
 const HEADER_HEIGHT = 32; // Timeline header with hour markers
 const TOOLBAR_HEIGHT = 40; // Main toolbar - matches LiveMap
 const DAY_HEADER_HEIGHT = 28; // Day date header
 
-// Determine hour label interval based on zoom level
-const getHourLabelInterval = (hourWidth: number): number => {
-  if (hourWidth < 20) return 6; // Show every 6 hours when zoomed out
-  if (hourWidth < 35) return 3; // Show every 3 hours
-  if (hourWidth < 50) return 2; // Show every 2 hours
-  return 1; // Show every hour when zoomed in
+// Determine hour label interval based on visible days and zoom level
+const getHourLabelInterval = (hourWidth: number, visibleDays: number): number => {
+  // For single day view, always show every hour - no zooming out allowed
+  if (visibleDays === 1) {
+    return 1; // Always 1-hour intervals for single day view
+  }
+  
+  // For multi-day views, be more conservative to avoid clutter
+  // Calculate effective space per hour considering text width requirements
+  let baseInterval: number;
+  
+  if (visibleDays <= 2) {
+    // 2 days: generous spacing
+    if (hourWidth >= 40) baseInterval = 2;      // Every 2 hours
+    else if (hourWidth >= 30) baseInterval = 3; // Every 3 hours  
+    else if (hourWidth >= 20) baseInterval = 4; // Every 4 hours
+    else baseInterval = 6;                       // Every 6 hours
+  } else if (visibleDays <= 4) {
+    // 3-4 days: moderate spacing
+    if (hourWidth >= 35) baseInterval = 3;      // Every 3 hours
+    else if (hourWidth >= 25) baseInterval = 4; // Every 4 hours
+    else if (hourWidth >= 20) baseInterval = 6; // Every 6 hours  
+    else baseInterval = 8;                       // Every 8 hours
+  } else if (visibleDays <= 7) {
+    // 5-7 days: conservative spacing
+    if (hourWidth >= 30) baseInterval = 4;      // Every 4 hours
+    else if (hourWidth >= 22) baseInterval = 6; // Every 6 hours
+    else if (hourWidth >= 18) baseInterval = 8; // Every 8 hours
+    else baseInterval = 12;                      // Every 12 hours
+  } else if (visibleDays <= 14) {
+    // 8-14 days: sparse spacing
+    if (hourWidth >= 25) baseInterval = 6;      // Every 6 hours
+    else if (hourWidth >= 20) baseInterval = 8; // Every 8 hours
+    else baseInterval = 12;                      // Every 12 hours
+  } else {
+    // 15+ days: very sparse spacing
+    if (hourWidth >= 22) baseInterval = 8;      // Every 8 hours  
+    else if (hourWidth >= 18) baseInterval = 12; // Every 12 hours
+    else baseInterval = 24;                      // Once per day only
+  }
+  
+  return baseInterval;
 };
 
 // Format date for day header
@@ -152,7 +206,7 @@ const formatDateHeader = (date: Date): string => {
   });
 };
 
-type DateRangePreset = 'today' | 'tomorrow' | '3-days' | '1-week' | '2-weeks' | '1-month';
+type DateRangePreset = 'today' | '2-days' | '4-days' | '1-week' | '1-month';
 
 interface DatePresetConfig {
   label: string;
@@ -162,14 +216,13 @@ interface DatePresetConfig {
 
 const DATE_PRESETS: Record<DateRangePreset, DatePresetConfig> = {
   'today': { label: 'Today', days: 1, startOffset: 0 },
-  'tomorrow': { label: 'Tomorrow', days: 1, startOffset: 1 },
-  '3-days': { label: '3 Days', days: 3, startOffset: 0 },
+  '2-days': { label: '2 Days', days: 2, startOffset: 0 },
+  '4-days': { label: '4 Days', days: 4, startOffset: 0 },
   '1-week': { label: '1 Week', days: 7, startOffset: 0 },
-  '2-weeks': { label: '2 Weeks', days: 14, startOffset: 0 },
   '1-month': { label: '1 Month', days: 30, startOffset: 0 },
 };
 
-export default function LiveGantt({ 
+function LiveGantt({ 
   onDock, 
   onUndock, 
   onExpand, 
@@ -187,23 +240,57 @@ export default function LiveGantt({
   const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
   const borderColor = theme.palette.divider;
 
-  // Date range state - default to today (1 day)
+  // Date range state - persisted to survive component remounting during expand/collapse
   const [startDate, setStartDate] = useState<Date>(() => {
+    const saved = localStorage.getItem('liveGantt-startDate');
+    if (saved) {
+      const date = new Date(saved);
+      if (!isNaN(date.getTime())) return date;
+    }
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today;
   });
-  const [visibleDays, setVisibleDays] = useState(1);
-  const [selectedPreset, setSelectedPreset] = useState<DateRangePreset>('today');
-  const [zoomLevel, setZoomLevel] = useState(BASE_HOUR_WIDTH);
+  
+  const [visibleDays, setVisibleDays] = useState(() => {
+    const saved = localStorage.getItem('liveGantt-visibleDays');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  
+  const [selectedPreset, setSelectedPreset] = useState<DateRangePreset>(() => {
+    const saved = localStorage.getItem('liveGantt-selectedPreset');
+    return (saved as DateRangePreset) || 'today';
+  });
+  
   const [isAutoFit, setIsAutoFit] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every minute for accurate time indicator
+  useEffect(() => {
+    const updateTime = () => setCurrentTime(new Date());
+    const interval = setInterval(updateTime, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Persist state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('liveGantt-startDate', startDate.toISOString());
+  }, [startDate]);
+
+  useEffect(() => {
+    localStorage.setItem('liveGantt-visibleDays', visibleDays.toString());
+  }, [visibleDays]);
+
+  useEffect(() => {
+    localStorage.setItem('liveGantt-selectedPreset', selectedPreset);
+  }, [selectedPreset]);
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const currentHourWidthRef = useRef(BASE_HOUR_WIDTH);
-  const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const updateTimeoutRef = useRef<number | null>(null);
   const isZoomingRef = useRef(false);
 
   // Selection UI integration
@@ -261,7 +348,7 @@ export default function LiveGantt({
   }, [startDate, visibleDays]);
 
   // Schedule tasks with travel time for each technician
-  const scheduleTasksWithTravel = (
+  const scheduleTasksWithTravel = useCallback((
     tasks: TaskTableRow[],
     homeLatitude: number,
     homeLongitude: number,
@@ -274,96 +361,113 @@ export default function LiveGantt({
     // Parse shift times
     const shiftStartHours = parseTime(shiftStart);
     const shiftEndHours = parseTime(shiftEnd);
-    const dailyWorkingHours = shiftEndHours - shiftStartHours;
 
-    // Sort tasks by commit date
-    const sortedTasks = [...tasks].sort((a, b) => 
-      new Date(a.commitDate).getTime() - new Date(b.commitDate).getTime()
-    );
+    // Group tasks by their commit date and map to day offset
+    const tasksByDay = new Map<number, TaskTableRow[]>();
+    
+    tasks.forEach(task => {
+      const taskDate = new Date(task.commitDate);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      // Find which day offset this task belongs to
+      const dayOffset = dateRange.findIndex(d => {
+        const rangeDate = new Date(d);
+        rangeDate.setHours(0, 0, 0, 0);
+        return rangeDate.getTime() === taskDate.getTime();
+      });
+      
+      if (dayOffset >= 0) {
+        if (!tasksByDay.has(dayOffset)) {
+          tasksByDay.set(dayOffset, []);
+        }
+        tasksByDay.get(dayOffset)!.push(task);
+      }
+    });
 
-    let currentTime = shiftStartHours; // Start at beginning of shift
-    let currentDayOffset = 0;
-    let currentLocation = { lat: homeLatitude, lon: homeLongitude };
-
-    sortedTasks.forEach((task) => {
-      const taskDuration = parseDuration(task.taskDuration);
-      const taskLocation = { lat: task.taskLatitude, lon: task.taskLongitude };
-
-      // Calculate travel time from current location to task
-      const distanceKm = calculateDistance(
-        currentLocation.lat,
-        currentLocation.lon,
-        taskLocation.lat,
-        taskLocation.lon
+    // Schedule tasks for each day
+    tasksByDay.forEach((dayTasks, dayOffset) => {
+      // Sort tasks by commit date/time for this day
+      const sortedDayTasks = [...dayTasks].sort((a, b) => 
+        new Date(a.commitDate).getTime() - new Date(b.commitDate).getTime()
       );
-      const travelTime = calculateTravelTime(distanceKm);
 
-      // Check if travel + task fits in current day's remaining time
-      const timeNeeded = travelTime + taskDuration;
-      const timeRemaining = shiftEndHours - currentTime;
+      let currentTime = shiftStartHours; // Start at beginning of shift each day
+      let currentLocation = { lat: homeLatitude, lon: homeLongitude };
 
-      // If doesn't fit, move to next day
-      if (currentTime + timeNeeded > shiftEndHours && timeRemaining < dailyWorkingHours) {
-        currentDayOffset++;
-        currentTime = shiftStartHours;
-        // Reset location to home at start of new day
-        currentLocation = { lat: homeLatitude, lon: homeLongitude };
-        
-        // Recalculate travel from home
-        const newDistanceKm = calculateDistance(
+      sortedDayTasks.forEach((task) => {
+        const taskDuration = parseDuration(task.taskDuration);
+        const taskLocation = { lat: task.taskLatitude, lon: task.taskLongitude };
+
+        // Calculate travel time from current location to task
+        const distanceKm = calculateDistance(
           currentLocation.lat,
           currentLocation.lon,
           taskLocation.lat,
           taskLocation.lon
         );
-        const newTravelTime = calculateTravelTime(newDistanceKm);
-        
-        // Add travel block
-        if (newTravelTime > 0.05) { // Only show if > 3 minutes
-          blocks.push({
-            type: 'travel',
-            startTime: currentTime,
-            duration: newTravelTime,
-            dayOffset: currentDayOffset,
-            fromLocation: currentLocation,
-            toLocation: taskLocation,
-            distanceKm: newDistanceKm,
-          });
-          currentTime += newTravelTime;
-        }
-      } else {
-        // Add travel block for current day
+        const travelTime = calculateTravelTime(distanceKm);
+
+        // Add travel block if significant travel time
         if (travelTime > 0.05) { // Only show if > 3 minutes
-          blocks.push({
-            type: 'travel',
-            startTime: currentTime,
-            duration: travelTime,
-            dayOffset: currentDayOffset,
-            fromLocation: currentLocation,
-            toLocation: taskLocation,
-            distanceKm: distanceKm,
-          });
-          currentTime += travelTime;
+          // Check if travel would fit within working hours
+          if (currentTime + travelTime <= shiftEndHours) {
+            blocks.push({
+              type: 'travel',
+              startTime: currentTime,
+              duration: travelTime,
+              dayOffset: dayOffset,
+              fromLocation: currentLocation,
+              toLocation: taskLocation,
+              distanceKm: distanceKm,
+            });
+            currentTime += travelTime;
+          } else {
+            // Skip travel if it would go outside working hours
+            currentTime = shiftEndHours;
+          }
         }
-      }
 
-      // Add task block
-      blocks.push({
-        type: 'task',
-        taskId: task.taskId,
-        startTime: currentTime,
-        duration: taskDuration,
-        dayOffset: currentDayOffset,
-        task: task,
-        toLocation: taskLocation,
+        // Check if task would fit within working hours
+        if (currentTime + taskDuration <= shiftEndHours) {
+          // Add task block - full task fits within shift
+          blocks.push({
+            type: 'task',
+            taskId: task.taskId,
+            startTime: currentTime,
+            duration: taskDuration,
+            dayOffset: dayOffset,
+            task: task,
+            toLocation: taskLocation,
+          });
+
+          currentTime += taskDuration;
+          currentLocation = taskLocation;
+        } else {
+          // Task would exceed shift hours - either truncate or skip
+          const remainingShiftTime = shiftEndHours - currentTime;
+          
+          if (remainingShiftTime > 0.25) { // At least 15 minutes remaining
+            // Add truncated task that fits within shift
+            blocks.push({
+              type: 'task',
+              taskId: task.taskId,
+              startTime: currentTime,
+              duration: remainingShiftTime, // Truncated duration
+              dayOffset: dayOffset,
+              task: { ...task, taskDuration: formatTime(remainingShiftTime) }, // Update displayed duration
+              toLocation: taskLocation,
+            });
+          }
+          
+          // End of shift reached
+          currentTime = shiftEndHours;
+          currentLocation = taskLocation;
+        }
       });
-
-      currentTime += taskDuration;
-      currentLocation = taskLocation;
     });
 
     return blocks;
-  };
+  }, [dateRange]);
 
   // Pre-compute date range set for faster lookups
   const dateRangeSet = useMemo(() => {
@@ -402,10 +506,17 @@ export default function LiveGantt({
     // Create rows: one per resource (showing all their tasks across all days)
     const rows: TechnicianDayRow[] = [];
     relevantResources.forEach((resource) => {
-      // Get all tasks for this resource across all days in the date range
-      const resourceTasks = filteredTasks.filter(task => task.resourceId === resource.resourceId);
+      // Get tasks for this resource that fall within the visible date range
+      const resourceTasks = filteredTasks.filter(task => {
+        if (task.resourceId !== resource.resourceId) return false;
+        
+        // Check if task date falls within visible date range
+        const taskDate = new Date(task.commitDate);
+        taskDate.setHours(0, 0, 0, 0);
+        return dateRangeSet.has(taskDate.getTime());
+      });
 
-      // Schedule tasks with travel time
+      // Schedule tasks with travel time (only for visible date range)
       const scheduledBlocks = scheduleTasksWithTravel(
         resourceTasks,
         resource.homeLatitude,
@@ -415,11 +526,7 @@ export default function LiveGantt({
       );
 
       // Pre-calculate visible task count for tooltip
-      const visibleTaskCount = resourceTasks.filter(t => {
-        const taskDate = new Date(t.commitDate);
-        taskDate.setHours(0, 0, 0, 0);
-        return dateRangeSet.has(taskDate.getTime());
-      }).length;
+      const visibleTaskCount = resourceTasks.length;
 
       rows.push({
         technicianId: resource.resourceId,
@@ -438,7 +545,7 @@ export default function LiveGantt({
     });
 
     return rows;
-  }, [selectedDivision, selectedDomain, dateRange, dateRangeSet]);
+  }, [selectedDivision, selectedDomain, dateRange, dateRangeSet, scheduleTasksWithTravel]);
 
   // Calculate total hours needed to display all scheduled blocks
   const totalScheduledHours = useMemo(() => {
@@ -453,39 +560,49 @@ export default function LiveGantt({
       });
     });
     
-    return Math.max(maxHours, 24); // At least 24 hours
-  }, [technicianDayRows]);
+    // Ensure we show at least the full visible days, but extend if tasks go beyond
+    const minimumHours = visibleDays * 24;
+    return Math.max(maxHours, minimumHours);
+  }, [technicianDayRows, visibleDays]);
 
   // Calculate dynamic hour width based on auto-fit, expanded mode, and manual zoom
-  const hourWidth = useMemo(() => {
+  const [hourWidth, setHourWidth] = useState(BASE_HOUR_WIDTH);
+  
+  // Update hour width when necessary
+  useEffect(() => {
     // If we're zooming or just finished zooming, use the ref value (DOM is already updated)
     if (isZoomingRef.current || !isAutoFit) {
-      return currentHourWidthRef.current;
+      setHourWidth(currentHourWidthRef.current);
+      return;
     }
     
     if (containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
       const availableWidth = containerWidth - FIXED_COLUMN_WIDTH - 40;
       
-      // Single day view: stretch to fill full panel width
+      // Single day view: stretch to fill full panel width with good hour visibility
       if (visibleDays === 1) {
         const calculatedWidth = Math.floor(availableWidth / 24);
-        const width = Math.max(40, Math.min(MAX_HOUR_WIDTH, calculatedWidth));
+        // Ensure minimum 50px per hour for proper hourly view, but allow stretching up to max
+        const width = Math.max(50, Math.min(MAX_HOUR_WIDTH, calculatedWidth));
         currentHourWidthRef.current = width;
-        return width;
+        setHourWidth(width);
+        return;
       }
       
-      // Multiple days: fit as many days as possible in the view
+      // Multiple days: fit as many days as possible in the view, but maintain usability
       const totalHours = visibleDays * 24;
-      const calculatedWidth = Math.floor(availableWidth / totalHours);
+      let calculatedWidth = Math.floor(availableWidth / totalHours);
+      
+      // For multi-day views, ensure a minimum reasonable hour width for readability
+      const multiDayMinWidth = visibleDays <= 3 ? 25 : visibleDays <= 7 ? 22 : MIN_HOUR_WIDTH;
+      calculatedWidth = Math.max(multiDayMinWidth, calculatedWidth);
+      
       const width = Math.max(MIN_HOUR_WIDTH, Math.min(MAX_HOUR_WIDTH, calculatedWidth));
       currentHourWidthRef.current = width;
-      return width;
+      setHourWidth(width);
     }
-    
-    // Fallback
-    return currentHourWidthRef.current;
-  }, [visibleDays, isAutoFit]);
+  }, [visibleDays, isAutoFit, totalScheduledHours]);
 
   // Scroll to 4am when data loads (after search) and when layout changes
   useEffect(() => {
@@ -508,13 +625,12 @@ export default function LiveGantt({
     });
   }, [technicianDayRows.length, hourWidth, isExpanded, visibleDays]); // Re-run when data loads or layout changes
 
-  // Add Shift+Scroll wheel event listener (non-passive to allow preventDefault)
+  // Add Shift+Scroll wheel event listener - SIMPLIFIED for smooth zoom
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleWheelZoom = (event: WheelEvent) => {
-      // Check if Shift key is held
       if (!event.shiftKey) return;
 
       event.preventDefault();
@@ -523,78 +639,150 @@ export default function LiveGantt({
       const timelineBody = timelineBodyRef.current;
       if (!timelineBody) return;
 
-      // Mark that we're actively zooming
-      isZoomingRef.current = true;
-
+      // Get current state
       const oldZoom = currentHourWidthRef.current;
       const scrollLeft = timelineBody.scrollLeft;
-      const timelineBodyRect = timelineBody.getBoundingClientRect();
-      const cursorX = Math.max(0, event.clientX - timelineBodyRect.left);
+      const rect = timelineBody.getBoundingClientRect();
+      const cursorX = event.clientX - rect.left;
       
-      // Calculate new zoom
-      const isZoomIn = event.deltaY < 0;
-      const zoomFactor = isZoomIn ? ZOOM_MULTIPLIER : 1 / ZOOM_MULTIPLIER;
-      const effectiveMinWidth = visibleDays === 1 ? 40 : MIN_HOUR_WIDTH;
-      const newZoom = Math.max(effectiveMinWidth, Math.min(MAX_HOUR_WIDTH, oldZoom * zoomFactor));
+      // Calculate new zoom with strict limits
+      const zoomIn = event.deltaY < 0;
+      const factor = zoomIn ? ZOOM_MULTIPLIER : 1 / ZOOM_MULTIPLIER;
+      // Dynamic minimum based on visible days - more restrictive for multi-day
+      const minZoom = visibleDays === 1 ? 40 : 
+                     visibleDays <= 3 ? 25 : 
+                     visibleDays <= 7 ? 22 : MIN_HOUR_WIDTH;
+      let proposedZoom = oldZoom * factor;
       
-      if (newZoom === oldZoom) return;
+      // Clamp to absolute limits
+      proposedZoom = Math.max(minZoom, Math.min(MAX_HOUR_WIDTH, proposedZoom));
+      
+      // Check if we've hit a zoom boundary
+      const atMaxZoom = proposedZoom >= MAX_HOUR_WIDTH && zoomIn;
+      const atMinZoom = proposedZoom <= minZoom && !zoomIn;
+      
+      // If at boundary, prevent zoom and provide feedback
+      if (atMaxZoom || atMinZoom || proposedZoom === oldZoom) {
+        // Visual feedback: briefly change cursor
+        container.style.cursor = atMaxZoom ? 'zoom-in' : 'zoom-out';
+        setTimeout(() => {
+          container.style.cursor = '';
+        }, 150);
+        return; // Prevent zoom when at limits
+      }
+      
+      const newZoom = proposedZoom;
 
-      // Update ref
+      // Update zoom ref immediately
       currentHourWidthRef.current = newZoom;
+      isZoomingRef.current = true;
 
-      // Calculate new scroll position to keep cursor fixed
-      const contentPosUnderCursor = scrollLeft + cursorX;
-      const newScrollLeft = (contentPosUnderCursor * (newZoom / oldZoom)) - cursorX;
+      // Calculate scale ratio for all elements
+      const ratio = newZoom / oldZoom;
 
-      // Update DOM directly
-      const totalWidth = dateRange.length * 24 * newZoom;
-      
-      container.querySelectorAll('[data-day-container]').forEach((el) => {
-        (el as HTMLElement).style.width = `${24 * newZoom}px`;
-      });
-
-      container.querySelectorAll('[data-hour-cell]').forEach((el) => {
-        (el as HTMLElement).style.width = `${newZoom}px`;
-      });
-
-      container.querySelectorAll('[data-timeline-container]').forEach((el) => {
-        (el as HTMLElement).style.minWidth = `${totalWidth}px`;
-        (el as HTMLElement).style.maxWidth = `${totalWidth}px`;
-      });
-
-      // Update all gantt blocks (tasks and travel)
-      container.querySelectorAll('[data-gantt-block]').forEach((el) => {
+      // 1. Scale timeline containers first (set exact widths)
+      const timelineContainers = container.querySelectorAll('[data-timeline-container]');
+      timelineContainers.forEach(el => {
         const element = el as HTMLElement;
-        const dayOffset = parseFloat(element.getAttribute('data-day-offset') || '0');
+        const expectedWidth = totalScheduledHours * newZoom;
+        element.style.minWidth = `${expectedWidth}px`;
+        element.style.maxWidth = `${expectedWidth}px`;
+        element.style.width = `${expectedWidth}px`;
+      });
+
+      // 2. Scale hour cells to exact new width
+      const hourCells = container.querySelectorAll('[data-hour-cell]');
+      hourCells.forEach(el => {
+        const element = el as HTMLElement;
+        element.style.width = `${newZoom}px`;
+      });
+
+      // 3-6. Cache all DOM queries once and iterate
+      const dayContainers = container.querySelectorAll('[data-day-container]');
+      const ganttBlocks = container.querySelectorAll('[data-gantt-block]');
+      const shiftBars = container.querySelectorAll('[data-shift-bar]');
+      const currentTimeIndicators = container.querySelectorAll('[data-current-time-indicator]');
+      
+      // 3. Scale day containers to exact new width  
+      dayContainers.forEach(el => {
+        const element = el as HTMLElement;
+        element.style.width = `${24 * newZoom}px`;
+      });
+
+      // 4. Scale task blocks and travel elements - recalculate positions precisely
+      ganttBlocks.forEach(el => {
+        const element = el as HTMLElement;
+        
+        // Get block data from attributes
+        const dayOffset = parseInt(element.getAttribute('data-day-offset') || '0');
         const startTime = parseFloat(element.getAttribute('data-start-time') || '0');
         const duration = parseFloat(element.getAttribute('data-duration') || '0');
         
-        const left = (dayOffset * 24 * newZoom) + (startTime * newZoom);
-        const width = duration * newZoom;
+        // Recalculate position with new zoom level - use precise calculation
+        const newLeft = (dayOffset * 24 * newZoom) + (startTime * newZoom);
+        const newWidth = Math.max(2, duration * newZoom);
         
-        element.style.left = `${left}px`;
-        element.style.width = `${Math.max(2, width)}px`;
+        element.style.left = `${newLeft}px`;
+        element.style.width = `${newWidth}px`;
       });
 
-      // Apply scroll
+      // 5. Scale shift bars - recalculate positions precisely like task blocks
+      shiftBars.forEach(el => {
+        const element = el as HTMLElement;
+        
+        // Get shift bar data from attributes  
+        const dayIndex = parseInt(element.getAttribute('data-day-index') || '0');
+        const startMinutes = parseInt(element.getAttribute('data-start-minutes') || '0');
+        const durationHours = parseFloat(element.getAttribute('data-duration-hours') || '0');
+        
+        // Recalculate position and width with new zoom level
+        const newLeft = (dayIndex * 24 * newZoom) + ((startMinutes / 60) * newZoom);
+        const newWidth = durationHours * newZoom;
+        
+        element.style.left = `${newLeft}px`;
+        element.style.width = `${newWidth}px`;
+      });
+
+      // 6. Update current time indicator - recalculate position precisely
+      currentTimeIndicators.forEach(el => {
+        const element = el as HTMLElement;
+        
+        // Get current time data from attributes
+        const todayIndex = parseInt(element.getAttribute('data-today-index') || '0');
+        const hours = parseInt(element.getAttribute('data-hours') || '0');
+        const minutes = parseInt(element.getAttribute('data-minutes') || '0');
+        
+        // Recalculate position with new zoom level
+        const totalMinutes = hours * 60 + minutes;
+        const pixelsFromDayStart = (totalMinutes / (24 * 60)) * (24 * newZoom);
+        const newLeft = todayIndex * 24 * newZoom + pixelsFromDayStart;
+        
+        element.style.left = `${newLeft}px`;
+      });
+
+      // 7. Update scroll position to keep cursor fixed
+      const contentX = scrollLeft + cursorX;
+      const newContentX = contentX * ratio;
+      const newScrollLeft = newContentX - cursorX;
+      
       timelineBody.scrollLeft = Math.max(0, newScrollLeft);
       if (timelineRef.current) {
         timelineRef.current.scrollLeft = Math.max(0, newScrollLeft);
       }
 
-      // Disable auto-fit once
+      // 7. Disable auto-fit
       if (isAutoFit) {
         setIsAutoFit(false);
       }
 
-      // Debounce state update - only after user stops zooming for 500ms
+      // 8. Debounced React state update
       if (updateTimeoutRef.current) {
         clearTimeout(updateTimeoutRef.current);
       }
       updateTimeoutRef.current = setTimeout(() => {
         isZoomingRef.current = false;
-        setZoomLevel(newZoom);
-      }, 500);
+        setHourWidth(newZoom);
+      }, 200);
     };
 
     container.addEventListener('wheel', handleWheelZoom, { passive: false });
@@ -605,7 +793,7 @@ export default function LiveGantt({
         clearTimeout(updateTimeoutRef.current);
       }
     };
-  }, [visibleDays, isAutoFit, dateRange.length]);
+  }, [visibleDays, isAutoFit, totalScheduledHours]);
 
   // Sync ref when state changes from other sources (but not during active zooming)
   useEffect(() => {
@@ -616,30 +804,84 @@ export default function LiveGantt({
     currentHourWidthRef.current = hourWidth;
   }, [hourWidth, isAutoFit]);
 
+  // Force recalculation when visible days changes (preset changes)
+  useEffect(() => {
+    // Reset zoom state when changing day count to allow proper recalculation
+    if (isAutoFit) {
+      isZoomingRef.current = false;
+      currentHourWidthRef.current = BASE_HOUR_WIDTH;
+      
+      // Force container to recalculate by triggering a small style change
+      if (containerRef.current) {
+        const container = containerRef.current;
+        // More aggressive reflow trigger
+        const originalStyle = container.style.display;
+        container.style.display = 'none';
+        void container.offsetHeight; // Force reflow
+        container.style.display = originalStyle || '';
+        
+        // Also force width recalculation
+        const timelineContainers = container.querySelectorAll('[data-timeline-container]');
+        timelineContainers.forEach(el => {
+          const element = el as HTMLElement;
+          element.style.minWidth = 'auto';
+          element.style.maxWidth = 'none';
+          void element.offsetWidth; // Force reflow
+          // Set correct width based on totalScheduledHours
+          const expectedWidth = totalScheduledHours * currentHourWidthRef.current;
+          element.style.minWidth = `${expectedWidth}px`;
+          element.style.maxWidth = `${expectedWidth}px`;
+          element.style.width = `${expectedWidth}px`;
+        });
+      }
+      
+      // Force a re-render by updating the hour width state
+      setTimeout(() => {
+        setHourWidth(prev => prev + 0.001); // Tiny change to trigger re-render
+      }, 0);
+    }
+  }, [visibleDays, isAutoFit, totalScheduledHours]);
+
+  // Force timeline width update when totalScheduledHours changes
+  useEffect(() => {
+    if (containerRef.current && isAutoFit) {
+      const container = containerRef.current;
+      const timelineContainers = container.querySelectorAll('[data-timeline-container]');
+      const expectedWidth = totalScheduledHours * hourWidth;
+      
+      timelineContainers.forEach(el => {
+        const element = el as HTMLElement;
+        element.style.minWidth = `${expectedWidth}px`;
+        element.style.maxWidth = `${expectedWidth}px`;
+        element.style.width = `${expectedWidth}px`;
+      });
+    }
+  }, [totalScheduledHours, hourWidth, isAutoFit]);
+
   // Navigation handlers
-  const handlePreviousDay = () => {
+  const handlePreviousDay = useCallback(() => {
     setStartDate(prev => {
       const newDate = new Date(prev);
       newDate.setDate(prev.getDate() - 1);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleNextDay = () => {
+  const handleNextDay = useCallback(() => {
     setStartDate(prev => {
       const newDate = new Date(prev);
       newDate.setDate(prev.getDate() + 1);
       return newDate;
     });
-  };
+  }, []);
 
-  const handleToday = () => {
+  const handleToday = useCallback(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     setStartDate(today);
-  };
+  }, []);
 
-  const handlePresetChange = (preset: DateRangePreset) => {
+  const handlePresetChange = useCallback((preset: DateRangePreset) => {
     const config = DATE_PRESETS[preset];
     setSelectedPreset(preset);
     setVisibleDays(config.days);
@@ -647,12 +889,17 @@ export default function LiveGantt({
     // Re-enable auto-fit when changing presets to ensure proper fit
     setIsAutoFit(true);
     
+    // Reset zoom to allow proper recalculation for new day count
+    isZoomingRef.current = false;
+    // Force reset of cached hour width
+    currentHourWidthRef.current = BASE_HOUR_WIDTH;
+    
     // Set start date based on offset
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     today.setDate(today.getDate() + config.startOffset);
     setStartDate(today);
-  };
+  }, []);
 
   // Format date helpers
   const formatDate = (date: Date) => {
@@ -770,7 +1017,7 @@ export default function LiveGantt({
             </Paper>
             
             {/* Date Range Preset Selector */}
-            <FormControl size="small" sx={{ minWidth: 100 }}>
+            <FormControl size="small" sx={{ minWidth: 130 }}>
               <Select
                 value={selectedPreset}
                 onChange={(e) => handlePresetChange(e.target.value as DateRangePreset)}
@@ -1003,13 +1250,21 @@ export default function LiveGantt({
                 }
               }}
             >
-              <Box sx={{ display: 'flex', minWidth: dateRange.length * 24 * hourWidth }} data-timeline-container>
+              <Box 
+                key={`header-timeline-${visibleDays}-${selectedPreset}`}
+                sx={{ 
+                  display: 'flex', 
+                  minWidth: totalScheduledHours * hourWidth,
+                  maxWidth: totalScheduledHours * hourWidth, // Use total scheduled hours instead of fixed days
+                }} 
+                data-timeline-container
+              >
                 {/* Day headers and hour markers */}
-                {dateRange.map((date, dayIdx) => {
-                  const hourLabelInterval = getHourLabelInterval(hourWidth);
+                {dateRange.map((date) => {
+                  const hourLabelInterval = getHourLabelInterval(hourWidth, visibleDays);
                   return (
                     <Box
-                      key={`day-header-${dayIdx}`}
+                      key={`day-${date.getTime()}`}
                       data-day-container
                       sx={{
                         width: 24 * hourWidth,
@@ -1044,38 +1299,65 @@ export default function LiveGantt({
                         </Typography>
                       </Box>
 
-                      {/* Hour markers */}
+                      {/* Time interval blocks */}
                       <Box sx={{ display: 'flex', height: HEADER_HEIGHT }}>
-                        {Array.from({ length: 24 }).map((_, hourIdx) => {
-                          const showLabel = hourIdx % hourLabelInterval === 0;
-                          const isMajorHour = hourIdx % 6 === 0;
+                        {Array.from({ length: Math.ceil(24 / hourLabelInterval) }).map((_, blockIdx) => {
+                          const startHour = blockIdx * hourLabelInterval;
+                          const endHour = Math.min(startHour + hourLabelInterval, 24);
+                          const blockWidth = (endHour - startHour) * hourWidth;
+                          const isMajorBlock = startHour % 12 === 0;
+                          
                           return (
-                            <Box
-                              key={hourIdx}
-                              data-hour-cell
-                              sx={{
-                                width: hourWidth,
-                                flexShrink: 0,
-                                borderRight: isMajorHour ? `2px solid ${theme.palette.divider}` : `1px solid ${theme.palette.divider}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                              }}
+                            <Tooltip
+                              key={`hour-${date.getTime()}-${startHour}`}
+                              title={
+                                <Box>
+                                  <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                    {`${startHour.toString().padStart(2, '0')}:00 - ${endHour.toString().padStart(2, '0')}:00`}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, opacity: 0.8 }}>
+                                    {hourLabelInterval === 1 ? '1 hour' : `${hourLabelInterval} hour block`}
+                                  </Typography>
+                                </Box>
+                              }
+                              placement="bottom"
                             >
-                              {showLabel && (
+                              <Box
+                                data-time-block
+                                sx={{
+                                  width: blockWidth,
+                                  flexShrink: 0,
+                                  borderRight: isMajorBlock ? `3px solid ${theme.palette.divider}` : `2px solid ${theme.palette.divider}`,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  position: 'relative',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                                  },
+                                }}
+                              >
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '0.65rem',
+                                    fontSize: blockWidth >= 60 ? '0.7rem' : blockWidth >= 40 ? '0.65rem' : '0.6rem',
                                     color: theme.palette.text.secondary,
-                                    fontWeight: 500,
+                                    fontWeight: 600,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    maxWidth: blockWidth - 8,
+                                    textAlign: 'center',
                                   }}
                                 >
-                                  {`${hourIdx.toString().padStart(2, '0')}:00`}
+                                  {hourLabelInterval === 1 
+                                    ? `${startHour.toString().padStart(2, '0')}:00`
+                                    : `${startHour.toString().padStart(2, '0')}-${endHour.toString().padStart(2, '0')}`
+                                  }
                                 </Typography>
-                              )}
-                            </Box>
+                              </Box>
+                            </Tooltip>
                           );
                         })}
                       </Box>
@@ -1170,6 +1452,7 @@ export default function LiveGantt({
 
             {/* Scrollable timeline - Task blocks */}
             <Box
+              key={`timeline-${visibleDays}-${selectedPreset}`}
               ref={timelineBodyRef}
               sx={{
                 flex: 1,
@@ -1220,8 +1503,8 @@ export default function LiveGantt({
               <Box
                 data-timeline-container
                 sx={{
-                  minWidth: dateRange.length * 24 * hourWidth,
-                  maxWidth: dateRange.length * 24 * hourWidth,
+                  minWidth: totalScheduledHours * hourWidth,
+                  maxWidth: totalScheduledHours * hourWidth, // Use total scheduled hours
                   position: 'relative',
                 }}
               >
@@ -1237,39 +1520,58 @@ export default function LiveGantt({
                     pointerEvents: 'none',
                   }}
                 >
-                  {dateRange.map((_, dayIdx) => (
-                    <Box
-                      key={dayIdx}
-                      data-day-container
-                      sx={{
-                        width: 24 * hourWidth,
-                        flexShrink: 0,
-                        borderRight: `2px solid ${borderColor}`,
-                        display: 'flex',
-                        backgroundColor: dayIdx % 2 === 0 ? 'transparent' : theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.02)',
-                      }}
-                    >
-                      {Array.from({ length: 24 }).map((_, hourIdx) => {
-                        const isMajorHour = hourIdx % 6 === 0;
-                        return (
-                          <Box
-                            key={hourIdx}
-                            data-hour-cell
-                            sx={{
-                              width: hourWidth,
-                              borderRight: isMajorHour ? `2px solid ${theme.palette.divider}` : `1px solid ${theme.palette.divider}`,
-                              opacity: hourWidth < 20 ? 0.15 : hourWidth < 35 ? 0.2 : 0.25,
-                            }}
-                          />
-                        );
-                      })}
-                    </Box>
-                  ))}
+                  {/* Render days and extra hours to cover all scheduled content */}
+                  {Array.from({ length: Math.ceil(totalScheduledHours / 24) }).map((_, dayIdx) => {
+                    const isVisibleDay = dayIdx < dateRange.length;
+                    return (
+                      <Box
+                        key={dayIdx}
+                        data-day-container
+                        sx={{
+                          width: 24 * hourWidth,
+                          flexShrink: 0,
+                          borderRight: `2px solid ${borderColor}`,
+                          display: 'flex',
+                          backgroundColor: isVisibleDay 
+                            ? (dayIdx % 2 === 0 ? 'transparent' : theme.palette.mode === 'dark' ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.02)')
+                            : theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', // Different color for extended hours
+                        }}
+                      >
+                        {Array.from({ length: Math.ceil(24 / getHourLabelInterval(hourWidth, visibleDays)) }).map((_, blockIdx) => {
+                          const hourLabelInterval = getHourLabelInterval(hourWidth, visibleDays);
+                          const startHour = blockIdx * hourLabelInterval;
+                          const endHour = Math.min(startHour + hourLabelInterval, 24);
+                          const absoluteStartHour = dayIdx * 24 + startHour;
+                          
+                          if (absoluteStartHour >= totalScheduledHours) return null;
+                          
+                          const blockWidth = (endHour - startHour) * hourWidth;
+                          const isMajorBlock = startHour % 12 === 0;
+                          
+                          return (
+                            <Box
+                              key={blockIdx}
+                              data-time-block
+                              sx={{
+                                width: blockWidth,
+                                borderRight: isMajorBlock ? `3px solid ${theme.palette.divider}` : `2px solid ${theme.palette.divider}`,
+                                opacity: hourWidth < 20 ? 0.15 : hourWidth < 35 ? 0.2 : 0.25,
+                                '&:hover': {
+                                  opacity: 0.4,
+                                  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                                },
+                              }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    );
+                  })}
                 </Box>
 
                 {/* Current time indicator line */}
                 {(() => {
-                  const now = new Date();
+                  const now = currentTime;
                   const todayIndex = dateRange.findIndex(d => 
                     d.getDate() === now.getDate() &&
                     d.getMonth() === now.getMonth() &&
@@ -1285,6 +1587,10 @@ export default function LiveGantt({
                     
                     return (
                       <Box
+                        data-current-time-indicator
+                        data-today-index={todayIndex}
+                        data-hours={hours}
+                        data-minutes={minutes}
                         sx={{
                           position: 'absolute',
                           left: `${leftPosition}px`,
@@ -1320,19 +1626,20 @@ export default function LiveGantt({
                 {/* Rows with task blocks */}
                 {technicianDayRows.map((row) => {
                   // Calculate shift time bars for each day (show shift hours across all days)
-                  const shiftBars: Array<{ left: number; width: number }> = [];
+                  const shiftBars: Array<{ left: number; width: number; dayIndex: number; startMinutes: number; duration: number }> = [];
                   
                   if (row.shiftStart && row.shiftEnd) {
                     const [startHour, startMin] = row.shiftStart.split(':').map(Number);
                     const [endHour, endMin] = row.shiftEnd.split(':').map(Number);
                     const startMinutes = startHour * 60 + startMin;
                     const endMinutes = endHour * 60 + endMin;
-                    const shiftDuration = ((endMinutes - startMinutes) / 60) * hourWidth;
+                    const shiftDurationHours = (endMinutes - startMinutes) / 60;
+                    const shiftDuration = shiftDurationHours * hourWidth;
                     
                     // Create shift bar for each day
                     dateRange.forEach((_, dayIndex) => {
                       const left = (dayIndex * 24 * hourWidth) + ((startMinutes / 60) * hourWidth);
-                      shiftBars.push({ left, width: shiftDuration });
+                      shiftBars.push({ left, width: shiftDuration, dayIndex, startMinutes, duration: shiftDurationHours });
                     });
                   }
 
@@ -1352,10 +1659,60 @@ export default function LiveGantt({
                       },
                     }}
                   >
+                    {/* Background time interval grid */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        display: 'flex',
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      {Array.from({ length: Math.ceil(totalScheduledHours / 24) }).map((_, dayIdx) => (
+                        <Box
+                          key={dayIdx}
+                          sx={{
+                            width: 24 * hourWidth,
+                            display: 'flex',
+                          }}
+                        >
+                          {Array.from({ length: Math.ceil(24 / getHourLabelInterval(hourWidth, visibleDays)) }).map((_, blockIdx) => {
+                            const hourLabelInterval = getHourLabelInterval(hourWidth, visibleDays);
+                            const startHour = blockIdx * hourLabelInterval;
+                            const endHour = Math.min(startHour + hourLabelInterval, 24);
+                            const absoluteStartHour = dayIdx * 24 + startHour;
+                            
+                            if (absoluteStartHour >= totalScheduledHours) return null;
+                            
+                            const blockWidth = (endHour - startHour) * hourWidth;
+                            const isMajorBlock = startHour % 12 === 0;
+                            
+                            return (
+                              <Box
+                                key={blockIdx}
+                                sx={{
+                                  width: blockWidth,
+                                  height: '100%',
+                                  borderRight: isMajorBlock ? `3px solid ${alpha(theme.palette.divider, 0.3)}` : `2px solid ${alpha(theme.palette.divider, 0.2)}`,
+                                }}
+                              />
+                            );
+                          })}
+                        </Box>
+                      ))}
+                    </Box>
+
                     {/* Shift time background bars for each day */}
                     {shiftBars.map((bar, idx) => (
                       <Box
                         key={idx}
+                        data-shift-bar
+                        data-day-index={bar.dayIndex}
+                        data-start-minutes={bar.startMinutes}
+                        data-duration-hours={bar.duration}
                         sx={{
                           position: 'absolute',
                           left: bar.left,
@@ -1364,7 +1721,6 @@ export default function LiveGantt({
                           backgroundColor: alpha(theme.palette.info.main, 0.15),
                           pointerEvents: 'none',
                           zIndex: 0,
-                          transition: 'left 0.3s ease-out, width 0.3s ease-out', // Smooth zoom transition
                         }}
                       />
                     ))}
@@ -1436,7 +1792,9 @@ export default function LiveGantt({
                               <Box>
                                 <Typography variant="caption" fontWeight={600}>{task.taskId}</Typography>
                                 <Typography variant="caption" display="block">{task.commitType}</Typography>
-                                <Typography variant="caption" display="block">{task.status}</Typography>
+                                <Typography variant="caption" display="block" sx={{ color: 'primary.main' }}>
+                                  Status: {task.status}
+                                </Typography>
                                 <Typography variant="caption" display="block">{task.postCode}</Typography>
                                 <Typography variant="caption" display="block">
                                   Duration: {task.taskDuration}
@@ -1470,12 +1828,12 @@ export default function LiveGantt({
                                   : `2px solid ${alpha('#000', 0.2)}`,
                                 borderRadius: 1,
                                 boxSizing: 'border-box',
-                                transition: 'all 0.2s ease, left 0.3s ease-out, width 0.3s ease-out',
                                 outline: isSelected ? `2px solid ${theme.palette.background.paper}` : 'none',
                                 outlineOffset: '-2px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center',
+                                justifyContent: 'flex-start', // Changed from 'center' to 'flex-start'
+                                paddingLeft: '4px', // Add left padding for icon positioning
                                 overflow: 'hidden',
                                 '&:hover': {
                                   opacity: 0.95,
@@ -1486,23 +1844,7 @@ export default function LiveGantt({
                               }}
                               elevation={isSelected ? 6 : 2}
                             >
-                              {!isCondensed && width > 50 && (
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    fontSize: '0.65rem',
-                                    fontWeight: 600,
-                                    color: 'rgba(0,0,0,0.7)',
-                                    textAlign: 'center',
-                                    px: 0.5,
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                  }}
-                                >
-                                  {task.taskId}
-                                </Typography>
-                              )}
+                              {!isCondensed && width > 20 && getTaskStatusIndicator(task.status)}
                             </Paper>
                           </Tooltip>
                         );
@@ -1519,3 +1861,5 @@ export default function LiveGantt({
     </Box>
   );
 }
+
+export default React.memo(LiveGantt);

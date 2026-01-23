@@ -330,7 +330,7 @@ export function SharedMuiTable<T extends GridValidRowModel = GridValidRowModel>(
   )
 }
 
-export default SharedMuiTable
+export default memo(SharedMuiTable) as typeof SharedMuiTable;
 
 function QuickFilterToolbar({
   densityMode,

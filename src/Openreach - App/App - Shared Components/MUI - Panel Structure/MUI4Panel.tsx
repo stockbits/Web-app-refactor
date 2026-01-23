@@ -1,5 +1,5 @@
 import { Box, useTheme, Tabs, Tab, useMediaQuery } from "@mui/material";
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect, lazy, Suspense } from "react";
 import * as React from "react";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
@@ -7,7 +7,7 @@ import MapIcon from "@mui/icons-material/Map";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 
 import LiveGantt from "./App - Pannels/LiveGantt";
-import LiveMap from "./App - Pannels/LiveMap";
+const LiveMap = lazy(() => import("./App - Pannels/LiveMap"));
 import LivePeople from "./App - Pannels/LivePeople";
 import LiveTask from "./App - Pannels/LiveTask";
 import { useSelectionUI } from "../Selection - UI";
@@ -461,23 +461,26 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                 }}
               >
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {React.createElement(panel.component as unknown as React.ComponentType<any>, {
-                  ...panel.props,
-                  onDock: () => handleDockPanel({
-                    id: panel.id,
-                    title: panel.props.title,
-                    icon: panel.props.icon,
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    content: React.createElement(panel.component as unknown as React.ComponentType<any>, { minimized: true })
-                  }),
-                  onUndock: () => handleUndockPanel(panel.id),
-                  onExpand: () => handleExpandPanel(panel.id),
-                  onCollapse: handleCollapsePanel,
-                  isDocked: isPanelDocked(panel.id),
-                  isExpanded: false,
-                  layoutKey: layoutKey,
-                  style: { height: '100%', width: '100%', display: 'flex', flexDirection: 'column' },
-                })}
+                <Suspense fallback={<Box sx={{ p: 2 }}>Loading...</Box>}>
+                  {React.createElement(panel.component as unknown as React.ComponentType<any>, {
+                    ...panel.props,
+                    key: panel.id, // Maintain component identity to preserve state
+                    onDock: () => handleDockPanel({
+                      id: panel.id,
+                      title: panel.props.title,
+                      icon: panel.props.icon,
+                      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                      content: React.createElement(panel.component as unknown as React.ComponentType<any>, { minimized: true })
+                    }),
+                    onUndock: () => handleUndockPanel(panel.id),
+                    onExpand: () => handleExpandPanel(panel.id),
+                    onCollapse: handleCollapsePanel,
+                    isDocked: isPanelDocked(panel.id),
+                    isExpanded: false,
+                    layoutKey: layoutKey,
+                    style: { height: '100%', width: '100%', display: 'flex', flexDirection: 'column' },
+                  })}
+                </Suspense>
               </Box>
             ))}
           </Box>
@@ -555,6 +558,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {React.createElement(panel.component as unknown as React.ComponentType<any>, {
                   ...panel.props,
+                  key: panel.id, // Maintain component identity to preserve state
                   onDock: () => handleDockPanel({
                     id: panel.id,
                     title: panel.props.title,

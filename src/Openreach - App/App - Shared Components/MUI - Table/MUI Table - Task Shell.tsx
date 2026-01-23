@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   InfoOutlined as InfoOutlinedIcon,
   CompareArrows as CompareArrowsIcon,
@@ -249,4 +249,4 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
   )
 }
 
-export default TaskTableShell
+export default React.memo(TaskTableShell) as typeof TaskTableShell;

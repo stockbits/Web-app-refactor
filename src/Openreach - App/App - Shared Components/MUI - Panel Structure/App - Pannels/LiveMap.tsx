@@ -382,7 +382,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             bottom: '-5px',
             border: '3px solid #DC2626',
             borderRadius: '8px',
-            backgroundColor: 'rgba(220, 38, 38, 0.15)',
             pointerEvents: 'none',
             boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2)'
           }} />
@@ -666,13 +665,23 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             imageRendering: 'auto',
           },
           '& .custom-task-icon': {
-            background: 'none',
+            background: 'none !important',
             border: 'none',
             pointerEvents: 'auto',
             transition: 'none', // Remove transitions for better click responsiveness
+            '&:hover': {
+              background: 'none !important',
+              backgroundColor: 'transparent !important',
+            },
           },
           '& .custom-task-icon.selected': {
             zIndex: 1000, // Bring selected markers to front
+          },
+          '& .leaflet-marker-icon': {
+            '&:hover': {
+              background: 'none !important',
+              backgroundColor: 'transparent !important',
+            },
           },
           '& .marker-selection-ring': {
             animation: 'marker-pulse 0.3s ease-out',
