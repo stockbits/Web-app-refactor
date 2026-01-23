@@ -12,9 +12,10 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { TaskIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
+import { TaskIcon, ResourceIcon, type TaskIconVariant } from '../../MUI - Icon and Key/MUI - Icon';
 import { TASK_ICON_COLORS } from '../../../../AppCentralTheme/Icon-Colors';
 import { TASK_TABLE_ROWS, type TaskCommitType, type TaskTableRow } from '../../../App - Data Tables/Task - Table';
+import { RESOURCE_TABLE_ROWS, type ResourceTableRow } from '../../../App - Data Tables/Resource - Table';
 import { useMapSelection, useSelectionUI } from '../../Selection - UI';
 
 // Import Leaflet CSS
@@ -39,6 +40,8 @@ interface LiveMapProps {
   layoutKey?: number;
   filteredTasks?: TaskTableRow[];
   selectedTaskIds?: string[];
+  selectedDivision?: string | null;
+  selectedDomain?: string | null;
 }
 
 interface MapClickHandlerProps {
@@ -290,7 +293,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
   );
 }
 
-function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0, filteredTasks }: LiveMapProps = {}) {
+function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0, filteredTasks, selectedDivision, selectedDomain }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
@@ -302,6 +305,17 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
   // Use filteredTasks if provided, otherwise fall back to all tasks
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
+
+  // Filter resources based on selected division and domain
+  const resourcesToDisplay = useMemo(() => {
+    if (!selectedDivision || !selectedDomain) {
+      return [];
+    }
+    
+    return RESOURCE_TABLE_ROWS.filter(resource => 
+      resource.division === selectedDivision && resource.domainId === selectedDomain
+    );
+  }, [selectedDivision, selectedDomain]);
 
   // Create Set for O(1) lookups - memoized for performance
   const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
@@ -398,6 +412,52 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     });
   }, [taskColors]);
 
+  // Create resource marker icons with person icon and status color
+  const createResourceMarkerIcon = useCallback((resource: ResourceTableRow) => {
+    const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+    
+    const getStatusColor = () => {
+      switch (resource.workingStatus) {
+        case 'Signed on':
+          return tokens?.success?.main || '#4CAF50';
+        case 'Signed on no work':
+          return tokens?.state?.warning || '#FF9800';
+        case 'Not Signed on':
+        case 'Absent':
+          return tokens?.state?.error || '#F44336';
+        case 'Rostered off':
+          return theme.palette.text.secondary;
+        default:
+          return '#9E9E9E';
+      }
+    };
+
+    const markerSize = 32;
+    const iconHtml = renderToStaticMarkup(
+      <div 
+        style={{ 
+          width: `${markerSize}px`, 
+          height: `${markerSize}px`, 
+          position: 'relative',
+        }}
+      >
+        <ResourceIcon 
+          workingStatus={resource.workingStatus}
+          size={markerSize} 
+          statusColor={getStatusColor()}
+        />
+      </div>
+    );
+
+    return L.divIcon({
+      html: iconHtml,
+      className: 'custom-resource-icon',
+      iconSize: [markerSize, markerSize],
+      iconAnchor: [markerSize / 2, markerSize],
+      popupAnchor: [0, -markerSize],
+    });
+  }, [isDark, theme.openreach?.darkTokens, theme.openreach?.lightTokens, theme.palette.text.secondary]);
+
   // Memoize cluster icon creation for better performance
   const createClusterIcon = useCallback((cluster: { getChildCount: () => number }) => {
     const count = cluster.getChildCount();
@@ -435,6 +495,16 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     }
     return icons;
   }, [createMarkerIcon, tasksToDisplay, getIconVariant, selectedSet]);
+
+  // Memoize icons for each resource to prevent recreation on every render
+  const resourceIcons = useMemo(() => {
+    const icons: Record<string, L.DivIcon> = {};
+    for (let i = 0; i < resourcesToDisplay.length; i++) {
+      const resource = resourcesToDisplay[i];
+      icons[resource.resourceId] = createResourceMarkerIcon(resource);
+    }
+    return icons;
+  }, [createResourceMarkerIcon, resourcesToDisplay]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -676,6 +746,16 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           },
           '& .custom-task-icon.selected': {
             zIndex: 1000, // Bring selected markers to front
+          },
+          '& .custom-resource-icon': {
+            background: 'none !important',
+            border: 'none',
+            pointerEvents: 'auto',
+            transition: 'none',
+            '&:hover': {
+              background: 'none !important',
+              backgroundColor: 'transparent !important',
+            },
           },
           '& .leaflet-marker-icon': {
             '&:hover': {
@@ -1145,6 +1225,68 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                 );
               })
             )}
+            
+            {/* Render resource markers - resources don't cluster */}
+            {resourcesToDisplay.map((resource: ResourceTableRow) => (
+              <Marker
+                key={`resource-${resource.resourceId}`}
+                position={[resource.homeLatitude, resource.homeLongitude]}
+                icon={resourceIcons[resource.resourceId]}
+                eventHandlers={{
+                  dblclick: () => {
+                    ignoreNextMapClickRef.current = true;
+                    setTimeout(() => {
+                      ignoreNextMapClickRef.current = false;
+                    }, 250);
+
+                    const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+                    const getStatusColor = () => {
+                      switch (resource.workingStatus) {
+                        case 'Signed on':
+                          return tokens?.success?.main || '#4CAF50';
+                        case 'Signed on no work':
+                          return tokens?.state?.warning || '#FF9800';
+                        case 'Not Signed on':
+                        case 'Absent':
+                          return tokens?.state?.error || '#F44336';
+                        case 'Rostered off':
+                          return theme.palette.text.secondary;
+                        default:
+                          return '#9E9E9E';
+                      }
+                    };
+
+                    setPopupState({
+                      isOpen: true,
+                      position: [resource.homeLatitude, resource.homeLongitude],
+                      content: (
+                        <Box sx={{ p: 0.5, minWidth: 200 }}>
+                          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                            {resource.resourceName}
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                            Resource ID: {resource.resourceId}
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                            {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
+                          </Typography>
+                          <Chip
+                            label={resource.workingStatus}
+                            size="small"
+                            sx={{ 
+                              height: 20, 
+                              fontSize: '0.7rem', 
+                              backgroundColor: getStatusColor(), 
+                              color: theme.palette.common.white 
+                            }}
+                          />
+                        </Box>
+                      ),
+                    });
+                  }
+                }}
+              />
+            ))}
             
             {/* Single reusable popup - stays open until explicitly closed */}
             {popupState.isOpen && popupState.position && (
