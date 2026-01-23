@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import {
   Dialog,
   DialogTitle,
@@ -219,7 +219,7 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
               <strong>Expected Impact:</strong>
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 0.5 }}>
-              {useMemo(() => strategy === 'efficient' ? (
+              {strategy === 'efficient' ? (
                 <>
                   <Chip label="↓ 33% Travel Distance" size="small" color="success" variant="outlined" />
                   <Chip label="↑ 5 Tasks/Day" size="small" color="info" variant="outlined" />
@@ -231,7 +231,7 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
                   <Chip label="↓ 2 Tasks/Day" size="small" color="info" variant="outlined" />
                   <Chip label="Spread Across Valleys" size="small" variant="outlined" />
                 </>
-              ), [strategy])}
+              )}
             </Stack>
           </Box>
         </Stack>
