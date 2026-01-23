@@ -40,6 +40,7 @@ interface LiveMapProps {
   layoutKey?: number;
   filteredTasks?: TaskTableRow[];
   selectedTaskIds?: string[];
+  selectedResourceIds?: string[];
   selectedDivision?: string | null;
   selectedDomain?: string | null;
 }
@@ -106,6 +107,43 @@ function ZoomToSelection({ selectedTaskIds, filteredTasks }: ZoomToSelectionProp
       duration: 0.5
     });
   }, [selectedTaskIds, map, tasksToDisplay]);
+
+  return null;
+}
+
+interface ZoomToResourceSelectionProps {
+  selectedResourceIds: string[];
+  filteredResources: ResourceTableRow[];
+}
+
+function ZoomToResourceSelection({ selectedResourceIds, filteredResources }: ZoomToResourceSelectionProps) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (selectedResourceIds.length === 0) return;
+
+    // Get coordinates for selected resources
+    const selectedResources = filteredResources.filter(resource => selectedResourceIds.includes(resource.resourceId));
+    if (selectedResources.length === 0) return;
+
+    // Single resource: zoom to that location with zoom level 14
+    if (selectedResources.length === 1) {
+      const resource = selectedResources[0];
+      map.setView([resource.homeLatitude, resource.homeLongitude], 14, {
+        animate: true,
+        duration: 0.5
+      });
+      return;
+    }
+
+    // Multiple resources: calculate bounds and fit to show all
+    const bounds = L.latLngBounds(selectedResources.map(resource => [resource.homeLatitude, resource.homeLongitude]));
+    map.fitBounds(bounds, {
+      padding: [50, 50],
+      animate: true,
+      duration: 0.5
+    });
+  }, [selectedResourceIds, map, filteredResources]);
 
   return null;
 }
@@ -293,7 +331,7 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
   );
 }
 
-function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0, filteredTasks, selectedDivision, selectedDomain }: LiveMapProps = {}) {
+function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, layoutKey = 0, filteredTasks, selectedTaskIds: propSelectedTaskIds, selectedResourceIds: propSelectedResourceIds, selectedDivision, selectedDomain }: LiveMapProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach?.darkTableColors?.headerBg : theme.openreach?.tableColors?.headerBg;
@@ -301,7 +339,11 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
   // Selection UI integration - separate hooks for different concerns
   const { selectTaskFromMap, selectResourceFromMap } = useMapSelection();
-  const { selectedTaskIds, selectedResourceIds } = useSelectionUI();
+  const { selectedTaskIds: contextSelectedTaskIds, selectedResourceIds: contextSelectedResourceIds } = useSelectionUI();
+  
+  // Use prop values if provided, otherwise use context
+  const selectedTaskIds = propSelectedTaskIds ?? contextSelectedTaskIds;
+  const selectedResourceIds = propSelectedResourceIds ?? contextSelectedResourceIds;
 
   // Use filteredTasks if provided, otherwise fall back to all tasks
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
@@ -965,6 +1007,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               filteredTasks={filteredTasks}
             />
 
+            {/* Zoom to selected resources */}
+            <ZoomToResourceSelection
+              selectedResourceIds={selectedResourceIds}
+              filteredResources={resourcesToDisplay}
+            />
+
             {/* Render markers based on zoom level to prevent overlap */}
             {currentZoom < 10 ? (
               <MarkerClusterGroup
@@ -1158,6 +1206,85 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     </Marker>
                   );
                 })}
+                
+                {/* Add resource markers to cluster */}
+                {resourcesToDisplay.map((resource: ResourceTableRow) => {
+                  const isSelected = selectedResourceIds.includes(resource.resourceId);
+                  const iconKey = `${resource.resourceId}-${isSelected}`;
+                  
+                  return (
+                    <Marker
+                      key={`resource-${resource.resourceId}`}
+                      position={[resource.homeLatitude, resource.homeLongitude]}
+                      icon={resourceIcons[iconKey]}
+                      eventHandlers={{
+                        click: (e) => {
+                          e.originalEvent.preventDefault();
+                          e.originalEvent.stopPropagation();
+                          const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                          selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                        },
+                        mousedown: (e) => {
+                          e.originalEvent.preventDefault();
+                          e.originalEvent.stopPropagation();
+                          const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                          selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                        },
+                        dblclick: () => {
+                          ignoreNextMapClickRef.current = true;
+                          setTimeout(() => {
+                            ignoreNextMapClickRef.current = false;
+                          }, 250);
+
+                          const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+                          const getStatusColor = () => {
+                            switch (resource.workingStatus) {
+                              case 'Signed on':
+                                return tokens?.success?.main || '#4CAF50';
+                              case 'Signed on no work':
+                                return tokens?.state?.warning || '#FF9800';
+                              case 'Not Signed on':
+                              case 'Absent':
+                                return tokens?.state?.error || '#F44336';
+                              case 'Rostered off':
+                                return theme.palette.text.secondary;
+                              default:
+                                return '#9E9E9E';
+                            }
+                          };
+
+                          setPopupState({
+                            isOpen: true,
+                            position: [resource.homeLatitude, resource.homeLongitude],
+                            content: (
+                              <Box sx={{ p: 0.5, minWidth: 200 }}>
+                                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                                  {resource.resourceName}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                                  Resource ID: {resource.resourceId}
+                                </Typography>
+                                <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                                  {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
+                                </Typography>
+                                <Chip
+                                  label={resource.workingStatus}
+                                  size="small"
+                                  sx={{ 
+                                    height: 20, 
+                                    fontSize: '0.7rem', 
+                                    backgroundColor: getStatusColor(), 
+                                    color: theme.palette.common.white 
+                                  }}
+                                />
+                              </Box>
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                  );
+                })}
               </MarkerClusterGroup>
             ) : (
               /* Render individual markers without clustering at high zoom levels */
@@ -1231,8 +1358,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               })
             )}
             
-            {/* Render resource markers - resources don't cluster */}
-            {resourcesToDisplay.map((resource: ResourceTableRow) => {
+            {/* Add resources to non-clustered view */}
+            {currentZoom >= 10 && resourcesToDisplay.map((resource: ResourceTableRow) => {
               const isSelected = selectedResourceIds.includes(resource.resourceId);
               const iconKey = `${resource.resourceId}-${isSelected}`;
               
@@ -1245,70 +1372,68 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     click: (e) => {
                       e.originalEvent.preventDefault();
                       e.originalEvent.stopPropagation();
-
                       const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
                       selectResourceFromMap(resource.resourceId, isCtrlPressed);
                     },
                     mousedown: (e) => {
                       e.originalEvent.preventDefault();
                       e.originalEvent.stopPropagation();
-
                       const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
                       selectResourceFromMap(resource.resourceId, isCtrlPressed);
                     },
                     dblclick: () => {
-                    ignoreNextMapClickRef.current = true;
-                    setTimeout(() => {
-                      ignoreNextMapClickRef.current = false;
-                    }, 250);
+                      ignoreNextMapClickRef.current = true;
+                      setTimeout(() => {
+                        ignoreNextMapClickRef.current = false;
+                      }, 250);
 
-                    const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
-                    const getStatusColor = () => {
-                      switch (resource.workingStatus) {
-                        case 'Signed on':
-                          return tokens?.success?.main || '#4CAF50';
-                        case 'Signed on no work':
-                          return tokens?.state?.warning || '#FF9800';
-                        case 'Not Signed on':
-                        case 'Absent':
-                          return tokens?.state?.error || '#F44336';
-                        case 'Rostered off':
-                          return theme.palette.text.secondary;
-                        default:
-                          return '#9E9E9E';
-                      }
-                    };
+                      const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+                      const getStatusColor = () => {
+                        switch (resource.workingStatus) {
+                          case 'Signed on':
+                            return tokens?.success?.main || '#4CAF50';
+                          case 'Signed on no work':
+                            return tokens?.state?.warning || '#FF9800';
+                          case 'Not Signed on':
+                          case 'Absent':
+                            return tokens?.state?.error || '#F44336';
+                          case 'Rostered off':
+                            return theme.palette.text.secondary;
+                          default:
+                            return '#9E9E9E';
+                        }
+                      };
 
-                    setPopupState({
-                      isOpen: true,
-                      position: [resource.homeLatitude, resource.homeLongitude],
-                      content: (
-                        <Box sx={{ p: 0.5, minWidth: 200 }}>
-                          <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                            {resource.resourceName}
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                            Resource ID: {resource.resourceId}
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
-                            {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
-                          </Typography>
-                          <Chip
-                            label={resource.workingStatus}
-                            size="small"
-                            sx={{ 
-                              height: 20, 
-                              fontSize: '0.7rem', 
-                              backgroundColor: getStatusColor(), 
-                              color: theme.palette.common.white 
-                            }}
-                          />
-                        </Box>
-                      ),
-                    });
-                  }
-                }}
-              />
+                      setPopupState({
+                        isOpen: true,
+                        position: [resource.homeLatitude, resource.homeLongitude],
+                        content: (
+                          <Box sx={{ p: 0.5, minWidth: 200 }}>
+                            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                              {resource.resourceName}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                              Resource ID: {resource.resourceId}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                              {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
+                            </Typography>
+                            <Chip
+                              label={resource.workingStatus}
+                              size="small"
+                              sx={{ 
+                                height: 20, 
+                                fontSize: '0.7rem', 
+                                backgroundColor: getStatusColor(), 
+                                color: theme.palette.common.white 
+                              }}
+                            />
+                          </Box>
+                        ),
+                      });
+                    }
+                  }}
+                />
               );
             })}
             

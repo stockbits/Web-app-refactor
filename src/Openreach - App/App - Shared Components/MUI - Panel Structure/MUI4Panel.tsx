@@ -41,7 +41,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const [activeMobileTab, setActiveMobileTab] = useState(0);
 
   // Get selected task IDs from selection context
-  const { selectedTaskIds } = useSelectionUI();
+  const { selectedTaskIds, selectedResourceIds } = useSelectionUI();
 
   // Memoize layout key to avoid unnecessary re-renders
   const layoutKey = useMemo(() => dockedPanels.length, [dockedPanels.length]);
@@ -120,12 +120,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const visiblePanels = useMemo(() => {
     const panels = [
       { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, selectedDivision, selectedDomain } },
-      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds, selectedDivision, selectedDomain } },
+      { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds, selectedResourceIds, selectedDivision, selectedDomain } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" />, selectedDivision, selectedDomain } },
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog, onAddToDock } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, selectedTaskIds, clearSorting, openTaskDialog, onAddToDock, selectedDivision, selectedDomain]);
+  }, [dockedPanels, filteredTasks, selectedTaskIds, selectedResourceIds, clearSorting, openTaskDialog, onAddToDock, selectedDivision, selectedDomain]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   const clampedActiveMobileTab = useMemo(() => {
