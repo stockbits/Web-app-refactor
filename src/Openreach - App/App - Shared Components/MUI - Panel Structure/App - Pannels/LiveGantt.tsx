@@ -222,23 +222,6 @@ export default function LiveGantt({
     }
   }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap]);
 
-  // Scroll to 4am on initial load
-  useEffect(() => {
-    const scrollTo4AM = () => {
-      const scrollPosition = 4 * hourWidth;
-      if (timelineRef.current) {
-        timelineRef.current.scrollLeft = scrollPosition;
-      }
-      if (timelineBodyRef.current) {
-        timelineBodyRef.current.scrollLeft = scrollPosition;
-      }
-    };
-
-    // Small delay to ensure refs are mounted
-    const timer = setTimeout(scrollTo4AM, 0);
-    return () => clearTimeout(timer);
-  }, [hourWidth]); // Re-run when hourWidth changes
-
   // Trigger recalculation on window resize in expanded mode
   useEffect(() => {
     if (!isExpanded || visibleDays !== 1) return;
@@ -444,6 +427,27 @@ export default function LiveGantt({
 
     return rows;
   }, [selectedDivision, selectedDomain, dateRange, dateRangeSet]);
+
+  // Scroll to 4am when data loads (after search) and when layout changes
+  useEffect(() => {
+    // Only scroll if we have data (after user has searched)
+    if (technicianDayRows.length === 0) return;
+
+    const scrollTo4AM = () => {
+      const scrollPosition = 4 * hourWidth;
+      if (timelineRef.current) {
+        timelineRef.current.scrollLeft = scrollPosition;
+      }
+      if (timelineBodyRef.current) {
+        timelineBodyRef.current.scrollLeft = scrollPosition;
+      }
+    };
+
+    // Use requestAnimationFrame to ensure DOM is painted before scrolling
+    requestAnimationFrame(() => {
+      requestAnimationFrame(scrollTo4AM);
+    });
+  }, [technicianDayRows.length, hourWidth, isExpanded, visibleDays]); // Re-run when data loads or layout changes
 
   // Navigation handlers
   const handlePreviousDay = () => {
@@ -1002,6 +1006,7 @@ export default function LiveGantt({
               <Box
                 sx={{
                   minWidth: dateRange.length * 24 * hourWidth,
+                  maxWidth: dateRange.length * 24 * hourWidth,
                   position: 'relative',
                 }}
               >
@@ -1142,8 +1147,10 @@ export default function LiveGantt({
                       />
                     ))}
                     
-                    {/* Scheduled blocks (travel and tasks) for this row */}
-                    {row.scheduledBlocks?.map((block, blockIdx) => {
+                    {/* Scheduled blocks (travel and tasks) for this row - filter by visible days */}
+                    {row.scheduledBlocks
+                      ?.filter(block => block.dayOffset < visibleDays)
+                      .map((block, blockIdx) => {
                       // Calculate position based on day offset and start time
                       const left = (block.dayOffset * 24 * hourWidth) + (block.startTime * hourWidth);
                       const width = block.duration * hourWidth;

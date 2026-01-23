@@ -335,6 +335,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
   // Note: Removed auto-clear functionality to preserve multi-selections
 
   // Create memoized marker icons with visual feedback
+  // Optimize by creating base icons without selection state, add selection via CSS class
   const createMarkerIcon = useCallback((variant: TaskIconVariant, isSelected: boolean) => {
     const colorMap: Record<TaskIconVariant, string> = {
       appointment: taskColors?.appointment || TASK_ICON_COLORS.appointment,
@@ -345,19 +346,21 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     };
     const markerSize = 32;
     const iconHtml = renderToStaticMarkup(
-      <div style={{ 
-        width: `${markerSize}px`, 
-        height: `${markerSize}px`, 
-        position: 'relative',
-        transition: 'all 0.2s ease-in-out'
-      }}>
+      <div 
+        className={isSelected ? 'marker-selected' : ''}
+        style={{ 
+          width: `${markerSize}px`, 
+          height: `${markerSize}px`, 
+          position: 'relative',
+        }}
+      >
         <TaskIcon 
           variant={variant} 
           size={markerSize} 
           color={colorMap[variant]}
         />
         {isSelected && (
-          <div style={{
+          <div className="marker-selection-ring" style={{
             position: 'absolute',
             top: '-5px',
             left: '-5px',
@@ -375,7 +378,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
 
     return L.divIcon({
       html: iconHtml,
-      className: 'custom-task-icon',
+      className: `custom-task-icon ${isSelected ? 'selected' : ''}`,
       iconSize: [markerSize, markerSize],
       iconAnchor: [markerSize / 2, markerSize],
       popupAnchor: [0, -markerSize],
@@ -418,7 +421,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       icons[key] = createMarkerIcon(variant, isSelected);
     }
     return icons;
-  }, [createMarkerIcon, selectedSet, tasksToDisplay, getIconVariant]);
+  }, [createMarkerIcon, tasksToDisplay, getIconVariant, selectedSet]);
 
   // Get tile layer URL based on selected map type
   const getTileLayerConfig = () => {
@@ -618,12 +621,29 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             background: 'none',
             border: 'none',
             pointerEvents: 'auto',
+            transition: 'none', // Remove transitions for better click responsiveness
+          },
+          '& .custom-task-icon.selected': {
+            zIndex: 1000, // Bring selected markers to front
+          },
+          '& .marker-selection-ring': {
+            animation: 'marker-pulse 0.3s ease-out',
+          },
+          '@keyframes marker-pulse': {
+            '0%': {
+              transform: 'scale(0.8)',
+              opacity: 0,
+            },
+            '100%': {
+              transform: 'scale(1)',
+              opacity: 1,
+            }
           },
           '& .custom-cluster-icon': {
             background: 'none',
             border: 'none',
             pointerEvents: 'auto',
-            transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+            transition: 'opacity 0.2s ease-out',
           }
         }}
       >
