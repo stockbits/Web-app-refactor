@@ -1178,13 +1178,13 @@ function LiveGantt({
             <Typography variant="h6" gutterBottom sx={{ color: bodyTextColor }}>
               {!selectedDivision && !selectedDomain 
                 ? 'Select Division and Domain'
-                : 'No technicians found'
+                : 'No Engineers found'
               }
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
               {!selectedDivision && !selectedDomain
-                ? 'Choose a division and domain to view technician schedules'
-                : 'No technicians available for the selected filters'
+                ? 'Choose a division and domain to view Engineer schedules'
+                : 'No Engineers available for the selected filters'
               }
             </Typography>
           </Box>

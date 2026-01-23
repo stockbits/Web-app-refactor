@@ -27,7 +27,8 @@ export default function LivePeople({
   isDocked, 
   isExpanded, 
   minimized,
-  selectedDivision
+  selectedDivision,
+  selectedDomain
 }: LivePeopleProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -212,13 +213,17 @@ export default function LivePeople({
   // Track sort model state
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
 
-  // Filter resources based on selected division
+  // Filter resources based on selected division and domain
   const filteredRows = useMemo(() => {
+    // Only show data when both division and domain are selected
+    if (!selectedDivision || !selectedDomain) {
+      return [];
+    }
+    
     let filtered = RESOURCE_TABLE_ROWS;
     
-    if (selectedDivision) {
-      filtered = filtered.filter(resource => resource.division === selectedDivision);
-    }
+    // Filter by division
+    filtered = filtered.filter(resource => resource.division === selectedDivision);
     
     // Apply manual sorting if sortModel exists
     const sortedResources = [...filtered];
@@ -238,7 +243,7 @@ export default function LivePeople({
     }
     
     return sortedResources;
-  }, [selectedDivision, sortModel]);
+  }, [selectedDivision, selectedDomain, sortModel]);
 
   // Handle sort requests
   const handleSortModelChange = useCallback((newModel: GridSortModel) => {
@@ -362,11 +367,16 @@ export default function LivePeople({
             onSortModelChange={handleSortModelChange}
           />
         ) : (
-          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', px: 2 }}>
             <PeopleIcon sx={{ fontSize: 48, color: iconColor, mb: 1 }} />
             <Typography variant="h6" gutterBottom sx={{ color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary }}>
               Team Status
             </Typography>
+            {(!selectedDivision || !selectedDomain) && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                Please select both Division and Domain to view resources
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
