@@ -19,7 +19,7 @@
  * 4. Call clearSelectionOnSort in table's onSortModelChange
  */
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table';
 import type { ResourceTableRow } from '../../App - Data Tables/Resource - Table';
 
@@ -68,10 +68,14 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [lastInteractedTaskId, setLastInteractedTaskId] = useState<string | null>(null);
   const [selectionSource, setSelectionSource] = useState<'map' | 'table' | null>(null);
+  const [shouldPrioritizeTasks, setShouldPrioritizeTasks] = useState(false); // Track if we should actively reorder
+  const mapOrderedTaskIdsRef = useRef<string[]>([]); // Track the last map-established order (ref to avoid dependency loop)
 
   const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
   const [lastInteractedResourceId, setLastInteractedResourceId] = useState<string | null>(null);
   const [resourceSelectionSource, setResourceSelectionSource] = useState<'map' | 'table' | null>(null);
+  const [shouldPrioritizeResources, setShouldPrioritizeResources] = useState(false); // Track if we should actively reorder
+  const mapOrderedResourceIdsRef = useRef<string[]>([]); // Track the last map-established order (ref to avoid dependency loop)
 
   // Use Set for O(1) lookups
   const selectedTaskIdsSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
@@ -103,7 +107,17 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
         return isCurrentlySelected && prev.length === 1 ? [] : [taskId];
       }
     });
-    setSelectionSource(source);
+    
+    // Map/Gantt selections should trigger prioritization
+    if (source === 'map') {
+      setSelectionSource('map');
+      setShouldPrioritizeTasks(true);
+    } else {
+      // Table clicks preserve the map source but stop active prioritization
+      // This keeps the current order established by map but prevents further reordering
+      setSelectionSource(prevSource => prevSource === 'map' ? prevSource : 'table');
+      setShouldPrioritizeTasks(false);
+    }
   }, []);
 
   // Range select tasks (Shift-click)
@@ -127,13 +141,24 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
         additive ? [...new Set([...prev, ...rangeIds])] : rangeIds
       );
     }
-    setSelectionSource(source);
+    
+    // Map/Gantt selections should trigger prioritization
+    if (source === 'map') {
+      setSelectionSource('map');
+      setShouldPrioritizeTasks(true);
+    } else {
+      // Table clicks preserve the map source but stop active prioritization
+      setSelectionSource(prevSource => prevSource === 'map' ? prevSource : 'table');
+      setShouldPrioritizeTasks(false);
+    }
   }, [lastInteractedTaskId]);
 
   // Clear all selections
   const clearSelection = useCallback(() => {
     setSelectedTaskIds([]);
     setLastInteractedTaskId(null);
+    setShouldPrioritizeTasks(false);
+    mapOrderedTaskIdsRef.current = [];
   }, []);
 
   // Clear selection when user sorts table - resets to default behavior
@@ -141,18 +166,48 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
     setSelectedTaskIds([]);
     setLastInteractedTaskId(null);
     setSelectionSource(null);
+    setShouldPrioritizeTasks(false);
+    mapOrderedTaskIdsRef.current = [];
   }, []);
 
   // Select multiple tasks at once
   const selectTasks = useCallback((taskIds: string[], source: 'map' | 'table' = 'table') => {
     setSelectedTaskIds(taskIds);
     setSelectionSource(source);
+    setShouldPrioritizeTasks(source === 'map');
   }, []);
 
   // Get tasks with selected tasks prioritized (moved to top) - optimized single pass
   const getPrioritizedTasks = useCallback((tasks: TaskTableRow[]) => {
-    // Only prioritize if selection came from map and there are selections
-    if (selectedTaskIds.length === 0 || selectionSource !== 'map') {
+    const mapOrderedTaskIds = mapOrderedTaskIdsRef.current;
+    
+    // If we have a map-established order, use it (preserves order across table selections)
+    if (mapOrderedTaskIds.length > 0 && !shouldPrioritizeTasks) {
+      const taskMap = new Map<string, TaskTableRow>();
+      tasks.forEach(task => taskMap.set(task.taskId, task));
+      
+      // Build array maintaining map order, then append any new tasks not in the order
+      const orderedTasks: TaskTableRow[] = [];
+      const orderedSet = new Set(mapOrderedTaskIds);
+      
+      mapOrderedTaskIds.forEach(taskId => {
+        const task = taskMap.get(taskId);
+        if (task) orderedTasks.push(task);
+      });
+      
+      // Add any tasks not in the preserved order
+      tasks.forEach(task => {
+        if (!orderedSet.has(task.taskId)) {
+          orderedTasks.push(task);
+        }
+      });
+      
+      return orderedTasks;
+    }
+    
+    // Only prioritize if we should actively reorder (map/gantt selection, not subsequent table clicks)
+    // Return early to preserve array reference and prevent unnecessary re-renders
+    if (!shouldPrioritizeTasks || selectedTaskIds.length === 0) {
       return tasks;
     }
 
@@ -169,8 +224,13 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
     // Build unselected tasks
     const unselectedTasks = tasks.filter(task => !selectedTaskIdsSet.has(task.taskId));
 
-    return [...selectedTasks, ...unselectedTasks];
-  }, [selectedTaskIds, selectedTaskIdsSet, selectionSource]);
+    const reorderedTasks = [...selectedTasks, ...unselectedTasks];
+    
+    // Save this order as the map-established order
+    mapOrderedTaskIdsRef.current = reorderedTasks.map(t => t.taskId);
+    
+    return reorderedTasks;
+  }, [shouldPrioritizeTasks, selectedTaskIds, selectedTaskIdsSet]);
 
   // Resource selection methods
   const toggleResourceSelection = useCallback((resourceId: string, multiSelect = false, source: 'map' | 'table' = 'table') => {
@@ -184,7 +244,16 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
         return isCurrentlySelected && prev.length === 1 ? [] : [resourceId];
       }
     });
-    setResourceSelectionSource(source);
+    
+    // Map/Gantt selections should trigger prioritization
+    if (source === 'map') {
+      setResourceSelectionSource('map');
+      setShouldPrioritizeResources(true);
+    } else {
+      // Table clicks preserve the map source but stop active prioritization
+      setResourceSelectionSource(prevSource => prevSource === 'map' ? prevSource : 'table');
+      setShouldPrioritizeResources(false);
+    }
   }, []);
 
   const rangeSelectResources = useCallback((resourceId: string, allResourceIds: string[], additive = false, source: 'map' | 'table' = 'table') => {
@@ -204,27 +273,67 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
         additive ? [...new Set([...prev, ...rangeIds])] : rangeIds
       );
     }
-    setResourceSelectionSource(source);
+    
+    // Map/Gantt selections should trigger prioritization
+    if (source === 'map') {
+      setResourceSelectionSource('map');
+      setShouldPrioritizeResources(true);
+    } else {
+      // Table clicks preserve the map source but stop active prioritization
+      setResourceSelectionSource(prevSource => prevSource === 'map' ? prevSource : 'table');
+      setShouldPrioritizeResources(false);
+    }
   }, [lastInteractedResourceId]);
 
   const clearResourceSelection = useCallback(() => {
     setSelectedResourceIds([]);
     setLastInteractedResourceId(null);
+    setShouldPrioritizeResources(false);
+    mapOrderedResourceIdsRef.current = [];
   }, []);
 
   const clearResourceSelectionOnSort = useCallback(() => {
     setSelectedResourceIds([]);
     setLastInteractedResourceId(null);
     setResourceSelectionSource(null);
+    setShouldPrioritizeResources(false);
+    mapOrderedResourceIdsRef.current = [];
   }, []);
 
   const selectResources = useCallback((resourceIds: string[], source: 'map' | 'table' = 'table') => {
     setSelectedResourceIds(resourceIds);
     setResourceSelectionSource(source);
+    setShouldPrioritizeResources(source === 'map');
   }, []);
 
   const getPrioritizedResources = useCallback((resources: ResourceTableRow[]) => {
-    if (selectedResourceIds.length === 0 || resourceSelectionSource !== 'map') {
+    const mapOrderedResourceIds = mapOrderedResourceIdsRef.current;
+    
+    // If we have a map-established order, use it (preserves order across table selections)
+    if (mapOrderedResourceIds.length > 0 && !shouldPrioritizeResources) {
+      const resourceMap = new Map<string, ResourceTableRow>();
+      resources.forEach(resource => resourceMap.set(resource.resourceId, resource));
+      
+      const orderedResources: ResourceTableRow[] = [];
+      const orderedSet = new Set(mapOrderedResourceIds);
+      
+      mapOrderedResourceIds.forEach(resourceId => {
+        const resource = resourceMap.get(resourceId);
+        if (resource) orderedResources.push(resource);
+      });
+      
+      resources.forEach(resource => {
+        if (!orderedSet.has(resource.resourceId)) {
+          orderedResources.push(resource);
+        }
+      });
+      
+      return orderedResources;
+    }
+    
+    // Only prioritize if we should actively reorder (map/gantt selection, not subsequent table clicks)
+    // Return early to preserve array reference and prevent unnecessary re-renders
+    if (!shouldPrioritizeResources || selectedResourceIds.length === 0) {
       return resources;
     }
 
@@ -239,8 +348,13 @@ export const SelectionUIProvider: React.FC<SelectionUIProviderProps> = ({ childr
 
     const unselectedResources = resources.filter(resource => !selectedResourceIdsSet.has(resource.resourceId));
 
-    return [...selectedResources, ...unselectedResources];
-  }, [selectedResourceIds, selectedResourceIdsSet, resourceSelectionSource]);
+    const reorderedResources = [...selectedResources, ...unselectedResources];
+    
+    // Save this order as the map-established order
+    mapOrderedResourceIdsRef.current = reorderedResources.map(r => r.resourceId);
+    
+    return reorderedResources;
+  }, [shouldPrioritizeResources, selectedResourceIds, selectedResourceIdsSet]);
 
   const value = useMemo(() => ({
     selectedTaskIds,
@@ -398,53 +512,3 @@ export const useResourceTableSelection = () => {
     clearResourceSelectionOnSort
   ]);
 };
-
-// Example usage in MUI DataGrid with proper selection coordination:
-/*
-import { useTaskTableSelection } from '../Selection - UI';
-import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
-
-function TaskTable({ tasks }: { tasks: TaskTableRow[] }) {
-  const apiRef = useGridApiRef();
-  const { 
-    getPrioritizedTasks, 
-    isTaskSelected, 
-    toggleTaskSelection, 
-    rangeSelectTasks,
-    clearSelectionOnSort 
-  } = useTaskTableSelection();
-
-  const displayTasks = getPrioritizedTasks(tasks);
-
-  const handleSortModelChange = () => {
-    clearSelectionOnSort(); // Resets selection, allows map to re-prioritize later
-  };
-
-  const handleRowClick = (params: GridRowParams, event: React.MouseEvent) => {
-    const taskId = params.row.taskId;
-    
-    // Get visible row IDs in current display order
-    const visibleRowIds = apiRef.current.getSortedRowIds().map(id => 
-      apiRef.current.getRow(id)?.taskId
-    ).filter(Boolean) as string[];
-
-    if (event.shiftKey) {
-      rangeSelectTasks(taskId, visibleRowIds, event.ctrlKey || event.metaKey, 'table');
-    } else {
-      toggleTaskSelection(taskId, event.ctrlKey || event.metaKey, 'table');
-    }
-  };
-
-  return (
-    <DataGrid
-      apiRef={apiRef}
-      rows={displayTasks}
-      onSortModelChange={handleSortModelChange}
-      onRowClick={handleRowClick}
-      getRowClassName={(params) => 
-        isTaskSelected(params.row.taskId) ? 'selected-row' : ''
-      }
-    />
-  );
-}
-*/

@@ -39,6 +39,9 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [expandedPanelId, setExpandedPanelId] = useState<string | null>(null);
   const [activeMobileTab, setActiveMobileTab] = useState(0);
+  
+  // State to track tasks appended from Gantt view
+  const [appendedTasks, setAppendedTasks] = useState<TaskTableRow[]>([]);
 
   // Get selected task IDs from selection context
   const { selectedTaskIds, selectedResourceIds } = useSelectionUI();
@@ -57,6 +60,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   const handleTouchEndRef = useRef<(() => void) | null>(null);
 
   // Compute filtered tasks based on searchTerm, selectedDivision, selectedDomain, and searchFilters
+  // Also includes tasks appended from Gantt view
   const filteredTasks = useMemo(() => {
     let tasks = TASK_TABLE_ROWS;
 
@@ -68,13 +72,13 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
         task.workId.toLowerCase() === keyword ||
         task.resourceId.toLowerCase() === keyword
       );
-      // When searchTerm is active, return early (ignore other filters)
-      return tasks;
+      // When searchTerm is active, return tasks + appended tasks
+      return [...tasks, ...appendedTasks];
     }
 
     // Only show tasks after search has been performed
     if (!searchFilters) {
-      return [];
+      return appendedTasks;
     }
 
     // Filter by division if selected
@@ -113,19 +117,40 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
       return true;
     });
 
-    return tasks;
-  }, [searchTerm, selectedDivision, selectedDomain, searchFilters]);
+    // Merge filtered tasks with appended tasks, removing duplicates
+    const taskMap = new Map<string, TaskTableRow>();
+    tasks.forEach(task => taskMap.set(task.taskId, task));
+    appendedTasks.forEach(task => taskMap.set(task.taskId, task));
+    
+    return Array.from(taskMap.values());
+  }, [searchTerm, selectedDivision, selectedDomain, searchFilters, appendedTasks]);
+  
+  // Handler to append tasks from Gantt view
+  const handleAppendTasks = useCallback((newTasks: TaskTableRow[]) => {
+    setAppendedTasks(prev => {
+      // Merge new tasks with existing appended tasks, removing duplicates
+      const taskMap = new Map<string, TaskTableRow>();
+      prev.forEach(task => taskMap.set(task.taskId, task));
+      newTasks.forEach(task => taskMap.set(task.taskId, task));
+      return Array.from(taskMap.values());
+    });
+  }, []);
+  
+  // Clear appended tasks when search filters change
+  useEffect(() => {
+    setAppendedTasks([]);
+  }, [searchFilters, selectedDivision, selectedDomain]);
 
   // Get list of visible panels (not docked) - memoized to prevent recreation
   const visiblePanels = useMemo(() => {
     const panels = [
-      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, selectedDivision, selectedDomain } },
+      { id: 'gantt', component: LiveGantt, props: { title: 'Gantt Chart', icon: <TimelineIcon fontSize="small" />, selectedDivision, selectedDomain, filteredTasks, onAppendTasks: handleAppendTasks } },
       { id: 'map', component: LiveMap, props: { title: 'Live Map', icon: <MapIcon fontSize="small" />, filteredTasks, selectedTaskIds, selectedResourceIds, selectedDivision, selectedDomain } },
       { id: 'people', component: LivePeople, props: { title: 'Team Status', icon: <PeopleIcon fontSize="small" />, selectedDivision, selectedDomain } },
       { id: 'tasks', component: LiveTask, props: { title: 'Active Tasks', icon: <ChecklistIcon fontSize="small" />, filteredTasks, clearSorting, openTaskDialog, onAddToDock } },
     ];
     return panels.filter(panel => !dockedPanels.some(p => p.id === panel.id));
-  }, [dockedPanels, filteredTasks, selectedTaskIds, selectedResourceIds, clearSorting, openTaskDialog, onAddToDock, selectedDivision, selectedDomain]);
+  }, [dockedPanels, filteredTasks, selectedTaskIds, selectedResourceIds, clearSorting, openTaskDialog, onAddToDock, selectedDivision, selectedDomain, handleAppendTasks]);
 
   // Ensure activeMobileTab stays within bounds when panels change
   const clampedActiveMobileTab = useMemo(() => {

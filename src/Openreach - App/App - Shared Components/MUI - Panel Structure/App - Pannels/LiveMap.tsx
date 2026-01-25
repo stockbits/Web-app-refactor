@@ -72,78 +72,58 @@ function MapClickHandler({ popupState, setPopupState, ignoreNextMapClickRef }: M
   return null;
 }
 
-// Component to handle zooming to selected tasks
-interface ZoomToSelectionProps {
+// Component to handle zooming to selected tasks and resources together
+interface ZoomToResourceSelectionProps {
+  selectedResourceIds: string[];
+  filteredResources: ResourceTableRow[];
   selectedTaskIds: string[];
   filteredTasks?: TaskTableRow[];
 }
 
-function ZoomToSelection({ selectedTaskIds, filteredTasks }: ZoomToSelectionProps) {
+function ZoomToResourceSelection({ selectedResourceIds, filteredResources, selectedTaskIds, filteredTasks }: ZoomToResourceSelectionProps) {
   const map = useMap();
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
 
   useEffect(() => {
-    if (selectedTaskIds.length === 0) return;
+    // Collect all selected coordinates (both tasks and resources)
+    const allCoordinates: Array<[number, number]> = [];
 
-    // Get coordinates for selected tasks
-    const selectedTasks = tasksToDisplay.filter(task => selectedTaskIds.includes(task.taskId));
-    if (selectedTasks.length === 0) return;
+    // Add selected resources
+    if (selectedResourceIds.length > 0) {
+      const selectedResources = filteredResources.filter(resource => selectedResourceIds.includes(resource.resourceId));
+      selectedResources.forEach(resource => {
+        allCoordinates.push([resource.homeLatitude, resource.homeLongitude]);
+      });
+    }
 
-    // Single task: zoom to that location with zoom level 14
-    if (selectedTasks.length === 1) {
-      const task = selectedTasks[0];
-      map.setView([task.taskLatitude, task.taskLongitude], 14, {
+    // Add selected tasks
+    if (selectedTaskIds.length > 0) {
+      const selectedTasks = tasksToDisplay.filter(task => selectedTaskIds.includes(task.taskId));
+      selectedTasks.forEach(task => {
+        allCoordinates.push([task.taskLatitude, task.taskLongitude]);
+      });
+    }
+
+    // If nothing is selected, do nothing
+    if (allCoordinates.length === 0) return;
+
+    // Single location: zoom to that location with zoom level 14
+    if (allCoordinates.length === 1) {
+      map.setView(allCoordinates[0], 14, {
         animate: true,
         duration: 0.5
       });
       return;
     }
 
-    // Multiple tasks: calculate bounds and fit to show all
-    const bounds = L.latLngBounds(selectedTasks.map(task => [task.taskLatitude, task.taskLongitude]));
+    // Multiple locations: calculate bounds and fit to show all
+    const bounds = L.latLngBounds(allCoordinates);
     map.fitBounds(bounds, {
       padding: [50, 50],
       animate: true,
       duration: 0.5
     });
-  }, [selectedTaskIds, map, tasksToDisplay]);
-
-  return null;
-}
-
-interface ZoomToResourceSelectionProps {
-  selectedResourceIds: string[];
-  filteredResources: ResourceTableRow[];
-}
-
-function ZoomToResourceSelection({ selectedResourceIds, filteredResources }: ZoomToResourceSelectionProps) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (selectedResourceIds.length === 0) return;
-
-    // Get coordinates for selected resources
-    const selectedResources = filteredResources.filter(resource => selectedResourceIds.includes(resource.resourceId));
-    if (selectedResources.length === 0) return;
-
-    // Single resource: zoom to that location with zoom level 14
-    if (selectedResources.length === 1) {
-      const resource = selectedResources[0];
-      map.setView([resource.homeLatitude, resource.homeLongitude], 14, {
-        animate: true,
-        duration: 0.5
-      });
-      return;
-    }
-
-    // Multiple resources: calculate bounds and fit to show all
-    const bounds = L.latLngBounds(selectedResources.map(resource => [resource.homeLatitude, resource.homeLongitude]));
-    map.fitBounds(bounds, {
-      padding: [50, 50],
-      animate: true,
-      duration: 0.5
-    });
-  }, [selectedResourceIds, map, filteredResources]);
+  }, [selectedResourceIds, selectedTaskIds, map, filteredResources, tasksToDisplay]);
 
   return null;
 }
@@ -481,8 +461,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
         <svg width="${markerSize}" height="${markerSize}" viewBox="0 0 24 24">
           <!-- White teardrop background with jet black outline -->
           <path fill="white" stroke="#000000" stroke-width="1.5" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z"/>
-          <!-- Person silhouette in status color -->
-          <g fill="${statusColor}">
+          <!-- Person silhouette in status color with outline -->
+          <g fill="${statusColor}" stroke="rgba(0, 0, 0, 0.3)" stroke-width="0.4">
             <circle cx="12" cy="6" r="2"/>
             <path d="M12 9.8c-2 0-3.98.73-4 2.05.86 1.3 2.33 2.15 4 2.15s3.14-.85 4-2.15c-.02-1.32-2-2.05-4-2.05z"/>
           </g>
@@ -1001,16 +981,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               ignoreNextMapClickRef={ignoreNextMapClickRef}
             />
 
-            {/* Zoom to selected tasks */}
-            <ZoomToSelection
-              selectedTaskIds={selectedTaskIds}
-              filteredTasks={filteredTasks}
-            />
-
-            {/* Zoom to selected resources */}
+            {/* Zoom to selected tasks and resources together */}
             <ZoomToResourceSelection
               selectedResourceIds={selectedResourceIds}
               filteredResources={resourcesToDisplay}
+              selectedTaskIds={selectedTaskIds}
+              filteredTasks={filteredTasks}
             />
 
             {/* Render markers based on zoom level to prevent overlap */}

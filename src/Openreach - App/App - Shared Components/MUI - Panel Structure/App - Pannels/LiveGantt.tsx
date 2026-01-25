@@ -126,6 +126,8 @@ interface LiveGanttProps {
   minimized?: boolean;
   selectedDivision?: string | null;
   selectedDomain?: string | null;
+  filteredTasks?: TaskTableRow[];
+  onAppendTasks?: (tasks: TaskTableRow[]) => void;
 }
 
 interface TechnicianDayRow {
@@ -231,7 +233,9 @@ function LiveGantt({
   isExpanded, 
   minimized,
   selectedDivision,
-  selectedDomain 
+  selectedDomain,
+  filteredTasks,
+  onAppendTasks
 }: LiveGanttProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
@@ -309,6 +313,19 @@ function LiveGantt({
       .map(block => block.taskId!)
       .filter((id, index, arr) => arr.indexOf(id) === index) || []; // Remove duplicates
     
+    // Check if tasks are in the filtered tasks list, if not, append them
+    if (filteredTasks && onAppendTasks) {
+      const filteredTaskIds = new Set(filteredTasks.map(t => t.taskId));
+      const missingTaskIds = taskIds.filter(id => !filteredTaskIds.has(id));
+      
+      if (missingTaskIds.length > 0) {
+        // Get the full task objects for missing tasks
+        const missingTasks = TASK_TABLE_ROWS.filter(task => missingTaskIds.includes(task.taskId));
+        // Append them to the live task component
+        onAppendTasks(missingTasks);
+      }
+    }
+    
     // If Ctrl/Cmd is pressed, add to selection, otherwise replace
     const isCtrlPressed = event.ctrlKey || event.metaKey;
     if (isCtrlPressed) {
@@ -319,7 +336,7 @@ function LiveGantt({
       // Replace selection - use selectMultipleTasksFromMap to properly set source as 'map'
       selectMultipleTasksFromMap(taskIds);
     }
-  }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap]);
+  }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap, filteredTasks, onAppendTasks]);
 
   // Trigger recalculation on window resize in expanded mode
   useEffect(() => {
@@ -1806,6 +1823,18 @@ function LiveGantt({
                               data-duration={block.duration}
                               onClick={(e) => {
                                 const isCtrlPressed = e.ctrlKey || e.metaKey;
+                                
+                                // Check if task is in filtered tasks, append if missing
+                                if (filteredTasks && onAppendTasks) {
+                                  const filteredTaskIds = new Set(filteredTasks.map(t => t.taskId));
+                                  if (!filteredTaskIds.has(task.taskId)) {
+                                    const taskToAppend = TASK_TABLE_ROWS.find(t => t.taskId === task.taskId);
+                                    if (taskToAppend) {
+                                      onAppendTasks([taskToAppend]);
+                                    }
+                                  }
+                                }
+                                
                                 selectTaskFromMap(task.taskId, isCtrlPressed);
                               }}
                               sx={{

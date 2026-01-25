@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "refresh-tasks": "node scripts/update-task-dates.js",
+    "optimize-travel": "node scripts/optimize-travel.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

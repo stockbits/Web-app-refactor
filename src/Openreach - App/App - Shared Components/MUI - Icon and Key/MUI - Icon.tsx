@@ -78,7 +78,11 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       sx={{ 
         fontSize: size,
         color: iconColor,
-        filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))'
+        filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))',
+        // Add stroke outline for better definition
+        strokeWidth: 0.5,
+        stroke: 'rgba(0, 0, 0, 0.2)',
+        paintOrder: 'stroke fill'
       }} 
     />
   )
