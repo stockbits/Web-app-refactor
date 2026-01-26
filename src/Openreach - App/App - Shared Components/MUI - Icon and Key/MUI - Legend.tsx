@@ -293,16 +293,16 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Travel Time</Typography>
             </Stack>
             
-            {/* Selected Task */}
+            {/* Selected */}
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
               <Box sx={{ 
                 width: 28, 
                 height: 20, 
-                border: '4px solid #DC2626',
+                border: '3px solid #DC2626',
                 borderRadius: 0.5,
                 bgcolor: 'transparent'
               }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Selected Task</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Selected</Typography>
             </Stack>
           </Stack>
         </Collapse>

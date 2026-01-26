@@ -1802,7 +1802,7 @@ function LiveGantt({
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
-                                  ? `3px solid ${theme.palette.primary.main}` 
+                                  ? `3px solid #DC2626` 
                                   : `2px solid ${alpha('#000', 0.2)}`,
                                 borderRadius: 1,
                                 boxSizing: 'border-box',
