@@ -1,5 +1,5 @@
 import { Box, Stack, Typography, useTheme, Divider, Collapse, IconButton } from '@mui/material';
-import { TaskIcon } from './MUI - Icon';
+import { TaskIcon, ResourceIcon } from './MUI - Icon';
 import { TASK_ICON_COLORS } from '../../../AppCentralTheme/Icon-Colors';
 import { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -22,9 +22,9 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
 
   const isCompact = variant === 'compact';
 
-  const [taskTypesOpen, setTaskTypesOpen] = useState(true);
-  const [commitTypesOpen, setCommitTypesOpen] = useState(true);
-  const [schedulingOpen, setSchedulingOpen] = useState(true);
+  const [taskOpen, setTaskOpen] = useState(true);
+  const [resourceOpen, setResourceOpen] = useState(true);
+  const [ganttScheduleOpen, setGanttScheduleOpen] = useState(true);
 
   return (
     <Box component="nav" aria-label="Task status legend" role="navigation">
@@ -43,13 +43,13 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
         </Typography>
       )}
       
-      {/* Task Types Section */}
+      {/* Task Section */}
       <Box sx={{ mb: 2 }}>
         <Stack 
           direction="row" 
           alignItems="center" 
           spacing={0.5}
-          onClick={() => setTaskTypesOpen(!taskTypesOpen)}
+          onClick={() => setTaskOpen(!taskOpen)}
           sx={{ 
             cursor: 'pointer',
             userSelect: 'none',
@@ -59,17 +59,17 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
           <IconButton 
             size="small" 
             sx={{ 
-              transform: taskTypesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+              transform: taskOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
               transition: 'transform 0.2s'
             }}
           >
             <ExpandMoreIcon fontSize="small" />
           </IconButton>
           <Typography variant="caption" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}>
-            Task Types
+            Task
           </Typography>
         </Stack>
-        <Collapse in={taskTypesOpen}>
+        <Collapse in={taskOpen}>
           <Stack spacing={isCompact ? 0.8 : 1.2} sx={{ mt: 1, pl: 1 }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
               <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
@@ -111,27 +111,19 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA</Typography>
             </Stack>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
-              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ paintOrder: 'stroke fill' }}>
-                  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill={taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup} stroke={theme.openreach.coreBlock} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-                </svg>
-              </Box>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Task Group</Typography>
-            </Stack>
           </Stack>
         </Collapse>
       </Box>
 
       <Divider sx={{ my: 1.5 }} />
 
-      {/* Commit Types Section */}
+      {/* Resource Section */}
       <Box sx={{ mb: 2 }}>
         <Stack 
           direction="row" 
           alignItems="center" 
           spacing={0.5}
-          onClick={() => setCommitTypesOpen(!commitTypesOpen)}
+          onClick={() => setResourceOpen(!resourceOpen)}
           sx={{ 
             cursor: 'pointer',
             userSelect: 'none',
@@ -141,17 +133,97 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
           <IconButton 
             size="small" 
             sx={{ 
-              transform: commitTypesOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+              transform: resourceOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
               transition: 'transform 0.2s'
             }}
           >
             <ExpandMoreIcon fontSize="small" />
           </IconButton>
           <Typography variant="caption" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}>
-            Commit Types
+            Resource
           </Typography>
         </Stack>
-        <Collapse in={commitTypesOpen}>
+        <Collapse in={resourceOpen}>
+          <Stack spacing={1.2} sx={{ mt: 1, pl: 1 }}>
+            {/* Resource Working Statuses */}
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                <ResourceIcon 
+                  workingStatus="Signed on" 
+                  size={28}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Signed on</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                <ResourceIcon 
+                  workingStatus="Signed on no work" 
+                  size={28}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Signed on no work</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                <ResourceIcon 
+                  workingStatus="Not Signed on" 
+                  size={28}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Not Signed on</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                <ResourceIcon 
+                  workingStatus="Absent" 
+                  size={28}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Absent</Typography>
+            </Stack>
+            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+              <Box sx={{ lineHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+                <ResourceIcon 
+                  workingStatus="Rostered off" 
+                  size={28}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Rostered off</Typography>
+            </Stack>
+          </Stack>
+        </Collapse>
+      </Box>
+
+      <Divider sx={{ my: 1.5 }} />
+
+      {/* Gantt Schedule Section */}
+      <Box sx={{ mb: 2 }}>
+        <Stack 
+          direction="row" 
+          alignItems="center" 
+          spacing={0.5}
+          onClick={() => setGanttScheduleOpen(!ganttScheduleOpen)}
+          sx={{ 
+            cursor: 'pointer',
+            userSelect: 'none',
+            '&:hover': { opacity: 0.8 }
+          }}
+        >
+          <IconButton 
+            size="small" 
+            sx={{ 
+              transform: ganttScheduleOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+              transition: 'transform 0.2s'
+            }}
+          >
+            <ExpandMoreIcon fontSize="small" />
+          </IconButton>
+          <Typography variant="caption" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}>
+            Gantt Schedule
+          </Typography>
+        </Stack>
+        <Collapse in={ganttScheduleOpen}>
           <Stack spacing={1.2} sx={{ mt: 1, pl: 1 }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
               <Box sx={{ 
@@ -197,40 +269,10 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
               }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA / TAIL</Typography>
             </Stack>
-          </Stack>
-        </Collapse>
-      </Box>
-
-      <Divider sx={{ my: 1.5 }} />
-
-      {/* Scheduling Elements Section */}
-      <Box sx={{ mb: 2 }}>
-        <Stack 
-          direction="row" 
-          alignItems="center" 
-          spacing={0.5}
-          onClick={() => setSchedulingOpen(!schedulingOpen)}
-          sx={{ 
-            cursor: 'pointer',
-            userSelect: 'none',
-            '&:hover': { opacity: 0.8 }
-          }}
-        >
-          <IconButton 
-            size="small" 
-            sx={{ 
-              transform: schedulingOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
-              transition: 'transform 0.2s'
-            }}
-          >
-            <ExpandMoreIcon fontSize="small" />
-          </IconButton>
-          <Typography variant="caption" fontWeight={600} sx={{ textTransform: 'uppercase', letterSpacing: '0.5px', color: 'text.secondary' }}>
-            Scheduling
-          </Typography>
-        </Stack>
-        <Collapse in={schedulingOpen}>
-          <Stack spacing={1.2} sx={{ mt: 1, pl: 1 }}>
+            
+            <Divider sx={{ my: 0.5 }} />
+            
+            {/* Travel Time */}
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
               <Box sx={{ 
                 width: 28, 
@@ -268,6 +310,8 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Travel Time</Typography>
             </Stack>
+            
+            {/* Selected Task */}
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
               <Box sx={{ 
                 width: 28, 

@@ -201,11 +201,13 @@ export const OpenItemsDock = ({
           onClick={() => setOpen(true)}
           sx={{
             position: 'fixed',
-            bottom: 24,
-            left: 24,
+            bottom: { xs: 16, sm: 24 },
+            left: { xs: 16, sm: 24 },
             bgcolor: 'primary.main',
             color: 'primary.contrastText',
             boxShadow: 3,
+            width: { xs: 48, sm: 56 },
+            height: { xs: 48, sm: 56 },
             '&:hover': {
               bgcolor: 'primary.dark',
               boxShadow: 4,
@@ -218,14 +220,14 @@ export const OpenItemsDock = ({
             color="error"
             sx={{
               '& .MuiBadge-badge': {
-                fontSize: '0.75rem',
-                height: 20,
-                minWidth: 20,
+                fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                height: { xs: 18, sm: 20 },
+                minWidth: { xs: 18, sm: 20 },
                 fontWeight: 600,
               },
             }}
           >
-            <DescriptionIcon />
+            <DescriptionIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
           </Badge>
         </IconButton>
       </Tooltip>
@@ -274,17 +276,26 @@ export const OpenItemsDock = ({
             </Stack>
 
             {/* Filter chips */}
-            <Stack direction="row" spacing={1} sx={{ mb: 1.5 }}>
+            <Stack 
+              direction="row" 
+              spacing={{ xs: 0.5, sm: 1 }} 
+              sx={{ 
+                mb: 1.5,
+                flexWrap: 'wrap',
+                gap: { xs: 0.5, sm: 1 },
+              }}
+            >
               <Button
                 onClick={() => setFilter('all')}
                 variant={filter === 'all' ? 'contained' : 'outlined'}
                 sx={{
                   minWidth: 'auto',
-                  px: 1.5,
+                  px: { xs: 1, sm: 1.5 },
                   py: 0.5,
-                  fontSize: '0.75rem',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
                   textTransform: 'none',
                   borderRadius: 1,
+                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
                 }}
               >
                 All · {totalCount}
@@ -294,11 +305,12 @@ export const OpenItemsDock = ({
                 variant={filter === 'task' ? 'contained' : 'outlined'}
                 sx={{
                   minWidth: 'auto',
-                  px: 1.5,
+                  px: { xs: 1, sm: 1.5 },
                   py: 0.5,
-                  fontSize: '0.75rem',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
                   textTransform: 'none',
                   borderRadius: 1,
+                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
                 }}
               >
                 Tasks · {taskCount}
@@ -308,11 +320,12 @@ export const OpenItemsDock = ({
                 variant={filter === 'resource' ? 'contained' : 'outlined'}
                 sx={{
                   minWidth: 'auto',
-                  px: 1.5,
+                  px: { xs: 1, sm: 1.5 },
                   py: 0.5,
-                  fontSize: '0.75rem',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
                   textTransform: 'none',
                   borderRadius: 1,
+                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
                 }}
               >
                 Resources · {resourceCount}
@@ -321,15 +334,19 @@ export const OpenItemsDock = ({
 
             {/* Action buttons */}
             {onClearAll && totalCount > 0 && (
-              <Stack direction="row" spacing={0.5} sx={{ mt: 1.5 }}>
+              <Stack 
+                direction={{ xs: 'column', sm: 'row' }} 
+                spacing={{ xs: 0.5, sm: 0.5 }} 
+                sx={{ mt: 1.5 }}
+              >
                 {/* Compare selected button - active when 2-3 selected */}
                 <Tooltip title={selectedIds.length >= 2 ? `Compare ${selectedIds.length} tasks` : "Select 2-3 tasks to compare"} placement="top">
-                  <span style={{ flex: 1 }}>
+                  <span style={{ flex: 1, width: '100%' }}>
                     <Button
                       variant="text"
                       color="primary"
                       disabled={selectedIds.length < 2}
-                      startIcon={<OpenInNewIcon sx={{ fontSize: 16 }} />}
+                      startIcon={<OpenInNewIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
                       onClick={() => {
                         if (selectedTasks.length >= 2 && onMinimizedTaskClick) {
                           onMinimizedTaskClick(selectedTasks)
@@ -340,7 +357,7 @@ export const OpenItemsDock = ({
                       fullWidth
                       sx={{
                         textTransform: 'none',
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
                         py: 0.5,
                         justifyContent: 'flex-start',
                         '&.Mui-disabled': {
@@ -356,12 +373,12 @@ export const OpenItemsDock = ({
                 <Button
                   variant="text"
                   color="error"
-                  startIcon={<ClearAllIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<ClearAllIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
                   onClick={handleClearAll}
                   fullWidth
                   sx={{
                     textTransform: 'none',
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
                     py: 0.5,
                     justifyContent: 'flex-start',
                     flex: 1,

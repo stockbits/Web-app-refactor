@@ -138,6 +138,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
   
   // Clear appended tasks when search filters change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAppendedTasks([]);
   }, [searchFilters, selectedDivision, selectedDomain]);
 

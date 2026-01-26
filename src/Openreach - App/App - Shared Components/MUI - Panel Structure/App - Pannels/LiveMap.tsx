@@ -8,7 +8,6 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import SettingsIcon from "@mui/icons-material/Settings";
 // Using inline SVG for Task Group shield to control fill/outline
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import MarkerClusterGroup from 'react-leaflet-cluster';
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import L from 'leaflet';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -20,8 +19,6 @@ import { useMapSelection, useSelectionUI } from '../../MUI - Table/Selection - U
 
 // Import Leaflet CSS
 import 'leaflet/dist/leaflet.css';
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { alpha } from '@mui/material/styles';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -154,18 +151,6 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
       map.off('zoomend', handleZoomEnd);
     };
   }, [map, currentZoom, onZoomChange]);
-
-  // Cleanup tooltips when component unmounts
-  useEffect(() => {
-    return () => {
-      // Clean up any lingering tooltips
-      document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
-        if (tooltip.parentNode) {
-          tooltip.parentNode.removeChild(tooltip);
-        }
-      });
-    };
-  }, []);
 
   const handleZoomChange = (_event: Event, value: number | number[]) => {
     const zoom = value as number;
@@ -445,8 +430,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
         case 'Signed on no work':
           return tokens?.state?.warning || '#FF9800';
         case 'Not Signed on':
-        case 'Absent':
           return tokens?.state?.error || '#F44336';
+        case 'Absent':
         case 'Rostered off':
           return theme.palette.text.secondary || '#9E9E9E';
         default:
@@ -457,12 +442,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     const markerSize = 40;
     const statusColor = getStatusColor();
     const iconHtml = `
-      <div class="${isSelected ? 'marker-selected' : ''}" style="width: ${markerSize}px; height: ${markerSize}px; position: relative;">
+      <div class="${isSelected ? 'marker-selected' : ''}" style="width: ${markerSize}px; height: ${markerSize}px; position: relative; filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));">
         <svg width="${markerSize}" height="${markerSize}" viewBox="0 0 24 24">
-          <!-- White teardrop background with jet black outline -->
-          <path fill="white" stroke="#000000" stroke-width="1.5" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z"/>
-          <!-- Person silhouette in status color with outline -->
-          <g fill="${statusColor}" stroke="rgba(0, 0, 0, 0.3)" stroke-width="0.4">
+          <!-- White teardrop background with colored status outline -->
+          <path fill="white" stroke="${statusColor}" stroke-width="1.5" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z"/>
+          <!-- Jet black person silhouette in center -->
+          <g fill="#000000" stroke="rgba(0, 0, 0, 0.2)" stroke-width="0.3">
             <circle cx="12" cy="6" r="2"/>
             <path d="M12 9.8c-2 0-3.98.73-4 2.05.86 1.3 2.33 2.15 4 2.15s3.14-.85 4-2.15c-.02-1.32-2-2.05-4-2.05z"/>
           </g>
@@ -481,30 +466,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       popupAnchor: [0, -markerSize],
     });
   }, [isDark, theme.openreach?.darkTokens, theme.openreach?.lightTokens, theme.palette.text.secondary]);
-
-  // Memoize cluster icon creation for better performance
-  const createClusterIcon = useCallback((cluster: { getChildCount: () => number }) => {
-    const count = cluster.getChildCount();
-    // Scale size based on cluster count
-    const size = count < 10 ? 36 : count < 100 ? 44 : 52;
-
-    // Inline SVG for GppMaybe shield
-    const shieldFill = taskColors?.taskGroup || TASK_ICON_COLORS.taskGroup;
-    const borderColor = theme.openreach?.coreBlock || theme.palette.common.black;
-    const svgSize = Math.round(size * 0.75);
-    const iconHtml = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative;transition:opacity 0.3s ease-out;">`
-      + `
-      <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" style="paint-order:stroke fill">
-        <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="${shieldFill}" stroke="${borderColor}" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-      </svg>
-    </div>`;
-
-    return L.divIcon({
-      html: iconHtml,
-      className: 'custom-cluster-icon',
-      iconSize: L.point(size, size, true),
-    });
-  }, [taskColors?.taskGroup, theme.openreach?.coreBlock, theme.palette.common.black]);
 
   // Memoize icons for each task to prevent recreation on every render
   const taskIcons = useMemo(() => {
@@ -653,7 +614,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'flex-end' }}>
           {/* Right side actions */}
-          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" sx={{ pr: { xs: 0.5, sm: 2 } }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
@@ -802,12 +763,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               transform: 'scale(1)',
               opacity: 1,
             }
-          },
-          '& .custom-cluster-icon': {
-            background: 'none',
-            border: 'none',
-            pointerEvents: 'auto',
-            transition: 'opacity 0.2s ease-out',
           }
         }}
       >
@@ -989,146 +944,157 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
               filteredTasks={filteredTasks}
             />
 
-            {/* Render markers based on zoom level to prevent overlap */}
-            {currentZoom < 10 ? (
-              <MarkerClusterGroup
-                chunkedLoading
-                maxClusterRadius={150}
-                disableClusteringAtZoom={10}
-                spiderfyOnMaxZoom={false}
-                showCoverageOnHover={false}
-                zoomToBoundsOnClick={false}
-                animate={true}
-                animateAddingMarkers={false}
-                iconCreateFunction={createClusterIcon}
-                eventHandlers={{
-                  clustermouseover: (cluster: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; layer: { getChildCount: () => number; getAllChildMarkers: () => unknown[]; getBounds: () => { getCenter: () => unknown }; _customTooltip?: HTMLElement }; target: { _map: { latLngToContainerPoint: (latlng: unknown) => { x: number; y: number }; getContainer: () => HTMLElement } } }) => {
-                    // Clear any existing tooltips before creating a new one
-                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
-                      if (tooltip.parentNode) {
-                        tooltip.parentNode.removeChild(tooltip);
-                      }
-                    });
+            {/* Render task markers */}
+            {tasksToDisplay.map((task: TaskTableRow) => {
+              const variant = getIconVariant(task.commitType);
+              const isSelected = selectedSet.has(task.taskId);
+              const iconKey = `${task.taskId}-${isSelected}`;
 
-                    // Count tasks vs resources in the cluster
-                    const markers = cluster.layer.getAllChildMarkers() as Array<{ options: { icon?: { options?: { className?: string } } } }>;
-                    let taskCount = 0;
-                    let resourceCount = 0;
-                    
-                    markers.forEach((marker) => {
-                      const key = marker.options.icon?.options?.className || '';
-                      if (key.includes('resource')) {
-                        resourceCount++;
-                      } else {
-                        taskCount++;
-                      }
-                    });
+              return (
+                <Marker
+                  key={task.taskId}
+                  position={[task.taskLatitude, task.taskLongitude]}
+                  icon={taskIcons[iconKey]}
+                  eventHandlers={{
+                    click: (e) => {
+                      // Prevent default popup on single click and show visual feedback
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
 
-                    const totalCount = cluster.layer.getChildCount();
-                    const tooltipText = totalCount === 1 
-                      ? '1 Item' 
-                      : `${totalCount} Items (${taskCount} Task${taskCount !== 1 ? 's' : ''}, ${resourceCount} Resource${resourceCount !== 1 ? 's' : ''})`;
+                      // Check if CTRL key is held for multi-selection
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
 
-                    // Create MUI-styled tooltip with optimized styling
-                    const tooltip = document.createElement('div');
-                    tooltip.textContent = tooltipText;
-                    tooltip.setAttribute('data-tooltip', 'cluster-tooltip');
+                      // Use the selection UI system
+                      selectTaskFromMap(task.taskId, isCtrlPressed);
+                    },
+                    mousedown: (e) => {
+                      // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
 
-                    // Pre-compute style object for better performance
-                    const tooltipStyle = {
-                      position: 'fixed' as const, // Use fixed positioning for better reliability
-                      backgroundColor: 'rgba(97, 97, 97, 0.9)',
-                      color: 'white',
-                      padding: '8px 12px',
-                      borderRadius: '4px',
-                      fontSize: '0.75rem',
-                      fontFamily: theme.typography.fontFamily,
-                      fontWeight: '400',
-                      lineHeight: '1.4',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      zIndex: '10000',
-                      pointerEvents: 'none' as const,
-                      whiteSpace: 'nowrap' as const,
-                      opacity: '0',
-                      transition: 'opacity 0.15s ease-out, transform 0.15s ease-out',
-                      transform: 'translateY(5px)'
-                    };
+                      // Check if CTRL key is held for multi-selection
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
 
-                    Object.assign(tooltip.style, tooltipStyle);
-
-                    // Position tooltip anchored to cluster icon using fixed positioning
-                    const map = cluster.target._map;
-                    const clusterCenter = cluster.layer.getBounds().getCenter();
-                    const pixelPoint = map.latLngToContainerPoint(clusterCenter);
-
-                    // Get map container position for fixed positioning
-                    const mapContainer = map.getContainer();
-                    const mapRect = mapContainer.getBoundingClientRect();
-
-                    tooltip.style.left = `${mapRect.left + pixelPoint.x + 15}px`;
-                    tooltip.style.top = `${mapRect.top + pixelPoint.y - 35}px`;
-
-                    document.body.appendChild(tooltip);
-
-                    // Trigger fade-in animation
-                    requestAnimationFrame(() => {
-                      if (tooltip.parentNode) { // Check tooltip is still attached
-                        tooltip.style.opacity = '1';
-                        tooltip.style.transform = 'translateY(0)';
-                      }
-                    });
-
-                    // Store reference for cleanup
-                    cluster.layer._customTooltip = tooltip;
-                  },
-                  clustermouseout: (cluster: { layer: { _customTooltip?: HTMLElement } }) => {
-                    // Remove custom tooltip with fade-out animation
-                    const tooltip = cluster.layer._customTooltip;
-                    if (tooltip) {
-                      tooltip.style.opacity = '0';
-                      tooltip.style.transform = 'translateY(5px)';
-
-                      // Remove after animation completes
+                      // Use the selection UI system
+                      selectTaskFromMap(task.taskId, isCtrlPressed);
+                    },
+                    dblclick: () => {
+                      // Prevent map click handler from closing the popup after this interaction
+                      ignoreNextMapClickRef.current = true;
                       setTimeout(() => {
-                        if (tooltip.parentNode) {
-                          tooltip.parentNode.removeChild(tooltip);
+                        ignoreNextMapClickRef.current = false;
+                      }, 250);
+
+                      // Update popup with new marker position and content
+                      const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
+                      setPopupState({
+                        isOpen: true,
+                        position: [task.taskLatitude, task.taskLongitude],
+                        content: (
+                          <Box sx={{ p: 0.5, minWidth: 200 }}>
+                            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                              {task.resourceName || 'Unassigned'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                              Task ID: {task.taskId}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                              {task.postCode}
+                            </Typography>
+                            <Chip
+                              label={variantLabel}
+                              size="small"
+                              sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors?.appointment : variant === 'startBy' ? taskColors?.startBy : variant === 'completeBy' ? taskColors?.completeBy : variant === 'taskGroup' ? taskColors?.taskGroup : taskColors?.failedSLA, color: theme.palette.common.white }}
+                            />
+                          </Box>
+                        ),
+                      });
+                    }
+                  }}
+                >
+                </Marker>
+              );
+            })}
+            
+            {/* Render resource markers */}
+            {resourcesToDisplay.map((resource: ResourceTableRow) => {
+              const isSelected = selectedResourceIds.includes(resource.resourceId);
+              const iconKey = `${resource.resourceId}-${isSelected}`;
+              
+              return (
+                <Marker
+                  key={`resource-${resource.resourceId}`}
+                  position={[resource.homeLatitude, resource.homeLongitude]}
+                  icon={resourceIcons[iconKey]}
+                  eventHandlers={{
+                    click: (e) => {
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                    },
+                    mousedown: (e) => {
+                      e.originalEvent.preventDefault();
+                      e.originalEvent.stopPropagation();
+                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
+                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
+                    },
+                    dblclick: () => {
+                      ignoreNextMapClickRef.current = true;
+                      setTimeout(() => {
+                        ignoreNextMapClickRef.current = false;
+                      }, 250);
+
+                      const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
+                      const getStatusColor = () => {
+                        switch (resource.workingStatus) {
+                          case 'Signed on':
+                            return tokens?.success?.main || '#4CAF50';
+                          case 'Signed on no work':
+                            return tokens?.state?.warning || '#FF9800';
+                          case 'Not Signed on':
+                          case 'Absent':
+                            return tokens?.state?.error || '#F44336';
+                          case 'Rostered off':
+                            return theme.palette.text.secondary;
+                          default:
+                            return '#9E9E9E';
                         }
-                      }, 150);
+                      };
 
-                      delete cluster.layer._customTooltip;
+                      setPopupState({
+                        isOpen: true,
+                        position: [resource.homeLatitude, resource.homeLongitude],
+                        content: (
+                          <Box sx={{ p: 0.5, minWidth: 200 }}>
+                            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
+                              {resource.resourceName}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
+                              Resource ID: {resource.resourceId}
+                            </Typography>
+                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
+                              {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
+                            </Typography>
+                            <Chip
+                              label={resource.workingStatus}
+                              size="small"
+                              sx={{ 
+                                height: 20, 
+                                fontSize: '0.7rem', 
+                                backgroundColor: getStatusColor(), 
+                                color: theme.palette.common.white 
+                              }}
+                            />
+                          </Box>
+                        ),
+                      });
                     }
-                  },
-                  clusterclick: (cluster: { layer: { _customTooltip?: HTMLElement; getBounds: () => { getCenter: () => unknown } }; target: { _map: { setView: (latlng: unknown, zoom: number) => void } } }) => {
-                    // Clear any existing tooltip immediately on click
-                    const tooltip = cluster.layer._customTooltip;
-                    if (tooltip && tooltip.parentNode) {
-                      tooltip.parentNode.removeChild(tooltip);
-                      delete cluster.layer._customTooltip;
-                    }
+                  }}
+                />
+              );
+            })}
 
-                    // When clicking a cluster, zoom to level 14 and center on the cluster
-                    const map = cluster.target._map;
-                    const clusterLatLng = cluster.layer.getBounds().getCenter();
-                    map.setView(clusterLatLng, 14);
-                  },
-                  zoomstart: () => {
-                    // Clear all tooltips when zoom starts to prevent orphaned tooltips
-                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
-                      if (tooltip.parentNode) {
-                        tooltip.parentNode.removeChild(tooltip);
-                      }
-                    });
-                  },
-                  zoomend: () => {
-                    // Additional cleanup after zoom completes
-                    document.querySelectorAll('[data-tooltip="cluster-tooltip"]').forEach(tooltip => {
-                      if (tooltip.parentNode) {
-                        tooltip.parentNode.removeChild(tooltip);
-                      }
-                    });
-                  }
-                }}
-              >
                 {/* Render markers from task data */}
                 {tasksToDisplay.map((task: TaskTableRow) => {
                   const variant = getIconVariant(task.commitType);
@@ -1279,157 +1245,6 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
                     />
                   );
                 })}
-              </MarkerClusterGroup>
-            ) : (
-              /* Render individual markers without clustering at high zoom levels */
-              tasksToDisplay.map((task: TaskTableRow) => {
-                const variant = getIconVariant(task.commitType);
-                const isSelected = selectedSet.has(task.taskId);
-                const iconKey = `${task.taskId}-${isSelected}`;
-
-                return (
-                  <Marker
-                    key={task.taskId}
-                    position={[task.taskLatitude, task.taskLongitude]}
-                    icon={taskIcons[iconKey]}
-                    eventHandlers={{
-                      click: (e) => {
-                        // Prevent default popup on single click and show visual feedback
-                        e.originalEvent.preventDefault();
-                        e.originalEvent.stopPropagation();
-
-                        // Check if CTRL key is held for multi-selection
-                        const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-
-                        // Use the selection UI system
-                        selectTaskFromMap(task.taskId, isCtrlPressed);
-                      },
-                      mousedown: (e) => {
-                        // Prevent default popup on mousedown (works for both mouse and touch) and show visual feedback
-                        e.originalEvent.preventDefault();
-                        e.originalEvent.stopPropagation();
-
-                        // Check if CTRL key is held for multi-selection
-                        const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-
-                        // Use the selection UI system
-                        selectTaskFromMap(task.taskId, isCtrlPressed);
-                      },
-                      dblclick: () => {
-                        ignoreNextMapClickRef.current = true;
-                        setTimeout(() => {
-                          ignoreNextMapClickRef.current = false;
-                        }, 250);
-
-                        const variantLabel = task.commitType.replace('APPOINTMENT', 'Appointment').replace('START BY', 'Start By').replace('COMPLETE BY', 'Complete By').replace('TAIL', 'Tail');
-                        setPopupState({
-                          isOpen: true,
-                          position: [task.taskLatitude, task.taskLongitude],
-                          content: (
-                            <Box sx={{ p: 0.5, minWidth: 200 }}>
-                              <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                                {task.resourceName || 'Unassigned'}
-                              </Typography>
-                              <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                                Task ID: {task.taskId}
-                              </Typography>
-                              <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
-                                {task.postCode}
-                              </Typography>
-                              <Chip
-                                label={variantLabel}
-                                size="small"
-                                sx={{ height: 20, fontSize: '0.7rem', backgroundColor: variant === 'appointment' ? taskColors?.appointment : variant === 'startBy' ? taskColors?.startBy : variant === 'completeBy' ? taskColors?.completeBy : variant === 'taskGroup' ? taskColors?.taskGroup : taskColors?.failedSLA, color: theme.palette.common.white }}
-                              />
-                            </Box>
-                          ),
-                        });
-                      }
-                    }}
-                  >
-                  </Marker>
-                );
-              })
-            )}
-            
-            {/* Add resources to non-clustered view */}
-            {currentZoom >= 10 && resourcesToDisplay.map((resource: ResourceTableRow) => {
-              const isSelected = selectedResourceIds.includes(resource.resourceId);
-              const iconKey = `${resource.resourceId}-${isSelected}`;
-              
-              return (
-                <Marker
-                  key={`resource-${resource.resourceId}`}
-                  position={[resource.homeLatitude, resource.homeLongitude]}
-                  icon={resourceIcons[iconKey]}
-                  eventHandlers={{
-                    click: (e) => {
-                      e.originalEvent.preventDefault();
-                      e.originalEvent.stopPropagation();
-                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
-                    },
-                    mousedown: (e) => {
-                      e.originalEvent.preventDefault();
-                      e.originalEvent.stopPropagation();
-                      const isCtrlPressed = e.originalEvent.ctrlKey || e.originalEvent.metaKey;
-                      selectResourceFromMap(resource.resourceId, isCtrlPressed);
-                    },
-                    dblclick: () => {
-                      ignoreNextMapClickRef.current = true;
-                      setTimeout(() => {
-                        ignoreNextMapClickRef.current = false;
-                      }, 250);
-
-                      const tokens = isDark ? theme.openreach?.darkTokens : theme.openreach?.lightTokens;
-                      const getStatusColor = () => {
-                        switch (resource.workingStatus) {
-                          case 'Signed on':
-                            return tokens?.success?.main || '#4CAF50';
-                          case 'Signed on no work':
-                            return tokens?.state?.warning || '#FF9800';
-                          case 'Not Signed on':
-                          case 'Absent':
-                            return tokens?.state?.error || '#F44336';
-                          case 'Rostered off':
-                            return theme.palette.text.secondary;
-                          default:
-                            return '#9E9E9E';
-                        }
-                      };
-
-                      setPopupState({
-                        isOpen: true,
-                        position: [resource.homeLatitude, resource.homeLongitude],
-                        content: (
-                          <Box sx={{ p: 0.5, minWidth: 200 }}>
-                            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 0.5, color: theme.openreach.coreBlock }}>
-                              {resource.resourceName}
-                            </Typography>
-                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-                              Resource ID: {resource.resourceId}
-                            </Typography>
-                            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontSize: '0.65rem' }}>
-                              {resource.scheduleShift}: {resource.startTime} - {resource.endTime}
-                            </Typography>
-                            <Chip
-                              label={resource.workingStatus}
-                              size="small"
-                              sx={{ 
-                                height: 20, 
-                                fontSize: '0.7rem', 
-                                backgroundColor: getStatusColor(), 
-                                color: theme.palette.common.white 
-                              }}
-                            />
-                          </Box>
-                        ),
-                      });
-                    }
-                  }}
-                />
-              );
-            })}
             
             {/* Single reusable popup - stays open until explicitly closed */}
             {popupState.isOpen && popupState.position && (

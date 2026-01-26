@@ -183,13 +183,14 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
           {/* Right side: Legend and Docked Panels - pushed to far right */}
           <Stack
             direction="row"
-            spacing={1}
+            spacing={{ xs: 0.5, sm: 1 }}
             sx={{ 
               ml: 'auto',
-              mr: { xs: 0, md: -1.5 },
-              pr: { xs: 0, md: 1.5 },
+              mr: { xs: 0, sm: -1.5 },
+              pr: { xs: 0.5, sm: 1.5 },
               flexShrink: 0,
-              display: { xs: 'none', md: 'flex' }
+              overflow: 'auto',
+              maxWidth: { xs: '50%', sm: 'none' },
             }}
           >
             <Tooltip title="Optimize Schedule & Travel">
@@ -200,13 +201,14 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
                   border: 1, 
                   borderColor: 'divider',
                   color: 'primary.main',
+                  p: { xs: 0.5, sm: 0.75 },
                   '&:hover': {
                     borderColor: 'primary.main',
                     bgcolor: 'primary.lighter',
                   }
                 }}
               >
-                <TuneIcon fontSize="small" />
+                <TuneIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
               </IconButton>
             </Tooltip>
 
@@ -217,17 +219,18 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
                 sx={{ 
                   border: 1, 
                   borderColor: 'divider',
+                  p: { xs: 0.5, sm: 0.75 },
                   '&:hover': {
                     borderColor: 'primary.main',
                     bgcolor: 'action.hover',
                   }
                 }}
               >
-                <VpnKeyIcon fontSize="small" />
+                <VpnKeyIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
               </IconButton>
             </Tooltip>
 
-            <Divider orientation="vertical" flexItem sx={{ my: 0.5 }} />
+            <Divider orientation="vertical" flexItem sx={{ my: 0.5, display: { xs: 'none', sm: 'block' } }} />
 
             {/* Docked Panel Icons */}
             {dockedPanels.map((panel) => (
@@ -239,10 +242,14 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
                     border: 1,
                     borderColor: 'divider',
                     color: 'text.secondary',
+                    p: { xs: 0.5, sm: 0.75 },
                     '&:hover': {
                       borderColor: 'error.main',
                       color: 'error.main',
                       bgcolor: 'action.hover',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      fontSize: { xs: 18, sm: 20 }
                     }
                   }}
                 >

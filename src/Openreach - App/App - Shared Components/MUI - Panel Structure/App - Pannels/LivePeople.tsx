@@ -364,7 +364,7 @@ export default function LivePeople({
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
           <Box />
-          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" sx={{ pr: { xs: 0.5, sm: 2 } }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"

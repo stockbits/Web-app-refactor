@@ -12,7 +12,6 @@ import {
   MenuItem,
   FormControl,
   Avatar,
-  Chip,
   Divider,
   alpha
 } from "@mui/material";
@@ -24,7 +23,6 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
@@ -896,26 +894,15 @@ function LiveGantt({
     const config = DATE_PRESETS[preset];
     setSelectedPreset(preset);
     setVisibleDays(config.days);
-    
-    // Re-enable auto-fit when changing presets to ensure proper fit
     setIsAutoFit(true);
-    
-    // Reset zoom to allow proper recalculation for new day count
     isZoomingRef.current = false;
-    // Force reset of cached hour width
     currentHourWidthRef.current = BASE_HOUR_WIDTH;
     
-    // Set start date based on offset
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     today.setDate(today.getDate() + config.startOffset);
     setStartDate(today);
   }, []);
-
-  // Format date helpers
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-  };
 
   if (minimized) {
     return (
@@ -959,15 +946,23 @@ function LiveGantt({
           }
         }}
       >
-        <Toolbar variant="dense" sx={{ justifyContent: 'space-between', minHeight: `${TOOLBAR_HEIGHT}px !important`, px: 2, gap: 2 }}>
-          {/* Left side - Date navigation and range selector */}
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            {/* Navigation button group */}
+        <Toolbar 
+          variant="dense" 
+          sx={{ 
+            justifyContent: 'space-between', 
+            minHeight: `${TOOLBAR_HEIGHT}px !important`, 
+            px: { xs: 1, sm: 2 }, 
+            gap: { xs: 1, sm: 2 },
+          }}
+        >
+          {/* Left side - Date navigation */}
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
+            {/* Navigation buttons */}
             <Paper 
               elevation={0} 
               sx={{ 
                 display: 'flex', 
-                borderRadius: 1.5,
+                borderRadius: 1,
                 border: `1px solid ${theme.palette.divider}`,
                 overflow: 'hidden',
               }}
@@ -978,7 +973,7 @@ function LiveGantt({
                   onClick={handlePreviousDay}
                   sx={{ 
                     borderRadius: 0,
-                    px: 0.75,
+                    px: { xs: 0.5, sm: 0.75 },
                     py: 0.5,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
@@ -986,7 +981,7 @@ function LiveGantt({
                     }
                   }}
                 >
-                  <ChevronLeftIcon sx={{ fontSize: 18 }} />
+                  <ChevronLeftIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                 </IconButton>
               </Tooltip>
               <Divider orientation="vertical" flexItem />
@@ -996,7 +991,7 @@ function LiveGantt({
                   onClick={handleToday}
                   sx={{ 
                     borderRadius: 0,
-                    px: 0.75,
+                    px: { xs: 0.5, sm: 0.75 },
                     py: 0.5,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
@@ -1004,7 +999,7 @@ function LiveGantt({
                     }
                   }}
                 >
-                  <TodayIcon sx={{ fontSize: 16 }} />
+                  <TodayIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />
                 </IconButton>
               </Tooltip>
               <Divider orientation="vertical" flexItem />
@@ -1014,7 +1009,7 @@ function LiveGantt({
                   onClick={handleNextDay}
                   sx={{ 
                     borderRadius: 0,
-                    px: 0.75,
+                    px: { xs: 0.5, sm: 0.75 },
                     py: 0.5,
                     color: theme.openreach.energyAccent,
                     '&:hover': {
@@ -1022,21 +1017,21 @@ function LiveGantt({
                     }
                   }}
                 >
-                  <ChevronRightIcon sx={{ fontSize: 18 }} />
+                  <ChevronRightIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
                 </IconButton>
               </Tooltip>
             </Paper>
             
-            {/* Date Range Preset Selector */}
-            <FormControl size="small" sx={{ minWidth: 130 }}>
+            {/* Date Range Selector */}
+            <FormControl size="small" sx={{ minWidth: { xs: 90, sm: 120 } }}>
               <Select
                 value={selectedPreset}
                 onChange={(e) => handlePresetChange(e.target.value as DateRangePreset)}
                 sx={{
                   height: 28,
-                  fontSize: '0.8rem',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
                   color: bodyTextColor,
-                  borderRadius: 1.5,
+                  borderRadius: 1,
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: theme.palette.divider,
                   },
@@ -1049,67 +1044,27 @@ function LiveGantt({
                   },
                 }}
                 startAdornment={
-                  <CalendarMonthIcon sx={{ fontSize: 16, mr: 0.5, color: theme.openreach.energyAccent }} />
+                  <CalendarMonthIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: 0.5, color: theme.openreach.energyAccent }} />
                 }
               >
                 {(Object.keys(DATE_PRESETS) as DateRangePreset[]).map((preset) => (
-                  <MenuItem key={preset} value={preset} sx={{ fontSize: '0.8rem' }}>
+                  <MenuItem key={preset} value={preset} sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                     {DATE_PRESETS[preset].label}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
-            {/* Date display as modern chip */}
-            <Chip 
-              label={
-                visibleDays === 1 
-                  ? formatDate(startDate)
-                  : `${formatDate(startDate)} - ${formatDate(dateRange[dateRange.length - 1])}`
-              }
-              size="small"
-              sx={{ 
-                height: 26,
-                fontSize: '0.75rem',
-                fontWeight: 500,
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(255,255,255,0.05)' 
-                  : 'rgba(0,0,0,0.04)',
-                color: bodyTextColor,
-                border: `1px solid ${theme.palette.divider}`,
-                '& .MuiChip-label': {
-                  px: 1.5,
-                },
-              }}
-            />
-            
-            {/* Time indicator */}
-            <Chip 
-              icon={<AccessTimeIcon sx={{ fontSize: 14 }} />}
-              label={new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-              size="small"
-              sx={{ 
-                height: 26,
-                fontSize: '0.7rem',
-                fontWeight: 500,
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(255,255,255,0.05)' 
-                  : 'rgba(0,0,0,0.04)',
-                color: bodyTextColor,
-                border: `1px solid ${theme.palette.divider}`,
-                '& .MuiChip-icon': {
-                  color: theme.openreach.energyAccent,
-                  marginLeft: '6px',
-                },
-                '& .MuiChip-label': {
-                  px: 1,
-                },
-              }}
-            />
           </Stack>
 
-          {/* Right side for secondary actions */}
-          <Stack direction="row" spacing={0.75} alignItems="center" sx={{ pr: 2 }}>
+          {/* Right side actions */}
+          <Stack 
+            direction="row" 
+            spacing={{ xs: 0.5, sm: 0.75 }} 
+            alignItems="center" 
+            sx={{ 
+              pr: { xs: 0.5, sm: 2 },
+            }}
+          >
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
