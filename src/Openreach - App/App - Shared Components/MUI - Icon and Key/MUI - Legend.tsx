@@ -267,7 +267,7 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
                 border: '1px solid',
                 borderColor: 'divider'
               }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA / TAIL</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Failed SLA</Typography>
             </Stack>
             
             <Divider sx={{ my: 0.5 }} />
@@ -284,27 +284,9 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
               }}>
                 <Box sx={{ 
                   width: '100%', 
-                  height: '3px', 
-                  borderTop: '3px dashed',
-                  borderColor: theme.palette.text.secondary,
-                  opacity: 0.6
-                }} />
-                <Box sx={{ 
-                  position: 'absolute', 
-                  left: 0, 
-                  width: 8, 
-                  height: 8, 
-                  borderRadius: '50%', 
-                  bgcolor: theme.palette.text.secondary,
-                  opacity: 0.6
-                }} />
-                <Box sx={{ 
-                  position: 'absolute', 
-                  right: 0, 
-                  width: 8, 
-                  height: 8, 
-                  borderRadius: '50%', 
-                  bgcolor: theme.palette.text.secondary,
+                  height: 0, 
+                  borderTop: '2px dashed',
+                  borderColor: theme.palette.warning.main,
                   opacity: 0.6
                 }} />
               </Box>
