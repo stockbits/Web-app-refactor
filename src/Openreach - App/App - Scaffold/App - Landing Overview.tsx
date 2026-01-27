@@ -189,7 +189,13 @@ export const LandingOverview = ({
             </Typography>
           </Paper>
         ) : (
-          <Stack spacing={2}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 2,
+            }}
+          >
             {filteredGroups.map((group) => {
               const GroupIcon = group.icon
               const isExpanded = expandedPanel === group.id
@@ -365,7 +371,7 @@ export const LandingOverview = ({
                 </Accordion>
               )
             })}
-          </Stack>
+          </Box>
         )}
       </Box>
     </Stack>

@@ -24,6 +24,7 @@ import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import SettingsIcon from "@mui/icons-material/Settings";
 import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
@@ -207,6 +208,7 @@ const formatDateHeader = (date: Date): string => {
 };
 
 type DateRangePreset = 'today' | '2-days' | '4-days' | '1-week' | '1-month';
+type GanttPopulationMode = 'auto' | 'manual';
 
 interface DatePresetConfig {
   label: string;
@@ -263,7 +265,12 @@ function LiveGantt({
     const saved = localStorage.getItem('liveGantt-selectedPreset');
     return (saved as DateRangePreset) || 'today';
   });
-  
+
+  const [populationMode, setPopulationMode] = useState<GanttPopulationMode>(() => {
+    const saved = localStorage.getItem('liveGantt-populationMode');
+    return (saved as GanttPopulationMode) || 'auto';
+  });
+
   const [isAutoFit, setIsAutoFit] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -287,6 +294,10 @@ function LiveGantt({
     localStorage.setItem('liveGantt-selectedPreset', selectedPreset);
   }, [selectedPreset]);
 
+  useEffect(() => {
+    localStorage.setItem('liveGantt-populationMode', populationMode);
+  }, [populationMode]);
+
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
   const fixedColumnRef = useRef<HTMLDivElement>(null);
@@ -297,8 +308,44 @@ function LiveGantt({
 
   // Selection UI integration
   const { selectTaskFromMap, selectMultipleTasksFromMap } = useMapSelection();
-  const { selectedTaskIds, selectTasks } = useSelectionUI();
+  const { selectedTaskIds, selectTasks, selectedResourceIds } = useSelectionUI();
   const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
+
+  // In manual mode, derive technician list from table selections - preserve selection order
+  const manualTechnicianTasks = useMemo(() => {
+    if (populationMode !== 'manual') {
+      return new Map();
+    }
+
+    // Maintain selection order: build ordered array of technician IDs
+    const orderedTechnicians: string[] = [];
+    const seen = new Set<string>();
+
+    // First, add technicians from resource selections (in order)
+    if (selectedResourceIds && selectedResourceIds.length > 0) {
+      selectedResourceIds.forEach(resourceId => {
+        if (!seen.has(resourceId)) {
+          orderedTechnicians.push(resourceId);
+          seen.add(resourceId);
+        }
+      });
+    }
+
+    // Then, add technicians from task selections (in order) - use task.resourceId
+    if (selectedTaskIds && selectedTaskIds.length > 0) {
+      // Maintain task selection order by processing tasks in order
+      selectedTaskIds.forEach(taskId => {
+        const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+        if (task && !seen.has(task.resourceId)) {
+          orderedTechnicians.push(task.resourceId);
+          seen.add(task.resourceId);
+        }
+      });
+    }
+
+    // Return ordered Map
+    return new Map(orderedTechnicians.map(id => [id, new Set<string>()]));
+  }, [selectedTaskIds, selectedResourceIds, populationMode]);
 
   // Handler to select all visible tasks for a technician - memoized for performance
   const handleSelectTechnicianTasks = useCallback((row: TechnicianDayRow, event: React.MouseEvent) => {
@@ -336,7 +383,12 @@ function LiveGantt({
     }
   }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap, filteredTasks, onAppendTasks]);
 
-  // Trigger recalculation on window resize in expanded mode
+  // Toggle population mode
+  const handlePopulationModeChange = useCallback((mode: GanttPopulationMode) => {
+    setPopulationMode(mode);
+  }, []);
+
+    // Trigger recalculation on window resize in expanded mode
   useEffect(() => {
     if (!isExpanded || visibleDays !== 1) return;
 
@@ -514,7 +566,20 @@ function LiveGantt({
 
     // Create rows: one per resource (showing all their tasks across all days)
     const rows: TechnicianDayRow[] = [];
-    relevantResources.forEach((resource) => {
+    
+    // In manual mode with no selections, show empty Gantt
+    if (populationMode === 'manual' && manualTechnicianTasks.size === 0) {
+      return rows; // Return empty array
+    }
+    
+    // In manual mode, respect selection order from manualTechnicianTasks Map
+    const resourcesToProcess = populationMode === 'manual'
+      ? Array.from(manualTechnicianTasks.keys())
+          .map(techId => relevantResources.find(r => r.resourceId === techId))
+          .filter((r): r is NonNullable<typeof r> => r !== undefined)
+      : relevantResources;
+    
+    resourcesToProcess.forEach((resource) => {
       // Get tasks for this resource that fall within the visible date range
       const resourceTasks = filteredTasks.filter(task => {
         if (task.resourceId !== resource.resourceId) return false;
@@ -554,7 +619,7 @@ function LiveGantt({
     });
 
     return rows;
-  }, [selectedDivision, selectedDomain, dateRange, dateRangeSet, scheduleTasksWithTravel]);
+  }, [selectedDivision, selectedDomain, dateRange, dateRangeSet, scheduleTasksWithTravel, populationMode, manualTechnicianTasks]);
 
   // Calculate total hours needed to display all scheduled blocks
   const totalScheduledHours = useMemo(() => {
@@ -576,6 +641,8 @@ function LiveGantt({
 
   // Calculate dynamic hour width based on auto-fit, expanded mode, and manual zoom
   const [hourWidth, setHourWidth] = useState(BASE_HOUR_WIDTH);
+
+
   
   // Update hour width when necessary
   useEffect(() => {
@@ -1065,6 +1132,38 @@ function LiveGantt({
               pr: { xs: 0.5, sm: 2 },
             }}
           >
+                        {/* Population Mode Selector */}
+            <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 140 } }}>
+              <Select
+                value={populationMode}
+                onChange={(e) => handlePopulationModeChange(e.target.value as GanttPopulationMode)}
+                sx={{
+                  height: 28,
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                  color: bodyTextColor,
+                  borderRadius: 1,
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.divider,
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.openreach.energyAccent,
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.openreach.energyAccent,
+                    borderWidth: 1,
+                  },
+                }}
+                startAdornment={
+                  <SettingsIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: 0.5, color: theme.openreach.energyAccent }} />
+                }
+              >
+                <MenuItem value="auto">Auto Populate</MenuItem>
+                <MenuItem value="manual">Manual Select</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Divider orientation="vertical" flexItem />
+
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
                 size="small"
@@ -1390,7 +1489,10 @@ function LiveGantt({
                     arrow
                   >
                     <Avatar 
-                      onClick={(e) => handleSelectTechnicianTasks(row, e)}
+                      onClick={(e) => {
+                        // Always select the technician's tasks (don't toggle in manual mode)
+                        handleSelectTechnicianTasks(row, e);
+                      }}
                       sx={{ 
                         width: 24, 
                         height: 24,
