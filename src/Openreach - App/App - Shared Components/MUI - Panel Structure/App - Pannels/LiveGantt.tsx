@@ -311,37 +311,46 @@ function LiveGantt({
   const { selectedTaskIds, selectTasks, selectedResourceIds } = useSelectionUI();
   const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
-  // In manual mode, derive technician list from table selections - preserve selection order
+  // In manual mode, derive technician list from table selections - preserve selection order from arrays
   const manualTechnicianTasks = useMemo(() => {
     if (populationMode !== 'manual') {
       return new Map();
     }
 
-    // Maintain selection order: build ordered array of technician IDs
+    // Build ordered list by combining resource and task selections
+    // The order comes from the selection arrays themselves
     const orderedTechnicians: string[] = [];
     const seen = new Set<string>();
 
-    // First, add technicians from resource selections (in order)
+    // Combine both selection sources in the order they appear in their respective arrays
+    const allSelections: Array<{ id: string, order: number }> = [];
+    
+    // Add resource selections
     if (selectedResourceIds && selectedResourceIds.length > 0) {
-      selectedResourceIds.forEach(resourceId => {
-        if (!seen.has(resourceId)) {
-          orderedTechnicians.push(resourceId);
-          seen.add(resourceId);
+      selectedResourceIds.forEach((resourceId, index) => {
+        allSelections.push({ id: resourceId, order: index });
+      });
+    }
+
+    // Add task selections - use task.resourceId
+    if (selectedTaskIds && selectedTaskIds.length > 0) {
+      const taskStartIndex = (selectedResourceIds?.length || 0);
+      selectedTaskIds.forEach((taskId, index) => {
+        const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+        if (task) {
+          allSelections.push({ id: task.resourceId, order: taskStartIndex + index });
         }
       });
     }
 
-    // Then, add technicians from task selections (in order) - use task.resourceId
-    if (selectedTaskIds && selectedTaskIds.length > 0) {
-      // Maintain task selection order by processing tasks in order
-      selectedTaskIds.forEach(taskId => {
-        const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
-        if (task && !seen.has(task.resourceId)) {
-          orderedTechnicians.push(task.resourceId);
-          seen.add(task.resourceId);
-        }
-      });
-    }
+    // Sort by order and deduplicate (keeping first occurrence)
+    allSelections.sort((a, b) => a.order - b.order);
+    allSelections.forEach(({ id }) => {
+      if (!seen.has(id)) {
+        orderedTechnicians.push(id);
+        seen.add(id);
+      }
+    });
 
     // Return ordered Map
     return new Map(orderedTechnicians.map(id => [id, new Set<string>()]));
@@ -1020,10 +1029,18 @@ function LiveGantt({
             minHeight: `${TOOLBAR_HEIGHT}px !important`, 
             px: { xs: 1, sm: 2 }, 
             gap: { xs: 1, sm: 2 },
+            overflowX: 'auto',
+            '&::-webkit-scrollbar': {
+              height: 4,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: theme.palette.divider,
+              borderRadius: 2,
+            },
           }}
         >
           {/* Left side - Date navigation */}
-          <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" sx={{ flexShrink: 0 }}>
             {/* Navigation buttons */}
             <Paper 
               elevation={0} 
@@ -1130,6 +1147,7 @@ function LiveGantt({
             alignItems="center" 
             sx={{ 
               pr: { xs: 0.5, sm: 2 },
+              flexShrink: 0,
             }}
           >
                         {/* Population Mode Selector */}
