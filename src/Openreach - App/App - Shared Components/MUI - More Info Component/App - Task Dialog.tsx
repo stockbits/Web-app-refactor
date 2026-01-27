@@ -94,6 +94,7 @@ export function AppTaskDialog({ open, onClose, task, loading = false, actions, o
             aria-label="Minimize task dialog"
             startIcon={
               <CallToActionRoundedIcon
+                fontSize="medium"
                 sx={{
                   transition: 'none', // Prevent icon color transitions
                   '&:hover': {
