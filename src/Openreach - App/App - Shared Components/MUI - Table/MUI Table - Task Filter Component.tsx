@@ -28,9 +28,6 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AssignmentIcon from '@mui/icons-material/Assignment'
-import SpeedDial from '@mui/material/SpeedDial'
-import SpeedDialIcon from '@mui/material/SpeedDialIcon'
-import SpeedDialAction from '@mui/material/SpeedDialAction'
 import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
 import type { TaskTableQueryState, TaskFilterTab } from './TaskTableQueryConfig.shared';
 import {
@@ -76,12 +73,12 @@ const TaskTableQueryConfig = ({
   onExportCsv,
   compact = false,
 }: TaskTableQueryConfigProps) => {
+  const theme = useTheme()
   const [hasQueried, setHasQueried] = useState(false)
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
   const [activeTab, setActiveTab] = useState<TaskFilterTab>('simple')
-  const [speedDialOpen, setSpeedDialOpen] = useState(false)
   
   const exactSearchSet = useMemo(() => {
     if (!exactSearchValues.length) {
@@ -136,12 +133,6 @@ const TaskTableQueryConfig = ({
   const handleTabChange = (_event: SyntheticEvent, nextTab: TaskFilterTab) => {
     setActiveTab(nextTab)
   }
-
-  // Speed Dial actions for export operations
-  const exportActions = useMemo(() => [
-    { icon: <ContentCopyIcon />, name: 'Copy to Clipboard', action: onCopyHtml },
-    { icon: <AssignmentIcon />, name: 'Export CSV', action: onExportCsv },
-  ], [onCopyHtml, onExportCsv])
 
   const handleStatusChange = (value: TaskTableRow['status'][]) => {
     setDraftQuery((prev) => ({
@@ -448,44 +439,41 @@ const TaskTableQueryConfig = ({
           sx={{ pt: 1.5, pb: 2 }}
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-            {hasRows && (onCopyHtml || onExportCsv) && (
-              <SpeedDial
-                ariaLabel="Export actions"
-                sx={{ 
-                  '& .MuiSpeedDial-fab': { 
-                    width: 40, 
-                    height: 40,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                    minHeight: 'auto'
-                  },
-                  '& .MuiSpeedDialIcon-root': {
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }
-                }}
-                icon={<SpeedDialIcon />}
-                onClose={() => setSpeedDialOpen(false)}
-                onOpen={() => setSpeedDialOpen(true)}
-                open={speedDialOpen}
-                direction="right"
-              >
-                {exportActions.map((action) => (
-                  <SpeedDialAction
-                    key={action.name}
-                    icon={action.icon}
-                    tooltipTitle={action.name}
-                    onClick={() => {
-                      action.action?.()
-                      setSpeedDialOpen(false)
-                    }}
-                  />
-                ))}
-              </SpeedDial>
+            {hasRows && onCopyHtml && (
+              <Tooltip title="Copy to Clipboard">
+                <IconButton
+                  onClick={onCopyHtml}
+                  size="small"
+                  sx={{
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 1,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: theme.openreach.energyAccent,
+                    },
+                  }}
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {hasRows && onExportCsv && (
+              <Tooltip title="Export CSV">
+                <IconButton
+                  onClick={onExportCsv}
+                  size="small"
+                  sx={{
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderRadius: 1,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                      borderColor: theme.openreach.energyAccent,
+                    },
+                  }}
+                >
+                  <AssignmentIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
             )}
           </Stack>
 
