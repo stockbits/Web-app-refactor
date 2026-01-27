@@ -16,6 +16,9 @@ import {
   useTheme,
   Divider,
   Stack,
+  Popover,
+  Card,
+  CardContent,
 } from '@mui/material'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -24,6 +27,7 @@ import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 type FilterType = 'all' | 'task' | 'resource'
@@ -49,6 +53,7 @@ export interface OpenItemsDockProps {
   onClearAll?: () => void
   onMinimizedTaskClick?: (task: TaskTableRow | TaskTableRow[]) => void
   onMinimizedTaskRemove?: (taskId: string) => void
+  onDrawerClose?: () => void // New callback for when drawer closes
   maxItems?: number
 }
 
@@ -60,13 +65,14 @@ export const OpenItemsDock = ({
   onClearAll,
   onMinimizedTaskClick,
   onMinimizedTaskRemove,
+  onDrawerClose,
   maxItems = 20,
 }: OpenItemsDockProps) => {
   const theme = useTheme()
-  const [open, setOpen] = useState(false)
+  const [previewAnchor, setPreviewAnchor] = useState<HTMLElement | null>(null)
   const [filter, setFilter] = useState<FilterType>('all')
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
 
+  const previewOpen = Boolean(previewAnchor)
   // Memoize combined items list
   const allItems = useMemo(
     () => [
@@ -89,6 +95,9 @@ export const OpenItemsDock = ({
     [allItems, filter]
   )
 
+  // Get visible items (first 3 of filtered)
+  const visibleItems = useMemo(() => filteredItems.slice(0, 3), [filteredItems])
+
   // Memoize counts
   const { totalCount, taskCount, resourceCount } = useMemo(
     () => ({
@@ -99,52 +108,6 @@ export const OpenItemsDock = ({
     [allItems]
   )
 
-  // Memoize selected tasks for comparison
-  const selectedTasks = useMemo(
-    () => allItems
-      .filter(i => selectedIds.includes(i.id) && i.task)
-      .map(i => i.task as TaskTableRow)
-      .slice(0, 3),
-    [allItems, selectedIds]
-  )
-
-  const handleItemSelect = useCallback(
-    (item: typeof allItems[0], event: React.MouseEvent) => {
-      // Ctrl+click for multi-select (max 3)
-      if (event.ctrlKey || event.metaKey) {
-        setSelectedIds(prev => {
-          if (prev.includes(item.id)) {
-            // Deselect
-            return prev.filter(id => id !== item.id)
-          } else if (prev.length < 3) {
-            // Select (max 3)
-            return [...prev, item.id]
-          }
-          // Already at max, don't select
-          return prev
-        })
-      } else {
-        // Regular click - open task(s)
-        if (selectedIds.length >= 2 && selectedIds.includes(item.id)) {
-          // If clicking on a selected item and we have 2+ selected, open multi-task dialog
-          if (selectedTasks.length >= 2 && onMinimizedTaskClick) {
-            onMinimizedTaskClick(selectedTasks)
-          }
-        } else {
-          // Single task open
-          if ('task' in item && item.task && onMinimizedTaskClick) {
-            onMinimizedTaskClick(item.task as TaskTableRow)
-          } else if (onClick) {
-            onClick(item.id)
-          }
-        }
-        setSelectedIds([])
-        setOpen(false)
-      }
-    },
-    [onClick, onMinimizedTaskClick, selectedTasks, selectedIds]
-  )
-
   const handleItemClick = useCallback(
     (item: typeof allItems[0]) => {
       if ('task' in item && item.task && onMinimizedTaskClick) {
@@ -152,7 +115,7 @@ export const OpenItemsDock = ({
       } else if (onClick) {
         onClick(item.id)
       }
-      setOpen(false)
+      setPreviewAnchor(null)
     },
     [onClick, onMinimizedTaskClick]
   )
@@ -174,8 +137,39 @@ export const OpenItemsDock = ({
     if (onClearAll) {
       onClearAll()
     }
-    setOpen(false)
+    setPreviewAnchor(null)
   }, [onClearAll])
+
+  const handleIconClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
+    if (previewOpen) {
+      // If preview is open, close preview
+      setPreviewAnchor(null)
+    } else {
+      // Show preview
+      setPreviewAnchor(event.currentTarget)
+    }
+  }, [previewOpen])
+
+  const handleOpenAll = useCallback(() => {
+    // Open all visible items (up to 3 based on current filter)
+    const tasksToOpen = visibleItems
+      .filter(item => item.task)
+      .map(item => item.task as TaskTableRow)
+      .slice(0, 3)
+    
+    if (tasksToOpen.length > 1 && onMinimizedTaskClick) {
+      // Open multi-task dialog
+      onMinimizedTaskClick(tasksToOpen)
+    } else if (tasksToOpen.length === 1 && onMinimizedTaskClick) {
+      // Open single task
+      onMinimizedTaskClick(tasksToOpen[0])
+    }
+    setPreviewAnchor(null)
+  }, [visibleItems, onMinimizedTaskClick])
+
+  const handlePreviewClose = useCallback(() => {
+    setPreviewAnchor(null)
+  }, [])
 
   const getItemIcon = useCallback((type: string) => {
     switch (type) {
@@ -196,14 +190,14 @@ export const OpenItemsDock = ({
   return (
     <>
       {/* Floating trigger button - bottom left */}
-      <Tooltip title="Open Items" placement="right">
+      <Tooltip title={previewOpen ? "Close preview" : "View docked items"} placement="right">
         <IconButton
-          onClick={() => setOpen(true)}
+          onClick={handleIconClick}
           sx={{
             position: 'fixed',
             bottom: { xs: 16, sm: 24 },
             left: { xs: 16, sm: 24 },
-            bgcolor: 'primary.main',
+            bgcolor: previewOpen ? 'primary.dark' : 'primary.main',
             color: 'primary.contrastText',
             boxShadow: 3,
             width: { xs: 48, sm: 56 },
@@ -213,6 +207,7 @@ export const OpenItemsDock = ({
               boxShadow: 4,
             },
             zIndex: 1200,
+            transition: 'all 0.2s',
           }}
         >
           <Badge
@@ -232,352 +227,298 @@ export const OpenItemsDock = ({
         </IconButton>
       </Tooltip>
 
-      {/* Drawer panel */}
-      <Drawer
-        anchor="left"
-        open={open}
-        onClose={() => setOpen(false)}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width: 320,
-            maxWidth: '90vw',
-            boxShadow: 4,
+      {/* Preview Popover - compact list */}
+      <Popover
+        open={previewOpen}
+        anchorEl={previewAnchor}
+        onClose={handlePreviewClose}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              ml: 1,
+              mb: 1,
+              maxWidth: 380,
+              minWidth: 300,
+              boxShadow: 4,
+            },
           },
         }}
       >
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          {/* Header */}
-          <Box
-            sx={{
-              p: 2,
-              pb: 1.5,
-              borderBottom: 1,
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-            }}
-          >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ fontSize: '0.9375rem' }}>
-                Open Items
-              </Typography>
-              <IconButton
-                onClick={() => setOpen(false)}
-                sx={{
-                  color: 'text.secondary',
-                  p: 0.5,
-                  '&:hover': {
-                    color: 'text.primary',
-                    bgcolor: alpha(theme.palette.text.primary, 0.08),
-                  },
-                }}
-              >
-                <CloseIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Stack>
+        <Card elevation={0}>
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+            <Stack spacing={1.5}>
+              {/* Header */}
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="subtitle2" fontWeight={600} color="text.primary">
+                  Docked Items
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  {totalCount} total
+                </Typography>
+              </Stack>
 
-            {/* Filter chips */}
-            <Stack 
-              direction="row" 
-              spacing={{ xs: 0.5, sm: 1 }} 
-              sx={{ 
-                mb: 1.5,
-                flexWrap: 'wrap',
-                gap: { xs: 0.5, sm: 1 },
-              }}
-            >
-              <Button
-                onClick={() => setFilter('all')}
-                variant={filter === 'all' ? 'contained' : 'outlined'}
-                sx={{
-                  minWidth: 'auto',
-                  px: { xs: 1, sm: 1.5 },
-                  py: 0.5,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                  textTransform: 'none',
-                  borderRadius: 1,
-                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                }}
-              >
-                All · {totalCount}
-              </Button>
-              <Button
-                onClick={() => setFilter('task')}
-                variant={filter === 'task' ? 'contained' : 'outlined'}
-                sx={{
-                  minWidth: 'auto',
-                  px: { xs: 1, sm: 1.5 },
-                  py: 0.5,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                  textTransform: 'none',
-                  borderRadius: 1,
-                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                }}
-              >
-                Tasks · {taskCount}
-              </Button>
-              <Button
-                onClick={() => setFilter('resource')}
-                variant={filter === 'resource' ? 'contained' : 'outlined'}
-                sx={{
-                  minWidth: 'auto',
-                  px: { xs: 1, sm: 1.5 },
-                  py: 0.5,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                  textTransform: 'none',
-                  borderRadius: 1,
-                  flex: { xs: '1 1 auto', sm: '0 0 auto' },
-                }}
-              >
-                Resources · {resourceCount}
-              </Button>
-            </Stack>
-
-            {/* Action buttons */}
-            {onClearAll && totalCount > 0 && (
-              <Stack 
-                direction={{ xs: 'column', sm: 'row' }} 
-                spacing={{ xs: 0.5, sm: 0.5 }} 
-                sx={{ mt: 1.5 }}
-              >
-                {/* Compare selected button - active when 2-3 selected */}
-                <Tooltip title={selectedIds.length >= 2 ? `Compare ${selectedIds.length} tasks` : "Select 2-3 tasks to compare"} placement="top">
-                  <span style={{ flex: 1, width: '100%' }}>
-                    <Button
-                      variant="text"
-                      color="primary"
-                      disabled={selectedIds.length < 2}
-                      startIcon={<OpenInNewIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
-                      onClick={() => {
-                        if (selectedTasks.length >= 2 && onMinimizedTaskClick) {
-                          onMinimizedTaskClick(selectedTasks)
-                        }
-                        setSelectedIds([])
-                        setOpen(false)
-                      }}
-                      fullWidth
-                      sx={{
-                        textTransform: 'none',
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        py: 0.5,
-                        justifyContent: 'flex-start',
-                        '&.Mui-disabled': {
-                          color: 'text.disabled',
-                        },
-                      }}
-                    >
-                      {selectedIds.length >= 2 ? `Tasks ${selectedIds.length}` : 'Tasks'}
-                    </Button>
-                  </span>
-                </Tooltip>
-                {/* Clear all button */}
+              {/* Filter buttons */}
+              <Stack direction="row" spacing={0.5}>
                 <Button
-                  variant="text"
-                  color="error"
-                  startIcon={<ClearAllIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
-                  onClick={handleClearAll}
-                  fullWidth
+                  onClick={() => setFilter('all')}
+                  variant={filter === 'all' ? 'contained' : 'outlined'}
+                  size="small"
                   sx={{
-                    textTransform: 'none',
-                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                    minWidth: 'auto',
+                    px: 1.5,
                     py: 0.5,
-                    justifyContent: 'flex-start',
+                    fontSize: '0.7rem',
+                    textTransform: 'none',
+                    borderRadius: 1,
                     flex: 1,
                   }}
                 >
-                  Clear All
+                  All · {totalCount}
+                </Button>
+                <Button
+                  onClick={() => setFilter('task')}
+                  variant={filter === 'task' ? 'contained' : 'outlined'}
+                  size="small"
+                  startIcon={<TaskAltIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '0.7rem',
+                    textTransform: 'none',
+                    borderRadius: 1,
+                    flex: 1,
+                  }}
+                >
+                  {taskCount}
+                </Button>
+                <Button
+                  onClick={() => setFilter('resource')}
+                  variant={filter === 'resource' ? 'contained' : 'outlined'}
+                  size="small"
+                  startIcon={<PersonIcon sx={{ fontSize: 14 }} />}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 1.5,
+                    py: 0.5,
+                    fontSize: '0.7rem',
+                    textTransform: 'none',
+                    borderRadius: 1,
+                    flex: 1,
+                  }}
+                >
+                  {resourceCount}
                 </Button>
               </Stack>
-            )}
 
-            {/* Max items warning */}
-            {totalCount >= maxItems && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color: 'warning.dark',
-                  fontSize: '0.6875rem',
-                  display: 'block',
-                  mt: 1,
-                  px: 1,
-                  py: 0.5,
-                  bgcolor: alpha(theme.palette.warning.main, 0.08),
-                  borderRadius: 0.5,
-                  borderLeft: 2,
-                  borderColor: 'warning.main',
-                }}
-              >
-                Max {maxItems} items. Oldest removed automatically.
-              </Typography>
-            )}
-          </Box>
+              <Divider />
 
-          {/* Items list */}
-          <List
-            sx={{
-              flex: 1,
-              overflow: 'auto',
-              py: 0,
-            }}
-          >
-            {filteredItems.length === 0 ? (
-              <Box sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  No {filter === 'all' ? '' : filter} items to display
-                </Typography>
-              </Box>
-            ) : (
-              filteredItems.map((item, index) => (
-                <Box key={item.id}>
-                  <ListItem
-                    disablePadding
-                    sx={{
-                      '&:hover .action-icons': {
-                        opacity: 1,
-                      },
-                    }}
-                  >
-                    <ListItemButton
-                      selected={selectedIds.includes(item.id)}
-                      onClick={(e) => handleItemSelect(item, e)}
+              {/* Quick list preview (first 3 of filtered items) */}
+              <Stack spacing={0.5}>
+                {visibleItems.length === 0 ? (
+                  <Box sx={{ py: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      No {filter === 'all' ? '' : filter} items
+                    </Typography>
+                  </Box>
+                ) : (
+                  visibleItems.map((item, index) => (
+                    <Box
+                      key={item.id}
                       sx={{
-                        py: 1.25,
-                        px: 2,
-                        pr: 1,
-                        cursor: 'pointer',
-                        '&:hover': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.04),
-                        },
-                        '&.Mui-selected': {
-                          bgcolor: alpha(theme.palette.primary.main, 0.12),
-                          '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.16),
-                          },
+                        position: 'relative',
+                        '&:hover .remove-icon': {
+                          opacity: 1,
                         },
                       }}
                     >
-                      {/* Order number badge */}
                       <Box
+                        onClick={() => handleItemClick(item)}
                         sx={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          bgcolor: alpha(theme.palette.primary.main, 0.12),
-                          color: 'primary.main',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          mr: 1.5,
-                          flexShrink: 0,
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 1,
+                          bgcolor: theme.palette.mode === 'dark' 
+                            ? alpha(theme.palette.primary.main, 0.08)
+                            : alpha(theme.palette.primary.main, 0.04),
+                          border: 1,
+                          borderColor: theme.palette.mode === 'dark'
+                            ? alpha(theme.palette.primary.main, 0.2)
+                            : alpha(theme.palette.primary.main, 0.12),
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? '0 1px 3px rgba(0,0,0,0.3)'
+                            : '0 1px 2px rgba(0,0,0,0.05)',
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            borderColor: alpha(theme.palette.primary.main, 0.3),
+                            transform: 'translateX(2px)',
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? '0 2px 6px rgba(0,0,0,0.4)'
+                              : '0 2px 4px rgba(0,0,0,0.1)',
+                          },
                         }}
                       >
-                        {index + 1}
-                      </Box>
-                      
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        {getItemIcon(item.type)}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <Typography variant="body2" fontWeight={500} sx={{ fontSize: '0.8125rem', lineHeight: 1.4 }}>
-                            {item.title}
-                          </Typography>
-                        }
-                        secondary={
-                          item.subtitle && (
-                            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem', lineHeight: 1.3 }}>
-                              {item.subtitle}
-                            </Typography>
-                          )
-                        }
-                        sx={{ my: 0, flex: 1, pr: 1 }}
-                      />
-                      
-                      {/* Action icons group */}
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        alignItems="center"
-                        className="action-icons"
-                        sx={{
-                          ml: 'auto',
-                          flexShrink: 0,
-                          transition: 'opacity 0.2s',
-                          opacity: 0.7,
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {/* Open icon - disabled when multiple items selected */}
-                        <Tooltip title={selectedIds.length >= 2 ? "Use compare icon above" : "Open"} placement="top">
-                          <span>
-                            <IconButton
-                              size="small"
-                              disabled={selectedIds.length >= 2}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleItemClick(item)
-                              }}
-                              sx={{
-                                color: 'text.secondary',
-                                p: 0.5,
-                                '&:hover': {
-                                  color: 'primary.main',
-                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                },
-                                '&.Mui-disabled': {
-                                  color: 'text.disabled',
-                                },
-                              }}
-                            >
-                              <OpenInNewIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-
-                        {/* Close/Remove icon */}
-                        <Tooltip title="Remove item" placement="top">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleItemRemove(item, e)}
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box
                             sx={{
-                              color: 'text.secondary',
-                              p: 0.5,
-                              '&:hover': {
-                                color: 'error.main',
-                                bgcolor: alpha(theme.palette.error.main, 0.1),
-                              },
+                              width: 20,
+                              height: 20,
+                              borderRadius: '50%',
+                              bgcolor: alpha(theme.palette.primary.main, 0.15),
+                              color: 'primary.main',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.65rem',
+                              fontWeight: 600,
+                              flexShrink: 0,
                             }}
                           >
-                            <CloseIcon sx={{ fontSize: 18 }} />
-                          </IconButton>
-                        </Tooltip>
-                      </Stack>
-                    </ListItemButton>
-                  </ListItem>
-                  {index < filteredItems.length - 1 && <Divider />}
-                </Box>
-              ))
-            )}
-          </List>
+                            {index + 1}
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                fontSize: '0.75rem',
+                                fontWeight: 500,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {item.title}
+                            </Typography>
+                            {item.subtitle && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.65rem',
+                                  color: 'text.secondary',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  display: 'block',
+                                }}
+                              >
+                                {item.subtitle}
+                              </Typography>
+                            )}
+                          </Box>
+                          {getItemIcon(item.type)}
+                        </Stack>
+                      </Box>
+                      {/* Remove button */}
+                      <IconButton
+                        size="small"
+                        className="remove-icon"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (item.source === 'minimized' && onMinimizedTaskRemove) {
+                            onMinimizedTaskRemove(item.id)
+                          } else if (onDelete) {
+                            onDelete(item.id)
+                          }
+                        }}
+                        sx={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          opacity: 0,
+                          transition: 'opacity 0.2s',
+                          bgcolor: alpha(theme.palette.background.paper, 0.9),
+                          width: 24,
+                          height: 24,
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                            color: 'error.main',
+                          },
+                        }}
+                      >
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Box>
+                  ))
+                )}
+              </Stack>
 
-          {/* Footer */}
-          <Box
-            sx={{
-              p: 1.25,
-              borderTop: 1,
-              borderColor: 'divider',
-              bgcolor: alpha(theme.palette.background.default, 0.4),
-            }}
-          >
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.6875rem' }}>
-              {selectedIds.length > 0 
-                ? `${selectedIds.length} selected • Click any to compare${selectedIds.length < 3 ? ' • Ctrl+click for more' : ''}`
-                : 'Click to open • Ctrl+click to select (max 3)'}
-            </Typography>
-          </Box>
-        </Box>
-      </Drawer>
+              {/* Show more indicator */}
+              {filteredItems.length > 3 && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.65rem',
+                    color: 'text.secondary',
+                    textAlign: 'center',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  +{filteredItems.length - 3} more {filter === 'all' ? '' : filter} {filteredItems.length - 3 === 1 ? 'item' : 'items'}
+                </Typography>
+              )}
+
+              <Divider />
+
+              {/* Actions */}
+              <Stack direction="row" spacing={1}>
+                <Button
+                  onClick={handleOpenAll}
+                  variant="contained"
+                  size="small"
+                  fullWidth
+                  disabled={visibleItems.length === 0}
+                  endIcon={<OpenInNewIcon />}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    py: 0.75,
+                  }}
+                >
+                  Open All ({visibleItems.length})
+                </Button>
+                {onClearAll && totalCount > 0 && (
+                  <Button
+                    onClick={handleClearAll}
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      py: 0.75,
+                      minWidth: 80,
+                    }}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </Stack>
+
+              {/* Helper text */}
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: '0.65rem',
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                }}
+              >
+                Click item to open • Use filters to refine
+              </Typography>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Popover>
     </>
   )
 }

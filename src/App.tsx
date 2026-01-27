@@ -450,6 +450,13 @@ function App() {
     minimizedTasks.forEach(task => removeMinimizedTask(task.taskId));
   }, [minimizedTasks, removeMinimizedTask]);
 
+  const handleDrawerClose = useCallback(() => {
+    // When drawer closes, undock all non-minimized items
+    // Minimized tasks are kept (they're in the minimizedTasks array)
+    const minimizedTaskIds = new Set(minimizedTasks.map(t => t.taskId));
+    setTaskDockItems((prev) => prev.filter(item => minimizedTaskIds.has(item.id)));
+  }, [minimizedTasks]);
+
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
 
@@ -485,10 +492,17 @@ function App() {
     setDialogOpen(false);
   }, []);
 
-  const closeMultiTaskDialog = useCallback(() => {
+  const closeMultiTaskDialog = useCallback((keepInDock = false) => {
+    if (!keepInDock) {
+      // Remove all tasks from dock when closing without minimizing
+      setTaskDockItems((prev) => {
+        const taskIds = new Set(multiDialogTasks.map(t => t.taskId));
+        return prev.filter((item) => !taskIds.has(item.id));
+      });
+    }
     setMultiDialogTasks([]);
     setMultiDialogOpen(false);
-  }, []);
+  }, [multiDialogTasks]);
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
@@ -968,13 +982,14 @@ function App() {
           onClearAll={handleClearAllDockItems}
           onMinimizedTaskClick={openTaskDialog}
           onMinimizedTaskRemove={removeMinimizedTask}
+          onDrawerClose={handleDrawerClose}
         />
       )}
 
       {/* Global task dialog */}
       <AppTaskDialog
         open={dialogOpen}
-        onClose={closeTaskDialog}
+        onClose={() => closeTaskDialog(false)} // Don't keep in dock when closing
         task={dialogTask ?? undefined}
         onAddNote={handleAddNote}
         onMinimize={dialogTask ? () => {
@@ -991,7 +1006,7 @@ function App() {
       {/* Multi-task comparison dialog */}
       <MultiTaskDialog
         open={multiDialogOpen}
-        onClose={closeMultiTaskDialog}
+        onClose={() => closeMultiTaskDialog(false)} // Don't keep in dock when closing
         tasks={multiDialogTasks}
         onAddNote={(taskId: string, type: 'field' | 'progress', text: string) => {
           console.log('Add note:', type, text, 'to task:', taskId);
@@ -1006,7 +1021,7 @@ function App() {
               task,
             });
           });
-          closeMultiTaskDialog();
+          closeMultiTaskDialog(true); // Keep in dock when minimizing
         }}
       />
     </>
