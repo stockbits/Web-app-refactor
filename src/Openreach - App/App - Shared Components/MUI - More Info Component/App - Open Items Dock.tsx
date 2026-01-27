@@ -3,13 +3,7 @@ import {
   Badge,
   Box,
   Button,
-  Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Tooltip,
   Typography,
   alpha,
@@ -25,9 +19,7 @@ import DescriptionIcon from '@mui/icons-material/Description'
 import TaskAltIcon from '@mui/icons-material/TaskAlt'
 import PersonIcon from '@mui/icons-material/Person'
 import CloseIcon from '@mui/icons-material/Close'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 
 type FilterType = 'all' | 'task' | 'resource'
@@ -65,8 +57,6 @@ export const OpenItemsDock = ({
   onClearAll,
   onMinimizedTaskClick,
   onMinimizedTaskRemove,
-  onDrawerClose,
-  maxItems = 20,
 }: OpenItemsDockProps) => {
   const theme = useTheme()
   const [previewAnchor, setPreviewAnchor] = useState<HTMLElement | null>(null)
@@ -118,19 +108,6 @@ export const OpenItemsDock = ({
       setPreviewAnchor(null)
     },
     [onClick, onMinimizedTaskClick]
-  )
-
-  const handleItemRemove = useCallback(
-    (item: typeof allItems[0], event: React.MouseEvent) => {
-      event.stopPropagation()
-      event.preventDefault()
-      if (item.source === 'minimized' && onMinimizedTaskRemove) {
-        onMinimizedTaskRemove(item.id)
-      } else if (onDelete) {
-        onDelete(item.id)
-      }
-    },
-    [onDelete, onMinimizedTaskRemove]
   )
 
   const handleClearAll = useCallback(() => {
