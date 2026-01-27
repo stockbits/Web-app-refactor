@@ -25,7 +25,7 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import SettingsIcon from "@mui/icons-material/Settings";
-import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback, useReducer } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
@@ -311,50 +311,66 @@ function LiveGantt({
   const { selectedTaskIds, selectTasks, selectedResourceIds } = useSelectionUI();
   const selectedSet = useMemo(() => new Set(selectedTaskIds), [selectedTaskIds]);
 
-  // In manual mode, derive technician list from table selections - preserve selection order from arrays
+  // Track insertion order using useReducer to avoid setState-in-effect lint errors
+  const [technicianOrder, dispatchTechnicianOrder] = useReducer(
+    (prevOrder: string[], currentSelections: Set<string>) => {
+      if (currentSelections.size === 0) return [];
+      
+      const newOrder: string[] = [];
+
+      // Keep previously selected items that are still selected (preserve their order)
+      prevOrder.forEach(techId => {
+        if (currentSelections.has(techId)) {
+          newOrder.push(techId);
+        }
+      });
+
+      // Append newly selected items to the bottom
+      currentSelections.forEach(techId => {
+        if (!newOrder.includes(techId)) {
+          newOrder.push(techId);
+        }
+      });
+
+      return newOrder;
+    },
+    []
+  );
+
+  // Derive current selection set and dispatch updates
+  useMemo(() => {
+    if (populationMode !== 'manual') {
+      dispatchTechnicianOrder(new Set());
+      return;
+    }
+
+    const selected = new Set<string>();
+
+    if (selectedResourceIds && selectedResourceIds.length > 0) {
+      selectedResourceIds.forEach(resourceId => selected.add(resourceId));
+    }
+
+    if (selectedTaskIds && selectedTaskIds.length > 0) {
+      selectedTaskIds.forEach(taskId => {
+        const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+        if (task) {
+          selected.add(task.resourceId);
+        }
+      });
+    }
+
+    dispatchTechnicianOrder(selected);
+  }, [selectedTaskIds, selectedResourceIds, populationMode]);
+
+  // In manual mode, derive technician list from insertion order
   const manualTechnicianTasks = useMemo(() => {
     if (populationMode !== 'manual') {
       return new Map();
     }
 
-    // Build ordered list by combining resource and task selections
-    // The order comes from the selection arrays themselves
-    const orderedTechnicians: string[] = [];
-    const seen = new Set<string>();
-
-    // Combine both selection sources in the order they appear in their respective arrays
-    const allSelections: Array<{ id: string, order: number }> = [];
-    
-    // Add resource selections
-    if (selectedResourceIds && selectedResourceIds.length > 0) {
-      selectedResourceIds.forEach((resourceId, index) => {
-        allSelections.push({ id: resourceId, order: index });
-      });
-    }
-
-    // Add task selections - use task.resourceId
-    if (selectedTaskIds && selectedTaskIds.length > 0) {
-      const taskStartIndex = (selectedResourceIds?.length || 0);
-      selectedTaskIds.forEach((taskId, index) => {
-        const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
-        if (task) {
-          allSelections.push({ id: task.resourceId, order: taskStartIndex + index });
-        }
-      });
-    }
-
-    // Sort by order and deduplicate (keeping first occurrence)
-    allSelections.sort((a, b) => a.order - b.order);
-    allSelections.forEach(({ id }) => {
-      if (!seen.has(id)) {
-        orderedTechnicians.push(id);
-        seen.add(id);
-      }
-    });
-
-    // Return ordered Map
-    return new Map(orderedTechnicians.map(id => [id, new Set<string>()]));
-  }, [selectedTaskIds, selectedResourceIds, populationMode]);
+    // Return ordered Map based on tracked insertion order
+    return new Map(technicianOrder.map((id: string) => [id, new Set<string>()]));
+  }, [technicianOrder, populationMode]);
 
   // Handler to select all visible tasks for a technician - memoized for performance
   const handleSelectTechnicianTasks = useCallback((row: TechnicianDayRow, event: React.MouseEvent) => {
