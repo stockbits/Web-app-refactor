@@ -95,8 +95,8 @@ export function MultiTaskDialog({
             color="primary"
             startIcon={
               <CallToActionRoundedIcon
-                fontSize="medium"
                 sx={{
+                  fontSize: 24,
                   transition: 'none', // Prevent icon color transitions
                   '&:hover': {
                     opacity: 0.8,
