@@ -227,7 +227,7 @@ export const OpenItemsDock = ({
               },
             }}
           >
-            <DescriptionIcon sx={{ fontSize: { xs: 20, sm: 24 } }} />
+            <DescriptionIcon sx={{ fontSize: { xs: 28, sm: 32 } }} />
           </Badge>
         </IconButton>
       </Tooltip>
