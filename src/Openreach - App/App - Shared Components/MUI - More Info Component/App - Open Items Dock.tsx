@@ -222,8 +222,8 @@ export const OpenItemsDock = ({
             sx: {
               ml: 1,
               mb: 1,
-              maxWidth: 380,
-              minWidth: 300,
+              maxWidth: 420,
+              minWidth: 340,
               boxShadow: 4,
             },
           },
@@ -320,7 +320,8 @@ export const OpenItemsDock = ({
                       <Box
                         onClick={() => handleItemClick(item)}
                         sx={{
-                          px: 1.5,
+                          pl: 1.5,
+                          pr: 4.5,
                           py: 1,
                           borderRadius: 1,
                           bgcolor: theme.palette.mode === 'dark' 
@@ -409,8 +410,9 @@ export const OpenItemsDock = ({
                         }}
                         sx={{
                           position: 'absolute',
-                          top: 4,
-                          right: 4,
+                          top: '50%',
+                          right: 6,
+                          transform: 'translateY(-50%)',
                           opacity: 0,
                           transition: 'opacity 0.2s',
                           bgcolor: alpha(theme.palette.background.paper, 0.9),
