@@ -18,6 +18,10 @@ import {
   Tooltip,
   Typography,
   useTheme,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material'
 import { createFilterOptions, type AutocompleteInputChangeReason } from '@mui/material/Autocomplete'
 import type { SxProps, Theme } from '@mui/material/styles'
@@ -28,6 +32,7 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AssignmentIcon from '@mui/icons-material/Assignment'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
 import type { TaskTableQueryState, TaskFilterTab } from './TaskTableQueryConfig.shared';
 import {
@@ -75,6 +80,7 @@ const TaskTableQueryConfig = ({
 }: TaskTableQueryConfigProps) => {
   const theme = useTheme()
   const [hasQueried, setHasQueried] = useState(false)
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null)
   const resolvedDefaultQuery = useMemo(() => defaultQuery ?? buildDefaultTaskTableQuery(), [defaultQuery])
   const resolvedInitialQuery = useMemo(() => initialQuery ?? resolvedDefaultQuery, [initialQuery, resolvedDefaultQuery])
   const [draftQuery, setDraftQuery] = useState<TaskTableQueryState>(resolvedInitialQuery)
@@ -439,41 +445,65 @@ const TaskTableQueryConfig = ({
           sx={{ pt: 1.5, pb: 2 }}
         >
           <Stack direction="row" spacing={1} flexWrap="wrap" alignItems="center">
-            {hasRows && onCopyHtml && (
-              <Tooltip title="Copy to Clipboard">
-                <IconButton
-                  onClick={onCopyHtml}
-                  size="small"
-                  sx={{
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 1,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                      borderColor: theme.openreach.energyAccent,
-                    },
+            {hasRows && (onCopyHtml || onExportCsv) && (
+              <>
+                <Tooltip title="Export Options">
+                  <IconButton
+                    onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+                    size="small"
+                    sx={{
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderRadius: 1,
+                      '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                        borderColor: theme.openreach.energyAccent,
+                      },
+                    }}
+                  >
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  anchorEl={exportMenuAnchor}
+                  open={Boolean(exportMenuAnchor)}
+                  onClose={() => setExportMenuAnchor(null)}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
                   }}
                 >
-                  <ContentCopyIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
-            {hasRows && onExportCsv && (
-              <Tooltip title="Export CSV">
-                <IconButton
-                  onClick={onExportCsv}
-                  size="small"
-                  sx={{
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: 1,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                      borderColor: theme.openreach.energyAccent,
-                    },
-                  }}
-                >
-                  <AssignmentIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
+                  {onCopyHtml && (
+                    <MenuItem
+                      onClick={() => {
+                        onCopyHtml()
+                        setExportMenuAnchor(null)
+                      }}
+                    >
+                      <ListItemIcon>
+                        <ContentCopyIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary="Copy HTML" />
+                    </MenuItem>
+                  )}
+                  {onExportCsv && (
+                    <MenuItem
+                      onClick={() => {
+                        onExportCsv()
+                        setExportMenuAnchor(null)
+                      }}
+                    >
+                      <ListItemIcon>
+                        <AssignmentIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary="Export CSV" />
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
             )}
           </Stack>
 
