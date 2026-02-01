@@ -10,7 +10,12 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = 3001;
 
-app.use(cors());
+// Configure CORS to allow requests from Vite dev server
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Helper function to run scripts
@@ -75,7 +80,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend server is running' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📡 API endpoints available:`);
   console.log(`   POST /api/refresh-tasks`);
