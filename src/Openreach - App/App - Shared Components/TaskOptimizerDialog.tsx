@@ -71,7 +71,7 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
     
     if (operationType === 'update-dates') {
       try {
-        const response = await fetch('http://localhost:3001/api/refresh-tasks', {
+        const response = await fetch('/api/refresh-tasks', {
           method: 'POST',
         })
         const data = await response.json()
@@ -104,7 +104,7 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
     } else {
       // Travel optimization
       try {
-        const response = await fetch('http://localhost:3001/api/optimize-travel', {
+        const response = await fetch('/api/optimize-travel', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -6,6 +6,14 @@ import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      }
+    }
+  },
   resolve: {
     alias: {
       '@central-logos': path.resolve(__dirname, 'Central Library/Image Assets/Logos'),

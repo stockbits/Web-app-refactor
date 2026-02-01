@@ -80,6 +80,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend server is running' });
 });
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Task Management Backend API',
+    endpoints: {
+      health: 'GET /api/health',
+      refreshTasks: 'POST /api/refresh-tasks',
+      optimizeTravel: 'POST /api/optimize-travel'
+    }
+  });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`📡 API endpoints available:`);
