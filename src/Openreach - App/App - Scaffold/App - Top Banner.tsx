@@ -67,10 +67,6 @@ export const OpenreachTopBanner = ({
         minHeight: { xs: 64, md: 80 },
         backgroundColor: theme.openreach.brand.primary,
         color: theme.openreach.brand.white,
-        // More dense, layered shadow for top banner
-        boxShadow: theme.palette.mode === 'dark'
-          ? '0 6px 24px 0 rgba(0,0,0,0.5), 0 1.5px 8px 0 rgba(0,0,0,0.3)'
-          : '0 6px 24px 0 rgba(20,32,50,0.15), 0 1.5px 8px 0 rgba(20,32,50,0.08)',
         borderBottom: theme.palette.mode === 'dark'
           ? '1px solid rgba(255,255,255,0.15)'
           : '1px solid rgba(20,32,50,0.2)',
@@ -153,7 +149,6 @@ export const OpenreachTopBanner = ({
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   borderColor: brand.energyAccent,
-                  boxShadow: '0 0 0 4px rgba(0,204,173,0.18)',
                 },
               }}
             >
@@ -175,7 +170,6 @@ export const OpenreachTopBanner = ({
                     px: 1,
                     bgcolor: theme.palette.background.paper,
                     border: `1px solid ${theme.palette.divider}`,
-                    boxShadow: theme.shadows[8],
                     borderRadius: 0,
                   },
                 },

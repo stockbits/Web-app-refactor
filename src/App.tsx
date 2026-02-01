@@ -816,7 +816,6 @@ function App() {
                             },
                             '&:hover': {
                               borderColor: 'primary.main',
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                               transform: 'translateY(-2px)',
                               '&::before': {
                                 transform: 'scaleX(1)',

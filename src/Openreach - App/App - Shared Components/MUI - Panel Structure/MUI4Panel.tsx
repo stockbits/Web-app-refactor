@@ -663,10 +663,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                         transform: (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) 
                           ? 'translate(-50%, -50%) scale(1.1)' 
                           : 'translate(-50%, -50%) scale(0.95)',
-                        boxShadow: (hoveredHandle?.type === 'col' && hoveredHandle?.index === c && hoveredHandle?.rowIndex === r) || 
-                                  (isResizing?.type === 'col' && isResizing?.index === c && isResizing?.rowIndex === r) 
-                          ? `0 0 8px ${theme.palette.primary.main}40` 
-                          : 'none',
                         pointerEvents: 'none',
                         display: 'flex',
                         flexDirection: 'column',
@@ -761,10 +757,6 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
                     transform: (isResizing?.type === 'row' && isResizing?.index === r)
                       ? 'translate(-50%, -50%) scale(1.1)'
                       : 'translate(-50%, -50%) scale(0.95)',
-                    boxShadow: (hoveredHandle?.type === 'row' && hoveredHandle?.index === r) || 
-                              (isResizing?.type === 'row' && isResizing?.index === r)
-                      ? `0 0 8px ${theme.palette.primary.main}40`
-                      : 'none',
                     pointerEvents: 'none',
                     display: 'flex',
                     flexDirection: 'row',

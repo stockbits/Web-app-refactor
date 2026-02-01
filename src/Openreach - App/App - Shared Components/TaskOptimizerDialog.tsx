@@ -88,7 +88,7 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
             ${outputPreview ? `<div style="font-size:12px;opacity:0.9;font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis">${outputPreview}</div>` : ''}
             <div style="font-size:14px;margin-top:10px">Reloading...</div>
           `
-          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);text-align:center'
+          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;z-index:9999;text-align:center;border:2px solid #45a049'
           document.body.appendChild(notification)
           
           // Log full output to console

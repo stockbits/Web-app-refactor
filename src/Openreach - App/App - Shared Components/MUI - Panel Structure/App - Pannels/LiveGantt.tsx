@@ -1536,7 +1536,6 @@ function LiveGantt({
                         transition: 'transform 0.2s ease',
                         '&:hover': {
                           transform: 'scale(1.15)',
-                          boxShadow: theme.shadows[4],
                         },
                       }}
                     >
@@ -1938,25 +1937,24 @@ function LiveGantt({
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
-                                  ? `3px solid #DC2626` 
+                                  ? `4px solid #DC2626` 
                                   : `2px solid ${alpha('#000', 0.2)}`,
                                 borderRadius: 1,
                                 boxSizing: 'border-box',
-                                outline: isSelected ? `2px solid ${theme.palette.background.paper}` : 'none',
-                                outlineOffset: '-2px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'flex-start', // Changed from 'center' to 'flex-start'
-                                paddingLeft: '4px', // Add left padding for icon positioning
+                                justifyContent: 'flex-start',
+                                paddingLeft: '4px',
                                 overflow: 'hidden',
+                                zIndex: isSelected ? 100 : 1,
+                                transition: 'all 0.2s ease-in-out',
                                 '&:hover': {
                                   opacity: 0.95,
-                                  boxShadow: theme.shadows[8],
                                   filter: 'brightness(1.1)',
                                   zIndex: 50,
                                 },
                               }}
-                              elevation={isSelected ? 6 : 2}
+                              elevation={0}
                             >
                               {!isCondensed && width > 20 && getTaskStatusIndicator(task.status)}
                             </Paper>

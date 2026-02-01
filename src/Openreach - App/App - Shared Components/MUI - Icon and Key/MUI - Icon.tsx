@@ -80,7 +80,7 @@ export function ResourceIcon({ workingStatus, size = 32, statusColor }: Resource
       aria-hidden="true"
       focusable="false"
       role="img"
-      style={{ display: 'inline-block', filter: 'drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3))' }}
+      style={{ display: 'inline-block' }}
     >
       {/* White teardrop background with colored status outline */}
       <path 

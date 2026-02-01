@@ -680,8 +680,7 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
             width: '100%', // Full width on mobile
             maxHeight: { xs: '90vh', sm: '85vh' }, // Prevent overflow on small screens
             overflow: 'auto', // Allow scrolling if needed
-            bgcolor: 'background.paper', 
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+            bgcolor: 'background.paper',
             outline: 'none',
           }}>
             <Stack 
@@ -847,7 +846,6 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                         borderColor: 'primary.main',
                         bgcolor: 'primary.main',
                         color: 'primary.contrastText',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                       },
                       transition: 'all 0.2s ease-in-out',
                     }}
@@ -918,7 +916,6 @@ const TaskDateWindowField = ({ value, onChange, shortcuts = DEFAULT_DATE_SHORTCU
                 fontWeight: 600,
                 borderRadius: 1,
                 px: 3,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
               }}
             >
               Apply Selection

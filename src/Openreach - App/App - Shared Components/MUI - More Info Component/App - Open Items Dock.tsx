@@ -176,12 +176,10 @@ export const OpenItemsDock = ({
             left: { xs: 16, sm: 24 },
             bgcolor: previewOpen ? 'primary.dark' : 'primary.main',
             color: 'primary.contrastText',
-            boxShadow: 3,
             width: { xs: 48, sm: 56 },
             height: { xs: 48, sm: 56 },
             '&:hover': {
               bgcolor: 'primary.dark',
-              boxShadow: 4,
             },
             zIndex: 1200,
             transition: 'all 0.2s',
@@ -224,7 +222,6 @@ export const OpenItemsDock = ({
               mb: 1,
               maxWidth: 420,
               minWidth: 340,
-              boxShadow: 4,
             },
           },
         }}
@@ -333,16 +330,10 @@ export const OpenItemsDock = ({
                             : alpha(theme.palette.primary.main, 0.12),
                           cursor: 'pointer',
                           transition: 'all 0.15s',
-                          boxShadow: theme.palette.mode === 'dark'
-                            ? '0 1px 3px rgba(0,0,0,0.3)'
-                            : '0 1px 2px rgba(0,0,0,0.05)',
                           '&:hover': {
                             bgcolor: alpha(theme.palette.primary.main, 0.12),
                             borderColor: alpha(theme.palette.primary.main, 0.3),
                             transform: 'translateX(2px)',
-                            boxShadow: theme.palette.mode === 'dark'
-                              ? '0 2px 6px rgba(0,0,0,0.4)'
-                              : '0 2px 4px rgba(0,0,0,0.1)',
                           },
                         }}
                       >

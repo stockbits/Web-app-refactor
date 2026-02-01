@@ -216,7 +216,6 @@ export const LandingOverview = ({
                     transition: 'all 0.2s',
                     '&:hover': {
                       borderColor: alpha(theme.palette.primary.main, 0.3),
-                      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.08)}`,
                     },
                   }}
                 >
@@ -317,7 +316,6 @@ export const LandingOverview = ({
                             '&:hover': {
                               borderColor: 'primary.main',
                               bgcolor: alpha(theme.palette.primary.main, 0.02),
-                              boxShadow: `0 2px 6px ${alpha(theme.palette.primary.main, 0.1)}`,
                             },
                           }}
                         >

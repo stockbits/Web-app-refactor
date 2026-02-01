@@ -380,7 +380,7 @@ export const OpenreachSideNav = ({ open, onClose, navItems, footerSlot, headerSl
                     component="img"
                     src={logoSrc}
                     alt="Openreach brand mark"
-                    sx={{ width: 132, height: 'auto', display: 'block', filter: isLightMode ? 'none' : 'drop-shadow(0 4px 18px rgba(0,0,0,0.35))' }}
+                    sx={{ width: 132, height: 'auto', display: 'block' }}
                   />
                 )}
               </Box>

@@ -427,8 +427,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             bottom: '-5px',
             border: '3px solid #DC2626',
             borderRadius: '8px',
-            pointerEvents: 'none',
-            boxShadow: '0 0 0 1px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2)'
+            pointerEvents: 'none'
           }} />
         )}
       </div>
@@ -466,7 +465,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
     const markerSize = 40;
     const statusColor = getStatusColor();
     const iconHtml = `
-      <div class="${isSelected ? 'marker-selected' : ''}" style="width: ${markerSize}px; height: ${markerSize}px; position: relative; filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));">
+      <div class="${isSelected ? 'marker-selected' : ''}" style="width: ${markerSize}px; height: ${markerSize}px; position: relative;">
         <svg width="${markerSize}" height="${markerSize}" viewBox="0 0 24 24">
           <!-- White teardrop background with colored status outline -->
           <path fill="white" stroke="${statusColor}" stroke-width="1.5" d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z"/>
@@ -477,7 +476,7 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           </g>
         </svg>
         ${isSelected ? `
-          <div class="marker-selection-ring" style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 3px solid #DC2626; border-radius: 8px; pointer-events: none; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8), 0 2px 4px rgba(0, 0, 0, 0.2);"></div>
+          <div class="marker-selection-ring" style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border: 3px solid #DC2626; border-radius: 8px; pointer-events: none;"></div>
         ` : ''}
       </div>
     `;
