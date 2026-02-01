@@ -79,14 +79,17 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
         setIsOptimizing(false)
         
         if (data.success) {
-          const shouldReload = window.confirm(
-            '✅ Tasks refreshed successfully!\n\n' +
-            'Click OK to reload the page and see the updated tasks.'
-          )
           onClose()
-          if (shouldReload) {
+          // Show brief success message before reload
+          const notification = document.createElement('div')
+          notification.textContent = '✅ Tasks refreshed! Reloading...'
+          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;font-size:18px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3)'
+          document.body.appendChild(notification)
+          
+          // Auto reload after 1 second
+          setTimeout(() => {
             window.location.reload()
-          }
+          }, 1000)
         } else {
           alert('❌ Failed to refresh tasks:\n\n' + (data.error || data.message))
         }
