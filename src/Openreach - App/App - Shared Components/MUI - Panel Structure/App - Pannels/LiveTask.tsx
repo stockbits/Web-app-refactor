@@ -14,6 +14,8 @@ import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
+import { ProgressTaskDialog } from '../../ProgressTaskDialog';
+
 
 interface LiveTaskProps {
   onDock?: () => void;
@@ -45,6 +47,9 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     selectedTaskIds,
     clearSelectionOnSort
   } = useTaskTableSelection();
+
+  const [progressDialogOpen, setProgressDialogOpen] = useState(false);
+  const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
 
   // Resize observer for table height - handle mobile tab changes
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -319,8 +324,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             getRowClassName={getRowClassName}
             onSortModelChange={handleSortModelChange}
             onProgressTask={(tasks) => {
-              console.log('Progress tasks:', tasks)
-              // TODO: Implement progress task logic
+              setTasksToProgress(tasks);
+              setProgressDialogOpen(true);
             }}
             onAddQuickNote={(tasks) => {
               console.log('Add quick note to tasks:', tasks)
@@ -345,6 +350,16 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         )}
       </Box>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+      <ProgressTaskDialog 
+        open={progressDialogOpen}
+        onClose={() => setProgressDialogOpen(false)}
+        tasks={tasksToProgress}
+        onProgressComplete={() => {
+          // Force a re-render to show updated data
+          // In a real app, you would refetch the data here
+          window.location.reload();
+        }}
+      />
     </Box>
   );
 }

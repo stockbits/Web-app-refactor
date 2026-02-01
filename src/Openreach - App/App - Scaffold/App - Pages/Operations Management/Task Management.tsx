@@ -10,6 +10,7 @@ import type { TaskTableQueryState } from '../../../App - Shared Components/MUI -
 import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
 import { useTaskTableSelection } from '../../../App - Shared Components/MUI - Table/Selection - UI'
+import { ProgressTaskDialog } from '../../../App - Shared Components/ProgressTaskDialog'
 
 interface TaskManagementPageProps {
   onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
@@ -30,6 +31,9 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
     message: '',
     severity: 'success',
   })
+
+  const [progressDialogOpen, setProgressDialogOpen] = useState(false);
+  const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
 
   const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
     setSnackbar({ open: true, message, severity })
@@ -554,8 +558,8 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
               pageSizeOptions={[30, 50, 100]}
               getRowClassName={getRowClassName}
               onProgressTask={(tasks) => {
-                console.log('Progress tasks:', tasks)
-                // TODO: Implement progress task logic
+                setTasksToProgress(tasks);
+                setProgressDialogOpen(true);
               }}
               onAddQuickNote={(tasks) => {
                 console.log('Add quick note to tasks:', tasks)
@@ -629,6 +633,16 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         </Snackbar>
       </Stack>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
+      <ProgressTaskDialog 
+        open={progressDialogOpen}
+        onClose={() => setProgressDialogOpen(false)}
+        tasks={tasksToProgress}
+        onProgressComplete={() => {
+          // Force a re-render to show updated data
+          // In a real app, you would refetch the data here
+          window.location.reload();
+        }}
+      />
     </>
   )
 }

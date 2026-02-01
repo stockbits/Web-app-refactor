@@ -75,6 +75,52 @@ app.post('/api/optimize-travel', async (req, res) => {
   }
 });
 
+// Endpoint to progress tasks
+app.post('/api/progress-task', async (req, res) => {
+  try {
+    const { taskIds, newStatus, resourceId } = req.body;
+    
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'taskIds array is required'
+      });
+    }
+    
+    if (!newStatus) {
+      return res.status(400).json({
+        success: false,
+        error: 'newStatus is required'
+      });
+    }
+    
+    console.log(`Progressing ${taskIds.length} task(s) to status: ${newStatus}${resourceId ? `, resource: ${resourceId}` : ''}`);
+    
+    // In a real implementation, this would update a database
+    // For now, we'll simulate the update and return success
+    const updates = taskIds.map(taskId => ({
+      taskId,
+      oldStatus: 'ACT', // Would come from DB
+      newStatus,
+      resourceId: resourceId || null,
+      updatedAt: new Date().toISOString()
+    }));
+    
+    res.json({
+      success: true,
+      message: `Successfully progressed ${taskIds.length} task(s) to ${newStatus}`,
+      updates,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error progressing task:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to progress task',
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend server is running' });
