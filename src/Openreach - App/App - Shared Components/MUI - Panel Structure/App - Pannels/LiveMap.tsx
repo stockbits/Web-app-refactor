@@ -80,46 +80,64 @@ interface ZoomToResourceSelectionProps {
 function ZoomToResourceSelection({ selectedResourceIds, filteredResources, selectedTaskIds, filteredTasks }: ZoomToResourceSelectionProps) {
   const map = useMap();
   const tasksToDisplay = filteredTasks || TASK_TABLE_ROWS;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    // Collect all selected coordinates (both tasks and resources)
-    const allCoordinates: Array<[number, number]> = [];
-
-    // Add selected resources
-    if (selectedResourceIds.length > 0) {
-      const selectedResources = filteredResources.filter(resource => selectedResourceIds.includes(resource.resourceId));
-      selectedResources.forEach(resource => {
-        allCoordinates.push([resource.homeLatitude, resource.homeLongitude]);
-      });
+    // Debounce zoom to prevent jittery movements during multi-select
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
 
-    // Add selected tasks
-    if (selectedTaskIds.length > 0) {
-      const selectedTasks = tasksToDisplay.filter(task => selectedTaskIds.includes(task.taskId));
-      selectedTasks.forEach(task => {
-        allCoordinates.push([task.taskLatitude, task.taskLongitude]);
+    timeoutRef.current = setTimeout(() => {
+      requestAnimationFrame(() => {
+        // Collect all selected coordinates (both tasks and resources)
+        const allCoordinates: Array<[number, number]> = [];
+
+        // Add selected resources
+        if (selectedResourceIds.length > 0) {
+          const selectedResources = filteredResources.filter(resource => selectedResourceIds.includes(resource.resourceId));
+          selectedResources.forEach(resource => {
+            allCoordinates.push([resource.homeLatitude, resource.homeLongitude]);
+          });
+        }
+
+        // Add selected tasks
+        if (selectedTaskIds.length > 0) {
+          const selectedTasks = tasksToDisplay.filter(task => selectedTaskIds.includes(task.taskId));
+          selectedTasks.forEach(task => {
+            allCoordinates.push([task.taskLatitude, task.taskLongitude]);
+          });
+        }
+
+        // If nothing is selected, do nothing
+        if (allCoordinates.length === 0) return;
+
+        // Single location: zoom to that location with zoom level 14
+        if (allCoordinates.length === 1) {
+          map.setView(allCoordinates[0], 14, {
+            animate: true,
+            duration: 0.4,
+            easeLinearity: 0.2
+          });
+          return;
+        }
+
+        // Multiple locations: calculate bounds and fit to show all
+        const bounds = L.latLngBounds(allCoordinates);
+        map.fitBounds(bounds, {
+          padding: [50, 50],
+          animate: true,
+          duration: 0.4,
+          easeLinearity: 0.2
+        });
       });
-    }
+    }, 150);
 
-    // If nothing is selected, do nothing
-    if (allCoordinates.length === 0) return;
-
-    // Single location: zoom to that location with zoom level 14
-    if (allCoordinates.length === 1) {
-      map.setView(allCoordinates[0], 14, {
-        animate: true,
-        duration: 0.5
-      });
-      return;
-    }
-
-    // Multiple locations: calculate bounds and fit to show all
-    const bounds = L.latLngBounds(allCoordinates);
-    map.fitBounds(bounds, {
-      padding: [50, 50],
-      animate: true,
-      duration: 0.5
-    });
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [selectedResourceIds, selectedTaskIds, map, filteredResources, tasksToDisplay]);
 
   return null;
@@ -154,30 +172,36 @@ function ZoomControl({ onZoomChange, currentZoom, minZoom = 1, maxZoom = 18 }: Z
 
   const handleZoomChange = (_event: Event, value: number | number[]) => {
     const zoom = value as number;
-    map.setView(map.getCenter(), zoom, {
-      animate: true,
-      duration: 0.25,
-      easeLinearity: 0.25
+    requestAnimationFrame(() => {
+      map.setView(map.getCenter(), zoom, {
+        animate: true,
+        duration: 0.2,
+        easeLinearity: 0.15
+      });
     });
     onZoomChange(zoom);
   };
 
   const handleZoomIn = () => {
-    const newZoom = Math.min(currentZoom + 0.5, maxZoom); // Smoother 0.5 increments
-    map.setView(map.getCenter(), newZoom, {
-      animate: true,
-      duration: 0.25,
-      easeLinearity: 0.25
+    const newZoom = Math.min(currentZoom + 0.5, maxZoom);
+    requestAnimationFrame(() => {
+      map.setView(map.getCenter(), newZoom, {
+        animate: true,
+        duration: 0.2,
+        easeLinearity: 0.15
+      });
     });
     onZoomChange(newZoom);
   };
 
   const handleZoomOut = () => {
-    const newZoom = Math.max(currentZoom - 0.5, minZoom); // Smoother 0.5 increments
-    map.setView(map.getCenter(), newZoom, {
-      animate: true,
-      duration: 0.25,
-      easeLinearity: 0.25
+    const newZoom = Math.max(currentZoom - 0.5, minZoom);
+    requestAnimationFrame(() => {
+      map.setView(map.getCenter(), newZoom, {
+        animate: true,
+        duration: 0.2,
+        easeLinearity: 0.15
+      });
     });
     onZoomChange(newZoom);
   };
@@ -726,24 +750,31 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
             background: 'none !important',
             border: 'none',
             pointerEvents: 'auto',
-            transition: 'none', // Remove transitions for better click responsiveness
+            transition: 'transform 0.15s ease-out',
+            willChange: 'transform',
             '&:hover': {
               background: 'none !important',
               backgroundColor: 'transparent !important',
             },
           },
           '& .custom-task-icon.selected': {
-            zIndex: 1000, // Bring selected markers to front
+            zIndex: 1000,
+            transform: 'scale(1.05)',
           },
           '& .custom-resource-icon': {
             background: 'none !important',
             border: 'none',
             pointerEvents: 'auto',
-            transition: 'none',
+            transition: 'transform 0.15s ease-out',
+            willChange: 'transform',
             '&:hover': {
               background: 'none !important',
               backgroundColor: 'transparent !important',
             },
+          },
+          '& .custom-resource-icon.selected': {
+            zIndex: 1000,
+            transform: 'scale(1.05)',
           },
           '& .leaflet-marker-icon': {
             '&:hover': {
@@ -756,8 +787,8 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           },
           '@keyframes marker-pulse': {
             '0%': {
-              transform: 'scale(0.8)',
-              opacity: 0,
+              transform: 'scale(0.95)',
+              opacity: 0.6,
             },
             '100%': {
               transform: 'scale(1)',
@@ -890,12 +921,12 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           zoomControl={false}
           preferCanvas={true}
           minZoom={1}
-          maxBounds={[[-90, -180], [90, 180]]} // World bounds
-          maxBoundsViscosity={0.5}
-          zoomSnap={0.25} // Ultra-smooth zoom increments (quarter steps)
-          zoomDelta={0.25} // Smaller steps for smoother transitions
-          wheelPxPerZoomLevel={60} // More sensitive wheel = smoother feel
-          wheelDebounceTime={40} // Debounce for smoother wheel zoom
+          maxBounds={[[-90, -180], [90, 180]]}
+          maxBoundsViscosity={0.75}
+          zoomSnap={0.25}
+          zoomDelta={0.5}
+          wheelPxPerZoomLevel={80}
+          wheelDebounceTime={50}
           zoomAnimation={true}
           zoomAnimationThreshold={4}
           fadeAnimation={true}
