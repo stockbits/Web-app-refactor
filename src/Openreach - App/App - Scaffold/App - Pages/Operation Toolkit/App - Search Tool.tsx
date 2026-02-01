@@ -15,8 +15,10 @@ import {
   Alert,
 } from '@mui/material'
 import { STANDARD_INPUT_PROPS } from '../../../../AppCentralTheme/input-config.ts'
-import { TASK_TABLE_ROWS, TASK_STATUS_LABELS } from '../../../App - Data Tables/Task - Table'
-import type { TaskSkillCode, TaskStatusCode, TaskResponseCode, TaskCommitType, TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import { TASK_TABLE_ROWS } from '../../../App - Data Tables/Task - Table'
+import type { TaskSkillCode, TaskResponseCode, TaskCommitType, TaskDomainId } from '../../../App - Data Tables/Task - Table'
+import { COMBINED_STATUS_LABELS } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
+import type { CombinedStatusFilter } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { BulkSelectableMultiSelect, TaskDateWindowField } from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 
 interface AppSearchToolProps {
@@ -32,7 +34,7 @@ interface AppSearchToolProps {
 export interface SearchFilters {
   division?: string | null
   domain?: TaskDomainId | null
-  statuses?: TaskStatusCode[]
+  statuses?: CombinedStatusFilter[]
   capabilities?: TaskSkillCode[]
   responseCodes?: TaskResponseCode[]
   commitTypes?: TaskCommitType[]
@@ -53,7 +55,7 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({
 }) => {
   const theme = useTheme()
   const tokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
-  const [selectedStatuses, setSelectedStatuses] = useState<TaskStatusCode[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<CombinedStatusFilter[]>([])
   const [selectedCapabilities, setSelectedCapabilities] = useState<TaskSkillCode[]>([])
   const [selectedResponseCodes, setSelectedResponseCodes] = useState<TaskResponseCode[]>([])
   const [selectedCommitTypes, setSelectedCommitTypes] = useState<TaskCommitType[]>([])
@@ -75,10 +77,10 @@ const AppSearchTool: React.FC<AppSearchToolProps> = ({
     }
   }, [clearTrigger])
 
-  // Extract unique options from DB data
-  const statusOptions = React.useMemo(() =>
-    Object.entries(TASK_STATUS_LABELS).map(([code, label]) => ({
-      value: code as TaskStatusCode,
+  // Extract unique options from DB data - use combined status labels
+  const statusOptions = React.useMemo<Array<{ value: CombinedStatusFilter; label: string }>>(() => 
+    Object.entries(COMBINED_STATUS_LABELS).map(([code, label]) => ({
+      value: code as CombinedStatusFilter,
       label: label
     })),
   [])

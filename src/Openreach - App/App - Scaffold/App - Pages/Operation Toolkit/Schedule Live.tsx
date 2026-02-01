@@ -3,7 +3,7 @@ import { Box, Stack, TextField, Autocomplete, IconButton, Tooltip, Button, Divid
 import { STANDARD_INPUT_PROPS, STANDARD_AUTOCOMPLETE_PROPS } from '../../../../AppCentralTheme/input-config.ts'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
 import TuneIcon from '@mui/icons-material/Tune'
-import { TaskOptimizerDialog, type OptimizationOptions } from '../../../App - Shared Components/TaskOptimizerDialog'
+import { TaskOptimizerDialog, type OptimizationOptions } from '../../../../mui-api-calls/TaskOptimizerDialog'
 import MUI4Panel from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import type { DockedPanel } from '../../../App - Shared Components/MUI - Panel Structure/MUI4Panel'
 import { RESOURCE_TABLE_ROWS } from '../../../App - Data Tables/Resource - Table'

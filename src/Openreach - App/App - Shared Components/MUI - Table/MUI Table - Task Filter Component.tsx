@@ -34,19 +34,19 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import AssignmentIcon from '@mui/icons-material/Assignment'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import type { TaskSkillCode, TaskTableRow } from '../../App - Data Tables/Task - Table';
-import type { TaskTableQueryState, TaskFilterTab } from './TaskTableQueryConfig.shared';
+import type { TaskTableQueryState, TaskFilterTab, CombinedStatusFilter } from './TaskTableQueryConfig.shared';
 import {
   buildDefaultTaskTableQuery,
   TASK_FILTER_TABS,
-  DEFAULT_STATUSES,
-  STATUS_OPTION_LABELS,
+  DEFAULT_COMBINED_STATUSES,
+  COMBINED_STATUS_LABELS,
 } from './TaskTableQueryConfig.shared';
 import GlobalSearchField from './GlobalSearchField';
 
 interface TaskTableQueryConfigProps {
   divisionOptions?: TaskTableRow['division'][]
   domainOptions?: TaskTableRow['domainId'][]
-  statusOptions?: TaskTableRow['status'][]
+  statusOptions?: CombinedStatusFilter[]
   capabilityOptions?: TaskSkillCode[]
   responseCodeOptions?: TaskTableRow['responseCode'][]
   commitTypeOptions?: TaskTableRow['commitType'][]
@@ -64,7 +64,7 @@ interface TaskTableQueryConfigProps {
 const TaskTableQueryConfig = ({
   divisionOptions = [],
   domainOptions = [],
-  statusOptions = DEFAULT_STATUSES,
+  statusOptions = DEFAULT_COMBINED_STATUSES,
   capabilityOptions = [],
   responseCodeOptions = [],
   commitTypeOptions = [],
@@ -119,7 +119,7 @@ const TaskTableQueryConfig = ({
     () =>
       statusOptions.map((value) => ({
         value,
-        label: STATUS_OPTION_LABELS[value] ?? value,
+        label: COMBINED_STATUS_LABELS[value] ?? value,
       })),
     [statusOptions],
   )
@@ -140,7 +140,7 @@ const TaskTableQueryConfig = ({
     setActiveTab(nextTab)
   }
 
-  const handleStatusChange = (value: TaskTableRow['status'][]) => {
+  const handleStatusChange = (value: CombinedStatusFilter[]) => {
     setDraftQuery((prev) => ({
       ...prev,
       statuses: value,

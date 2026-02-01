@@ -7,10 +7,10 @@ import type { GridColDef } from '@mui/x-data-grid'
 import { TaskTableShell } from '../../../App - Shared Components/MUI - Table'
 import TaskTableQueryConfig from '../../../App - Shared Components/MUI - Table/MUI Table - Task Filter Component'
 import type { TaskTableQueryState } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
-import { buildDefaultTaskTableQuery } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
+import { buildDefaultTaskTableQuery, taskMatchesStatusFilter, getTaskStatusLabel } from '../../../App - Shared Components/MUI - Table/TaskTableQueryConfig.shared'
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
 import { useTaskTableSelection } from '../../../App - Shared Components/MUI - Table/Selection - UI'
-import { ProgressTaskDialog } from '../../../App - Shared Components/ProgressTaskDialog'
+import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog'
 
 interface TaskManagementPageProps {
   onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
@@ -47,6 +47,13 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
       ISS: { label: TASK_STATUS_LABELS.ISS },
       EXC: { label: TASK_STATUS_LABELS.EXC },
       COM: { label: TASK_STATUS_LABELS.COM },
+      FUR: { label: TASK_STATUS_LABELS.FUR },
+      CMN: { label: TASK_STATUS_LABELS.CMN },
+      HPD: { label: TASK_STATUS_LABELS.HPD },
+      HLD: { label: TASK_STATUS_LABELS.HLD },
+      CPD: { label: TASK_STATUS_LABELS.CPD },
+      DLG: { label: TASK_STATUS_LABELS.DLG },
+      CAN: { label: TASK_STATUS_LABELS.CAN },
     }),
     [],
   )
@@ -168,10 +175,11 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         align: 'left',
         headerAlign: 'left',
         renderCell: (params) => {
-          const meta = statusMetadata[params.row.status]
+          // Use centralized helper for consistent status labels
+          const displayLabel = getTaskStatusLabel(params.row);
           return (
             <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>
-              {meta.label}
+              {displayLabel}
             </Typography>
           )
         },
@@ -639,28 +647,37 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         open={progressDialogOpen}
         onClose={() => setProgressDialogOpen(false)}
         tasks={tasksToProgress}
-        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, serverUpdates) => {
+        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, awaitingConfirmation, serverUpdates) => {
           // Update task status, resource, and progress notes in the data source without page reload
           updatedTaskIds.forEach(taskId => {
             const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
             if (task) {
               task.status = newStatus;
+              // Update resource fields: set when provided, clear when undefined
               if (resourceId) {
                 task.resourceId = resourceId;
                 task.resourceName = resourceName || resourceId;
+              } else {
+                // Explicitly clearing resources (e.g., ACT - Not Assigned)
+                task.resourceId = '';
+                task.resourceName = '';
               }
+              // Update awaitingConfirmation flag
+              task.awaitingConfirmation = awaitingConfirmation || 'N';
               // Add progress note from server
-              const update = serverUpdates?.find(u => u.taskId === taskId);
-              if (update?.progressNote) {
-                task.progressNotes = task.progressNotes || [];
-                task.progressNotes.unshift(update.progressNote);
+              if (Array.isArray(serverUpdates)) {
+                const update = serverUpdates.find(u => u.taskId === taskId);
+                if (update?.progressNote) {
+                  task.progressNotes = task.progressNotes || [];
+                  task.progressNotes.unshift(update.progressNote);
+                }
               }
             }
           });
           // Force re-render to update all components with fresh task data
           setDataRefresh(prev => prev + 1);
           setProgressDialogOpen(false);
-          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : '';
+          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : (resourceId === undefined ? ' (resource cleared)' : '');
           showMessage(`Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`);
         }}
       />
@@ -703,8 +720,14 @@ const applyTaskFilters = (rows: TaskTableRow[], query: TaskTableQueryState): Tas
       return false
     }
 
-    if (query.statuses.length && !query.statuses.includes(row.status)) {
-      return false
+    if (query.statuses.length) {
+      // Handle combined status filters using centralized helper
+      const hasMatchingStatus = query.statuses.some(statusFilter => 
+        taskMatchesStatusFilter(row, statusFilter)
+      );
+      if (!hasMatchingStatus) {
+        return false;
+      }
     }
 
     if (query.capabilities.length) {

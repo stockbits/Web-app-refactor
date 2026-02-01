@@ -1,4 +1,4 @@
-export type TaskStatusCode = 'ACT' | 'AWI' | 'ISS' | 'EXC' | 'COM'
+export type TaskStatusCode = 'ACT' | 'AWI' | 'ISS' | 'EXC' | 'COM' | 'FUR' | 'CMN' | 'HPD' | 'HLD' | 'CPD' | 'DLG' | 'CAN'
 export type TaskSkillCode = 'RFJBAS' | 'RFTTC1' | 'RFTTC2' | 'RISDN1' | 'RISDN2' | 'RFTTP' | 'FED1' | 'OGGA1' | 'OGGA2' | 'SOGEA'
 export type TaskResponseCode = 'SH01' | 'SH02' | 'SHP3' | 'SH04' | 'NONE'
 export type TaskCommitType = 'APPOINTMENT' | 'START BY' | 'COMPLETE BY' | 'TAIL'
@@ -10,11 +10,19 @@ export const TASK_STATUS_LABELS: Record<TaskStatusCode, string> = {
   ISS: 'Issued',
   EXC: 'Executing',
   COM: 'Complete',
+  FUR: 'Furthered',
+  CMN: 'Common',
+  HPD: 'Held Pending Details',
+  HLD: 'Held Linked or Retained',
+  CPD: 'Closed Pending Details',
+  DLG: 'Dealing',
+  CAN: 'Cancelled',
 }
 
 export interface TaskTableRow {
   taskId: string
   status: TaskStatusCode
+  awaitingConfirmation: 'Y' | 'N' // Y = task assigned and waiting for confirmation, N = normal assignment or not assigned
   primarySkill: TaskSkillCode
   capabilities: TaskSkillCode[]
   responseCode: TaskResponseCode
@@ -49,6 +57,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-TH049021',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTP',
     capabilities: ['RFTTP', 'FED1'],
     responseCode: 'SH01',
@@ -78,6 +87,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-TH049118',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTC1',
     capabilities: ['RFTTC1', 'RFJBAS'],
     responseCode: 'SH02',
@@ -108,6 +118,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-TR598201',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN2',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SHP3',
@@ -131,6 +142,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-MN883210',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SH04',
@@ -154,6 +166,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-QL772910',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA'],
     responseCode: 'NONE',
@@ -177,6 +190,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-ZN441203',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFJBAS',
     capabilities: ['RFJBAS', 'RFTTC1'],
     responseCode: 'SH02',
@@ -200,6 +214,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-LP220977',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN1',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SH01',
@@ -223,6 +238,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-QE998411',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA1',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SHP3',
@@ -246,6 +262,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-XH731045',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'FED1',
     capabilities: ['FED1', 'RFTTP'],
     responseCode: 'SH04',
@@ -269,6 +286,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-JS119804',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA', 'RFTTP'],
     responseCode: 'NONE',
@@ -292,6 +310,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-YT441203',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTC2',
     capabilities: ['RFTTC1', 'RFTTC2'],
     responseCode: 'SH02',
@@ -315,6 +334,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-HF220014',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN2',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SH01',
@@ -338,6 +358,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-VP903344',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'FED1',
     capabilities: ['FED1', 'RFTTP'],
     responseCode: 'SHP3',
@@ -361,6 +382,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-NB112503',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SH04',
@@ -384,6 +406,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-CJ511045',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA'],
     responseCode: 'NONE',
@@ -407,6 +430,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-LS780210',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTP',
     capabilities: ['RFTTP', 'FED1'],
     responseCode: 'SH01',
@@ -430,6 +454,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-PQ442210',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA1',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SH02',
@@ -453,6 +478,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-ZR114488',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFJBAS',
     capabilities: ['RFJBAS', 'RFTTC1'],
     responseCode: 'SHP3',
@@ -476,6 +502,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-DX880033',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN1',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SH04',
@@ -499,6 +526,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-TN330711',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'NONE',
@@ -522,6 +550,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-FE501122',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTP',
     capabilities: ['RFTTP', 'FED1'],
     responseCode: 'SH01',
@@ -545,6 +574,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-WB775402',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTC2',
     capabilities: ['RFTTC1', 'RFTTC2'],
     responseCode: 'SH02',
@@ -568,6 +598,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-QK221765',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN1',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SHP3',
@@ -591,6 +622,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-MA902134',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA1',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SH04',
@@ -614,6 +646,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-LD120876',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA', 'RFTTP'],
     responseCode: 'NONE',
@@ -637,6 +670,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-SC908811',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFJBAS',
     capabilities: ['RFJBAS', 'RFTTC1'],
     responseCode: 'SH02',
@@ -660,6 +694,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-BR660214',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN2',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SH01',
@@ -683,6 +718,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-KN440032',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SHP3',
@@ -706,6 +742,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-PT118400',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'FED1',
     capabilities: ['FED1', 'RFTTP'],
     responseCode: 'SH04',
@@ -729,6 +766,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-JL309955',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA'],
     responseCode: 'NONE',
@@ -752,6 +790,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-HC772291',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTC1',
     capabilities: ['RFTTC1', 'RFJBAS'],
     responseCode: 'SH02',
@@ -775,6 +814,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-DF551870',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SH02',
@@ -798,6 +838,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-UV889034',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN2',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SHP3',
@@ -821,6 +862,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-RS231799',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTP',
     capabilities: ['RFTTP', 'FED1'],
     responseCode: 'SH04',
@@ -844,6 +886,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-XV004512',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'SOGEA',
     capabilities: ['SOGEA'],
     responseCode: 'NONE',
@@ -867,6 +910,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-CK991207',
     status: 'ACT',
+    awaitingConfirmation: 'N',
     primarySkill: 'FED1',
     capabilities: ['FED1', 'RFTTP'],
     responseCode: 'SH01',
@@ -890,6 +934,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-AH642880',
     status: 'AWI',
+    awaitingConfirmation: 'N',
     primarySkill: 'RFTTC1',
     capabilities: ['RFTTC1', 'RFJBAS'],
     responseCode: 'SH01',
@@ -913,6 +958,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-EQ410563',
     status: 'ISS',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA1',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'SHP3',
@@ -936,6 +982,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-NR702255',
     status: 'EXC',
+    awaitingConfirmation: 'N',
     primarySkill: 'RISDN1',
     capabilities: ['RISDN1', 'RISDN2'],
     responseCode: 'SH04',
@@ -959,6 +1006,7 @@ export const TASK_TABLE_ROWS: TaskTableRow[] = [
   {
     taskId: 'RG-GM330948',
     status: 'COM',
+    awaitingConfirmation: 'N',
     primarySkill: 'OGGA2',
     capabilities: ['OGGA1', 'OGGA2'],
     responseCode: 'NONE',

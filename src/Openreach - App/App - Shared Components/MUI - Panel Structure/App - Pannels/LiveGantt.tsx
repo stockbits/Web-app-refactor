@@ -28,6 +28,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import React, { useState, useMemo, useRef, useEffect, useCallback, useReducer } from "react";
 import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
+import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
 
@@ -581,6 +582,8 @@ function LiveGantt({
     let filteredTasks = TASK_TABLE_ROWS;
     filteredTasks = filteredTasks.filter(task => task.division === selectedDivision);
     filteredTasks = filteredTasks.filter(task => task.domainId === selectedDomain);
+    // Only show tasks with Gantt-visible statuses
+    filteredTasks = filteredTasks.filter(task => GANTT_STATUSES.includes(task.status));
 
     // Filter resources to show ALL resources in the selected division and domain
     const relevantResources = RESOURCE_TABLE_ROWS.filter(resource => {

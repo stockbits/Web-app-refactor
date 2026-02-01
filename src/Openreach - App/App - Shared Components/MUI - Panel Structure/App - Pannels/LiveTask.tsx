@@ -7,6 +7,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import { TaskTableShell } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
 import { TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
+import { getTaskStatusLabel } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
 import { Chip } from '@mui/material';
@@ -14,7 +15,7 @@ import { useGridApiRef } from '@mui/x-data-grid';
 import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
-import { ProgressTaskDialog } from '../../ProgressTaskDialog';
+import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog';
 
 
 interface LiveTaskProps {
@@ -117,7 +118,20 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   }, [isExpanded]);
 
   // --- Columns (copied from Task Management) ---
-  const statusMetadata = useMemo(() => ({ ACT: { label: TASK_STATUS_LABELS.ACT }, AWI: { label: TASK_STATUS_LABELS.AWI }, ISS: { label: TASK_STATUS_LABELS.ISS }, EXC: { label: TASK_STATUS_LABELS.EXC }, COM: { label: TASK_STATUS_LABELS.COM } }), []);
+  const statusMetadata = useMemo(() => ({ 
+    ACT: { label: TASK_STATUS_LABELS.ACT }, 
+    AWI: { label: TASK_STATUS_LABELS.AWI }, 
+    ISS: { label: TASK_STATUS_LABELS.ISS }, 
+    EXC: { label: TASK_STATUS_LABELS.EXC }, 
+    COM: { label: TASK_STATUS_LABELS.COM },
+    FUR: { label: TASK_STATUS_LABELS.FUR },
+    CMN: { label: TASK_STATUS_LABELS.CMN },
+    HPD: { label: TASK_STATUS_LABELS.HPD },
+    HLD: { label: TASK_STATUS_LABELS.HLD },
+    CPD: { label: TASK_STATUS_LABELS.CPD },
+    DLG: { label: TASK_STATUS_LABELS.DLG },
+    CAN: { label: TASK_STATUS_LABELS.CAN },
+  }), []);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }), []);
   const commitDateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), []);
   const commitTypeLabels = useMemo(() => ({ APPOINTMENT: 'Appointment', 'START BY': 'Start by', 'COMPLETE BY': 'Complete by', TAIL: 'Tail' }), []);
@@ -141,7 +155,11 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     },
     { field: 'taskId', headerName: 'Task ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.taskId}</Typography>) },
     { field: 'workId', headerName: 'Work ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.workId}</Typography>) },
-    { field: 'status', headerName: 'Task Status', flex: 1.0, minWidth: 140, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>{statusMetadata[params.row.status].label}</Typography>) },
+    { field: 'status', headerName: 'Task Status', flex: 1.0, minWidth: 140, align: 'left', headerAlign: 'left', renderCell: (params) => {
+      // Use centralized helper for consistent status labels
+      const displayLabel = getTaskStatusLabel(params.row);
+      return (<Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }} noWrap>{displayLabel}</Typography>);
+    }},
     { field: 'commitDate', headerName: 'Commit Date', flex: 0.9, minWidth: 130, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{commitDateFormatter.format(new Date(params.row.commitDate))}</Typography>) },
     { field: 'commitType', headerName: 'Commit Type', flex: 0.7, minWidth: 110, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} sx={{ color: commitTypeColors[params.row.commitType] }}>{commitTypeLabels[params.row.commitType] ?? params.row.commitType}</Typography>) },
     { field: 'resourceId', headerName: 'Resource ID', flex: 0.8, minWidth: 120, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontFamily="'IBM Plex Mono', monospace" fontWeight={600} noWrap>{params.row.resourceId}</Typography>) },
@@ -160,6 +178,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   // Track sort model state to control DataGrid sorting
   const [sortModel, setSortModel] = useState<GridSortModel>([]);
+  const [lastSortedData, setLastSortedData] = useState<TaskTableRow[]>([]);
 
   const filteredRows = useMemo(() => {
     // Use filteredTasks if provided, otherwise return empty array
@@ -179,6 +198,15 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         
         const comparison = aVal < bVal ? -1 : 1;
         return sort === 'asc' ? comparison : -comparison;
+      });
+      setLastSortedData(sortedTasks);
+    } else if (dataRefresh > 0 && lastSortedData.length > 0 && sortedTasks.length === lastSortedData.length) {
+      // If dataRefresh changed but no sort model, preserve previous order by matching taskIds
+      const orderMap = new Map(lastSortedData.map((task, idx) => [task.taskId, idx]));
+      sortedTasks.sort((a, b) => {
+        const aIdx = orderMap.get(a.taskId) ?? Number.MAX_SAFE_INTEGER;
+        const bIdx = orderMap.get(b.taskId) ?? Number.MAX_SAFE_INTEGER;
+        return aIdx - bIdx;
       });
     }
     
@@ -367,22 +395,31 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         open={progressDialogOpen}
         onClose={() => setProgressDialogOpen(false)}
         tasks={tasksToProgress}
-        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, serverUpdates) => {
+        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, awaitingConfirmation, serverUpdates) => {
           // Update task status, resource, and progress notes in the data source without page reload
           import('../../../App - Data Tables/Task - Table').then(module => {
             updatedTaskIds.forEach(taskId => {
               const task = module.TASK_TABLE_ROWS.find(t => t.taskId === taskId);
               if (task) {
                 task.status = newStatus;
+                // Update resource fields: set when provided, clear when undefined
                 if (resourceId) {
                   task.resourceId = resourceId;
                   task.resourceName = resourceName || resourceId;
+                } else {
+                  // Explicitly clearing resources (e.g., ACT - Not Assigned)
+                  task.resourceId = '';
+                  task.resourceName = '';
                 }
+                // Update awaitingConfirmation flag
+                task.awaitingConfirmation = awaitingConfirmation || 'N';
                 // Add progress note from server
-                const update = serverUpdates?.find(u => u.taskId === taskId);
-                if (update?.progressNote) {
-                  task.progressNotes = task.progressNotes || [];
-                  task.progressNotes.unshift(update.progressNote);
+                if (Array.isArray(serverUpdates)) {
+                  const update = serverUpdates.find(u => u.taskId === taskId);
+                  if (update?.progressNote) {
+                    task.progressNotes = task.progressNotes || [];
+                    task.progressNotes.unshift(update.progressNote);
+                  }
                 }
               }
             });
@@ -392,7 +429,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           setProgressDialogOpen(false);
           
           // Show success snackbar
-          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : '';
+          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : (resourceId === undefined ? ' (resource cleared)' : '');
           setSnackbar({
             open: true,
             message: `Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`

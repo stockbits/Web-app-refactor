@@ -14,6 +14,7 @@ import { useSelectionUI } from "../MUI - Table/Selection - UI";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
 import type { TaskTableRow, TaskCommitType } from "../../App - Data Tables/Task - Table";
+import { taskMatchesStatusFilter } from "../MUI - Table/TaskTableQueryConfig.shared";
 
 export interface DockedPanel {
   id: string;
@@ -93,9 +94,12 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
 
     // Apply search filters
     tasks = tasks.filter(task => {
-      // Status filter
+      // Status filter with combined status support - using centralized helper
       if (searchFilters.statuses && searchFilters.statuses.length > 0) {
-        if (!searchFilters.statuses.includes(task.status)) {
+        const hasMatchingStatus = searchFilters.statuses.some(statusFilter =>
+          taskMatchesStatusFilter(task, statusFilter)
+        );
+        if (!hasMatchingStatus) {
           return false;
         }
       }
