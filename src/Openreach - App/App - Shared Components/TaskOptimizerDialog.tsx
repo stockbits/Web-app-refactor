@@ -70,43 +70,80 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
     setIsOptimizing(true)
     
     if (operationType === 'update-dates') {
-      // Show instructions to run the NPM script
-      const shouldReload = window.confirm(
-        'To refresh task dates:\n\n' +
-        '1. Open a terminal\n' +
-        '2. Run: npm run refresh-tasks\n' +
-        '3. Return here and click OK to reload\n\n' +
-        'Have you run the script? Click OK to reload and see updated tasks in the Gantt chart.'
-      )
-      
-      setIsOptimizing(false)
-      onClose()
-      
-      if (shouldReload) {
-        window.location.reload()
+      try {
+        const response = await fetch('http://localhost:3001/api/refresh-tasks', {
+          method: 'POST',
+        })
+        const data = await response.json()
+        
+        setIsOptimizing(false)
+        
+        if (data.success) {
+          const shouldReload = window.confirm(
+            '✅ Tasks refreshed successfully!\n\n' +
+            'Click OK to reload the page and see the updated tasks.'
+          )
+          onClose()
+          if (shouldReload) {
+            window.location.reload()
+          }
+        } else {
+          alert('❌ Failed to refresh tasks:\n\n' + (data.error || data.message))
+        }
+      } catch (error) {
+        setIsOptimizing(false)
+        alert(
+          '❌ Cannot connect to backend server.\n\n' +
+          'Please ensure the server is running:\n' +
+          '1. Open a terminal\n' +
+          '2. Run: npm run server\n' +
+          '3. Or run: npm run dev:full (runs both frontend & backend)\n\n' +
+          'Error: ' + (error instanceof Error ? error.message : String(error))
+        )
       }
     } else {
-      // Simulate optimization process for travel optimization
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      if (onOptimize) {
-        onOptimize(strategy, {
-          strategy,
-          daysSpread,
-          maxTasksPerDay,
-          minTravelTime,
+      // Travel optimization
+      try {
+        const response = await fetch('http://localhost:3001/api/optimize-travel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            strategy,
+            days: daysSpread,
+            maxTasks: maxTasksPerDay,
+          }),
         })
+        const data = await response.json()
+        
+        setIsOptimizing(false)
+        
+        if (data.success) {
+          if (onOptimize) {
+            onOptimize(strategy, {
+              strategy,
+              daysSpread,
+              maxTasksPerDay,
+              minTravelTime,
+            })
+          }
+          onClose()
+          alert(`✅ Tasks optimized using ${strategy === 'efficient' ? 'Efficient' : 'Travel Priority'} strategy!\n\nThe schedule has been updated.`)
+        } else {
+          alert('❌ Failed to optimize travel:\n\n' + (data.error || data.message))
+        }
+      } catch (error) {
+        setIsOptimizing(false)
+        alert(
+          '❌ Cannot connect to backend server.\n\n' +
+          'Please ensure the server is running with: npm run server\n\n' +
+          'Error: ' + (error instanceof Error ? error.message : String(error))
+        )
       }
-      
-      setIsOptimizing(false)
-      onClose()
-      
-      alert(`Tasks optimized using ${strategy === 'efficient' ? 'Efficient' : 'Travel Priority'} strategy!\n\nThe schedule has been updated. Changes will be visible after refresh.`)
     }
   }, [strategy, daysSpread, maxTasksPerDay, minTravelTime, onOptimize, onClose, operationType])
 
-  const handleRunScript = useCallback(() => {
-    // Show instructions based on operation type
+  const handleRunScript = useCallback(async () => {
+    // Copy command to clipboard and show instructions
     let scriptCommand = ''
     let description = ''
     
@@ -118,15 +155,27 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
       description = 'This will optimize task locations and schedules based on your selected strategy'
     }
     
-    console.log('Run this command:', scriptCommand)
-    
-    alert(
-      `To run the ${operationType === 'update-dates' ? 'task date refresh' : 'optimizer'}:\n\n` +
-      `1. Open a terminal\n` +
-      `2. Run: ${scriptCommand}\n\n` +
-      `${description}\n\n` +
-      `Or use the "Run & Reload" button to get instructions.`
-    )
+    try {
+      await navigator.clipboard.writeText(scriptCommand)
+      alert(
+        `✅ Command copied to clipboard!\n\n` +
+        `Command: ${scriptCommand}\n\n` +
+        `Next steps:\n` +
+        `1. Open a terminal (Ctrl+\` or Cmd+\`)\n` +
+        `2. Paste the command (already copied)\n` +
+        `3. Press Enter to run\n` +
+        `4. Return here and click "Run & Reload" to see results\n\n` +
+        `${description}`
+      )
+    } catch {
+      alert(
+        `To run the ${operationType === 'update-dates' ? 'task date refresh' : 'optimizer'}:\n\n` +
+        `1. Open a terminal\n` +
+        `2. Run: ${scriptCommand}\n\n` +
+        `${description}\n\n` +
+        `Then use the "Run & Reload" button.`
+      )
+    }
   }, [operationType, strategy, daysSpread, maxTasksPerDay])
 
   return (
@@ -338,14 +387,14 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
           Cancel
         </Button>
         <Button onClick={handleRunScript} variant="outlined">
-          Show Script Command
+          Copy Command (Manual)
         </Button>
         <Button 
           onClick={handleOptimize} 
           variant="contained"
           disabled={isOptimizing}
         >
-          {operationType === 'update-dates' ? 'Run & Reload' : 'Optimize Now'}
+          {operationType === 'update-dates' ? 'Refresh Now' : 'Optimize Now'}
         </Button>
       </DialogActions>
     </Dialog>
