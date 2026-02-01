@@ -162,7 +162,7 @@ export function ProgressTaskDialog({ open, onClose, tasks, onProgressComplete }:
       setSelectedResource(currentResource)
       setError(null)
     }
-  }, [open, task])
+  }, [open, task, availableResources])
 
   const handleProgress = async () => {
     if (!task || !selectedCombinedStatus) return

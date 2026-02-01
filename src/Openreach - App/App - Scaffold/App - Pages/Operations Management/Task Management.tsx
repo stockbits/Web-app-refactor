@@ -40,24 +40,6 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
     setSnackbar({ open: true, message, severity })
   }, [])
 
-  const statusMetadata: Record<TaskTableRow['status'], { label: string }> = useMemo(
-    () => ({
-      ACT: { label: TASK_STATUS_LABELS.ACT },
-      AWI: { label: TASK_STATUS_LABELS.AWI },
-      ISS: { label: TASK_STATUS_LABELS.ISS },
-      EXC: { label: TASK_STATUS_LABELS.EXC },
-      COM: { label: TASK_STATUS_LABELS.COM },
-      FUR: { label: TASK_STATUS_LABELS.FUR },
-      CMN: { label: TASK_STATUS_LABELS.CMN },
-      HPD: { label: TASK_STATUS_LABELS.HPD },
-      HLD: { label: TASK_STATUS_LABELS.HLD },
-      CPD: { label: TASK_STATUS_LABELS.CPD },
-      DLG: { label: TASK_STATUS_LABELS.DLG },
-      CAN: { label: TASK_STATUS_LABELS.CAN },
-    }),
-    [],
-  )
-
   const dateFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat('en-GB', {
@@ -398,7 +380,7 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         ),
       },
     ],
-    [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, tokens.background.alt, tokens.secondary.light, tokens.secondary.main, tokens.chip.bg, tokens.chip.border, tokens.chip.hover.bg, tokens.chip.text, theme.palette.text, theme.palette.mode, openCallout],
+    [dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success.main, tokens.state.error, tokens.state.warning, tokens.background.alt, tokens.secondary.light, tokens.secondary.main, tokens.chip.bg, tokens.chip.border, tokens.chip.hover.bg, tokens.chip.text, theme.palette.text, theme.palette.mode, openCallout],
   )
 
   const divisionOptions = useMemo(() => Array.from(new Set(TASK_TABLE_ROWS.map((row) => row.division))).sort(), [])

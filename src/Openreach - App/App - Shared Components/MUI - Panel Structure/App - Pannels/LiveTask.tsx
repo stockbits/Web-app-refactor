@@ -118,20 +118,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   }, [isExpanded]);
 
   // --- Columns (copied from Task Management) ---
-  const statusMetadata = useMemo(() => ({ 
-    ACT: { label: TASK_STATUS_LABELS.ACT }, 
-    AWI: { label: TASK_STATUS_LABELS.AWI }, 
-    ISS: { label: TASK_STATUS_LABELS.ISS }, 
-    EXC: { label: TASK_STATUS_LABELS.EXC }, 
-    COM: { label: TASK_STATUS_LABELS.COM },
-    FUR: { label: TASK_STATUS_LABELS.FUR },
-    CMN: { label: TASK_STATUS_LABELS.CMN },
-    HPD: { label: TASK_STATUS_LABELS.HPD },
-    HLD: { label: TASK_STATUS_LABELS.HLD },
-    CPD: { label: TASK_STATUS_LABELS.CPD },
-    DLG: { label: TASK_STATUS_LABELS.DLG },
-    CAN: { label: TASK_STATUS_LABELS.CAN },
-  }), []);
   const dateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }), []);
   const commitDateFormatter = useMemo(() => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), []);
   const commitTypeLabels = useMemo(() => ({ APPOINTMENT: 'Appointment', 'START BY': 'Start by', 'COMPLETE BY': 'Complete by', TAIL: 'Tail' }), []);
@@ -172,7 +158,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     { field: 'updatedAt', headerName: 'Last update (alt)', flex: 0.9, minWidth: 140, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" color="text.secondary" noWrap>{dateFormatter.format(new Date(params.row.updatedAt))}</Typography>) },
     { field: 'linkedTask', headerName: 'Linked task', flex: 0.6, minWidth: 100, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={500} color="text.secondary">{linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}</Typography>) },
     { field: 'postCode', headerName: 'Post code', flex: 0.6, minWidth: 90, align: 'left', headerAlign: 'left', renderCell: (params) => (<Typography variant="caption" fontWeight={600} noWrap>{params.row.postCode}</Typography>) },
-  ], [statusMetadata, dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.background?.alt, tokens.chip?.bg, tokens.chip?.border, tokens.chip?.hover?.bg, tokens.chip?.text, tokens.secondary?.light, tokens.secondary?.main, theme.palette.text, theme.palette.mode, openCallout]);
+  ], [dateFormatter, commitDateFormatter, commitTypeLabels, commitTypeColors, linkedTaskLabels, tokens.success?.main, tokens.state?.error, tokens.state?.warning, tokens.background?.alt, tokens.chip?.bg, tokens.chip?.border, tokens.chip?.hover?.bg, tokens.chip?.text, tokens.secondary?.light, tokens.secondary?.main, theme.palette.text, theme.palette.mode, openCallout]);
 
   const apiRef = useGridApiRef();
 
