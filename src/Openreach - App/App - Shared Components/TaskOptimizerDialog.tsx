@@ -80,16 +80,28 @@ export const TaskOptimizerDialog = ({ open, onClose, onOptimize }: TaskOptimizer
         
         if (data.success) {
           onClose()
-          // Show brief success message before reload
+          // Show success message with output preview
           const notification = document.createElement('div')
-          notification.textContent = '✅ Tasks refreshed! Reloading...'
-          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;font-size:18px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3)'
+          const outputPreview = data.output ? data.output.split('\n').slice(-3).join('\n') : ''
+          notification.innerHTML = `
+            <div style="font-size:18px;margin-bottom:10px">✅ Tasks refreshed!</div>
+            ${outputPreview ? `<div style="font-size:12px;opacity:0.9;font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis">${outputPreview}</div>` : ''}
+            <div style="font-size:14px;margin-top:10px">Reloading...</div>
+          `
+          notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.3);text-align:center'
           document.body.appendChild(notification)
           
-          // Auto reload after 1 second
+          // Log full output to console
+          if (data.output) {
+            console.log('=== Task Refresh Output ===')
+            console.log(data.output)
+            console.log('===========================')
+          }
+          
+          // Auto reload after 2 seconds
           setTimeout(() => {
             window.location.reload()
-          }, 1000)
+          }, 2000)
         } else {
           alert('❌ Failed to refresh tasks:\n\n' + (data.error || data.message))
         }
