@@ -23,23 +23,31 @@ import PersonIcon from '@mui/icons-material/Person'
 import UpdateIcon from '@mui/icons-material/Update'
 import type { TaskTableRow, TaskStatusCode } from '../App - Data Tables/Task - Table'
 import { TASK_STATUS_LABELS } from '../App - Data Tables/Task - Table'
-import type { ResourceTableRow } from '../App - Data Tables/Resource - Table'
 import { RESOURCE_TABLE_ROWS } from '../App - Data Tables/Resource - Table'
 
 interface ProgressTaskDialogProps {
   open: boolean
   onClose: () => void
   tasks: TaskTableRow[]
-  onProgressComplete: () => void
+  onProgressComplete: (
+    updatedTaskIds: string[], 
+    newStatus: TaskStatusCode, 
+    resourceId?: string,
+    resourceName?: string,
+    serverUpdates?: Array<{
+      taskId: string;
+      progressNote?: { id: string; author: string; createdAt: string; text: string };
+    }>
+  ) => void;
 }
 
 // Define valid status transitions (workflow rules)
 const STATUS_TRANSITIONS: Record<TaskStatusCode, TaskStatusCode[]> = {
-  'ACT': ['AWI', 'ISS', 'COM'],
-  'AWI': ['ACT', 'ISS', 'COM'],
-  'ISS': ['ACT', 'COM'],
-  'EXC': ['ACT', 'COM'],
-  'COM': [], // Completed tasks cannot be changed
+  ACT: ['AWI', 'ISS', 'COM'],
+  AWI: ['ACT', 'ISS', 'COM'],
+  ISS: ['ACT', 'COM'],
+  EXC: ['ACT', 'COM'],
+  COM: [], // Completed tasks cannot be changed
 }
 
 export function ProgressTaskDialog({ open, onClose, tasks, onProgressComplete }: ProgressTaskDialogProps) {
@@ -79,6 +87,11 @@ export function ProgressTaskDialog({ open, onClose, tasks, onProgressComplete }:
     setError(null)
 
     try {
+      // Get selected resource name
+      const selectedResourceName = selectedResource 
+        ? availableResources.find(r => r.resourceId === selectedResource)?.resourceName
+        : undefined
+
       // Call backend API to progress the task
       const response = await fetch('/api/progress-task', {
         method: 'POST',
@@ -89,6 +102,8 @@ export function ProgressTaskDialog({ open, onClose, tasks, onProgressComplete }:
           taskIds: tasks.map(t => t.taskId),
           newStatus: selectedStatus,
           resourceId: selectedResource || undefined,
+          resourceName: selectedResourceName,
+          userName: 'User', // In real app, get from auth context
         }),
       })
 
@@ -100,18 +115,14 @@ export function ProgressTaskDialog({ open, onClose, tasks, onProgressComplete }:
 
       console.log('Task progressed successfully:', data)
 
-      // Show success notification
-      const notification = document.createElement('div')
-      notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#4CAF50;color:white;padding:20px 40px;border-radius:8px;z-index:9999;text-align:center;border:2px solid #45a049'
-      notification.innerHTML = `
-        <div style="font-size:18px;font-weight:600;margin-bottom:8px">✓ Task${isBulk ? 's' : ''} Progressed</div>
-        <div style="font-size:14px;opacity:0.9">${isBulk ? tasks.length + ' tasks' : task.taskId} updated to ${TASK_STATUS_LABELS[selectedStatus]}</div>
-      `
-      document.body.appendChild(notification)
-      setTimeout(() => notification.remove(), 3000)
-
-      // Trigger data refresh
-      onProgressComplete()
+      // Trigger data refresh with updated task info and progress notes from server
+      onProgressComplete(
+        tasks.map(t => t.taskId), 
+        selectedStatus,
+        selectedResource || undefined,
+        selectedResourceName || undefined,
+        data.updates // Pass server response with progress notes
+      )
       onClose()
     } catch (err) {
       console.error('Error progressing task:', err)

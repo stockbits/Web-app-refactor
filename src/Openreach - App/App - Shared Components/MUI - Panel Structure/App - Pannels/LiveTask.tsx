@@ -1,5 +1,5 @@
 
-import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography } from "@mui/material";
+import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography, Snackbar, Alert } from "@mui/material";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
@@ -50,6 +50,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
+  const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
   // Resize observer for table height - handle mobile tab changes
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -182,7 +184,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     
     // Apply prioritization to sorted tasks
     return getPrioritizedTasks(sortedTasks);
-  }, [filteredTasks, sortModel, getPrioritizedTasks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredTasks, sortModel, getPrioritizedTasks, dataRefresh]);
 
   // Clear sorting when clearSorting prop changes
   useEffect(() => {
@@ -349,15 +352,51 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           </Box>
         )}
       </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSnackbar({ ...snackbar, open: false })}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
       <CalloutCompodent open={callout.open} taskNumber={callout.taskNumber || ''} onClose={closeCallout} />
       <ProgressTaskDialog 
         open={progressDialogOpen}
         onClose={() => setProgressDialogOpen(false)}
         tasks={tasksToProgress}
-        onProgressComplete={() => {
-          // Force a re-render to show updated data
-          // In a real app, you would refetch the data here
-          window.location.reload();
+        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, serverUpdates) => {
+          // Update task status, resource, and progress notes in the data source without page reload
+          import('../../../App - Data Tables/Task - Table').then(module => {
+            updatedTaskIds.forEach(taskId => {
+              const task = module.TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+              if (task) {
+                task.status = newStatus;
+                if (resourceId) {
+                  task.resourceId = resourceId;
+                  task.resourceName = resourceName || resourceId;
+                }
+                // Add progress note from server
+                const update = serverUpdates?.find(u => u.taskId === taskId);
+                if (update?.progressNote) {
+                  task.progressNotes = task.progressNotes || [];
+                  task.progressNotes.unshift(update.progressNote);
+                }
+              }
+            });
+            // Force re-render to update all components with fresh task data
+            setDataRefresh(prev => prev + 1);
+          });
+          setProgressDialogOpen(false);
+          
+          // Show success snackbar
+          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : '';
+          setSnackbar({
+            open: true,
+            message: `Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`
+          });
         }}
       />
     </Box>

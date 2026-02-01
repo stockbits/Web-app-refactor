@@ -54,7 +54,7 @@ export default function MUI4Panel({ onDockedPanelsChange, dockedPanels = [], sel
 
   // isResizing: { type: 'row'|'col', index: number, rowIndex?: number } | null
   const [isResizing, setIsResizing] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
-  const [hoveredHandle, setHoveredHandle] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
+  const [, setHoveredHandle] = useState<{ type: 'row'|'col', index: number, rowIndex?: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleMouseUpRef = useRef<(() => void) | null>(null);
   const handleTouchEndRef = useRef<(() => void) | null>(null);

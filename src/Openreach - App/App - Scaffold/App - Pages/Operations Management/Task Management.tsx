@@ -34,6 +34,7 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
 
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
+  const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
 
   const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
     setSnackbar({ open: true, message, severity })
@@ -442,7 +443,8 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
 
   const filteredRows = useMemo(
     () => (hasAppliedQuery ? applyTaskFilters(TASK_TABLE_ROWS, activeQuery) : []),
-    [hasAppliedQuery, activeQuery],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hasAppliedQuery, activeQuery, dataRefresh],
   )
 
   const getCellText = useCallback((row: TaskTableRow, field: string) => {
@@ -637,10 +639,29 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         open={progressDialogOpen}
         onClose={() => setProgressDialogOpen(false)}
         tasks={tasksToProgress}
-        onProgressComplete={() => {
-          // Force a re-render to show updated data
-          // In a real app, you would refetch the data here
-          window.location.reload();
+        onProgressComplete={(updatedTaskIds, newStatus, resourceId, resourceName, serverUpdates) => {
+          // Update task status, resource, and progress notes in the data source without page reload
+          updatedTaskIds.forEach(taskId => {
+            const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+            if (task) {
+              task.status = newStatus;
+              if (resourceId) {
+                task.resourceId = resourceId;
+                task.resourceName = resourceName || resourceId;
+              }
+              // Add progress note from server
+              const update = serverUpdates?.find(u => u.taskId === taskId);
+              if (update?.progressNote) {
+                task.progressNotes = task.progressNotes || [];
+                task.progressNotes.unshift(update.progressNote);
+              }
+            }
+          });
+          // Force re-render to update all components with fresh task data
+          setDataRefresh(prev => prev + 1);
+          setProgressDialogOpen(false);
+          const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : '';
+          showMessage(`Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`);
         }}
       />
     </>

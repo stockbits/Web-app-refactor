@@ -12,7 +12,7 @@ const PORT = 3001;
 
 // Configure CORS to allow requests from Vite dev server
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:4173'],
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:5173', 'http://localhost:4173'],
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -78,7 +78,7 @@ app.post('/api/optimize-travel', async (req, res) => {
 // Endpoint to progress tasks
 app.post('/api/progress-task', async (req, res) => {
   try {
-    const { taskIds, newStatus, resourceId } = req.body;
+    const { taskIds, newStatus, resourceId, resourceName, userName = 'System' } = req.body;
     
     if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
       return res.status(400).json({
@@ -96,21 +96,43 @@ app.post('/api/progress-task', async (req, res) => {
     
     console.log(`Progressing ${taskIds.length} task(s) to status: ${newStatus}${resourceId ? `, resource: ${resourceId}` : ''}`);
     
-    // In a real implementation, this would update a database
-    // For now, we'll simulate the update and return success
+    // Create progress note text
+    const timestamp = new Date().toISOString();
+    const statusLabels = {
+      ACT: 'Active',
+      AWI: 'Awaiting Issue',
+      ISS: 'Issued',
+      EXC: 'Executing',
+      COM: 'Complete'
+    };
+    
+    let noteText = `Status changed to ${statusLabels[newStatus]}`;
+    if (resourceId && resourceName) {
+      noteText += `. Assigned to ${resourceName} (${resourceId})`;
+    }
+    
+    // In a real implementation, this would update a database and append progress notes
+    // For now, we'll simulate the update and return the note to be added
     const updates = taskIds.map(taskId => ({
       taskId,
       oldStatus: 'ACT', // Would come from DB
       newStatus,
       resourceId: resourceId || null,
-      updatedAt: new Date().toISOString()
+      resourceName: resourceName || null,
+      updatedAt: timestamp,
+      progressNote: {
+        id: `P-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        author: userName,
+        createdAt: timestamp,
+        text: noteText
+      }
     }));
     
     res.json({
       success: true,
       message: `Successfully progressed ${taskIds.length} task(s) to ${newStatus}`,
       updates,
-      timestamp: new Date().toISOString()
+      timestamp
     });
   } catch (error) {
     console.error('Error progressing task:', error);
@@ -143,5 +165,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 API endpoints available:`);
   console.log(`   POST /api/refresh-tasks`);
   console.log(`   POST /api/optimize-travel`);
+  console.log(`   POST /api/progress-task`);
   console.log(`   GET  /api/health`);
 });
