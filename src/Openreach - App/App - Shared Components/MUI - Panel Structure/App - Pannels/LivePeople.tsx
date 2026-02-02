@@ -140,6 +140,9 @@ export default function LivePeople({
       minWidth: 150, 
       align: 'left', 
       headerAlign: 'left', 
+      valueFormatter: (value) => {
+        return workingStatusMetadata[value as ResourceTableRow['workingStatus']]?.label ?? value;
+      },
       renderCell: (params) => {
         const status = workingStatusMetadata[params.row.workingStatus];
         return (
@@ -252,6 +255,14 @@ export default function LivePeople({
       minWidth: 130, 
       align: 'left', 
       headerAlign: 'left', 
+      valueFormatter: (value) => {
+        const preferenceLabels: Record<string, string> = {
+          'X': '(X) Default',
+          'B': '(B) Batches',
+          'U': '(U) Underground'
+        };
+        return preferenceLabels[value as string] ?? value;
+      },
       renderCell: (params) => {
         const preferenceLabels: Record<string, string> = {
           'X': '(X) Default',
