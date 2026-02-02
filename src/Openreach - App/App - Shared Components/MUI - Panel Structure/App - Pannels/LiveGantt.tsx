@@ -1616,14 +1616,16 @@ function LiveGantt({
                 }
               }}
             >
-              {technicianDayRows.map((row) => (
+              {technicianDayRows.map((row, index) => (
                 <Box
                   key={`${row.technicianId}-${row.date.getTime()}`}
+                  data-row-index={index}
                   sx={{
                     minHeight: `${rowHeight}px`,
+                    height: 'auto',
                     borderBottom: `1px solid ${borderColor}`,
                     display: 'flex',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                     px: 1,
                     py: 0.5,
                     gap: 1,
@@ -1648,6 +1650,7 @@ function LiveGantt({
                         flexShrink: 0,
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
+                        mt: 0.5,
                         '&:hover': {
                           transform: 'scale(1.15)',
                         },
@@ -1871,12 +1874,15 @@ function LiveGantt({
                   return (
                   <Box
                     key={`${row.technicianId}-${row.date.getTime()}`}
+                    data-row-index={index}
                     sx={{
                       minHeight: `${rowHeight}px`,
+                      height: 'auto',
                       borderBottom: `1px solid ${borderColor}`,
                       position: 'relative',
                       backgroundColor: theme.palette.background.paper,
                       boxSizing: 'border-box',
+                      py: 0.5,
                       '&:hover': {
                         backgroundColor: theme.palette.action.hover,
                       },
