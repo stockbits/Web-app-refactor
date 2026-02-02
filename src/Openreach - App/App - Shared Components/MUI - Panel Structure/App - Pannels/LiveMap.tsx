@@ -922,10 +922,10 @@ function LiveMap({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded,
           minZoom={1}
           maxBounds={[[-90, -180], [90, 180]]}
           maxBoundsViscosity={0.75}
-          zoomSnap={0.25}
-          zoomDelta={0.5}
-          wheelPxPerZoomLevel={80}
-          wheelDebounceTime={50}
+          zoomSnap={0.5}
+          zoomDelta={0.25}
+          wheelPxPerZoomLevel={120}
+          wheelDebounceTime={100}
           zoomAnimation={true}
           zoomAnimationThreshold={4}
           fadeAnimation={true}
