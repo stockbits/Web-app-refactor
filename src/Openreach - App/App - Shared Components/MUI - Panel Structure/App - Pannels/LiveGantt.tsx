@@ -1169,7 +1169,7 @@ function LiveGantt({
               flexShrink: 0,
             }}
           >
-                        {/* Population Mode Selector */}
+            {/* Population Mode Selector */}
             <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 140 } }}>
               <Select
                 value={populationMode}
@@ -1198,8 +1198,6 @@ function LiveGantt({
                 <MenuItem value="manual">Manual Select</MenuItem>
               </Select>
             </FormControl>
-
-            <Divider orientation="vertical" flexItem />
 
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
