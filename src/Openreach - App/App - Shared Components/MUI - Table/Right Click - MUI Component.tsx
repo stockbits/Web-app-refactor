@@ -91,11 +91,27 @@ export function TableContextMenu<T = Record<string, unknown>>({
     event: MuiEvent<React.MouseEvent>
   ) => {
     if (event.button === 2) { // Right-click
+      // Get the formatted display value from the cell's rendered content
+      let displayValue = '';
+      
+      // Try to get the text content from the cell element
+      const cellElement = event.currentTarget as HTMLElement;
+      if (cellElement) {
+        displayValue = cellElement.innerText || cellElement.textContent || '';
+      }
+      
+      // Fallback to params.formattedValue or params.value
+      if (!displayValue) {
+        displayValue = params.formattedValue != null 
+          ? String(params.formattedValue) 
+          : (params.value != null ? String(params.value) : '');
+      }
+      
       // Always set new context menu state immediately for snappy response
       setContextMenu({
         mouseX: event.clientX - 2,
         mouseY: event.clientY - 4,
-        value: params.value != null ? String(params.value) : '',
+        value: displayValue.trim(),
         field: params.field,
         rowId: params.id,
         rowData: params.row,
@@ -113,10 +129,26 @@ export function TableContextMenu<T = Record<string, unknown>>({
 
     // Start long-press timer
     const timer = window.setTimeout(() => {
+      // Get the formatted display value from the cell's rendered content
+      let displayValue = '';
+      
+      // Try to get the text content from the cell element
+      const cellElement = event.currentTarget as HTMLElement;
+      if (cellElement) {
+        displayValue = cellElement.innerText || cellElement.textContent || '';
+      }
+      
+      // Fallback to params.formattedValue or params.value
+      if (!displayValue) {
+        displayValue = params.formattedValue != null 
+          ? String(params.formattedValue) 
+          : (params.value != null ? String(params.value) : '');
+      }
+      
       setContextMenu({
         mouseX: touch.clientX - 2,
         mouseY: touch.clientY - 4,
-        value: params.value != null ? String(params.value) : '',
+        value: displayValue.trim(),
         field: params.field,
         rowId: params.id,
         rowData: params.row,
