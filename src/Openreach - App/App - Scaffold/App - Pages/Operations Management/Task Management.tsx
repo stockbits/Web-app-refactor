@@ -177,6 +177,10 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         minWidth: 200,
         align: 'left',
         headerAlign: 'left',
+        valueFormatter: (value) => {
+          if (!value) return '';
+          return commitDateFormatter.format(new Date(value));
+        },
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={500} color="text.secondary">
             {commitDateFormatter.format(new Date(params.row.commitDate))}
@@ -191,6 +195,9 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         minWidth: 150,
         align: 'left',
         headerAlign: 'left',
+        valueFormatter: (value) => {
+          return commitTypeLabels[value as TaskTableRow['commitType']] ?? value;
+        },
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={600} sx={{ color: commitTypeColors[params.row.commitType] }}>
             {commitTypeLabels[params.row.commitType] ?? params.row.commitType}
@@ -344,6 +351,10 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         minWidth: 180,
         align: 'left',
         headerAlign: 'left',
+        valueFormatter: (value) => {
+          if (!value) return '';
+          return dateFormatter.format(new Date(value));
+        },
         renderCell: (params) => (
           <Typography variant="body2" color="text.secondary" noWrap>
             {dateFormatter.format(new Date(params.row.updatedAt))}
@@ -358,6 +369,9 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
         minWidth: 140,
         align: 'left',
         headerAlign: 'left',
+        valueFormatter: (value) => {
+          return linkedTaskLabels[value as TaskTableRow['linkedTask']] ?? value;
+        },
         renderCell: (params) => (
           <Typography variant="body2" fontWeight={500} color="text.secondary">
             {linkedTaskLabels[params.row.linkedTask] ?? params.row.linkedTask}
