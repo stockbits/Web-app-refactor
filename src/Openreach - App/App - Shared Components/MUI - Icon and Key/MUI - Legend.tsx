@@ -285,9 +285,9 @@ export function TaskStatusLegend({ variant = 'full', showTitle = true }: TaskSta
                 <Box sx={{ 
                   width: '100%', 
                   height: 0, 
-                  borderTop: '2px dashed',
+                  borderTop: '5px solid',
                   borderColor: theme.palette.warning.main,
-                  opacity: 0.6
+                  opacity: 0.8
                 }} />
               </Box>
               <Typography variant="body2" sx={{ fontWeight: 500 }}>Travel Time</Typography>

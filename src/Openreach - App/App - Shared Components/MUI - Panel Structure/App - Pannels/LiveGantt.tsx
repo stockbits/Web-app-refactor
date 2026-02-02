@@ -1339,21 +1339,6 @@ function LiveGantt({
               flexShrink: 0,
             }}
           >
-            {/* Travel Line Legend */}
-            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 1, display: { xs: 'none', sm: 'flex' } }}>
-              <DirectionsCarIcon sx={{ fontSize: 14, color: theme.palette.warning.main }} />
-              <Box
-                sx={{
-                  width: 24,
-                  height: 0,
-                  borderTop: `5px solid ${theme.palette.warning.main}`,
-                }}
-              />
-              <Typography variant="caption" sx={{ color: bodyTextColor, fontSize: '0.7rem' }}>
-                Travel
-              </Typography>
-            </Stack>
-            
             {/* Settings Button */}
             <Tooltip title="Gantt chart settings">
               <IconButton
