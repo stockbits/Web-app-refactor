@@ -3,7 +3,7 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography,
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import InfoIcon from "@mui/icons-material/Info";
 
@@ -333,7 +333,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                 }}
                 aria-label="Progress task"
               >
-                <TrendingUpIcon sx={{ fontSize: 16 }} />
+                <SkipNextIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
 
