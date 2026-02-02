@@ -31,6 +31,7 @@ import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table
 import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
+import { GanttSettingsDialog, type GanttSettings } from './GanttSettingsDialog';
 
 // Simple status indicator - display short code
 const getTaskStatusIndicator = (status: TaskStatusCode) => {
@@ -133,6 +134,7 @@ interface LiveGanttProps {
 interface TechnicianDayRow {
   technicianId: string;
   technicianName: string;
+  division?: string;
   date: Date;
   tasks: TaskTableRow[];
   shift?: string;
@@ -245,6 +247,32 @@ function LiveGantt({
   const bodyTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
   const borderColor = theme.palette.divider;
 
+  // Helper function to build resource display text based on settings
+  const getResourceDisplayText = useCallback((row: TechnicianDayRow, settings: GanttSettings): string => {
+    const parts: string[] = [];
+    
+    settings.resourceFields.forEach(field => {
+      if (!field.enabled) return;
+      
+      switch (field.key) {
+        case 'id':
+          parts.push(row.technicianId);
+          break;
+        case 'name':
+          if (row.technicianName) parts.push(row.technicianName);
+          break;
+        case 'division':
+          if (row.division) parts.push(row.division);
+          break;
+        case 'workingStatus':
+          if (row.workingStatus) parts.push(row.workingStatus);
+          break;
+      }
+    });
+    
+    return parts.join(' - ') || row.technicianId; // Fallback to ID if nothing enabled
+  }, []);
+
   // Date range state - persisted to survive component remounting during expand/collapse
   const [startDate, setStartDate] = useState<Date>(() => {
     const saved = localStorage.getItem('liveGantt-startDate');
@@ -270,6 +298,33 @@ function LiveGantt({
   const [populationMode, setPopulationMode] = useState<GanttPopulationMode>(() => {
     const saved = localStorage.getItem('liveGantt-populationMode');
     return (saved as GanttPopulationMode) || 'auto';
+  });
+
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+  const [ganttSettings, setGanttSettings] = useState<GanttSettings>(() => {
+    const saved = localStorage.getItem('liveGantt-settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Fall through to default
+      }
+    }
+    return {
+      populationMode: populationMode,
+      resourceFields: [
+        { key: 'id', label: 'ID', enabled: true },
+        { key: 'name', label: 'Name', enabled: false },
+        { key: 'division', label: 'Division', enabled: false },
+        { key: 'workingStatus', label: 'Status', enabled: false },
+      ],
+      taskFields: [
+        { key: 'taskNumber', label: 'Task #', enabled: true },
+        { key: 'commitType', label: 'Type', enabled: true },
+        { key: 'status', label: 'Status', enabled: true },
+        { key: 'duration', label: 'Duration', enabled: false },
+      ],
+    };
   });
 
   const [isAutoFit, setIsAutoFit] = useState(true);
@@ -298,6 +353,15 @@ function LiveGantt({
   useEffect(() => {
     localStorage.setItem('liveGantt-populationMode', populationMode);
   }, [populationMode]);
+
+  // Persist gantt settings and sync population mode
+  useEffect(() => {
+    localStorage.setItem('liveGantt-settings', JSON.stringify(ganttSettings));
+    // Sync population mode from settings
+    if (ganttSettings.populationMode !== populationMode) {
+      setPopulationMode(ganttSettings.populationMode);
+    }
+  }, [ganttSettings]);
 
   const timelineRef = useRef<HTMLDivElement>(null);
   const timelineBodyRef = useRef<HTMLDivElement>(null);
@@ -409,9 +473,18 @@ function LiveGantt({
     }
   }, [visibleDays, selectedTaskIds, selectTasks, selectMultipleTasksFromMap, filteredTasks, onAppendTasks]);
 
-  // Toggle population mode
-  const handlePopulationModeChange = useCallback((mode: GanttPopulationMode) => {
-    setPopulationMode(mode);
+  // Settings dialog handlers
+  const handleOpenSettings = useCallback(() => {
+    setSettingsDialogOpen(true);
+  }, []);
+
+  const handleCloseSettings = useCallback(() => {
+    setSettingsDialogOpen(false);
+  }, []);
+
+  const handleSaveSettings = useCallback((newSettings: GanttSettings) => {
+    setGanttSettings(newSettings);
+    setSettingsDialogOpen(false);
   }, []);
 
     // Trigger recalculation on window resize in expanded mode
@@ -633,6 +706,7 @@ function LiveGantt({
       rows.push({
         technicianId: resource.resourceId,
         technicianName: resource.resourceName,
+        division: resource.division,
         date: dateRange[0], // Use first day for reference
         tasks: resourceTasks,
         shift: resource.scheduleShift,
@@ -1169,35 +1243,25 @@ function LiveGantt({
               flexShrink: 0,
             }}
           >
-            {/* Population Mode Selector */}
-            <FormControl size="small" sx={{ minWidth: { xs: 100, sm: 140 } }}>
-              <Select
-                value={populationMode}
-                onChange={(e) => handlePopulationModeChange(e.target.value as GanttPopulationMode)}
+            {/* Settings Button */}
+            <Tooltip title="Gantt chart settings">
+              <IconButton
+                size="small"
+                onClick={handleOpenSettings}
                 sx={{
-                  height: 28,
-                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                  color: bodyTextColor,
+                  p: 0.25,
                   borderRadius: 1,
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.palette.divider,
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                  color: theme.openreach.energyAccent,
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.openreach.energyAccent, 0.08),
                     borderColor: theme.openreach.energyAccent,
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.openreach.energyAccent,
-                    borderWidth: 1,
                   },
                 }}
-                startAdornment={
-                  <SettingsIcon sx={{ fontSize: { xs: 14, sm: 16 }, mr: 0.5, color: theme.openreach.energyAccent }} />
-                }
               >
-                <MenuItem value="auto">Auto Populate</MenuItem>
-                <MenuItem value="manual">Manual Select</MenuItem>
-              </Select>
-            </FormControl>
+                <SettingsIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />
+              </IconButton>
+            </Tooltip>
 
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
@@ -1545,7 +1609,7 @@ function LiveGantt({
                   </Tooltip>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.85rem' }}>
-                      {row.technicianName || row.technicianId}
+                      {getResourceDisplayText(row, ganttSettings)}
                     </Typography>
                   </Box>
                 </Box>
@@ -1971,6 +2035,14 @@ function LiveGantt({
           </Box>
         </Box>
       )}
+
+      {/* Gantt Settings Dialog */}
+      <GanttSettingsDialog
+        open={settingsDialogOpen}
+        onClose={handleCloseSettings}
+        settings={ganttSettings}
+        onSave={handleSaveSettings}
+      />
     </Box>
   );
 }
