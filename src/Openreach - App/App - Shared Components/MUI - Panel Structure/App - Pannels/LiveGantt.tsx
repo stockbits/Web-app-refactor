@@ -1608,7 +1608,7 @@ function LiveGantt({
                     height: 'auto',
                     borderBottom: `1px solid ${borderColor}`,
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     px: 1,
                     py: 0.5,
                     gap: 1,
