@@ -20,7 +20,6 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
@@ -1149,12 +1148,6 @@ function LiveGantt({
     });
   }, []);
 
-  const handleToday = useCallback(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    setStartDate(today);
-  }, []);
-
   const handlePresetChange = useCallback((preset: DateRangePreset) => {
     const config = DATE_PRESETS[preset];
     setSelectedPreset(preset);
@@ -1230,71 +1223,6 @@ function LiveGantt({
         >
           {/* Left side - Date navigation */}
           <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center" sx={{ flexShrink: 0 }}>
-            {/* Navigation buttons */}
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                display: 'flex', 
-                borderRadius: 1,
-                border: `1px solid ${theme.palette.divider}`,
-                overflow: 'hidden',
-              }}
-            >
-              <Tooltip title="Previous">
-                <IconButton
-                  size="small"
-                  onClick={handlePreviousDay}
-                  sx={{ 
-                    borderRadius: 0,
-                    px: { xs: 0.5, sm: 0.75 },
-                    py: 0.5,
-                    color: theme.openreach.energyAccent,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                    }
-                  }}
-                >
-                  <ChevronLeftIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-                </IconButton>
-              </Tooltip>
-              <Divider orientation="vertical" flexItem />
-              <Tooltip title="Today">
-                <IconButton
-                  size="small"
-                  onClick={handleToday}
-                  sx={{ 
-                    borderRadius: 0,
-                    px: { xs: 0.5, sm: 0.75 },
-                    py: 0.5,
-                    color: theme.openreach.energyAccent,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                    }
-                  }}
-                >
-                  <TodayIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />
-                </IconButton>
-              </Tooltip>
-              <Divider orientation="vertical" flexItem />
-              <Tooltip title="Next">
-                <IconButton
-                  size="small"
-                  onClick={handleNextDay}
-                  sx={{ 
-                    borderRadius: 0,
-                    px: { xs: 0.5, sm: 0.75 },
-                    py: 0.5,
-                    color: theme.openreach.energyAccent,
-                    '&:hover': {
-                      backgroundColor: theme.palette.action.hover,
-                    }
-                  }}
-                >
-                  <ChevronRightIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
-                </IconButton>
-              </Tooltip>
-            </Paper>
-            
             {/* Date Range Selector */}
             <FormControl size="small" sx={{ minWidth: { xs: 90, sm: 120 } }}>
               <Select
@@ -1327,6 +1255,53 @@ function LiveGantt({
                 ))}
               </Select>
             </FormControl>
+            
+            {/* Navigation buttons */}
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                display: 'flex', 
+                borderRadius: 1,
+                border: `1px solid ${theme.palette.divider}`,
+                overflow: 'hidden',
+              }}
+            >
+              <Tooltip title="Previous">
+                <IconButton
+                  size="small"
+                  onClick={handlePreviousDay}
+                  sx={{ 
+                    borderRadius: 0,
+                    px: { xs: 0.5, sm: 0.75 },
+                    py: 0.5,
+                    color: theme.openreach.energyAccent,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    }
+                  }}
+                >
+                  <ChevronLeftIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                </IconButton>
+              </Tooltip>
+              <Divider orientation="vertical" flexItem />
+              <Tooltip title="Next">
+                <IconButton
+                  size="small"
+                  onClick={handleNextDay}
+                  sx={{ 
+                    borderRadius: 0,
+                    px: { xs: 0.5, sm: 0.75 },
+                    py: 0.5,
+                    color: theme.openreach.energyAccent,
+                    '&:hover': {
+                      backgroundColor: theme.palette.action.hover,
+                    }
+                  }}
+                >
+                  <ChevronRightIcon sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                </IconButton>
+              </Tooltip>
+            </Paper>
           </Stack>
 
           {/* Right side actions */}
