@@ -3,6 +3,9 @@ import { Box, AppBar, Toolbar, useTheme, Tooltip, IconButton, Stack, Typography,
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import InfoIcon from "@mui/icons-material/Info";
 
 import { TaskTableShell } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
@@ -17,6 +20,7 @@ import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Ma
 import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
 import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog';
 import { QuickAddNotesDialog } from '../../../../mui-api-calls/QuickAddNotesDialog';
+import { MultiTaskDialog } from '../../MUI - More Info Component/App - Multi Task Dialog';
 
 
 interface LiveTaskProps {
@@ -57,6 +61,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
   const [quickNotesDialogOpen, setQuickNotesDialogOpen] = useState(false);
   const [tasksForNotes, setTasksForNotes] = useState<TaskTableRow[]>([]);
+  const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
@@ -232,6 +237,38 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     clearSelectionOnSort();
   }, [clearSelectionOnSort]);
 
+  // Helper to get selected or all filtered tasks
+  const getTasksForAction = useCallback(() => {
+    if (selectedTaskIds.length > 0) {
+      return filteredRows.filter(task => selectedTaskIds.includes(task.taskId));
+    }
+    return filteredRows;
+  }, [selectedTaskIds, filteredRows]);
+
+  // Toolbar action handlers
+  const handleProgressTaskClick = useCallback(() => {
+    const tasks = getTasksForAction();
+    if (tasks.length > 0) {
+      setTasksToProgress(tasks);
+      setProgressDialogOpen(true);
+    }
+  }, [getTasksForAction]);
+
+  const handleQuickNotesClick = useCallback(() => {
+    const tasks = getTasksForAction();
+    if (tasks.length > 0) {
+      setTasksForNotes(tasks);
+      setQuickNotesDialogOpen(true);
+    }
+  }, [getTasksForAction]);
+
+  const handleDetailsClick = useCallback(() => {
+    const tasks = getTasksForAction();
+    if (tasks.length > 0) {
+      setTaskDetailsOpen(true);
+    }
+  }, [getTasksForAction]);
+
   // TODO: Use globalSearch for filtering tasks
 
 
@@ -274,7 +311,82 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         }}
       >
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
-          <Box />
+          {/* Left side: Action buttons */}
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" sx={{ pl: { xs: 0.5, sm: 1 } }}>
+            <Tooltip title={selectedTaskIds.length > 0 ? `Progress ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "Progress all filtered tasks"}>
+              <IconButton
+                size="small"
+                onClick={handleProgressTaskClick}
+                disabled={filteredRows.length === 0}
+                sx={{
+                  p: 0.25,
+                  borderRadius: 1,
+                  color: iconColor,
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: iconColor,
+                  },
+                  '&:disabled': {
+                    opacity: 0.3,
+                  },
+                }}
+                aria-label="Progress task"
+              >
+                <TrendingUpIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={selectedTaskIds.length > 0 ? `Add note to ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "Add note to all filtered tasks"}>
+              <IconButton
+                size="small"
+                onClick={handleQuickNotesClick}
+                disabled={filteredRows.length === 0}
+                sx={{
+                  p: 0.25,
+                  borderRadius: 1,
+                  color: iconColor,
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: iconColor,
+                  },
+                  '&:disabled': {
+                    opacity: 0.3,
+                  },
+                }}
+                aria-label="Add quick note"
+              >
+                <NoteAddIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={selectedTaskIds.length > 0 ? `View details for ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "View details for all filtered tasks"}>
+              <IconButton
+                size="small"
+                onClick={handleDetailsClick}
+                disabled={filteredRows.length === 0}
+                sx={{
+                  p: 0.25,
+                  borderRadius: 1,
+                  color: iconColor,
+                  border: `1px solid ${theme.palette.divider}`,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: iconColor,
+                  },
+                  '&:disabled': {
+                    opacity: 0.3,
+                  },
+                }}
+                aria-label="Open details"
+              >
+                <InfoIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+
+          {/* Right side: Panel controls */}
           <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" sx={{ pr: { xs: 0.5, sm: 2 } }}>
             <Tooltip title={isDocked ? "Undock panel" : "Dock panel"}>
               <IconButton
@@ -468,6 +580,15 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             onQuickNotes(tasksForNotes);
           }
         }}
+      />
+
+      <MultiTaskDialog
+        open={taskDetailsOpen}
+        onClose={() => setTaskDetailsOpen(false)}
+        tasks={selectedTaskIds.length > 0 
+          ? filteredRows.filter(task => selectedTaskIds.includes(task.taskId))
+          : filteredRows
+        }
       />
     </Box>
   );
