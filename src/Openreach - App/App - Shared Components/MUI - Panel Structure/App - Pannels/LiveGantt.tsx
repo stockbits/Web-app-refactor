@@ -231,7 +231,7 @@ function LiveGantt({
   const borderColor = theme.palette.divider;
 
   // Helper function to build resource display text based on settings
-  const getResourceDisplayText = useCallback((row: TechnicianDayRow, settings: GanttSettings): string => {
+  const getResourceDisplayText = useCallback((row: TechnicianDayRow, settings: GanttSettings): string[] => {
     const parts: string[] = [];
     
     settings.resourceFields.forEach(field => {
@@ -253,7 +253,7 @@ function LiveGantt({
       }
     });
     
-    return parts.join(' - ') || row.technicianId; // Fallback to ID if nothing enabled
+    return parts.length > 0 ? parts : [row.technicianId]; // Fallback to ID if nothing enabled
   }, []);
 
   // Calculate dynamic column width based on enabled resource fields
@@ -1633,7 +1633,8 @@ function LiveGantt({
                         flexShrink: 0,
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
-                        mt: 0.5,
+                        alignSelf: 'flex-start',
+                        mt: 0.25,
                         '&:hover': {
                           transform: 'scale(1.15)',
                         },
@@ -1642,20 +1643,23 @@ function LiveGantt({
                       <PersonIcon sx={{ fontSize: 16, color: '#fff' }} />
                     </Avatar>
                   </Tooltip>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography 
-                      variant="body2" 
-                      fontWeight={500} 
-                      sx={{ 
-                        color: bodyTextColor, 
-                        fontSize: '0.85rem',
-                        wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {getResourceDisplayText(row, ganttSettings)}
-                    </Typography>
+                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                    {getResourceDisplayText(row, ganttSettings).map((text, idx) => (
+                      <Typography 
+                        key={idx}
+                        variant="body2" 
+                        fontWeight={idx === 0 ? 600 : 500}
+                        sx={{ 
+                          color: bodyTextColor, 
+                          fontSize: idx === 0 ? '0.85rem' : '0.75rem',
+                          wordWrap: 'break-word',
+                          overflowWrap: 'break-word',
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {text}
+                      </Typography>
+                    ))}
                   </Box>
                 </Box>
               ))}
