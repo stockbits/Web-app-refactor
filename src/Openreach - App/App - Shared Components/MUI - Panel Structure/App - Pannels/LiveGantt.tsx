@@ -1852,7 +1852,7 @@ function LiveGantt({
                 })()}
 
                 {/* Rows with task blocks */}
-                {technicianDayRows.map((row) => {
+                {technicianDayRows.map((row, index) => {
                   // Calculate shift time bars for each day (show shift hours across all days)
                   const shiftBars: Array<{ left: number; width: number; dayIndex: number; startMinutes: number; duration: number }> = [];
                   
