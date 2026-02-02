@@ -1641,7 +1641,7 @@ function LiveGantt({
                       <PersonIcon sx={{ fontSize: 18, color: '#fff' }} />
                     </Avatar>
                   </Tooltip>
-                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5, justifyContent: 'center' }}>
+                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                     {getResourceDisplayText(row, ganttSettings).map((text, idx) => (
                       <Typography 
                         key={idx}
