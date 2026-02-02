@@ -1620,13 +1620,12 @@ function LiveGantt({
                 <Box
                   key={`${row.technicianId}-${row.date.getTime()}`}
                   sx={{
-                    height: `${rowHeight}px`,
                     minHeight: `${rowHeight}px`,
-                    maxHeight: `${rowHeight}px`,
                     borderBottom: `1px solid ${borderColor}`,
                     display: 'flex',
                     alignItems: 'center',
                     px: 1,
+                    py: 0.5,
                     gap: 1,
                     backgroundColor: theme.palette.background.paper,
                     boxSizing: 'border-box',
@@ -1658,7 +1657,17 @@ function LiveGantt({
                     </Avatar>
                   </Tooltip>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="body2" fontWeight={500} noWrap sx={{ color: bodyTextColor, fontSize: '0.85rem' }}>
+                    <Typography 
+                      variant="body2" 
+                      fontWeight={500} 
+                      sx={{ 
+                        color: bodyTextColor, 
+                        fontSize: '0.85rem',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word',
+                        lineHeight: 1.3,
+                      }}
+                    >
                       {getResourceDisplayText(row, ganttSettings)}
                     </Typography>
                   </Box>
@@ -1863,9 +1872,7 @@ function LiveGantt({
                   <Box
                     key={`${row.technicianId}-${row.date.getTime()}`}
                     sx={{
-                      height: `${rowHeight}px`,
                       minHeight: `${rowHeight}px`,
-                      maxHeight: `${rowHeight}px`,
                       borderBottom: `1px solid ${borderColor}`,
                       position: 'relative',
                       backgroundColor: theme.palette.background.paper,
@@ -2048,7 +2055,7 @@ function LiveGantt({
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: `${Math.max(3, width)}px`,
-                                height: rowHeight - 12,
+                                minHeight: rowHeight - 12,
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
@@ -2064,7 +2071,7 @@ function LiveGantt({
                                 paddingRight: '4px',
                                 paddingTop: '2px',
                                 paddingBottom: '2px',
-                                overflow: 'hidden',
+                                overflow: 'visible',
                                 zIndex: isSelected ? 100 : 1,
                                 transition: 'all 0.2s ease-in-out',
                                 '&:hover': {
@@ -2090,11 +2097,10 @@ function LiveGantt({
                                           sx={{
                                             color: '#000000',
                                             fontWeight: item.key === 'taskNumber' ? 'bold' : 'normal',
-                                            lineHeight: 1.1,
+                                            lineHeight: 1.2,
                                             fontSize: '0.65rem',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
+                                            wordWrap: 'break-word',
+                                            overflowWrap: 'break-word',
                                           }}
                                         >
                                           {item.value}
