@@ -35,6 +35,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   const [legendOpen, setLegendOpen] = useState(false)
   const [searchFilters, setSearchFilters] = useState<SearchFilters | null>(null)
   const [clearTrigger, setClearTrigger] = useState(0)
+  const [dataRefresh, setDataRefresh] = useState(0) // Counter to force re-render
 
   // Selection UI context
   const { clearSelection, selectedTaskIds } = useSelectionUI()
@@ -88,6 +89,20 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
 
   // Open legend - memoized
   const handleOpenLegend = useCallback(() => setLegendOpen(true), [])
+
+  // Progress task handler - memoized
+  const handleProgressTask = useCallback((_tasks: TaskTableRow[]) => {
+    // MUI4Panel will pass this to LiveTask which will handle the dialog
+    // We just need to provide the callback to trigger data refresh
+    setDataRefresh(prev => prev + 1);
+  }, [])
+
+  // Quick notes handler - memoized
+  const handleQuickNotes = useCallback((_tasks: TaskTableRow[]) => {
+    // MUI4Panel will pass this to LiveTask which will handle the dialog
+    // We just need to provide the callback to trigger data refresh
+    setDataRefresh(prev => prev + 1);
+  }, [])
 
   // Resource DB data to show all available options
   const divisionOptions = useMemo(() => 
@@ -272,6 +287,9 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
         clearSorting={clearTrigger}
         openTaskDialog={openTaskDialog}
         onAddToDock={onAddToDock}
+        onProgressTask={handleProgressTask}
+        onQuickNotes={handleQuickNotes}
+        dataRefresh={dataRefresh}
       />
       
       <AppSearchTool 

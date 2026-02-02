@@ -6,7 +6,7 @@ import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 
 import { TaskTableShell } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
-import { TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
+import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table';
 import { getTaskStatusLabel } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
@@ -16,6 +16,7 @@ import CalloutCompodent from '../../MUI - Callout MGT/Callout - Compodent';
 import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Management/useCalloutMgt';
 import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
 import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog';
+import { QuickAddNotesDialog } from '../../../../mui-api-calls/QuickAddNotesDialog';
 
 
 interface LiveTaskProps {
@@ -29,9 +30,12 @@ interface LiveTaskProps {
   filteredTasks?: TaskTableRow[];
   clearSorting?: number;
   onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void;
+  onProgressTask?: (tasks: TaskTableRow[]) => void;
+  onQuickNotes?: (tasks: TaskTableRow[]) => void;
+  dataRefresh?: number;
 }
 
-export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting, onAddToDock }: LiveTaskProps = {}) {
+export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDocked, isExpanded, minimized, filteredTasks, clearSorting, onAddToDock, onProgressTask, onQuickNotes, dataRefresh: externalDataRefresh }: LiveTaskProps = {}) {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
   const headerBg = isDark ? theme.openreach.darkTableColors.headerBg : theme.openreach.tableColors.headerBg;
@@ -51,6 +55,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
+  const [quickNotesDialogOpen, setQuickNotesDialogOpen] = useState(false);
+  const [tasksForNotes, setTasksForNotes] = useState<TaskTableRow[]>([]);
   const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
@@ -208,6 +214,13 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
     }
   }, [clearSorting, apiRef]);
 
+  // Sync external dataRefresh changes
+  useEffect(() => {
+    if (externalDataRefresh !== undefined && externalDataRefresh > 0) {
+      setDataRefresh(externalDataRefresh);
+    }
+  }, [externalDataRefresh]);
+
   // Row styling for selected tasks - optimized to reduce re-renders
   const getRowClassName = useCallback((params: { id: string | number; row: TaskTableRow }) => {
     return selectedTaskIds.includes(params.row.taskId) ? 'selected-row' : '';
@@ -345,8 +358,8 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
               setProgressDialogOpen(true);
             }}
             onAddQuickNote={(tasks) => {
-              console.log('Add quick note to tasks:', tasks)
-              // TODO: Implement quick note logic
+              setTasksForNotes(tasks);
+              setQuickNotesDialogOpen(true);
             }}
             onAddToDock={onAddToDock ? (task) => {
               onAddToDock({
@@ -420,6 +433,40 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             open: true,
             message: `Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`
           });
+          // Notify parent component if callback provided
+          if (onProgressTask) {
+            onProgressTask(tasksToProgress);
+          }
+        }}
+      />
+
+      <QuickAddNotesDialog
+        open={quickNotesDialogOpen}
+        onClose={() => setQuickNotesDialogOpen(false)}
+        tasks={tasksForNotes}
+        onNotesAdded={(taskIds, serverUpdates) => {
+          // Update tasks with new notes
+          taskIds.forEach(taskId => {
+            const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+            if (task && Array.isArray(serverUpdates)) {
+              const update = serverUpdates.find(u => u.taskId === taskId);
+              if (update?.progressNote) {
+                task.progressNotes = task.progressNotes || [];
+                task.progressNotes.unshift(update.progressNote);
+              }
+            }
+          });
+          // Force re-render
+          setDataRefresh(prev => prev + 1);
+          setQuickNotesDialogOpen(false);
+          setSnackbar({
+            open: true,
+            message: `Note added to ${taskIds.length} task${taskIds.length > 1 ? 's' : ''}`
+          });
+          // Notify parent component if callback provided
+          if (onQuickNotes) {
+            onQuickNotes(tasksForNotes);
+          }
         }}
       />
     </Box>
