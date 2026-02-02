@@ -266,13 +266,18 @@ function LiveGantt({
     return Math.min(Math.max(calculatedWidth, MIN_COLUMN_WIDTH), MAX_COLUMN_WIDTH);
   }, []);
 
-  // Calculate row height based on enabled task fields
+  // Calculate row height based on enabled task and resource fields
   const getRowHeight = useCallback((settings: GanttSettings): number => {
     const enabledTaskFieldCount = settings.taskFields.filter(f => f.enabled).length;
+    const enabledResourceFieldCount = settings.resourceFields.filter(f => f.enabled).length;
+    
+    // Use whichever requires more height - resource fields or task fields
+    const maxFieldCount = Math.max(enabledTaskFieldCount, enabledResourceFieldCount);
+    
     // Base height + additional height for extra fields (stacked vertically)
     // Increased spacing to accommodate longer status labels like "Held Pending Details"
     // First field fits in base height, each additional field adds height
-    const additionalLines = Math.max(0, enabledTaskFieldCount - 1);
+    const additionalLines = Math.max(0, maxFieldCount - 1);
     return BASE_ROW_HEIGHT + (additionalLines * 16); // 16px per additional line (increased from 14px)
   }, []);
 
@@ -1604,8 +1609,7 @@ function LiveGantt({
                   key={`${row.technicianId}-${row.date.getTime()}`}
                   data-row-index={index}
                   sx={{
-                    minHeight: `${rowHeight}px`,
-                    height: 'auto',
+                    height: `${rowHeight}px`,
                     borderBottom: `1px solid ${borderColor}`,
                     display: 'flex',
                     alignItems: 'center',
@@ -1614,6 +1618,7 @@ function LiveGantt({
                     gap: 1,
                     backgroundColor: theme.palette.background.paper,
                     boxSizing: 'border-box',
+                    overflow: 'hidden',
                   }}
                 >
                   <Tooltip 
@@ -1861,13 +1866,13 @@ function LiveGantt({
                     key={`${row.technicianId}-${row.date.getTime()}`}
                     data-row-index={index}
                     sx={{
-                      minHeight: `${rowHeight}px`,
-                      height: 'auto',
+                      height: `${rowHeight}px`,
                       borderBottom: `1px solid ${borderColor}`,
                       position: 'relative',
                       backgroundColor: theme.palette.background.paper,
                       boxSizing: 'border-box',
                       py: 0.5,
+                      overflow: 'hidden',
                       '&:hover': {
                         backgroundColor: theme.palette.action.hover,
                       },
