@@ -31,7 +31,7 @@ import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table
 import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
-import { GanttSettingsDialog, type GanttSettings, type GanttResourceField, type GanttTaskField } from './GanttSettingsDialog';
+import { GanttSettingsDialog, type GanttSettings } from './GanttSettingsDialog';
 
 // Calculate distance between two coordinates using Haversine formula (in km)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -1339,6 +1339,21 @@ function LiveGantt({
               flexShrink: 0,
             }}
           >
+            {/* Travel Line Legend */}
+            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 1, display: { xs: 'none', sm: 'flex' } }}>
+              <DirectionsCarIcon sx={{ fontSize: 14, color: theme.palette.warning.main }} />
+              <Box
+                sx={{
+                  width: 24,
+                  height: 0,
+                  borderTop: `5px solid ${theme.palette.warning.main}`,
+                }}
+              />
+              <Typography variant="caption" sx={{ color: bodyTextColor, fontSize: '0.7rem' }}>
+                Travel
+              </Typography>
+            </Stack>
+            
             {/* Settings Button */}
             <Tooltip title="Gantt chart settings">
               <IconButton
@@ -2045,12 +2060,12 @@ function LiveGantt({
                                 top: '50%',
                                 width: `${Math.max(2, width)}px`,
                                 height: 0,
-                                borderTop: `3px solid ${alpha(theme.palette.warning.main, 0.7)}`,
+                                borderTop: `5px solid ${alpha(theme.palette.warning.main, 0.8)}`,
                                 cursor: 'help',
                                 zIndex: 2,
                                 '&:hover': {
                                   borderTopColor: theme.palette.warning.main,
-                                  borderTopWidth: '4px',
+                                  borderTopWidth: '6px',
                                   zIndex: 51,
                                 },
                               }}
