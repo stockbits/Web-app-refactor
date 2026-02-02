@@ -5,7 +5,7 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import CloseFullscreenIcon from "@mui/icons-material/CloseFullscreen";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import InfoIcon from "@mui/icons-material/Info";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 import { TaskTableShell } from '../../MUI - Table';
 import type { GridColDef, GridSortModel } from '@mui/x-data-grid';
@@ -381,7 +381,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
                 }}
                 aria-label="Open details"
               >
-                <InfoIcon sx={{ fontSize: 16 }} />
+                <VisibilityIcon sx={{ fontSize: 16 }} />
               </IconButton>
             </Tooltip>
           </Stack>
