@@ -147,12 +147,13 @@ interface TechnicianDayRow {
   visibleTaskCount?: number;
 }
 
-const FIXED_COLUMN_WIDTH = 220;
 const BASE_HOUR_WIDTH = 50; // Base pixels per hour
 const MIN_HOUR_WIDTH = 20; // Minimum zoom out - increased for better positioning
 const MAX_HOUR_WIDTH = 200; // Maximum zoom in - reduced to prevent overflow
 const ZOOM_MULTIPLIER = 1.15; // Faster zoom response (15% per scroll)
-const ROW_HEIGHT = 36;
+const BASE_ROW_HEIGHT = 36;
+const MIN_COLUMN_WIDTH = 80; // Minimum width for resource column
+const MAX_COLUMN_WIDTH = 280; // Maximum width for resource column
 const HEADER_HEIGHT = 32; // Timeline header with hour markers
 const TOOLBAR_HEIGHT = 40; // Main toolbar - matches LiveMap
 const DAY_HEADER_HEIGHT = 28; // Day date header
@@ -273,6 +274,51 @@ function LiveGantt({
     return parts.join(' - ') || row.technicianId; // Fallback to ID if nothing enabled
   }, []);
 
+  // Calculate dynamic column width based on enabled resource fields
+  const getColumnWidth = useCallback((settings: GanttSettings): number => {
+    const enabledCount = settings.resourceFields.filter(f => f.enabled).length;
+    // Base width + additional width per enabled field
+    const baseWidth = MIN_COLUMN_WIDTH;
+    const perFieldWidth = 50; // Additional pixels per field
+    const calculatedWidth = baseWidth + (enabledCount * perFieldWidth);
+    return Math.min(Math.max(calculatedWidth, MIN_COLUMN_WIDTH), MAX_COLUMN_WIDTH);
+  }, []);
+
+  // Calculate row height based on enabled task fields
+  const getRowHeight = useCallback((settings: GanttSettings): number => {
+    const enabledTaskFieldCount = settings.taskFields.filter(f => f.enabled).length;
+    // Base height + additional height for extra fields (stacked vertically)
+    // First 2 fields fit in base height, each additional field adds height
+    const additionalLines = Math.max(0, enabledTaskFieldCount - 2);
+    return BASE_ROW_HEIGHT + (additionalLines * 14); // 14px per additional line
+  }, []);
+
+  // Get task display content based on settings
+  const getTaskDisplayContent = useCallback((task: TaskTableRow, settings: GanttSettings) => {
+    const parts: { key: string; value: string }[] = [];
+    
+    settings.taskFields.forEach(field => {
+      if (!field.enabled) return;
+      
+      switch (field.key) {
+        case 'taskNumber':
+          parts.push({ key: 'taskNumber', value: task.taskId });
+          break;
+        case 'commitType':
+          parts.push({ key: 'commitType', value: task.commitType });
+          break;
+        case 'status':
+          parts.push({ key: 'status', value: task.status });
+          break;
+        case 'duration':
+          parts.push({ key: 'duration', value: task.taskDuration });
+          break;
+      }
+    });
+    
+    return parts;
+  }, []);
+
   // Date range state - persisted to survive component remounting during expand/collapse
   const [startDate, setStartDate] = useState<Date>(() => {
     const saved = localStorage.getItem('liveGantt-startDate');
@@ -329,6 +375,10 @@ function LiveGantt({
 
   const [isAutoFit, setIsAutoFit] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Calculate dynamic dimensions based on settings
+  const columnWidth = useMemo(() => getColumnWidth(ganttSettings), [ganttSettings, getColumnWidth]);
+  const rowHeight = useMemo(() => getRowHeight(ganttSettings), [ganttSettings, getRowHeight]);
 
   // Update current time every minute for accurate time indicator
   useEffect(() => {
@@ -756,7 +806,7 @@ function LiveGantt({
     
     if (containerRef.current) {
       const containerWidth = containerRef.current.offsetWidth;
-      const availableWidth = containerWidth - FIXED_COLUMN_WIDTH - 40;
+      const availableWidth = containerWidth - columnWidth - 40;
       
       // Single day view: stretch to fill full panel width with good hour visibility
       if (visibleDays === 1) {
@@ -1374,7 +1424,7 @@ function LiveGantt({
             {/* Fixed column header */}
             <Box
               sx={{
-                width: FIXED_COLUMN_WIDTH,
+                width: columnWidth,
                 flexShrink: 0,
                 borderRight: `2px solid ${borderColor}`,
                 display: 'flex',
@@ -1546,7 +1596,7 @@ function LiveGantt({
             <Box
               ref={fixedColumnRef}
               sx={{
-                width: FIXED_COLUMN_WIDTH,
+                width: columnWidth,
                 flexShrink: 0,
                 borderRight: `2px solid ${borderColor}`,
                 overflowY: 'scroll',
@@ -1570,9 +1620,9 @@ function LiveGantt({
                 <Box
                   key={`${row.technicianId}-${row.date.getTime()}`}
                   sx={{
-                    height: `${ROW_HEIGHT}px`,
-                    minHeight: `${ROW_HEIGHT}px`,
-                    maxHeight: `${ROW_HEIGHT}px`,
+                    height: `${rowHeight}px`,
+                    minHeight: `${rowHeight}px`,
+                    maxHeight: `${rowHeight}px`,
                     borderBottom: `1px solid ${borderColor}`,
                     display: 'flex',
                     alignItems: 'center',
@@ -1813,9 +1863,9 @@ function LiveGantt({
                   <Box
                     key={`${row.technicianId}-${row.date.getTime()}`}
                     sx={{
-                      height: `${ROW_HEIGHT}px`,
-                      minHeight: `${ROW_HEIGHT}px`,
-                      maxHeight: `${ROW_HEIGHT}px`,
+                      height: `${rowHeight}px`,
+                      minHeight: `${rowHeight}px`,
+                      maxHeight: `${rowHeight}px`,
                       borderBottom: `1px solid ${borderColor}`,
                       position: 'relative',
                       backgroundColor: theme.palette.background.paper,
@@ -1998,7 +2048,7 @@ function LiveGantt({
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: `${Math.max(3, width)}px`,
-                                height: ROW_HEIGHT - 12,
+                                height: rowHeight - 12,
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
@@ -2007,9 +2057,13 @@ function LiveGantt({
                                 borderRadius: 1,
                                 boxSizing: 'border-box',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'flex-start',
+                                flexDirection: 'column',
+                                alignItems: 'flex-start',
+                                justifyContent: 'center',
                                 paddingLeft: '4px',
+                                paddingRight: '4px',
+                                paddingTop: '2px',
+                                paddingBottom: '2px',
                                 overflow: 'hidden',
                                 zIndex: isSelected ? 100 : 1,
                                 transition: 'all 0.2s ease-in-out',
@@ -2021,7 +2075,35 @@ function LiveGantt({
                               }}
                               elevation={0}
                             >
-                              {!isCondensed && width > 20 && getTaskStatusIndicator(task.status)}
+                              {!isCondensed && width > 20 && (() => {
+                                const displayContent = getTaskDisplayContent(task, ganttSettings);
+                                return (
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, width: '100%' }}>
+                                    {displayContent.map((item, idx) => {
+                                      if (item.key === 'status') {
+                                        return <Box key={idx}>{getTaskStatusIndicator(task.status)}</Box>;
+                                      }
+                                      return (
+                                        <Typography
+                                          key={idx}
+                                          variant="caption"
+                                          sx={{
+                                            color: '#000000',
+                                            fontWeight: item.key === 'taskNumber' ? 'bold' : 'normal',
+                                            lineHeight: 1.1,
+                                            fontSize: '0.65rem',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                          }}
+                                        >
+                                          {item.value}
+                                        </Typography>
+                                      );
+                                    })}
+                                  </Box>
+                                );
+                              })()}
                             </Paper>
                           </Tooltip>
                         );
