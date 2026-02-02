@@ -11,6 +11,7 @@ import { buildDefaultTaskTableQuery, taskMatchesStatusFilter, getTaskStatusLabel
 import { TASK_STATUS_LABELS, TASK_TABLE_ROWS, type TaskSkillCode, type TaskTableRow, type TaskCommitType } from '../../../App - Data Tables/Task - Table'
 import { useTaskTableSelection } from '../../../App - Shared Components/MUI - Table/Selection - UI'
 import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog'
+import { QuickAddNotesDialog } from '../../../../mui-api-calls/QuickAddNotesDialog'
 
 interface TaskManagementPageProps {
   onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
@@ -34,6 +35,8 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
 
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
+  const [quickNotesDialogOpen, setQuickNotesDialogOpen] = useState(false);
+  const [tasksForNotes, setTasksForNotes] = useState<TaskTableRow[]>([]);
   const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
 
   const showMessage = useCallback((message: string, severity: 'success' | 'error' = 'success') => {
@@ -554,8 +557,8 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
                 setProgressDialogOpen(true);
               }}
               onAddQuickNote={(tasks) => {
-                console.log('Add quick note to tasks:', tasks)
-                // TODO: Implement quick note logic
+                setTasksForNotes(tasks);
+                setQuickNotesDialogOpen(true);
               }}
               onAddToDock={onAddToDock ? (task) => {
                 onAddToDock({
@@ -661,6 +664,29 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
           setProgressDialogOpen(false);
           const resourceMsg = resourceName ? ` and assigned to ${resourceName}` : (resourceId === undefined ? ' (resource cleared)' : '');
           showMessage(`Updated ${updatedTaskIds.length} task${updatedTaskIds.length > 1 ? 's' : ''} to ${TASK_STATUS_LABELS[newStatus]}${resourceMsg}`);
+        }}
+      />
+
+      <QuickAddNotesDialog
+        open={quickNotesDialogOpen}
+        onClose={() => setQuickNotesDialogOpen(false)}
+        tasks={tasksForNotes}
+        onNotesAdded={(taskIds, serverUpdates) => {
+          // Update tasks with new notes
+          taskIds.forEach(taskId => {
+            const task = TASK_TABLE_ROWS.find(t => t.taskId === taskId);
+            if (task && Array.isArray(serverUpdates)) {
+              const update = serverUpdates.find(u => u.taskId === taskId);
+              if (update?.progressNote) {
+                task.progressNotes = task.progressNotes || [];
+                task.progressNotes.unshift(update.progressNote);
+              }
+            }
+          });
+          // Force re-render
+          setDataRefresh(prev => prev + 1);
+          setQuickNotesDialogOpen(false);
+          showMessage(`Note added to ${taskIds.length} task${taskIds.length > 1 ? 's' : ''}`);
         }}
       />
     </>

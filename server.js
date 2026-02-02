@@ -78,7 +78,7 @@ app.post('/api/optimize-travel', async (req, res) => {
 // Endpoint to progress tasks
 app.post('/api/progress-task', async (req, res) => {
   try {
-    const { taskIds, newStatus, resourceId, resourceName, userName = 'System' } = req.body;
+    const { taskIds, newStatus, resourceId, resourceName, userName = 'System', progressNote, awaitingConfirmation } = req.body;
     
     if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
       return res.status(400).json({
@@ -94,7 +94,7 @@ app.post('/api/progress-task', async (req, res) => {
       });
     }
     
-    console.log(`Progressing ${taskIds.length} task(s) to status: ${newStatus}${resourceId ? `, resource: ${resourceId}` : ''}`);
+    console.log(`Progressing ${taskIds.length} task(s) to status: ${newStatus}${resourceId ? `, resource: ${resourceId}` : ''}${progressNote ? ` with note` : ''}`);
     
     // Create progress note text
     const timestamp = new Date().toISOString();
@@ -103,13 +103,27 @@ app.post('/api/progress-task', async (req, res) => {
       AWI: 'Awaiting Issue',
       ISS: 'Issued',
       EXC: 'Executing',
-      COM: 'Complete'
+      COM: 'Complete',
+      FUR: 'Furthered',
+      CMN: 'Comment',
+      HPD: 'Held Pending',
+      HLD: 'On Hold',
+      CPD: 'Copied',
+      DLG: 'Delegated',
+      CAN: 'Cancelled'
     };
     
-    let noteText = `Status changed to ${statusLabels[newStatus]}`;
+    // Build automatic note text
+    let autoNoteText = `Status changed to ${statusLabels[newStatus] || newStatus}`;
     if (resourceId && resourceName) {
-      noteText += `. Assigned to ${resourceName} (${resourceId})`;
+      autoNoteText += `. Assigned to ${resourceName} (${resourceId})`;
     }
+    if (awaitingConfirmation === 'Y') {
+      autoNoteText += ' (Awaiting Confirmation)';
+    }
+    
+    // Use user's note if provided, otherwise use auto-generated text
+    const finalNoteText = progressNote ? `${autoNoteText}\n\nNote: ${progressNote}` : autoNoteText;
     
     // In a real implementation, this would update a database and append progress notes
     // For now, we'll simulate the update and return the note to be added
@@ -119,12 +133,13 @@ app.post('/api/progress-task', async (req, res) => {
       newStatus,
       resourceId: resourceId || null,
       resourceName: resourceName || null,
+      awaitingConfirmation: awaitingConfirmation || 'N',
       updatedAt: timestamp,
       progressNote: {
         id: `P-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         author: userName,
         createdAt: timestamp,
-        text: noteText
+        text: finalNoteText
       }
     }));
     
@@ -139,6 +154,57 @@ app.post('/api/progress-task', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to progress task',
+    });
+  }
+});
+
+// Endpoint to add quick notes to tasks
+app.post('/api/add-task-notes', async (req, res) => {
+  try {
+    const { taskIds, note, userName = 'System' } = req.body;
+    
+    if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'taskIds array is required'
+      });
+    }
+    
+    if (!note || !note.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'note is required'
+      });
+    }
+    
+    console.log(`Adding note to ${taskIds.length} task(s)`);
+    
+    const timestamp = new Date().toISOString();
+    
+    // In a real implementation, this would update a database and append progress notes
+    // For now, we'll simulate adding notes and return them to be displayed
+    const updates = taskIds.map(taskId => ({
+      taskId,
+      updatedAt: timestamp,
+      progressNote: {
+        id: `N-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        author: userName,
+        createdAt: timestamp,
+        text: note.trim()
+      }
+    }));
+    
+    res.json({
+      success: true,
+      message: `Successfully added note to ${taskIds.length} task(s)`,
+      updates,
+      timestamp
+    });
+  } catch (error) {
+    console.error('Error adding task notes:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to add notes',
     });
   }
 });
