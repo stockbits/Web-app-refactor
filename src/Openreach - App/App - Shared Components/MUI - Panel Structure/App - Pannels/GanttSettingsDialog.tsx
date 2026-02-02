@@ -50,8 +50,8 @@ interface GanttSettingsDialogProps {
 
 export function GanttSettingsDialog({ open, onClose, settings, onSave }: GanttSettingsDialogProps) {
   const [localSettings, setLocalSettings] = useState<GanttSettings>(settings);
-  const [resourceExpanded, setResourceExpanded] = useState(true);
-  const [taskExpanded, setTaskExpanded] = useState(true);
+  const [resourceExpanded, setResourceExpanded] = useState(false);
+  const [taskExpanded, setTaskExpanded] = useState(false);
 
   const handlePopulationModeChange = (mode: GanttPopulationMode) => {
     setLocalSettings(prev => ({ ...prev, populationMode: mode }));

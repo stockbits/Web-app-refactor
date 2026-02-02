@@ -31,7 +31,7 @@ import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table
 import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
-import { GanttSettingsDialog, type GanttSettings } from './GanttSettingsDialog';
+import { GanttSettingsDialog, type GanttSettings, type GanttResourceField, type GanttTaskField } from './GanttSettingsDialog';
 
 // Calculate distance between two coordinates using Haversine formula (in km)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -369,15 +369,7 @@ function LiveGantt({
 
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [ganttSettings, setGanttSettings] = useState<GanttSettings>(() => {
-    const saved = localStorage.getItem('liveGantt-settings');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // Fall through to default
-      }
-    }
-    return {
+    const defaultSettings: GanttSettings = {
       populationMode: populationMode,
       resourceFields: [
         { key: 'id', label: 'ID', enabled: true },
@@ -401,6 +393,28 @@ function LiveGantt({
         { key: 'commitDate', label: 'Commit Date', enabled: false },
       ],
     };
+
+    const saved = localStorage.getItem('liveGantt-settings');
+    if (saved) {
+      try {
+        const savedSettings = JSON.parse(saved);
+        // Merge saved settings with default to ensure all new fields are present
+        return {
+          populationMode: savedSettings.populationMode || defaultSettings.populationMode,
+          resourceFields: defaultSettings.resourceFields.map(defaultField => {
+            const savedField = savedSettings.resourceFields?.find((f: any) => f.key === defaultField.key);
+            return savedField || defaultField;
+          }),
+          taskFields: defaultSettings.taskFields.map(defaultField => {
+            const savedField = savedSettings.taskFields?.find((f: any) => f.key === defaultField.key);
+            return savedField || defaultField;
+          }),
+        };
+      } catch {
+        // Fall through to default
+      }
+    }
+    return defaultSettings;
   });
 
   const [isAutoFit, setIsAutoFit] = useState(true);
