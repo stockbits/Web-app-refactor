@@ -1627,23 +1627,21 @@ function LiveGantt({
                         handleSelectTechnicianTasks(row, e);
                       }}
                       sx={{ 
-                        width: 24, 
-                        height: 24,
+                        width: 28, 
+                        height: 28,
                         bgcolor: theme.openreach.energyAccent,
                         flexShrink: 0,
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
-                        alignSelf: 'flex-start',
-                        mt: 0.25,
                         '&:hover': {
                           transform: 'scale(1.15)',
                         },
                       }}
                     >
-                      <PersonIcon sx={{ fontSize: 16, color: '#fff' }} />
+                      <PersonIcon sx={{ fontSize: 18, color: '#fff' }} />
                     </Avatar>
                   </Tooltip>
-                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.25 }}>
+                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 0.5, justifyContent: 'center' }}>
                     {getResourceDisplayText(row, ganttSettings).map((text, idx) => (
                       <Typography 
                         key={idx}
@@ -1651,10 +1649,10 @@ function LiveGantt({
                         fontWeight={idx === 0 ? 600 : 500}
                         sx={{ 
                           color: bodyTextColor, 
-                          fontSize: idx === 0 ? '0.85rem' : '0.75rem',
+                          fontSize: idx === 0 ? '0.875rem' : '0.75rem',
                           wordWrap: 'break-word',
                           overflowWrap: 'break-word',
-                          lineHeight: 1.3,
+                          lineHeight: 1.4,
                         }}
                       >
                         {text}
