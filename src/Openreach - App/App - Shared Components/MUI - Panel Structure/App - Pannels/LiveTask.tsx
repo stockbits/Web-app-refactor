@@ -313,7 +313,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
         <Toolbar variant="dense" sx={{ justifyContent: 'space-between' }}>
           {/* Left side: Action buttons */}
           <Stack direction="row" spacing={{ xs: 0.5, sm: 0.75 }} alignItems="center" sx={{ pl: { xs: 0.5, sm: 1 } }}>
-            <Tooltip title={selectedTaskIds.length > 0 ? `Progress ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "Progress all filtered tasks"}>
+            <Tooltip title={selectedTaskIds.length > 0 ? `Change status & assign resources (${selectedTaskIds.length} task${selectedTaskIds.length > 1 ? 's' : ''})` : "Change status & assign resources for all filtered tasks"}>
               <IconButton
                 size="small"
                 onClick={handleProgressTaskClick}
@@ -337,7 +337,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
               </IconButton>
             </Tooltip>
 
-            <Tooltip title={selectedTaskIds.length > 0 ? `Add note to ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "Add note to all filtered tasks"}>
+            <Tooltip title={selectedTaskIds.length > 0 ? `Add quick notes (${selectedTaskIds.length} task${selectedTaskIds.length > 1 ? 's' : ''})` : "Add quick notes to all filtered tasks"}>
               <IconButton
                 size="small"
                 onClick={handleQuickNotesClick}
@@ -361,7 +361,7 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
               </IconButton>
             </Tooltip>
 
-            <Tooltip title={selectedTaskIds.length > 0 ? `View details for ${selectedTaskIds.length} selected task${selectedTaskIds.length > 1 ? 's' : ''}` : "View details for all filtered tasks"}>
+            <Tooltip title={selectedTaskIds.length > 0 ? `View & compare task details (${selectedTaskIds.length} task${selectedTaskIds.length > 1 ? 's' : ''}) - Can minimize to dock` : "View & compare all filtered tasks - Can minimize to dock"}>
               <IconButton
                 size="small"
                 onClick={handleDetailsClick}
