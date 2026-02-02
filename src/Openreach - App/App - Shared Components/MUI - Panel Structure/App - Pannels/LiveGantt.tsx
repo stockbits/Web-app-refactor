@@ -2104,7 +2104,7 @@ function LiveGantt({
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 width: `${Math.max(3, width)}px`,
-                                maxHeight: `${rowHeight - 8}px`,
+                                height: `${Math.min(rowHeight - 8, 32)}px`,
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
