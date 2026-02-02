@@ -26,7 +26,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import SettingsIcon from "@mui/icons-material/Settings";
 import React, { useState, useMemo, useRef, useEffect, useCallback, useReducer } from "react";
-import { TASK_TABLE_ROWS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
+import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
 import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
@@ -288,9 +288,10 @@ function LiveGantt({
   const getRowHeight = useCallback((settings: GanttSettings): number => {
     const enabledTaskFieldCount = settings.taskFields.filter(f => f.enabled).length;
     // Base height + additional height for extra fields (stacked vertically)
-    // First 2 fields fit in base height, each additional field adds height
-    const additionalLines = Math.max(0, enabledTaskFieldCount - 2);
-    return BASE_ROW_HEIGHT + (additionalLines * 14); // 14px per additional line
+    // Increased spacing to accommodate longer status labels like "Held Pending Details"
+    // First field fits in base height, each additional field adds height
+    const additionalLines = Math.max(0, enabledTaskFieldCount - 1);
+    return BASE_ROW_HEIGHT + (additionalLines * 16); // 16px per additional line (increased from 14px)
   }, []);
 
   // Get task display content based on settings
@@ -308,7 +309,7 @@ function LiveGantt({
           parts.push({ key: 'commitType', value: task.commitType });
           break;
         case 'status':
-          parts.push({ key: 'status', value: task.status });
+          parts.push({ key: 'status', value: TASK_STATUS_LABELS[task.status] });
           break;
         case 'duration':
           parts.push({ key: 'duration', value: task.taskDuration });
@@ -2041,8 +2042,8 @@ function LiveGantt({
                                 )}
                                 <Typography variant="caption" fontWeight={600}>{task.taskId}</Typography>
                                 <Typography variant="caption" display="block">{task.commitType}</Typography>
-                                <Typography variant="caption" display="block" sx={{ color: 'primary.main' }}>
-                                  Status: {task.status}
+                                <Typography variant="caption" display="block">
+                                  Status: {TASK_STATUS_LABELS[task.status]}
                                 </Typography>
                                 <Typography variant="caption" display="block">{task.postCode}</Typography>
                                 <Typography variant="caption" display="block">
@@ -2111,27 +2112,22 @@ function LiveGantt({
                                 const displayContent = getTaskDisplayContent(task, ganttSettings);
                                 return (
                                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, width: '100%' }}>
-                                    {displayContent.map((item, idx) => {
-                                      if (item.key === 'status') {
-                                        return <Box key={idx}>{getTaskStatusIndicator(task.status)}</Box>;
-                                      }
-                                      return (
-                                        <Typography
-                                          key={idx}
-                                          variant="caption"
-                                          sx={{
-                                            color: '#000000',
-                                            fontWeight: item.key === 'taskNumber' ? 'bold' : 'normal',
-                                            lineHeight: 1.2,
-                                            fontSize: '0.65rem',
-                                            wordWrap: 'break-word',
-                                            overflowWrap: 'break-word',
-                                          }}
-                                        >
-                                          {item.value}
-                                        </Typography>
-                                      );
-                                    })}
+                                    {displayContent.map((item, idx) => (
+                                      <Typography
+                                        key={idx}
+                                        variant="caption"
+                                        sx={{
+                                          color: '#000000',
+                                          fontWeight: item.key === 'taskNumber' ? 'bold' : 'normal',
+                                          lineHeight: 1.2,
+                                          fontSize: '0.65rem',
+                                          wordWrap: 'break-word',
+                                          overflowWrap: 'break-word',
+                                        }}
+                                      >
+                                        {item.value}
+                                      </Typography>
+                                    ))}
                                   </Box>
                                 );
                               })()}
