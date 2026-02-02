@@ -26,30 +26,12 @@ import PersonIcon from "@mui/icons-material/Person";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import SettingsIcon from "@mui/icons-material/Settings";
 import React, { useState, useMemo, useRef, useEffect, useCallback, useReducer } from "react";
-import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType, type TaskStatusCode } from "../../../App - Data Tables/Task - Table";
+import { TASK_TABLE_ROWS, TASK_STATUS_LABELS, type TaskTableRow, type TaskCommitType } from "../../../App - Data Tables/Task - Table";
 import { RESOURCE_TABLE_ROWS } from "../../../App - Data Tables/Resource - Table";
 import { GANTT_STATUSES } from '../../MUI - Table/TaskTableQueryConfig.shared';
 import { useMapSelection, useSelectionUI } from "../../MUI - Table/Selection - UI";
 import { TASK_ICON_COLORS } from "../../../../AppCentralTheme/Icon-Colors";
 import { GanttSettingsDialog, type GanttSettings } from './GanttSettingsDialog';
-
-// Simple status indicator - display short code
-const getTaskStatusIndicator = (status: TaskStatusCode) => {
-  return (
-    <Typography
-      variant="caption"
-      sx={{
-        color: '#000000', // Jet black for contrast with commit type colors
-        fontWeight: 'bold',
-        lineHeight: 1,
-        flexShrink: 0,
-        fontSize: '0.65rem',
-      }}
-    >
-      {status}
-    </Typography>
-  );
-};
 
 // Calculate distance between two coordinates using Haversine formula (in km)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -833,13 +815,13 @@ function LiveGantt({
     }
   }, [visibleDays, isAutoFit, totalScheduledHours]);
 
-  // Scroll to 4am when data loads (after search) and when layout changes
+  // Scroll to 6am when data loads (after search) and when layout changes
   useEffect(() => {
     // Only scroll if we have data (after user has searched)
     if (technicianDayRows.length === 0) return;
 
-    const scrollTo4AM = () => {
-      const scrollPosition = 4 * hourWidth;
+    const scrollTo6AM = () => {
+      const scrollPosition = 6 * hourWidth;
       if (timelineRef.current) {
         timelineRef.current.scrollLeft = scrollPosition;
       }
@@ -850,7 +832,7 @@ function LiveGantt({
 
     // Use requestAnimationFrame to ensure DOM is painted before scrolling
     requestAnimationFrame(() => {
-      requestAnimationFrame(scrollTo4AM);
+      requestAnimationFrame(scrollTo6AM);
     });
   }, [technicianDayRows.length, hourWidth, isExpanded, visibleDays]); // Re-run when data loads or layout changes
 
@@ -2079,7 +2061,8 @@ function LiveGantt({
                               sx={{
                                 position: 'absolute',
                                 left: `${left}px`,
-                                top: '4px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
                                 width: `${Math.max(3, width)}px`,
                                 maxHeight: `${rowHeight - 8}px`,
                                 backgroundColor: commitTypeColor,
