@@ -15,7 +15,11 @@ import {
   Stack,
   Divider,
   Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export type GanttPopulationMode = 'auto' | 'manual';
 
@@ -46,6 +50,8 @@ interface GanttSettingsDialogProps {
 
 export function GanttSettingsDialog({ open, onClose, settings, onSave }: GanttSettingsDialogProps) {
   const [localSettings, setLocalSettings] = useState<GanttSettings>(settings);
+  const [resourceExpanded, setResourceExpanded] = useState(true);
+  const [taskExpanded, setTaskExpanded] = useState(true);
 
   const handlePopulationModeChange = (mode: GanttPopulationMode) => {
     setLocalSettings(prev => ({ ...prev, populationMode: mode }));
@@ -128,54 +134,80 @@ export function GanttSettingsDialog({ open, onClose, settings, onSave }: GanttSe
           <Divider />
 
           {/* Resource Display Fields */}
-          <FormControl component="fieldset">
-            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 600 }}>
-              Resource Row Information
-            </FormLabel>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              Select which fields to display for each resource
-            </Typography>
-            <FormGroup>
-              {localSettings.resourceFields.map((field) => (
-                <FormControlLabel
-                  key={field.key}
-                  control={
-                    <Checkbox
-                      checked={field.enabled}
-                      onChange={() => handleResourceFieldToggle(field.key)}
-                    />
-                  }
-                  label={field.label}
-                />
-              ))}
-            </FormGroup>
-          </FormControl>
+          <Accordion 
+            expanded={resourceExpanded} 
+            onChange={() => setResourceExpanded(!resourceExpanded)}
+            sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}
+          >
+            <AccordionSummary 
+              expandIcon={<ExpandMoreIcon />}
+              sx={{ px: 0, minHeight: '48px !important' }}
+            >
+              <Stack>
+                <Typography variant="body1" fontWeight={600}>
+                  Resource Row Information
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Select which fields to display for each resource
+                </Typography>
+              </Stack>
+            </AccordionSummary>
+            <AccordionDetails sx={{ px: 0, pt: 0 }}>
+              <FormGroup>
+                {localSettings.resourceFields.map((field) => (
+                  <FormControlLabel
+                    key={field.key}
+                    control={
+                      <Checkbox
+                        checked={field.enabled}
+                        onChange={() => handleResourceFieldToggle(field.key)}
+                      />
+                    }
+                    label={field.label}
+                  />
+                ))}
+              </FormGroup>
+            </AccordionDetails>
+          </Accordion>
 
           <Divider />
 
           {/* Task Display Fields */}
-          <FormControl component="fieldset">
-            <FormLabel component="legend" sx={{ mb: 1, fontWeight: 600 }}>
-              Task Block Information
-            </FormLabel>
-            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-              Select which fields to display in task blocks
-            </Typography>
-            <FormGroup>
-              {localSettings.taskFields.map((field) => (
-                <FormControlLabel
-                  key={field.key}
-                  control={
-                    <Checkbox
-                      checked={field.enabled}
-                      onChange={() => handleTaskFieldToggle(field.key)}
-                    />
-                  }
-                  label={field.label}
-                />
-              ))}
-            </FormGroup>
-          </FormControl>
+          <Accordion 
+            expanded={taskExpanded} 
+            onChange={() => setTaskExpanded(!taskExpanded)}
+            sx={{ boxShadow: 'none', '&:before': { display: 'none' } }}
+          >
+            <AccordionSummary 
+              expandIcon={<ExpandMoreIcon />}
+              sx={{ px: 0, minHeight: '48px !important' }}
+            >
+              <Stack>
+                <Typography variant="body1" fontWeight={600}>
+                  Task Block Information
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Select which fields to display in task blocks
+                </Typography>
+              </Stack>
+            </AccordionSummary>
+            <AccordionDetails sx={{ px: 0, pt: 0 }}>
+              <FormGroup>
+                {localSettings.taskFields.map((field) => (
+                  <FormControlLabel
+                    key={field.key}
+                    control={
+                      <Checkbox
+                        checked={field.enabled}
+                        onChange={() => handleTaskFieldToggle(field.key)}
+                      />
+                    }
+                    label={field.label}
+                  />
+                ))}
+              </FormGroup>
+            </AccordionDetails>
+          </Accordion>
         </Stack>
       </DialogContent>
 
