@@ -1997,11 +1997,13 @@ function LiveGantt({
                                 top: '50%',
                                 width: `${Math.max(2, width)}px`,
                                 height: 0,
-                                borderTop: `2px dashed ${alpha(theme.palette.warning.main, 0.6)}`,
+                                borderTop: `3px solid ${alpha(theme.palette.warning.main, 0.7)}`,
                                 cursor: 'help',
+                                zIndex: 2,
                                 '&:hover': {
                                   borderTopColor: theme.palette.warning.main,
-                                  borderTopWidth: '3px',
+                                  borderTopWidth: '4px',
+                                  zIndex: 51,
                                 },
                               }}
                             />
@@ -2014,11 +2016,29 @@ function LiveGantt({
                         const commitTypeColor = getCommitTypeColor(task.commitType);
                         const isCondensed = width < minWidthToShowText;
                         
+                        // Check if there's a previous travel block for this task
+                        const prevBlock = blockIdx > 0 ? row.scheduledBlocks?.[blockIdx - 1] : null;
+                        const hasPrecedingTravel = prevBlock?.type === 'travel';
+                        
                         return (
                           <Tooltip
                             key={`task-${task.taskId}`}
                             title={
                               <Box>
+                                {hasPrecedingTravel && prevBlock && (
+                                  <Box sx={{ mb: 1, pb: 1, borderBottom: `1px solid ${alpha('#fff', 0.2)}` }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
+                                      <DirectionsCarIcon sx={{ fontSize: '0.9rem' }} />
+                                      <Typography variant="caption" fontWeight={600}>Travel Before Task</Typography>
+                                    </Box>
+                                    <Typography variant="caption" display="block">
+                                      Distance: {prevBlock.distanceKm?.toFixed(1)} km
+                                    </Typography>
+                                    <Typography variant="caption" display="block">
+                                      Duration: {formatTime(prevBlock.duration)}
+                                    </Typography>
+                                  </Box>
+                                )}
                                 <Typography variant="caption" fontWeight={600}>{task.taskId}</Typography>
                                 <Typography variant="caption" display="block">{task.commitType}</Typography>
                                 <Typography variant="caption" display="block" sx={{ color: 'primary.main' }}>
@@ -2058,10 +2078,9 @@ function LiveGantt({
                               sx={{
                                 position: 'absolute',
                                 left: `${left}px`,
-                                top: '50%',
-                                transform: 'translateY(-50%)',
+                                top: '4px',
                                 width: `${Math.max(3, width)}px`,
-                                minHeight: rowHeight - 12,
+                                maxHeight: `${rowHeight - 8}px`,
                                 backgroundColor: commitTypeColor,
                                 cursor: 'pointer',
                                 border: isSelected 
@@ -2072,12 +2091,12 @@ function LiveGantt({
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'flex-start',
-                                justifyContent: 'center',
+                                justifyContent: 'flex-start',
                                 paddingLeft: '4px',
                                 paddingRight: '4px',
                                 paddingTop: '2px',
                                 paddingBottom: '2px',
-                                overflow: 'visible',
+                                overflow: 'hidden',
                                 zIndex: isSelected ? 100 : 1,
                                 transition: 'all 0.2s ease-in-out',
                                 '&:hover': {
