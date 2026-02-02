@@ -589,6 +589,24 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
           ? filteredRows.filter(task => selectedTaskIds.includes(task.taskId))
           : filteredRows
         }
+        onMinimize={onAddToDock ? () => {
+          const tasksToMinimize = selectedTaskIds.length > 0 
+            ? filteredRows.filter(task => selectedTaskIds.includes(task.taskId))
+            : filteredRows;
+          
+          // Add tasks to dock (minimize them)
+          tasksToMinimize.forEach(task => {
+            onAddToDock({
+              id: task.taskId,
+              title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+              commitType: task.commitType,
+              task,
+            });
+          });
+          
+          // Close the details dialog
+          setTaskDetailsOpen(false);
+        } : undefined}
       />
     </Box>
   );
