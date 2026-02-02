@@ -127,6 +127,8 @@ interface TechnicianDayRow {
   homeLongitude?: number;
   scheduledBlocks?: ScheduledBlock[]; // Scheduled travel and task blocks
   visibleTaskCount?: number;
+  domainId?: string;
+  workPreference?: 'X' | 'B' | 'U';
 }
 
 const BASE_HOUR_WIDTH = 50; // Base pixels per hour
@@ -250,6 +252,21 @@ function LiveGantt({
         case 'workingStatus':
           if (row.workingStatus) parts.push(row.workingStatus);
           break;
+        case 'shift':
+          if (row.shift) parts.push(row.shift);
+          break;
+        case 'shiftTimes':
+          if (row.shiftStart && row.shiftEnd) parts.push(`${row.shiftStart}-${row.shiftEnd}`);
+          break;
+        case 'domain':
+          if (row.domainId) parts.push(row.domainId);
+          break;
+        case 'workPreference':
+          if (row.workPreference) {
+            const prefMap = { 'X': 'Default', 'B': 'Batches', 'U': 'Underground' };
+            parts.push(prefMap[row.workPreference] || row.workPreference);
+          }
+          break;
       }
     });
     
@@ -301,6 +318,22 @@ function LiveGantt({
         case 'duration':
           parts.push({ key: 'duration', value: task.taskDuration });
           break;
+        case 'workId':
+          parts.push({ key: 'workId', value: task.workId });
+          break;
+        case 'responseCode':
+          parts.push({ key: 'responseCode', value: task.responseCode });
+          break;
+        case 'primarySkill':
+          parts.push({ key: 'primarySkill', value: task.primarySkill });
+          break;
+        case 'postCode':
+          parts.push({ key: 'postCode', value: task.postCode });
+          break;
+        case 'commitDate':
+          const commitDate = new Date(task.commitDate);
+          parts.push({ key: 'commitDate', value: commitDate.toLocaleDateString() });
+          break;
       }
     });
     
@@ -350,13 +383,22 @@ function LiveGantt({
         { key: 'id', label: 'ID', enabled: true },
         { key: 'name', label: 'Name', enabled: false },
         { key: 'division', label: 'Division', enabled: false },
-        { key: 'workingStatus', label: 'Status', enabled: false },
+        { key: 'workingStatus', label: 'Working Status', enabled: false },
+        { key: 'shift', label: 'Shift', enabled: false },
+        { key: 'shiftTimes', label: 'Shift Times', enabled: false },
+        { key: 'domain', label: 'Domain', enabled: false },
+        { key: 'workPreference', label: 'Work Preference', enabled: false },
       ],
       taskFields: [
         { key: 'taskNumber', label: 'Task #', enabled: true },
-        { key: 'commitType', label: 'Type', enabled: true },
+        { key: 'commitType', label: 'Commit Type', enabled: true },
         { key: 'status', label: 'Status', enabled: true },
         { key: 'duration', label: 'Duration', enabled: false },
+        { key: 'workId', label: 'Work ID', enabled: false },
+        { key: 'responseCode', label: 'Response Code', enabled: false },
+        { key: 'primarySkill', label: 'Primary Skill', enabled: false },
+        { key: 'postCode', label: 'Post Code', enabled: false },
+        { key: 'commitDate', label: 'Commit Date', enabled: false },
       ],
     };
   });
@@ -755,6 +797,8 @@ function LiveGantt({
         homeLongitude: resource.homeLongitude,
         scheduledBlocks: scheduledBlocks,
         visibleTaskCount: visibleTaskCount,
+        domainId: resource.domainId,
+        workPreference: resource.workPreference,
       });
     });
 
