@@ -34,13 +34,10 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { OpenItemsDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Open Items Dock";
+import { TabbedTaskDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Tabbed Task Dock";
 import { useMinimizedTasks } from "./AppCentralTheme/MinimizedTaskContext";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
-import AppTaskDialog from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Dialog";
-import { MultiTaskDialog } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Multi Task Dialog";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
-import { TASK_TABLE_ROWS } from "./Openreach - App/App - Data Tables/Task - Table";
 import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/MUI - Table/Selection - UI";
 
 interface MenuCardTile {
@@ -424,10 +421,13 @@ function App() {
       } catch {
         // ignore save errors
       }
-    }, 500); // Debounce 500ms
+    }, 250); // Debounce 250ms for faster saves
 
     return () => clearTimeout(timeoutId);
   }, [taskDockItems]);
+
+  // Tabbed dock state - opens automatically when items added
+  const [tabbedDockOpen, setTabbedDockOpen] = useState(true);
 
   const handleAddTaskDockItem = useCallback((item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => {
     setTaskDockItems((prev) => {
@@ -442,81 +442,55 @@ function App() {
       const updated = [nextItem, ...prev];
       return updated.slice(0, 20);
     });
+    // Auto-open the dock when items are added
+    setTabbedDockOpen(true);
   }, []);
-
-  const handleClearAllDockItems = useCallback(() => {
-    setTaskDockItems([]);
-    // Also clear minimized tasks
-    minimizedTasks.forEach(task => removeMinimizedTask(task.taskId));
-  }, [minimizedTasks, removeMinimizedTask]);
-
-  const handleDrawerClose = useCallback(() => {
-    // When drawer closes, undock all non-minimized items
-    // Minimized tasks are kept (they're in the minimizedTasks array)
-    const minimizedTaskIds = new Set(minimizedTasks.map(t => t.taskId));
-    setTaskDockItems((prev) => prev.filter(item => minimizedTaskIds.has(item.id)));
-  }, [minimizedTasks]);
 
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
 
-  // Global task dialog state
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogTask, setDialogTask] = useState<TaskTableRow | null>(null);
-
-  // Multi-task dialog state
-  const [multiDialogOpen, setMultiDialogOpen] = useState(false);
-  const [multiDialogTasks, setMultiDialogTasks] = useState<TaskTableRow[]>([]);
-
-  // Global task dialog functions
+  // Global task dialog function - opens tasks in tabbed dock
   const openTaskDialog = useCallback((task: TaskTableRow | TaskTableRow[]) => {
     if (Array.isArray(task)) {
-      // Multi-task dialog
-      setMultiDialogTasks(task.slice(0, 3));
-      setMultiDialogOpen(true);
+      // Add multiple tasks to tabbed dock
+      task.slice(0, 3).forEach(t => {
+        handleAddTaskDockItem({
+          id: t.taskId,
+          title: `Task ${t.taskId.split('-').pop() || t.taskId}`,
+          commitType: t.commitType,
+          task: t,
+        });
+      });
     } else {
-      // Single task dialog
-      setDialogTask(task);
-      setDialogOpen(true);
-    }
-  }, []);
-
-  const closeTaskDialog = useCallback((keepInDock = false) => {
-    setDialogTask((currentTask) => {
-      // Remove from dock if needed before closing
-      if (currentTask && !keepInDock) {
-        setTaskDockItems((prev) => prev.filter((item) => item.id !== currentTask.taskId));
-      }
-      return null;
-    });
-    setDialogOpen(false);
-  }, []);
-
-  const closeMultiTaskDialog = useCallback((keepInDock = false) => {
-    if (!keepInDock) {
-      // Remove all tasks from dock when closing without minimizing
-      setTaskDockItems((prev) => {
-        const taskIds = new Set(multiDialogTasks.map(t => t.taskId));
-        return prev.filter((item) => !taskIds.has(item.id));
+      // Add single task to tabbed dock
+      handleAddTaskDockItem({
+        id: task.taskId,
+        title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+        commitType: task.commitType,
+        task: task,
       });
     }
-    setMultiDialogTasks([]);
-    setMultiDialogOpen(false);
-  }, [multiDialogTasks]);
+    // Ensure dock is open and expanded
+    setTabbedDockOpen(true);
+  }, [handleAddTaskDockItem]);
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
-      setDialogTask((prev) => {
-        if (!prev) return prev;
-        const nextNote: TaskNote = {
-          id: `${type}-${Date.now()}`,
-          author: 'You',
-          createdAt: new Date().toISOString(),
-          text,
-        };
-        const fieldNotes = type === 'field' ? [nextNote, ...(prev.fieldNotes ?? [])] : prev.fieldNotes;
-        const progressNotes = type === 'progress' ? [nextNote, ...(prev.progressNotes ?? [])] : prev.progressNotes;
-        return { ...prev, fieldNotes, progressNotes };
+      const nextNote: TaskNote = {
+        id: `${type}-${Date.now()}`,
+        author: 'You',
+        createdAt: new Date().toISOString(),
+        text,
+      };
+      
+      // Update all tasks in the dock with the new note
+      setTaskDockItems((prev) => {
+        return prev.map(item => {
+          if (!item.task) return item;
+          const fieldNotes = type === 'field' ? [nextNote, ...(item.task.fieldNotes ?? [])] : item.task.fieldNotes;
+          const progressNotes = type === 'progress' ? [nextNote, ...(item.task.progressNotes ?? [])] : item.task.progressNotes;
+          return { ...item, task: { ...item.task, fieldNotes, progressNotes } };
+        });
       });
     },
     [],
@@ -953,75 +927,37 @@ function App() {
         </Stack>
       </Box>
 
-      {/* Open Items Dock */}
-      {activePage && (
-        <OpenItemsDock
-          items={taskDockItems.map((item) => ({
-            id: item.id,
-            title: item.title,
-            type: 'task' as const,
-            subtitle: item.commitType,
-            task: item.task,
-          }))}
-          minimizedTasks={minimizedTasks.map(task => ({ id: task.taskId, task }))}
-          maxItems={20}
-          onClick={(id: string) => {
-            const item = taskDockItems.find((it) => it.id === id);
-            if (!item) return;
-            if (item.task) {
-              openTaskDialog(item.task);
-            } else {
-              const task = TASK_TABLE_ROWS.find((row) => row.taskId === id);
-              if (task) {
-                openTaskDialog(task);
-              }
-            }
-          }}
-          onDelete={(id: string) => setTaskDockItems((prev) => prev.filter((it) => it.id !== id))}
-          onClearAll={handleClearAllDockItems}
-          onMinimizedTaskClick={openTaskDialog}
-          onMinimizedTaskRemove={removeMinimizedTask}
-          onDrawerClose={handleDrawerClose}
-        />
-      )}
-
-      {/* Global task dialog */}
-      <AppTaskDialog
-        open={dialogOpen}
-        onClose={() => closeTaskDialog(false)} // Don't keep in dock when closing
-        task={dialogTask ?? undefined}
-        onAddNote={handleAddNote}
-        onMinimize={dialogTask ? () => {
-          handleAddTaskDockItem({
-            id: dialogTask.taskId,
-            title: `Task ${dialogTask.taskId.split('-').pop() || dialogTask.taskId}`,
-            commitType: dialogTask.commitType,
-            task: dialogTask,
-          });
-          closeTaskDialog(true); // Keep task in dock when minimizing
-        } : undefined}
-      />
-
-      {/* Multi-task comparison dialog */}
-      <MultiTaskDialog
-        open={multiDialogOpen}
-        onClose={() => closeMultiTaskDialog(false)} // Don't keep in dock when closing
-        tasks={multiDialogTasks}
-        onAddNote={(taskId: string, type: 'field' | 'progress', text: string) => {
-          console.log('Add note:', type, text, 'to task:', taskId);
-          // TODO: Implement note addition logic
-        }}
-        onMinimize={() => {
-          multiDialogTasks.forEach(task => {
-            handleAddTaskDockItem({
+      {/* Tabbed Task Dock - Centered Floating Window */}
+      <TabbedTaskDock
+        items={useMemo(
+          () => [
+            ...taskDockItems.map((item) => ({
+              id: item.id,
+              title: item.title,
+              type: 'task' as const,
+              subtitle: item.commitType,
+              task: item.task,
+            })),
+            ...minimizedTasks.map(task => ({
               id: task.taskId,
               title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-              commitType: task.commitType,
-              task,
-            });
-          });
-          closeMultiTaskDialog(true); // Keep in dock when minimizing
+              type: 'task' as const,
+              subtitle: task.status,
+              task: task,
+            })),
+          ],
+          [taskDockItems, minimizedTasks]
+        )}
+        open={tabbedDockOpen && (taskDockItems.length > 0 || minimizedTasks.length > 0)}
+        onClose={() => setTabbedDockOpen(false)}
+        onTabClose={(id: string) => {
+          setTaskDockItems((prev) => prev.filter((it) => it.id !== id));
+          removeMinimizedTask(id);
         }}
+        onAddNote={handleAddNote}
+        defaultHeight={500}
+        minHeight={300}
+        maxHeight={800}
       />
     </>
   );

@@ -59,10 +59,8 @@ export const OpenItemsDock = ({
   onMinimizedTaskRemove,
 }: OpenItemsDockProps) => {
   const theme = useTheme()
-  const [previewAnchor, setPreviewAnchor] = useState<HTMLElement | null>(null)
   const [filter, setFilter] = useState<FilterType>('all')
 
-  const previewOpen = Boolean(previewAnchor)
   // Memoize combined items list
   const allItems = useMemo(
     () => [
@@ -105,7 +103,6 @@ export const OpenItemsDock = ({
       } else if (onClick) {
         onClick(item.id)
       }
-      setPreviewAnchor(null)
     },
     [onClick, onMinimizedTaskClick]
   )
@@ -114,18 +111,14 @@ export const OpenItemsDock = ({
     if (onClearAll) {
       onClearAll()
     }
-    setPreviewAnchor(null)
   }, [onClearAll])
 
-  const handleIconClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    if (previewOpen) {
-      // If preview is open, close preview
-      setPreviewAnchor(null)
-    } else {
-      // Show preview
-      setPreviewAnchor(event.currentTarget)
+  const handleIconClick = useCallback(() => {
+    // Open the full tabbed dock instead of preview
+    if (onClick) {
+      onClick('__dock_restore__') // Special ID to trigger dock open
     }
-  }, [previewOpen])
+  }, [onClick])
 
   const handleOpenAll = useCallback(() => {
     // Open all visible items (up to 3 based on current filter)
@@ -141,11 +134,10 @@ export const OpenItemsDock = ({
       // Open single task
       onMinimizedTaskClick(tasksToOpen[0])
     }
-    setPreviewAnchor(null)
   }, [visibleItems, onMinimizedTaskClick])
 
   const handlePreviewClose = useCallback(() => {
-    setPreviewAnchor(null)
+    // No longer using preview popover
   }, [])
 
   const getItemIcon = useCallback((type: string) => {
@@ -167,19 +159,20 @@ export const OpenItemsDock = ({
   return (
     <>
       {/* Floating trigger button - bottom left */}
-      <Tooltip title={previewOpen ? "Close preview" : "View docked items"} placement="right">
+      <Tooltip title="Open docked items" placement="right">
         <IconButton
           onClick={handleIconClick}
           sx={{
             position: 'fixed',
             bottom: { xs: 16, sm: 24 },
             left: { xs: 16, sm: 24 },
-            bgcolor: previewOpen ? 'primary.dark' : 'primary.main',
+            bgcolor: 'primary.main',
             color: 'primary.contrastText',
             width: { xs: 48, sm: 56 },
             height: { xs: 48, sm: 56 },
             '&:hover': {
               bgcolor: 'primary.dark',
+              transform: 'scale(1.05)',
             },
             zIndex: 1200,
             transition: 'all 0.2s',
@@ -202,10 +195,10 @@ export const OpenItemsDock = ({
         </IconButton>
       </Tooltip>
 
-      {/* Preview Popover - compact list */}
+      {/* Preview Popover - REMOVED, now opens full tabbed dock directly */}
       <Popover
-        open={previewOpen}
-        anchorEl={previewAnchor}
+        open={false}
+        anchorEl={null}
         onClose={handlePreviewClose}
         anchorOrigin={{
           vertical: 'top',

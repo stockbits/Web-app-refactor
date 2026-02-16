@@ -20,7 +20,6 @@ import { useCalloutMgt } from '../../../App - Scaffold/App - Pages/Operations Ma
 import { useTaskTableSelection } from '../../MUI - Table/Selection - UI';
 import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog';
 import { QuickAddNotesDialog } from '../../../../mui-api-calls/QuickAddNotesDialog';
-import { MultiTaskDialog } from '../../MUI - More Info Component/App - Multi Task Dialog';
 
 
 interface LiveTaskProps {
@@ -61,7 +60,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
   const [tasksToProgress, setTasksToProgress] = useState<TaskTableRow[]>([]);
   const [quickNotesDialogOpen, setQuickNotesDialogOpen] = useState(false);
   const [tasksForNotes, setTasksForNotes] = useState<TaskTableRow[]>([]);
-  const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
   const [dataRefresh, setDataRefresh] = useState(0); // Counter to force re-render
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' });
 
@@ -264,10 +262,18 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
 
   const handleDetailsClick = useCallback(() => {
     const tasks = getTasksForAction();
-    if (tasks.length > 0) {
-      setTaskDetailsOpen(true);
+    if (tasks.length > 0 && onAddToDock) {
+      // Add all selected tasks to dock
+      tasks.forEach(task => {
+        onAddToDock({
+          id: task.taskId,
+          title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
+          commitType: task.commitType,
+          task,
+        });
+      });
     }
-  }, [getTasksForAction]);
+  }, [getTasksForAction, onAddToDock]);
 
   // TODO: Use globalSearch for filtering tasks
 
@@ -580,33 +586,6 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
             onQuickNotes(tasksForNotes);
           }
         }}
-      />
-
-      <MultiTaskDialog
-        open={taskDetailsOpen}
-        onClose={() => setTaskDetailsOpen(false)}
-        tasks={selectedTaskIds.length > 0 
-          ? filteredRows.filter(task => selectedTaskIds.includes(task.taskId))
-          : filteredRows
-        }
-        onMinimize={onAddToDock ? () => {
-          const tasksToMinimize = selectedTaskIds.length > 0 
-            ? filteredRows.filter(task => selectedTaskIds.includes(task.taskId))
-            : filteredRows;
-          
-          // Add tasks to dock (minimize them)
-          tasksToMinimize.forEach(task => {
-            onAddToDock({
-              id: task.taskId,
-              title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-              commitType: task.commitType,
-              task,
-            });
-          });
-          
-          // Close the details dialog
-          setTaskDetailsOpen(false);
-        } : undefined}
       />
     </Box>
   );

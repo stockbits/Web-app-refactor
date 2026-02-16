@@ -94,17 +94,19 @@ export function TableContextMenu<T = Record<string, unknown>>({
       // Get the formatted display value from the cell's rendered content
       let displayValue = '';
       
-      // Try to get the text content from the cell element
-      const cellElement = event.currentTarget as HTMLElement;
-      if (cellElement) {
-        displayValue = cellElement.innerText || cellElement.textContent || '';
+      // First, try params.formattedValue or params.value (most accurate)
+      if (params.formattedValue != null) {
+        displayValue = String(params.formattedValue);
+      } else if (params.value != null) {
+        displayValue = String(params.value);
       }
       
-      // Fallback to params.formattedValue or params.value
+      // If still empty, try to get from the actual clicked element (not currentTarget)
       if (!displayValue) {
-        displayValue = params.formattedValue != null 
-          ? String(params.formattedValue) 
-          : (params.value != null ? String(params.value) : '');
+        const clickedElement = event.target as HTMLElement;
+        if (clickedElement) {
+          displayValue = clickedElement.innerText || clickedElement.textContent || '';
+        }
       }
       
       // Always set new context menu state immediately for snappy response
@@ -132,17 +134,19 @@ export function TableContextMenu<T = Record<string, unknown>>({
       // Get the formatted display value from the cell's rendered content
       let displayValue = '';
       
-      // Try to get the text content from the cell element
-      const cellElement = event.currentTarget as HTMLElement;
-      if (cellElement) {
-        displayValue = cellElement.innerText || cellElement.textContent || '';
+      // First, try params.formattedValue or params.value (most accurate)
+      if (params.formattedValue != null) {
+        displayValue = String(params.formattedValue);
+      } else if (params.value != null) {
+        displayValue = String(params.value);
       }
       
-      // Fallback to params.formattedValue or params.value
+      // If still empty, try to get from the actual clicked element (not currentTarget)
       if (!displayValue) {
-        displayValue = params.formattedValue != null 
-          ? String(params.formattedValue) 
-          : (params.value != null ? String(params.value) : '');
+        const clickedElement = event.target as HTMLElement;
+        if (clickedElement) {
+          displayValue = clickedElement.innerText || clickedElement.textContent || '';
+        }
       }
       
       setContextMenu({

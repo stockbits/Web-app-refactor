@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback, memo } from 'react'
 import {
   Accordion,
   AccordionDetails,
@@ -46,9 +46,12 @@ const formatDate = (value?: string) => {
 
 const renderSkeleton = (width: number | string = '100%') => <Skeleton variant="rounded" width={width} height={18} />
 
-export function TaskDetails({ task, loading = false, onAddNote, compact = false, fieldNotesExpanded, progressNotesExpanded, onFieldNotesExpandedChange, onProgressNotesExpandedChange }: TaskDetailsProps) {
+const TaskDetailsComponent = ({ task, loading = false, onAddNote, compact = false, fieldNotesExpanded, progressNotesExpanded, onFieldNotesExpandedChange, onProgressNotesExpandedChange }: TaskDetailsProps) => {
   const theme = useTheme()
-  const modeTokens = theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens
+  const modeTokens = useMemo(
+    () => theme.palette.mode === 'dark' ? theme.openreach?.darkTokens : theme.openreach?.lightTokens,
+    [theme.palette.mode, theme.openreach]
+  )
 
   const [fieldNoteDraft, setFieldNoteDraft] = useState('')
   const [progressNoteDraft, setProgressNoteDraft] = useState('')
@@ -62,7 +65,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
     return [...notes].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   }, [task?.progressNotes])
 
-  const addNote = (type: 'field' | 'progress') => {
+  const addNote = useCallback((type: 'field' | 'progress') => {
     const text = type === 'field' ? fieldNoteDraft.trim() : progressNoteDraft.trim()
     if (!text) return
     onAddNote?.(type, text)
@@ -71,7 +74,7 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
     } else {
       setProgressNoteDraft('')
     }
-  }
+  }, [fieldNoteDraft, progressNoteDraft, onAddNote])
 
   const spacing = compact ? 1 : 1.5
   const padding = compact ? 1 : 1.5
@@ -664,5 +667,17 @@ export function TaskDetails({ task, loading = false, onAddNote, compact = false,
     </Stack>
   )
 }
+
+// Memoize component to prevent re-renders when task hasn't changed
+export const TaskDetails = memo(TaskDetailsComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.task?.taskId === nextProps.task?.taskId &&
+    prevProps.task?.updatedAt === nextProps.task?.updatedAt &&
+    prevProps.loading === nextProps.loading &&
+    prevProps.compact === nextProps.compact &&
+    prevProps.fieldNotesExpanded === nextProps.fieldNotesExpanded &&
+    prevProps.progressNotesExpanded === nextProps.progressNotesExpanded
+  )
+})
 
 export default TaskDetails

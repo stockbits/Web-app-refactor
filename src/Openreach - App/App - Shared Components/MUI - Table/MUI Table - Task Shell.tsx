@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import {
   InfoOutlined as InfoOutlinedIcon,
   CompareArrows as CompareArrowsIcon,
@@ -15,9 +15,6 @@ import {
   useGridApiRef,
 } from '@mui/x-data-grid'
 import SharedMuiTable from './MUI Table - Table Shell'
-import { AppTaskDialog } from '../MUI - More Info Component/App - Task Dialog'
-import { MultiTaskDialog } from '../MUI - More Info Component/App - Multi Task Dialog'
-import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
 import type { ContextMenuItem } from './Right Click - MUI Component'
 import { useTaskTableSelection } from './Selection - UI'
 
@@ -37,6 +34,7 @@ interface TaskTableShellProps<T extends GridValidRowModel & { taskId: string }> 
   height?: string | number
   onSortModelChange?: (model: GridSortModel) => void
   getRowClassName?: (params: { id: GridRowId; row: T }) => string
+  onRowDoubleClick?: (params: { row: T }, event: MuiEvent<React.MouseEvent>) => void
   onProgressTask?: (tasks: T[]) => void
   onAddQuickNote?: (tasks: T[]) => void
   onAddToDock?: (task: T) => void
@@ -58,6 +56,7 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
   height = '60vh',
   onSortModelChange,
   getRowClassName: externalGetRowClassName,
+  onRowDoubleClick,
   onProgressTask,
   onAddQuickNote,
   onAddToDock,
@@ -71,27 +70,24 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
     toggleTaskSelection, 
     rangeSelectTasks,
   } = useTaskTableSelection()
-  
-  // Dialog states
-  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
-  const [multiTaskDialogOpen, setMultiTaskDialogOpen] = useState(false)
-  const [selectedTask, setSelectedTask] = useState<T | null>(null)
-  const [selectedTasks, setSelectedTasks] = useState<T[]>([])
 
   // Context menu handlers
   const handleOpenTaskDetail = useCallback((task: T) => {
-    setSelectedTask(task)
-    setTaskDialogOpen(true)
-  }, [])
+    if (onAddToDock) {
+      onAddToDock(task)
+    }
+  }, [onAddToDock])
 
   const handleCompareTasks = useCallback((tasks: T[]) => {
     if (tasks.length > 3) {
       alert('You can compare up to 3 tasks maximum')
       return
     }
-    setSelectedTasks(tasks)
-    setMultiTaskDialogOpen(true)
-  }, [])
+    // Add all tasks to dock for comparison
+    if (onAddToDock) {
+      tasks.forEach(task => onAddToDock(task))
+    }
+  }, [onAddToDock])
 
   const handleProgressTask = useCallback((tasks: T[]) => {
     onProgressTask?.(tasks)
@@ -194,11 +190,6 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
     return isSelected ? `selected-row ${externalClass}`.trim() : externalClass
   }, [isTaskSelected, externalGetRowClassName])
 
-  const handleMultiTaskAddNote = useCallback((taskId: string, type: 'field' | 'progress', text: string) => {
-    console.log('Add note:', type, text, 'to task:', taskId)
-    // TODO: Implement note addition logic
-  }, [])
-
   return (
     <>
       <SharedMuiTable
@@ -219,31 +210,9 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
         onSortModelChange={onSortModelChange}
         getRowClassName={getRowClassName}
         onCellClick={handleCellClick}
+        onRowDoubleClick={onRowDoubleClick}
         contextMenuItems={buildContextMenuItems}
         externalSelectedIds={selectedTaskIds}
-      />
-
-      {/* Single Task Dialog */}
-      <AppTaskDialog
-        open={taskDialogOpen}
-        onClose={() => setTaskDialogOpen(false)}
-        task={selectedTask as unknown as TaskTableRow}
-        onMinimize={onAddToDock && selectedTask ? () => {
-          onAddToDock(selectedTask)
-          setTaskDialogOpen(false)
-        } : undefined}
-      />
-
-      {/* Multi Task Comparison Dialog */}
-      <MultiTaskDialog
-        open={multiTaskDialogOpen}
-        onClose={() => setMultiTaskDialogOpen(false)}
-        tasks={selectedTasks as unknown as TaskTableRow[]}
-        onAddNote={handleMultiTaskAddNote}
-        onMinimize={onAddToDock && selectedTasks.length > 0 ? () => {
-          selectedTasks.forEach(task => onAddToDock(task))
-          setMultiTaskDialogOpen(false)
-        } : undefined}
       />
     </>
   )

@@ -329,10 +329,11 @@ function LiveGantt({
         case 'postCode':
           parts.push({ key: 'postCode', value: task.postCode });
           break;
-        case 'commitDate':
+        case 'commitDate': {
           const commitDate = new Date(task.commitDate);
           parts.push({ key: 'commitDate', value: commitDate.toLocaleDateString() });
           break;
+        }
       }
     });
     
@@ -401,11 +402,11 @@ function LiveGantt({
         return {
           populationMode: savedSettings.populationMode || defaultSettings.populationMode,
           resourceFields: defaultSettings.resourceFields.map(defaultField => {
-            const savedField = savedSettings.resourceFields?.find((f: any) => f.key === defaultField.key);
+            const savedField = savedSettings.resourceFields?.find((f: { key: string }) => f.key === defaultField.key);
             return savedField || defaultField;
           }),
           taskFields: defaultSettings.taskFields.map(defaultField => {
-            const savedField = savedSettings.taskFields?.find((f: any) => f.key === defaultField.key);
+            const savedField = savedSettings.taskFields?.find((f: { key: string }) => f.key === defaultField.key);
             return savedField || defaultField;
           }),
         };
@@ -454,6 +455,7 @@ function LiveGantt({
     if (ganttSettings.populationMode !== populationMode) {
       setPopulationMode(ganttSettings.populationMode);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ganttSettings]);
 
   const timelineRef = useRef<HTMLDivElement>(null);
@@ -875,6 +877,7 @@ function LiveGantt({
       currentHourWidthRef.current = width;
       setHourWidth(width);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visibleDays, isAutoFit, totalScheduledHours]);
 
   // Scroll to 6am when data loads (after search) and when layout changes

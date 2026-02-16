@@ -566,6 +566,16 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
               initialPageSize={30}
               pageSizeOptions={[30, 50, 100]}
               getRowClassName={getRowClassName}
+              onRowDoubleClick={(params) => {
+                if (onAddToDock) {
+                  onAddToDock({
+                    id: params.row.taskId,
+                    title: `Task ${params.row.taskId.split('-').pop() || params.row.taskId}`,
+                    commitType: params.row.commitType,
+                    task: params.row,
+                  })
+                }
+              }}
               onProgressTask={(tasks) => {
                 setTasksToProgress(tasks);
                 setProgressDialogOpen(true);

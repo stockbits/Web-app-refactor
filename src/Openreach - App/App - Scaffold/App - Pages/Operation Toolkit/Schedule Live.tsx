@@ -91,6 +91,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   const handleOpenLegend = useCallback(() => setLegendOpen(true), [])
 
   // Progress task handler - memoized
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleProgressTask = useCallback((_tasks: TaskTableRow[]) => {
     // MUI4Panel will pass this to LiveTask which will handle the dialog
     // We just need to provide the callback to trigger data refresh
@@ -98,6 +99,7 @@ const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDia
   }, [])
 
   // Quick notes handler - memoized
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleQuickNotes = useCallback((_tasks: TaskTableRow[]) => {
     // MUI4Panel will pass this to LiveTask which will handle the dialog
     // We just need to provide the callback to trigger data refresh
