@@ -35,6 +35,7 @@ import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing 
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
 import { TabbedTaskDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Tabbed Task Dock";
+import { TaskQuickTray } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Quick Tray";
 import { useMinimizedTasks } from "./AppCentralTheme/MinimizedTaskContext";
 import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
 import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
@@ -404,7 +405,7 @@ function App() {
   });
 
   // Minimized tasks context
-  const { minimizedTasks, removeMinimizedTask } = useMinimizedTasks();
+  const { minimizedTasks, addMinimizedTask, removeMinimizedTask } = useMinimizedTasks();
 
   // Persist to localStorage - debounced to avoid excessive writes
   useEffect(() => {
@@ -460,6 +461,8 @@ function App() {
           commitType: t.commitType,
           task: t,
         });
+        // Remove from minimized tasks when opening in full view
+        removeMinimizedTask(t.taskId);
       });
     } else {
       // Add single task to tabbed dock
@@ -469,10 +472,25 @@ function App() {
         commitType: task.commitType,
         task: task,
       });
+      // Remove from minimized tasks when opening in full view
+      removeMinimizedTask(task.taskId);
     }
     // Ensure dock is open and expanded
     setTabbedDockOpen(true);
-  }, [handleAddTaskDockItem]);
+  }, [handleAddTaskDockItem, removeMinimizedTask]);
+
+  // Handle minimizing a task - move from TabbedTaskDock to TaskQuickTray
+  const handleMinimizeTask = useCallback((taskId: string) => {
+    const taskItem = taskDockItems.find(item => item.id === taskId);
+    if (taskItem?.task) {
+      // Add to minimized tasks context
+      addMinimizedTask(taskItem.task);
+      // Remove from tabbed dock
+      setTaskDockItems((prev) => prev.filter((it) => it.id !== taskId));
+      // Always close the dock - user is moving on but wants to retain for later
+      setTabbedDockOpen(false);
+    }
+  }, [taskDockItems, addMinimizedTask]);
 
   const handleAddNote = useCallback(
     (type: 'field' | 'progress', text: string) => {
@@ -929,35 +947,42 @@ function App() {
 
       {/* Tabbed Task Dock - Centered Floating Window */}
       <TabbedTaskDock
-        items={useMemo(
-          () => [
-            ...taskDockItems.map((item) => ({
-              id: item.id,
-              title: item.title,
-              type: 'task' as const,
-              subtitle: item.commitType,
-              task: item.task,
-            })),
-            ...minimizedTasks.map(task => ({
-              id: task.taskId,
-              title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-              type: 'task' as const,
-              subtitle: task.status,
-              task: task,
-            })),
-          ],
-          [taskDockItems, minimizedTasks]
-        )}
-        open={tabbedDockOpen && (taskDockItems.length > 0 || minimizedTasks.length > 0)}
+        items={taskDockItems.map((item) => ({
+          id: item.id,
+          title: item.title,
+          type: 'task' as const,
+          subtitle: item.commitType,
+          task: item.task,
+        }))}
+        open={tabbedDockOpen && taskDockItems.length > 0}
         onClose={() => setTabbedDockOpen(false)}
         onTabClose={(id: string) => {
+          // Remove from taskDockItems
           setTaskDockItems((prev) => prev.filter((it) => it.id !== id));
+          // Also remove from minimizedTasks if it exists there
           removeMinimizedTask(id);
         }}
+        onMinimize={handleMinimizeTask}
         onAddNote={handleAddNote}
         defaultHeight={500}
         minHeight={300}
         maxHeight={800}
+      />
+
+      {/* Task Quick Tray - Bottom Left Persistent Dock */}
+      <TaskQuickTray
+        tasks={minimizedTasks}
+        onTaskRemove={(taskId) => {
+          removeMinimizedTask(taskId);
+        }}
+        onClearAll={() => {
+          // Clear all minimized tasks
+          minimizedTasks.forEach(task => removeMinimizedTask(task.taskId));
+        }}
+        onOpenFull={(task) => {
+          // Open in full tabbed dock
+          openTaskDialog(task);
+        }}
       />
     </>
   );

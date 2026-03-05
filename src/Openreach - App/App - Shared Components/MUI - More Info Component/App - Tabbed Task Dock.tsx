@@ -29,6 +29,7 @@ export interface TabbedTaskDockProps {
   open?: boolean
   onClose?: () => void
   onTabClose?: (id: string) => void
+  onMinimize?: (id: string) => void
   onAddNote?: (type: 'field' | 'progress', text: string) => void
   defaultHeight?: number
   minHeight?: number
@@ -111,7 +112,9 @@ MinimizedTaskItem.displayName = 'MinimizedTaskItem'
 const TabbedTaskDockComponent = ({
   items,
   open = true,
+  onClose,
   onTabClose,
+  onMinimize,
   onAddNote,
   defaultHeight = 500,
   minHeight = 300,
@@ -182,15 +185,20 @@ const TabbedTaskDockComponent = ({
   // Memoize handlers to prevent unnecessary re-renders
   const handleMinimize = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
-    setIsCollapsed(true)
-  }, [])
+    if (activeItem && onMinimize) {
+      onMinimize(activeItem.id)
+      // The parent will handle removing from taskDockItems and adding to minimizedTasks
+    }
+  }, [activeItem, onMinimize])
 
   const handleClose = useCallback((e: React.MouseEvent) => {
     e.stopPropagation()
     if (activeItem) {
       onTabClose?.(activeItem.id)
+      // Close the entire dock after removing the task
+      onClose?.()
     }
-  }, [activeItem, onTabClose])
+  }, [activeItem, onTabClose, onClose])
 
   if (!open || items.length === 0) {
     return null
@@ -201,7 +209,7 @@ const TabbedTaskDockComponent = ({
       {/* Backdrop for focus */}
       <Backdrop
         open={open && items.length > 0 && !isCollapsed}
-        onClick={() => {}}
+        onClick={onClose}
         sx={{
           zIndex: 1299,
           bgcolor: alpha(theme.palette.common.black, 0.3),
