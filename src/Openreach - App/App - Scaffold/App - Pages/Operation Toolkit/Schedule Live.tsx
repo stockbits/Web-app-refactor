@@ -21,7 +21,7 @@ interface ScheduleLivePageProps {
   dockedPanels?: DockedPanel[]
   onDockedPanelsChange?: (panels: DockedPanel[]) => void
   openTaskDialog?: (task: TaskTableRow | TaskTableRow[]) => void
-  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
+  onAddToDock?: (task: TaskTableRow | TaskTableRow[]) => void
 }
 
 const ScheduleLivePage = ({ dockedPanels = [], onDockedPanelsChange, openTaskDialog, onAddToDock }: ScheduleLivePageProps = {}) => {

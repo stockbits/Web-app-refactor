@@ -32,7 +32,7 @@ export interface MUI4PanelProps {
   searchFilters?: SearchFilters | null;
   clearSorting?: number;
   openTaskDialog?: (task: TaskTableRow | TaskTableRow[]) => void;
-  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void;
+  onAddToDock?: (task: TaskTableRow | TaskTableRow[]) => void;
   onProgressTask?: (tasks: TaskTableRow[]) => void;
   onQuickNotes?: (tasks: TaskTableRow[]) => void;
   dataRefresh?: number;

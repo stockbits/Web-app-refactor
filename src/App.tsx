@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState, useEffect, useCallback, lazy } from "react";
+import { Suspense, useMemo, useState, useCallback, lazy } from "react";
 import type { ElementType, JSX, LazyExoticComponent } from "react";
 import "./App.css";
 import {
@@ -34,11 +34,7 @@ import { OpenreachTopBanner } from "./Openreach - App/App - Scaffold/App - Top B
 import { LandingOverview } from "./Openreach - App/App - Scaffold/App - Landing Overview";
 import { AppBreadCrumb } from "./Openreach - App/App - Scaffold/App - Bread Crumb";
 import type { DockedPanel } from "./Openreach - App/App - Scaffold/App - Top Banner";
-import { TabbedTaskDock } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Tabbed Task Dock";
-import { TaskQuickTray } from "./Openreach - App/App - Shared Components/MUI - More Info Component/App - Task Quick Tray";
-import { useMinimizedTasks } from "./AppCentralTheme/MinimizedTaskContext";
-import type { TaskCommitType } from "./Openreach - App/App - Data Tables/Task - Table";
-import type { TaskTableRow, TaskNote } from "./Openreach - App/App - Data Tables/Task - Table";
+import type { TaskTableRow } from "./Openreach - App/App - Data Tables/Task - Table";
 import { SelectionUIProvider } from "./Openreach - App/App - Shared Components/MUI - Table/Selection - UI";
 
 interface MenuCardTile {
@@ -378,141 +374,45 @@ function App() {
     cardName: string;
   } | null>(null);
   const [dockedPanels, setDockedPanels] = useState<DockedPanel[]>([]);
-  const [taskDockItems, setTaskDockItems] = useState<{
-    id: string;
-    title: string;
-    commitType?: TaskCommitType;
-    task?: TaskTableRow;
-  }[]>(() => {
-    // Initialize from localStorage only once on mount
-    try {
-      const saved = localStorage.getItem('recentTasksDock');
-      if (saved) {
-        const parsed = JSON.parse(saved) as {
-          id: string;
-          title: string;
-          commitType?: TaskCommitType;
-          task?: TaskTableRow;
-        }[];
-        if (Array.isArray(parsed)) {
-          return parsed.slice(0, 5);
-        }
-      }
-    } catch {
-      // ignore load errors
-    }
-    return [];
-  });
-
-  // Minimized tasks context
-  const { minimizedTasks, addMinimizedTask, removeMinimizedTask } = useMinimizedTasks();
-
-  // Persist to localStorage - debounced to avoid excessive writes
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        // Only serialize essential data to reduce storage size
-        const minimal = taskDockItems.map(({ id, title, commitType, task }) => ({ 
-          id, 
-          title, 
-          commitType, 
-          task 
-        }));
-        localStorage.setItem('recentTasksDock', JSON.stringify(minimal));
-      } catch {
-        // ignore save errors
-      }
-    }, 250); // Debounce 250ms for faster saves
-
-    return () => clearTimeout(timeoutId);
-  }, [taskDockItems]);
-
-  // Tabbed dock state - opens automatically when items added
-  const [tabbedDockOpen, setTabbedDockOpen] = useState(true);
-
-  const handleAddTaskDockItem = useCallback((item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => {
-    setTaskDockItems((prev) => {
-      if (prev.some((p) => p.id === item.id)) return prev;
-      const nextItem = {
-        id: item.id,
-        title: item.title,
-        commitType: item.commitType,
-        task: item.task,
-      };
-      // Limit to max 20 items, remove oldest when adding new
-      const updated = [nextItem, ...prev];
-      return updated.slice(0, 20);
-    });
-    // Auto-open the dock when items are added
-    setTabbedDockOpen(true);
-  }, []);
 
   const [menuInfoAnchor, setMenuInfoAnchor] = useState<HTMLElement | null>(null);
   const menuInfoOpen = Boolean(menuInfoAnchor);
 
-  // Global task dialog function - opens tasks in tabbed dock
+  // Helper function to open task in new window
+  const openTaskInNewWindow = useCallback((task: TaskTableRow) => {
+    const taskData = encodeURIComponent(JSON.stringify(task))
+    const baseUrl = window.location.origin + window.location.pathname
+    const url = `${baseUrl}?window=task-detail&task=${taskData}`
+    window.open(
+      url,
+      `task-${task.taskId}`,
+      'width=1200,height=800,scrollbars=yes,resizable=yes'
+    )
+  }, [])
+
+  // Helper function to open multiple tasks in new window for comparison
+  const openTasksCompareWindow = useCallback((tasks: TaskTableRow[]) => {
+    const tasksData = encodeURIComponent(JSON.stringify(tasks))
+    const baseUrl = window.location.origin + window.location.pathname
+    const url = `${baseUrl}?window=task-compare&tasks=${tasksData}`
+    window.open(
+      url,
+      `task-compare-${Date.now()}`,
+      'width=1600,height=900,scrollbars=yes,resizable=yes'
+    )
+  }, [])
+
+  // Global task dialog function - opens tasks in new windows
   const openTaskDialog = useCallback((task: TaskTableRow | TaskTableRow[]) => {
     if (Array.isArray(task)) {
-      // Add multiple tasks to tabbed dock
-      task.slice(0, 3).forEach(t => {
-        handleAddTaskDockItem({
-          id: t.taskId,
-          title: `Task ${t.taskId.split('-').pop() || t.taskId}`,
-          commitType: t.commitType,
-          task: t,
-        });
-        // Remove from minimized tasks when opening in full view
-        removeMinimizedTask(t.taskId);
-      });
+      // Open multiple tasks in comparison window (limit to 3)
+      const tasksToOpen = task.slice(0, 3)
+      openTasksCompareWindow(tasksToOpen)
     } else {
-      // Add single task to tabbed dock
-      handleAddTaskDockItem({
-        id: task.taskId,
-        title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-        commitType: task.commitType,
-        task: task,
-      });
-      // Remove from minimized tasks when opening in full view
-      removeMinimizedTask(task.taskId);
+      // Open single task in new window
+      openTaskInNewWindow(task)
     }
-    // Ensure dock is open and expanded
-    setTabbedDockOpen(true);
-  }, [handleAddTaskDockItem, removeMinimizedTask]);
-
-  // Handle minimizing a task - move from TabbedTaskDock to TaskQuickTray
-  const handleMinimizeTask = useCallback((taskId: string) => {
-    const taskItem = taskDockItems.find(item => item.id === taskId);
-    if (taskItem?.task) {
-      // Add to minimized tasks context
-      addMinimizedTask(taskItem.task);
-      // Remove from tabbed dock
-      setTaskDockItems((prev) => prev.filter((it) => it.id !== taskId));
-      // Always close the dock - user is moving on but wants to retain for later
-      setTabbedDockOpen(false);
-    }
-  }, [taskDockItems, addMinimizedTask]);
-
-  const handleAddNote = useCallback(
-    (type: 'field' | 'progress', text: string) => {
-      const nextNote: TaskNote = {
-        id: `${type}-${Date.now()}`,
-        author: 'You',
-        createdAt: new Date().toISOString(),
-        text,
-      };
-      
-      // Update all tasks in the dock with the new note
-      setTaskDockItems((prev) => {
-        return prev.map(item => {
-          if (!item.task) return item;
-          const fieldNotes = type === 'field' ? [nextNote, ...(item.task.fieldNotes ?? [])] : item.task.fieldNotes;
-          const progressNotes = type === 'progress' ? [nextNote, ...(item.task.progressNotes ?? [])] : item.task.progressNotes;
-          return { ...item, task: { ...item.task, fieldNotes, progressNotes } };
-        });
-      });
-    },
-    [],
-  );
+  }, [openTaskInNewWindow, openTasksCompareWindow]);
 
   const [landingInfoAnchor, setLandingInfoAnchor] = useState<HTMLElement | null>(null);
   const landingInfoOpen = Boolean(landingInfoAnchor);
@@ -926,11 +826,11 @@ function App() {
                       <Box sx={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                         {activePage?.cardName === 'Schedule Live' ? (
                           <SelectionUIProvider>
-                            <LazyPageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog, onAddToDock: handleAddTaskDockItem } as Record<string, unknown>)} />
+                            <LazyPageComponent {...({ dockedPanels, onDockedPanelsChange: setDockedPanels, openTaskDialog, onAddToDock: openTaskDialog } as Record<string, unknown>)} />
                           </SelectionUIProvider>
                         ) : activePage?.cardName === 'Task Management' ? (
                           <SelectionUIProvider>
-                            <LazyPageComponent {...({ openTaskDialog, onAddToDock: handleAddTaskDockItem } as Record<string, unknown>)} />
+                            <LazyPageComponent {...({ openTaskDialog, onAddToDock: openTaskDialog } as Record<string, unknown>)} />
                           </SelectionUIProvider>
                         ) : (
                           <LazyPageComponent />
@@ -945,45 +845,6 @@ function App() {
         </Stack>
       </Box>
 
-      {/* Tabbed Task Dock - Centered Floating Window */}
-      <TabbedTaskDock
-        items={taskDockItems.map((item) => ({
-          id: item.id,
-          title: item.title,
-          type: 'task' as const,
-          subtitle: item.commitType,
-          task: item.task,
-        }))}
-        open={tabbedDockOpen && taskDockItems.length > 0}
-        onClose={() => setTabbedDockOpen(false)}
-        onTabClose={(id: string) => {
-          // Remove from taskDockItems
-          setTaskDockItems((prev) => prev.filter((it) => it.id !== id));
-          // Also remove from minimizedTasks if it exists there
-          removeMinimizedTask(id);
-        }}
-        onMinimize={handleMinimizeTask}
-        onAddNote={handleAddNote}
-        defaultHeight={500}
-        minHeight={300}
-        maxHeight={800}
-      />
-
-      {/* Task Quick Tray - Bottom Left Persistent Dock */}
-      <TaskQuickTray
-        tasks={minimizedTasks}
-        onTaskRemove={(taskId) => {
-          removeMinimizedTask(taskId);
-        }}
-        onClearAll={() => {
-          // Clear all minimized tasks
-          minimizedTasks.forEach(task => removeMinimizedTask(task.taskId));
-        }}
-        onOpenFull={(task) => {
-          // Open in full tabbed dock
-          openTaskDialog(task);
-        }}
-      />
     </>
   );
 }

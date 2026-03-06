@@ -14,7 +14,7 @@ import { ProgressTaskDialog } from '../../../../mui-api-calls/ProgressTaskDialog
 import { QuickAddNotesDialog } from '../../../../mui-api-calls/QuickAddNotesDialog'
 
 interface TaskManagementPageProps {
-  onAddToDock?: (item: { id: string; title: string; commitType?: TaskCommitType; task?: TaskTableRow }) => void
+  onAddToDock?: (task: TaskTableRow | TaskTableRow[]) => void
 }
 
 const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
@@ -568,12 +568,7 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
               getRowClassName={getRowClassName}
               onRowDoubleClick={(params) => {
                 if (onAddToDock) {
-                  onAddToDock({
-                    id: params.row.taskId,
-                    title: `Task ${params.row.taskId.split('-').pop() || params.row.taskId}`,
-                    commitType: params.row.commitType,
-                    task: params.row,
-                  })
+                  onAddToDock(params.row)
                 }
               }}
               onProgressTask={(tasks) => {
@@ -584,14 +579,7 @@ const TaskManagementPage = ({ onAddToDock }: TaskManagementPageProps = {}) => {
                 setTasksForNotes(tasks);
                 setQuickNotesDialogOpen(true);
               }}
-              onAddToDock={onAddToDock ? (task) => {
-                onAddToDock({
-                  id: task.taskId,
-                  title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-                  commitType: task.commitType,
-                  task,
-                })
-              } : undefined}
+              onAddToDock={onAddToDock}
             />
           ) : (
             <Box

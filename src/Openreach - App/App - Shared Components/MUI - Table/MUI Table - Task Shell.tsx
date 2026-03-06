@@ -37,7 +37,7 @@ interface TaskTableShellProps<T extends GridValidRowModel & { taskId: string }> 
   onRowDoubleClick?: (params: { row: T }, event: MuiEvent<React.MouseEvent>) => void
   onProgressTask?: (tasks: T[]) => void
   onAddQuickNote?: (tasks: T[]) => void
-  onAddToDock?: (task: T) => void
+  onAddToDock?: (task: T | T[]) => void
 }
 
 export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>({
@@ -83,9 +83,9 @@ export function TaskTableShell<T extends GridValidRowModel & { taskId: string }>
       alert('You can compare up to 3 tasks maximum')
       return
     }
-    // Add all tasks to dock for comparison
+    // Open all tasks in comparison window
     if (onAddToDock) {
-      tasks.forEach(task => onAddToDock(task))
+      onAddToDock(tasks)
     }
   }, [onAddToDock])
 
