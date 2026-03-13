@@ -480,12 +480,16 @@ export default function LiveTask({ onDock, onUndock, onExpand, onCollapse, isDoc
               setQuickNotesDialogOpen(true);
             }}
             onAddToDock={onAddToDock ? (task) => {
-              onAddToDock({
-                id: task.taskId,
-                title: `Task ${task.taskId.split('-').pop() || task.taskId}`,
-                commitType: task.commitType,
-                task,
-              })
+              // Handle both single task and array of tasks
+              const singleTask = Array.isArray(task) ? task[0] : task;
+              if (singleTask) {
+                onAddToDock({
+                  id: singleTask.taskId,
+                  title: `Task ${singleTask.taskId.split('-').pop() || singleTask.taskId}`,
+                  commitType: singleTask.commitType,
+                  task: singleTask,
+                })
+              }
             } : undefined}
           />
         ) : (

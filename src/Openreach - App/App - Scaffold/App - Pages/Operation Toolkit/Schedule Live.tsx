@@ -13,7 +13,6 @@ import type { SearchFilters } from './App - Search Tool'
 import { TaskStatusLegend } from '../../../App - Shared Components/MUI - Icon and Key/MUI - Legend'
 import { useSelectionUI } from '../../../App - Shared Components/MUI - Table/Selection - UI.tsx'
 import GlobalSearchField from '../../../App - Shared Components/MUI - Table/GlobalSearchField'
-import type { TaskCommitType } from '../../../App - Data Tables/Task - Table'
 
 type DivisionType = 'Service Delivery' | 'Complex Engineering' | 'Admin'
 

@@ -668,7 +668,12 @@ export const lightTheme = createTheme({
       styleOverrides: {
         root: {
           fontWeight: 500,
-          borderRadius: 2,
+          borderRadius: 16,
+          height: 28,
+        },
+        sizeSmall: {
+          height: 24,
+          borderRadius: 12,
         },
         filled: {
           backgroundColor: lightTokens.chip.bg,
@@ -681,6 +686,14 @@ export const lightTheme = createTheme({
         outlined: {
           borderColor: lightTokens.chip.border,
           color: lightTokens.chip.text,
+        },
+        label: {
+          paddingLeft: 12,
+          paddingRight: 12,
+        },
+        labelSmall: {
+          paddingLeft: 10,
+          paddingRight: 10,
         },
       },
     },
@@ -1189,7 +1202,12 @@ export const darkTheme = createTheme({
       styleOverrides: {
         root: {
           fontWeight: 500,
-          borderRadius: 2,
+          borderRadius: 16,
+          height: 28,
+        },
+        sizeSmall: {
+          height: 24,
+          borderRadius: 12,
         },
         filled: {
           backgroundColor: darkTokens.chip.bg,
@@ -1202,6 +1220,14 @@ export const darkTheme = createTheme({
         outlined: {
           borderColor: darkTokens.chip.border,
           color: darkTokens.chip.text,
+        },
+        label: {
+          paddingLeft: 12,
+          paddingRight: 12,
+        },
+        labelSmall: {
+          paddingLeft: 10,
+          paddingRight: 10,
         },
       },
     },

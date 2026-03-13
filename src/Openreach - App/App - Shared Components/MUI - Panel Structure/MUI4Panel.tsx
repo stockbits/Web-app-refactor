@@ -13,7 +13,7 @@ import LiveTask from "./App - Pannels/LiveTask";
 import { useSelectionUI } from "../MUI - Table/Selection - UI";
 import type { SearchFilters } from "../../App - Scaffold/App - Pages/Operation Toolkit/App - Search Tool";
 import { TASK_TABLE_ROWS } from "../../App - Data Tables/Task - Table";
-import type { TaskTableRow, TaskCommitType } from "../../App - Data Tables/Task - Table";
+import type { TaskTableRow } from "../../App - Data Tables/Task - Table";
 import { taskMatchesStatusFilter } from "../MUI - Table/TaskTableQueryConfig.shared";
 
 export interface DockedPanel {

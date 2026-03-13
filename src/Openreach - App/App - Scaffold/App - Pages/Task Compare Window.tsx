@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Box, CircularProgress, Typography, IconButton, Grid, alpha, useTheme } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { Box, Typography, IconButton, Grid, alpha, useTheme } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { TaskDetails } from '../../App - Shared Components/MUI - More Info Component/App - Task Details'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
@@ -10,45 +10,28 @@ import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
  */
 export default function TaskCompareWindow() {
   const theme = useTheme()
-  const [tasks, setTasks] = useState<TaskTableRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fieldNotesExpanded, setFieldNotesExpanded] = useState(false)
-  const [progressNotesExpanded, setProgressNotesExpanded] = useState(false)
-
-  useEffect(() => {
-    // Parse tasks data from URL parameters
+  
+  // Parse tasks data from URL parameters (once on mount)
+  const tasks = useMemo<TaskTableRow[]>(() => {
     const params = new URLSearchParams(window.location.search)
     const tasksDataParam = params.get('tasks')
     
     if (tasksDataParam) {
       try {
         const tasksData = JSON.parse(decodeURIComponent(tasksDataParam))
-        setTasks(Array.isArray(tasksData) ? tasksData : [tasksData])
+        return Array.isArray(tasksData) ? tasksData : [tasksData]
       } catch (error) {
         console.error('Error parsing tasks data:', error)
       }
     }
-    setLoading(false)
+    return []
   }, [])
+  
+  const [fieldNotesExpanded, setFieldNotesExpanded] = useState(false)
+  const [progressNotesExpanded, setProgressNotesExpanded] = useState(false)
 
   const handleClose = () => {
     window.close()
-  }
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          bgcolor: 'background.default',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    )
   }
 
   if (!tasks || tasks.length === 0) {

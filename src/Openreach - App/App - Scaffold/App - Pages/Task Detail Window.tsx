@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Box, CircularProgress, Typography, IconButton, alpha, useTheme } from '@mui/material'
+import { useMemo, useState } from 'react'
+import { Box, Typography, IconButton, alpha, useTheme } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { TaskDetails } from '../../App - Shared Components/MUI - More Info Component/App - Task Details'
 import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
@@ -10,45 +10,27 @@ import type { TaskTableRow } from '../../App - Data Tables/Task - Table'
  */
 export default function TaskDetailWindow() {
   const theme = useTheme()
-  const [task, setTask] = useState<TaskTableRow | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [fieldNotesExpanded, setFieldNotesExpanded] = useState(true)
-  const [progressNotesExpanded, setProgressNotesExpanded] = useState(true)
-
-  useEffect(() => {
-    // Parse task data from URL parameters
+  
+  // Parse task data from URL parameters (once on mount)
+  const task = useMemo(() => {
     const params = new URLSearchParams(window.location.search)
     const taskDataParam = params.get('task')
     
     if (taskDataParam) {
       try {
-        const taskData = JSON.parse(decodeURIComponent(taskDataParam))
-        setTask(taskData)
+        return JSON.parse(decodeURIComponent(taskDataParam)) as TaskTableRow
       } catch (error) {
         console.error('Error parsing task data:', error)
       }
     }
-    setLoading(false)
+    return null
   }, [])
+  
+  const [fieldNotesExpanded, setFieldNotesExpanded] = useState(true)
+  const [progressNotesExpanded, setProgressNotesExpanded] = useState(true)
 
   const handleClose = () => {
     window.close()
-  }
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          bgcolor: 'background.default',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    )
   }
 
   if (!task) {
